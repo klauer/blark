@@ -1,0 +1,690 @@
+# IEC 61131-3 Strucured Text Grammar version 1.2
+#
+# Copyright (c) 2009, X-Pie Software GmbH
+
+
+# extending grammar language by:
+#
+# ; terminates production
+# <regex> represents regular expression regex
+# $'string' or $"string": string is a keyword for whitespace handling
+# non-terminal symbols may start with an _ (underscore)
+
+# B.0
+
+iec_source ::= { _library_element_declaration | action } ;
+
+_library_element_declaration ::= data_type_declaration 
+| function_declaration | function_block_declaration 
+| program_declaration | configuration_declaration 
+| global_var_declarations ;
+
+# B.1.1
+
+letter          ::= <[A-Za-z]> ;
+digit           ::= <[0-9]> ;
+octal_digit     ::= <[0-7]> ;
+hex_digit       ::= <[0-9A-F]> ;
+_identifier      ::= <\w+> ;
+
+# B.1.2
+
+_constant ::= time_literal | _numeric_literal | _character_string | bit_string_literal | boolean_literal ;
+
+# B.1.2.1
+
+_numeric_literal ::= real_literal | integer_literal;
+
+integer_literal ::= [integer_type_name '#'] <(2\#(1|0)(_?(1|0))*)|(8\#[0-7](_?[0-7])*)|(16\#[0-9A-F](_?[0-9A-F])*)|((\+|\-)?[0-9](_?[0-9])*)> ;
+
+signed_integer  ::= <(\+|\-)?[0-9](_?[0-9])*> ;
+integer         ::= <[0-9](_?[0-9])*> ;
+binary_integer  ::= '2#' <(1|0)(_?(1|0))*> ;
+bit             ::= <1|0> ;
+octal_integer   ::= '8#' <[0-7](_?[0-7])*> ;
+hex_integer     ::= '16#' <[0-9A-F](_?[0-9A-F])*> ;
+real_literal    ::= ([real_type_name '#'] <((\+|\-)?[0-9](_?[0-9])*)\.([0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))?>) | ([real_type_name '#'] <((\+|\-)?[0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))>);
+exponent        ::= <(E|e)(\+|\-)?[0-9](_?[0-9])*> ;
+bit_string_literal ::= [bit_string_type_name '#'] <(2\#(1|0)(_?(1|0))*)|(8\#[0-7](_?[0-7])*)|(16\#[0-9A-F](_?[0-9A-F])*)|([0-9](_?[0-9])*)> ;
+boolean_literal ::= ['BOOL#'] <1|0|TRUE|FALSE> ;
+
+# B.1.2.2
+
+_character_string ::= single_byte_character_string | double_byte_character_string ;
+single_byte_character_string ::= <\'([^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F])*\'> ;
+double_byte_character_string ::= <\"([^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F])*\"> ;
+single_byte_character_representation ::= <[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F]> ;
+double_byte_character_representation ::= <[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F]> ;
+common_character_representation ::= <[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t> ;
+
+# B.1.2.3
+
+time_literal ::= duration | time_of_day | date | date_and_time ;
+
+# B.1.2.3.1
+
+duration ::= ('TIME' | 'T' | 't' ) '#' ['-'] _interval ;
+_interval ::= days | hours | minutes | seconds | milliseconds ;
+days ::= (fixed_point 'd') | (integer 'd' ['_'] hours) | (integer 'd') ;
+fixed_point ::= <[0-9](_?[0-9])*\.[0-9](_?[0-9])*> ;
+hours ::= (fixed_point 'h') | (integer 'h' ['_'] minutes) | (integer 'h') ;
+minutes ::= (fixed_point 'm') | (integer 'm' ['_'] seconds) (integer 'm') ;
+seconds ::= (fixed_point 's') | (integer 's' ['_'] milliseconds) | (integer 's') ;
+milliseconds ::= (fixed_point 'ms') | (integer 'ms') ;
+
+# B.1.2.3.2
+
+time_of_day ::= ('TIME_OF_DAY' | 'TOD') '#' _daytime ;
+_daytime ::= day_hour ':' day_minute ':' day_second ;
+day_hour ::= integer ;
+day_minute ::= integer ;
+day_second ::= fixed_point ;
+date ::= ('DATE' | 'D' | 'd') '#' date_literal ;
+date_literal ::= year '-' month '-' day ;
+year ::= integer ;
+month ::= integer ;
+day ::= integer ;
+date_and_time ::= ('DATE_AND_TIME' | 'DT') '#' date_literal '-' _daytime ;
+
+# B.1.3
+
+data_type_name ::= non_generic_type_name | generic_type_name ;
+non_generic_type_name ::= [pointer_to] (_elementary_type_name | derived_type_name) ;
+
+# B.1.3.1
+
+_elementary_type_name ::= _numeric_type_name | date_type_name | bit_string_type_name | string_type_declaration ;
+_numeric_type_name ::= integer_type_name | real_type_name ;
+integer_type_name ::= _signed_integer_type_name | _unsigned_integer_type_name ;
+type_sint ::= $'SINT';
+type_int ::= $'INT';
+type_dint ::= $'DINT';
+type_lint ::= $'LINT';
+_signed_integer_type_name ::= type_sint | type_int | type_dint | type_lint ;
+type_usint ::= $'USINT';
+type_uint ::= $'UINT';
+type_udint ::= $'UDINT';
+type_ulint ::= $'ULINT';
+_unsigned_integer_type_name ::= type_usint | type_uint | type_udint | type_ulint ;
+type_real ::= $'REAL';
+type_lreal ::= $'LREAL';
+real_type_name ::= type_real | type_lreal ;
+type_tod ::= $'TIME_OF_DAY' | $'TOD';
+type_datetime ::= $'DATE_AND_TIME' | $'DT';
+type_date ::= $'DATE';
+type_time ::= $'TIME';
+date_type_name ::= type_tod | type_datetime | type_date | type_time ;
+type_bool ::= $'BOOL';
+type_byte ::= $'BYTE';
+type_word ::= $'WORD';
+type_dword ::= $'DWORD';
+type_lword ::= $'LWORD';
+bit_string_type_name ::= type_bool | type_byte | type_word | type_dword | type_lword ;
+
+# B.1.3.2
+
+generic_type_name ::= <ANY|ANY_DERIVED|ANY_ELEMENTARY|ANY_MAGNITUDE|ANY_NUM|ANY_REAL|ANY_INT|ANY_BIT|ANY_STRING|ANY_DATE> ;
+
+# B.1.3.3
+
+derived_type_name ::= single_element_type_name |array_type_name 
+| structure_type_name | string_type_name ;
+single_element_type_name ::= simple_type_name |subrange_type_name 
+| enumerated_type_name ;
+simple_type_name ::= _identifier ;
+subrange_type_name ::= _identifier ;
+enumerated_type_name ::= _identifier ;
+array_type_name ::= _identifier ;
+structure_type_name ::= _identifier ;
+data_type_declaration ::= 
+$'TYPE'
+{ _type_declaration }
+$'END_TYPE' [ ';' ] ;
+pointer_to ::= $'POINTER' $'TO' ;
+_type_declaration ::= ( array_type_declaration ';' ) | ( structure_type_declaration [';'] )
+| ( string_type_declaration ';' ) | ( _single_element_type_declaration ';' ) ;
+_single_element_type_declaration ::= simple_type_declaration 
+| subrange_type_declaration | enumerated_type_declaration ;
+simple_type_declaration ::= simple_type_name ':' simple_spec_init ;
+simple_spec_init ::= [pointer_to] _simple_specification [':=' expression] ;
+_simple_specification ::= _elementary_type_name |simple_type_name ;
+subrange_type_declaration ::= subrange_type_name ':' subrange_spec_init ;
+subrange_spec_init ::= [pointer_to] subrange_specification [':=' expression] ;
+subrange_specification ::= integer_type_name '(' subrange')' 
+| subrange_type_name ;
+subrange ::= expression '..' expression ;
+enumerated_type_declaration ::= 
+enumerated_type_name ':' enumerated_spec_init ;
+enumerated_spec_init ::= [pointer_to] enumerated_specification [':=' enumerated_value] ;
+enumerated_specification ::= 
+( '(' enumerated_value {',' enumerated_value} ')' ) 
+| enumerated_type_name ;
+enumerated_value ::= [enumerated_type_name '#'] _identifier [ ':=' integer_literal ] ;
+array_type_declaration ::= array_type_name ':' array_spec_init ;
+array_spec_init ::= [pointer_to] array_specification [':=' array_initialization] ;
+array_specification ::= $'ARRAY' '[' subrange { ',' subrange } ']' $'OF' ( string_type | non_generic_type_name ) ;
+array_initialization ::= ('[' array_initial_elements {',' array_initial_elements} ']')
+| ( array_initial_elements {',' array_initial_elements} ) ;
+array_initial_elements ::= ( ((integer | enumerated_value) '(' [array_initial_element] ')') | _constant ) | array_initial_element ;
+array_initial_element ::= _constant | structure_initialization | enumerated_value ;
+structure_type_declaration ::= 
+structure_type_name ':' _structure_specification ;
+_structure_specification ::= [pointer_to] _structure_declaration | initialized_structure ;
+initialized_structure ::= 
+ structure_type_name ':=' structure_initialization ;
+_structure_declaration ::= 
+$'STRUCT' structure_element_declaration ';' 
+{structure_element_declaration ';'}
+$'END_STRUCT' [ ';' ] ;
+structure_element_declaration ::= structure_element_name ':' 
+(initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
+structure_element_name ::= _identifier ;
+structure_initialization ::= 
+'(' structure_element_initialization
+{',' structure_element_initialization} ')' ;
+structure_element_initialization ::= _constant | ( structure_element_name ':=' (_constant | enumerated_value | array_initialization | structure_initialization) ) ;
+string_type_name ::= _identifier ;
+string_initialization ::= ':=' _character_string ;
+string_type_declaration ::= string_type_name ':' string_type [ string_initialization ] ;
+string_type ::=( string | wstring ) [('[' ( integer | simple_type_name ) ']') | ('(' ( integer | simple_type_name ) ')')];
+string_var_type ::= string_type [ string_initialization ] ;
+
+# B.1.4
+
+_variable ::= direct_variable | _symbolic_variable ;
+_symbolic_variable ::= multi_element_variable | variable_name ;
+variable_name ::= _identifier [dereferenced] ;
+
+# B.1.4.1
+
+direct_variable ::= '%' location_prefix [size_prefix] integer {'.' integer} ;
+location_prefix ::= <I|Q|M> ;
+size_prefix ::= <X|B|W|D|L> ;
+
+# B.1.4.2
+
+_subscript ::= expression ;
+subscript_list ::= '[' _subscript { ',' _subscript } ']' ;
+dereferenced ::= '^';
+field_selector ::= [dereferenced] '.' variable_name ;
+multi_element_variable ::= variable_name ( subscript_list | field_selector )
+{ ( subscript_list | field_selector ) } ;
+
+# B.1.4.3
+
+retain ::= $'RETAIN' ;
+non_retain ::= $'NON_RETAIN' ;
+
+input_declarations ::= 
+$'VAR_INPUT' [ retain | non_retain ]
+{_input_declaration ';'} 
+$'END_VAR' [ ';' ] ;
+_input_declaration ::= var_init_decl | edge_declaration ;
+r_edge ::= $'R_EDGE';
+f_edge ::= $'F_EDGE';
+edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
+var_init_decl ::= array_var_init_decl
+| structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_name_decl ;
+_var1_init_decl ::= _var1_list ':' 
+(simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
+_var1_list ::= variable_name [location] { ',' variable_name [location] } ;
+array_var_init_decl ::= _var1_list ':' array_spec_init ;
+structured_var_init_decl ::= _var1_list ':' initialized_structure ;
+fb_name_decl ::= fb_name_list ':' function_block_type_name 
+[ ':=' structure_initialization ] ;
+fb_name_list ::= fb_name {',' fb_name} ;
+fb_name ::= _identifier ;
+output_declarations ::= 
+$'VAR_OUTPUT' [ retain | non_retain ] 
+{var_init_decl ';'} 
+$'END_VAR' [ ';' ] ;
+input_output_declarations ::= 
+$'VAR_IN_OUT' 
+{var_init_decl ';'} 
+$'END_VAR' [ ';' ] ;
+var_declaration ::= _temp_var_decl | fb_name_decl ;
+_temp_var_decl ::= _var1_declaration | array_var_declaration 
+| structured_var_declaration | string_var_declaration ;
+_var1_declaration ::= _var1_list ':' (_simple_specification 
+| subrange_specification | enumerated_specification) ;
+array_var_declaration ::= _var1_list ':' array_specification ;
+structured_var_declaration ::= _var1_list ':' structure_type_name ;
+var_declarations ::= 
+$'VAR' [constant] 
+{var_init_decl ';'} 
+$'END_VAR' [ ';' ] ;
+retentive_var_declarations ::= 
+$'VAR' $'RETAIN' 
+{var_init_decl ';'} 
+$'END_VAR' [ ';' ] ;
+constant ::= $'CONSTANT' ;
+located_var_declarations ::= 
+$'VAR' [ constant | retain | non_retain ]
+{located_var_decl ';'} 
+$'END_VAR' [ ';' ] ;
+located_var_decl ::= [variable_name] location ':' located_var_spec_init ;
+external_var_declarations ::= 
+$'VAR_EXTERNAL' [constant] 
+{external_declaration ';'} 
+$'END_VAR' [ ';' ] ;
+external_declaration ::= global_var_name ':' 
+(_simple_specification | subrange_specification 
+| enumerated_specification | array_specification 
+| structure_type_name | function_block_type_name) ;
+global_var_name ::= _identifier ;
+persistent ::= $'PERSISTENT';
+global_var_declarations ::= 
+$'VAR_GLOBAL' [constant | retain] [persistent]
+{ (var_init_decl | global_var_decl ) ';' }
+$'END_VAR' [ ';' ] ;
+global_var_decl ::= global_var_spec ':' 
+[ located_var_spec_init | function_block_type_name ] ;
+global_var_spec ::= global_var_list | [global_var_name] location ;
+located_var_spec_init ::= simple_spec_init |subrange_spec_init 
+| enumerated_spec_init | array_spec_init | initialized_structure 
+| single_byte_string_spec | double_byte_string_spec;
+location ::= $'AT' direct_variable ;
+global_var_list ::= global_var_name {',' global_var_name} ;
+string_var_declaration ::= single_byte_string_var_declaration
+| double_byte_string_var_declaration ;
+single_byte_string_var_declaration ::= 
+_var1_list ':' single_byte_string_spec ;
+single_byte_string_spec ::= 
+$'STRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' single_byte_character_string] ;
+double_byte_string_var_declaration ::= 
+_var1_list ':' double_byte_string_spec ;
+double_byte_string_spec ::= 
+$'WSTRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' double_byte_character_string] ;
+incompl_located_var_declarations ::= 
+$'VAR' [retain | non_retain]
+{incompl_located_var_decl ';'} 
+$'END_VAR' [ ';' ] ;
+incompl_located_var_decl ::= variable_name incompl_location ':' var_spec ;
+incompl_location ::= $'AT' <\%(I|Q|M)\*> ;
+string ::= $'STRING';
+wstring ::= $'WSTRING';
+var_spec ::= _simple_specification
+| subrange_specification | enumerated_specification 
+| array_specification | structure_type_name 
+| ( string ['[' integer ']'] ) | ( wstring ['[' integer']'] ) ;
+
+# B.1.5.1
+
+# function_name ::= standard_function_name |derived_function_name ;
+_function_name ::= derived_function_name ;
+# standard_function_name ::= <gruschdelwurschdel> ;
+derived_function_name ::= _identifier ;
+function_declaration ::= 
+$'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
+{ _io_var_declarations | function_var_decls } 
+(function_body | unknown_in_function)
+$'END_FUNCTION' [ ';' ] ;
+_io_var_declarations ::= input_declarations | output_declarations | 
+input_output_declarations ;
+function_var_decls ::=
+$'VAR' [ constant ] 
+# {function_var_decl ';'}
+{var_init_decl ';'}
+$'END_VAR' [ ';' ] ;
+# function_body ::= ladder_diagram | function_block_diagram 
+# | instruction_list | statement_list ;
+function_body ::= statement_list ;
+# | <andere Sprachen> ;
+function_var_decl ::= _var1_init_decl | array_var_init_decl 
+| structured_var_init_decl | string_var_declaration ;
+
+# B.1.5.2
+
+function_block_type_name ::= standard_function_block_name 
+| derived_function_block_name ;
+standard_function_block_name ::= _identifier ;
+derived_function_block_name ::= _identifier ;
+function_block_declaration ::= 
+($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name 
+{ _io_var_declarations | _other_var_declarations } 
+(function_block_body | unknown_in_function_block)
+($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;
+_other_var_declarations ::= external_var_declarations |var_declarations 
+| retentive_var_declarations | non_retentive_var_decls
+| temp_var_decls | incompl_located_var_declarations ;
+temp_var_decls ::=
+$'VAR_TEMP' 
+{_temp_var_decl ';'} 
+$'END_VAR' [ ';' ] ;
+non_retentive_var_decls ::= 
+$'VAR' $'NON_RETAIN' 
+{var_init_decl ';'} 
+$'END_VAR' [ ';' ] ;
+function_block_body ::= sequential_function_chart | statement_list ;
+# | <andere Sprachen> 
+
+# B.1.5.3
+
+program_type_name ::= _identifier ;
+program_declaration ::= 
+$'PROGRAM' program_type_name 
+{ _io_var_declarations | _other_var_declarations 
+| located_var_declarations | program_access_decls } 
+(function_block_body | unknown_in_program)
+$'END_PROGRAM' [ ';' ] ;
+program_access_decls ::= 
+$'VAR_ACCESS' program_access_decl ';' 
+{program_access_decl ';' } 
+$'END_VAR' [ ';' ] ;
+program_access_decl ::= access_name ':' _symbolic_variable ':' 
+non_generic_type_name [direction] ;
+
+# B.1.6
+
+unknown_in_step ::= <(?s).*?(?=END_STEP)> ;
+unknown_in_transition ::= <(?s).*?(?=END_TRANSITION)> ;
+unknown_in_action ::= <(?s).*?(?=END_ACTION)> ;
+unknown_in_program ::= <(?s).*?(?=END_PROGRAM)> ;
+unknown_in_function ::= <(?s).*?(?=END_FUNCTION)> ;
+unknown_in_function_block ::= <(?s).*?(?=END_FUNCTION_BLOCK)> ;
+
+sequential_function_chart ::= sfc_network {sfc_network} ;
+sfc_network ::= initial_step { step | transition | action  | entry_action | exit_action } ;
+initial_step ::= 
+$'INITIAL_STEP' step_name ':' ( sequential_function_chart | statement_list | action_association | unknown_in_step ) [';'] $'END_STEP' [ ';' ] ;
+step ::= $'STEP' step_name ':'[ statement_list | action_association
+| sequential_function_chart | unknown_in_step ]
+[';'] $'END_STEP' [ ';' ] ;
+step_name ::= _identifier ;
+action_association ::= 
+action_name '(' [action_qualifier] {',' indicator_name} ')' ;
+# trick to avoid collision of action_name; statements with END_block statements
+action_name ::= <(?!END_)(\w+)> ;
+action_qualifier ::= ( <N|R|S|P|P0|P1> ) | ( timed_qualifier ',' action_time ) ;
+timed_qualifier ::= <L|D|SD|DS|SL> ;
+action_time ::= duration | variable_name ;
+indicator_name ::= variable_name ;
+transition ::=
+($'TRANSITION'
+['(' $'PRIORITY' ':=' integer')'] 
+$'FROM' steps $'TO' steps 
+transition_condition 
+$'END_TRANSITION' [ ';' ] )
+| ($'TRANSITION'
+[transition_name] ['(' $'PRIORITY' ':=' integer')'] 
+$'FROM' steps $'TO' steps 
+transition_condition 
+$'END_TRANSITION' [ ';' ] ) ;
+transition_name ::= [logical_not] _identifier ;
+steps ::= step_name | ('(' step_name {',' step_name} ')') ;
+transition_condition ::= ':=' ( (expression [';'] <(?=END_TRANSITION)>) | unknown_in_transition ) ;
+
+action ::= $'ACTION' action_name ':' 
+(function_block_body | unknown_in_action)
+$'END_ACTION' [ ';' ] ;
+entry_action ::= $'ENTRY_ACTION'
+(function_block_body | unknown_in_action)
+$'END_ACTION' [ ';' ] ;
+exit_action ::= $'EXIT_ACTION'
+(function_block_body | unknown_in_action)
+$'END_ACTION' [ ';' ] ;
+
+# B.1.7
+
+configuration_name ::= _identifier ;
+resource_type_name ::= _identifier ;
+configuration_declaration ::= 
+$'CONFIGURATION' configuration_name 
+[global_var_declarations] 
+(single_resource_declaration 
+| (resource_declaration {resource_declaration})) 
+[access_declarations] 
+[instance_specific_initializations] 
+$'END_CONFIGURATION' [ ';' ] ;
+resource_declaration ::= 
+$'RESOURCE' resource_name $'ON' resource_type_name 
+[global_var_declarations] 
+single_resource_declaration 
+$'END_RESOURCE' [ ';' ] ;
+single_resource_declaration ::= 
+{task_configuration ';'} 
+program_configuration ';' 
+{program_configuration ';'} ;
+resource_name ::= _identifier ;
+access_declarations ::= 
+$'VAR_ACCESS' 
+access_declaration ';' 
+{access_declaration ';'} 
+$'END_VAR' [ ';' ] ;
+access_declaration ::= access_name ':' access_path ':' 
+non_generic_type_name [direction] ;
+access_path ::= [resource_name '.'] direct_variable 
+| [resource_name '.'] [program_name '.'] 
+{fb_name'.'} _symbolic_variable ;
+global_var_reference ::= 
+[resource_name '.'] global_var_name ['.' structure_element_name] ;
+access_name ::= _identifier ;
+program_output_reference ::= program_name '.' _symbolic_variable ;
+program_name ::= _identifier ;
+read_write ::= $'READ_WRITE';
+read_only ::= $'READ_ONLY';
+direction ::= read_write | read_only ;
+task_configuration ::= $'TASK' task_name task_initialization ;
+task_name ::= _identifier ;
+task_initialization ::= 
+'(' [$'SINGLE' ':=' data_source ','] 
+[$'INTERVAL' ':=' data_source ','] 
+$'PRIORITY' ':=' integer ')' ;
+data_source ::= _constant | global_var_reference 
+| program_output_reference | direct_variable ;
+program_configuration ::= 
+$'PROGRAM' [retain | non_retain]
+program_name [$'WITH' task_name] ':' program_type_name 
+['(' prog_conf_elements ')'] ;
+prog_conf_elements ::= prog_conf_element {',' prog_conf_element} ;
+prog_conf_element ::= fb_task | prog_cnxn ;
+fb_task ::= fb_name $'WITH' task_name ;
+prog_cnxn ::= _symbolic_variable ':=' prog_data_source 
+| _symbolic_variable '=>' data_sink ;
+prog_data_source ::= 
+_constant | enumerated_value | global_var_reference |direct_variable ;
+data_sink ::= global_var_reference | direct_variable ;
+instance_specific_initializations ::= 
+$'VAR_CONFIG' 
+{instance_specific_init ';'} 
+$'END_VAR' [ ';' ] ;
+instance_specific_init ::= 
+resource_name '.' program_name '.' {fb_name '.'} 
+((variable_name [location] ':' located_var_spec_init) | 
+(fb_name ':' function_block_type_name ':=' 
+structure_initialization)) ;
+
+# B.2.1
+
+instruction_list ::= il_instruction {il_instruction} ;
+il_instruction ::= [label':'] [ il_simple_operation 
+| il_expression 
+| il_jump_operation 
+| il_fb_call 
+| il_formal_funct_call 
+| _il_return_operator ] <\s*$> ;
+label ::= _identifier ;
+il_simple_operation ::= ( _il_simple_operator [il_operand] ) 
+| ( _function_name [il_operand_list] ) ;
+il_expression ::= _il_expr_operator '(' [il_operand] <\s*$>
+[simple_instr_list] ')' ;
+il_jump_operation ::= _il_jump_operator label ;
+il_fb_call ::= _il_call_operator fb_name ['(' 
+((<\s*$> [ il_param_list ]) | [ il_operand_list ]) ')'] ;
+il_formal_funct_call ::= _function_name '(' <\s*$> [il_param_list] ')' ;
+il_operand ::= constant | _variable | enumerated_value ;
+il_operand_list ::= il_operand {',' il_operand} ;
+simple_instr_list ::= il_simple_instruction {il_simple_instruction} ;
+il_simple_instruction ::= 
+(il_simple_operation | il_expression | il_formal_funct_call) 
+<\s*$> ;
+il_param_list ::= {il_param_instruction} il_param_last_instruction ;
+il_param_instruction ::= (il_param_assignment | il_param_out_assignment) 
+',' <\s*$> ;
+il_param_last_instruction ::= 
+( il_param_assignment | il_param_out_assignment ) <\s*$> ;
+il_param_assignment ::= il_assign_operator ( il_operand | ( '(' <\s*$> 
+simple_instr_list ')' ) ) ;
+il_param_out_assignment ::= il_assign_out_operator _variable ;
+
+# B.2.2
+
+il_operator_ld ::= $'LD';
+il_operator_ldn ::= $'LDN';
+il_operator_st ::= $'ST';
+il_operator_stn ::= $'STN';
+il_operator_not ::= $'NOT';
+il_operator_s ::= $'S';
+il_operator_r ::= $'R';
+il_operator_s1 ::= $'S1';
+il_operator_r1 ::= $'R1';
+il_operator_clk ::= $'CLK';
+il_operator_cu ::= $'CU';
+il_operator_cd ::= $'CD';
+il_operator_pv ::= $'PV';
+il_operator_in ::= $'IN';
+il_operator_pt ::= $'PT';
+il_operator_andn ::= $'ANDN' | $'&N';
+il_operator_and ::= $'AND' | '&';
+il_operator_or ::= $'OR';
+il_operator_xor ::= $'XOR';
+il_operator_orn ::= $'ORN';
+il_operator_xorn ::= $'XORN';
+il_operator_add ::= $'ADD';
+il_operator_sub ::= $'SUB';
+il_operator_mul ::= $'MUL';
+il_operator_div ::= $'DIV';
+il_operator_mod ::= $'MOD';
+il_operator_gt ::= $'GT';
+il_operator_ge ::= $'GE';
+il_operator_eq ::= $'EQ';
+il_operator_lt ::= $'LT';
+il_operator_le ::= $'LE';
+il_operator_ne ::= $'NE';
+
+# il_simple_operator ::= 'LD' | 'LDN' | 'ST' | 'STN' | 'NOT' | 'S' 
+# | 'R' | 'S1' | 'R1' | 'CLK' | 'CU' | 'CD' | 'PV' 
+# | 'IN' | 'PT' | 'AND' | '&' | 'OR' | 'XOR' |'ANDN' |'&N' |'ORN' 
+# | 'XORN' | 'ADD' | 'SUB' | 'MUL' | 'DIV' | 'MOD' |'GT' |'GE' |'EQ ' 
+# | 'LT' | 'LE' | 'NE' ;
+
+_il_simple_operator ::= il_operator_ld | il_operator_ldn | il_operator_st | il_operator_stn
+| il_operator_not | il_operator_s | il_operator_r | il_operator_s1 | il_operator_r1 | il_operator_clk
+| il_operator_cu | il_operator_cd | il_operator_pv | il_operator_in | il_operator_pt | _il_expr_operator ;
+
+_il_expr_operator ::= il_operator_andn | il_operator_and | il_operator_or | il_operator_xor
+| il_operator_orn | il_operator_xorn | il_operator_add | il_operator_sub | il_operator_mul
+| il_operator_div | il_operator_mod | il_operator_gt | il_operator_ge | il_operator_eq
+| il_operator_lt | il_operator_le | il_operator_ne ;
+
+il_assign_operator ::= variable_name ':=' ;
+il_assign_out_operator ::= [il_operator_not] variable_name '=>' ;
+
+il_operator_cal ::= $'CAL';
+il_operator_calc ::= $'CALC';
+il_operator_calcn ::= $'CALCN';
+_il_call_operator ::= il_operator_cal | il_operator_calc | il_operator_calcn ;
+
+il_operator_ret ::= $'RET';
+il_operator_retc ::= $'RETC';
+il_operator_retcn ::= $'RETCN';
+_il_return_operator ::= il_operator_ret | il_operator_retc | il_operator_retcn ;
+
+il_operator_jmp ::= $'JMP';
+il_operator_jmpc ::= $'JMPC';
+il_operator_jmpcn ::= $'JMPCN';
+_il_jump_operator ::= il_operator_jmp | il_operator_jmpc | il_operator_jmpcn ;
+
+# B.3.1
+
+logical_or ::= $'OR';
+logical_xor ::= $'XOR';
+logical_and ::= $'AND';
+logical_not ::= $'NOT';
+modulo ::= $'MOD';
+
+equals ::= '=';
+equals_not ::= '<>';
+
+less_or_equal ::= '<=';
+greater_or_equal ::= '>=';
+less_than ::= '<';
+greater_than ::= '>';
+
+adding ::= '+';
+subtracting ::= '-';
+
+multiply_with ::= '*';
+divide_by ::= '/';
+
+elevated_by ::= '**';
+
+minus ::= "-";
+plus ::= "+";
+
+expression ::= _xor_expression {logical_or _xor_expression} ;
+_xor_expression ::= _and_expression {logical_xor _and_expression} ;
+_and_expression ::= _comparison {logical_and _comparison} ;
+_comparison ::= _equ_expression { (equals | equals_not) _equ_expression} ;
+_equ_expression ::= _add_expression { (less_or_equal | greater_or_equal | less_than | greater_than)
+_add_expression } ;
+_add_expression ::= _term {_add_operator _term} ;
+_add_operator ::= adding | subtracting ;
+_term ::= _power_expression {_multiply_operator _power_expression} ;
+_multiply_operator ::= modulo | multiply_with | divide_by ;
+_power_expression ::= _unary_expression { elevated_by _unary_expression } ;
+_unary_expression ::= _constant | ( [_unary_operator] _primary_expression ) ;
+_unary_operator ::= logical_not | minus | plus ;
+function_call ::= _function_name '(' [ param_assignment {',' param_assignment } ] ')' ;
+_primary_expression ::= ('(' expression ')') | function_call | _variable ;
+
+# B.3.2
+
+statement_list ::= _statement { _statement } ;
+_statement ::= (';' {';'}) | method | assignment_statement | _subprogram_control_statement | _selection_statement
+| _iteration_statement | (action_name ';') ;
+
+# B.3.2.1
+
+assignment_statement ::= _variable ':=' expression ';' ;
+# method ::= expression [dereferenced] '.' _identifier '(' ')';
+method ::= expression '(' ')' ';' ;
+
+# B.3.2.2
+
+return_statement ::= $'RETURN' [ ';' ] ;
+_subprogram_control_statement ::= return_statement | (fb_invocation ';') ;
+fb_invocation ::= fb_name '(' [ param_assignment { ',' param_assignment } ] ')' ;
+param_assignment ::= ( [ $'NOT' ] variable_name '=>' _variable ) | ( [ variable_name ':=' ] expression ) ;
+
+# B.3.2.3
+
+_selection_statement ::= if_statement | case_statement ;
+if_statement ::= 
+$'IF' expression $'THEN' statement_list 
+{ $'ELSIF' expression $'THEN' statement_list } 
+[ $'ELSE' statement_list ] 
+$'END_IF' [ ';' ] ;
+case_statement ::= 
+$'CASE' expression $'OF' 
+case_element 
+{case_element} 
+[$'ELSE' statement_list] 
+$'END_CASE' [ ';' ] ;
+case_element ::= case_list ':' statement_list ;
+case_list ::= case_list_element {',' case_list_element} ;
+case_list_element ::= subrange | integer_literal |enumerated_value ;
+
+# B.3.2.4
+
+_iteration_statement ::= 
+for_statement | while_statement | repeat_statement |exit_statement ;
+for_statement ::= 
+$'FOR' control_variable ':=' for_list $'DO' statement_list $'END_FOR' [ ';' ] ;
+control_variable ::= _identifier ;
+for_list ::= expression $'TO' expression [$'BY' expression] ;
+while_statement ::= $'WHILE' expression $'DO' statement_list $'END_WHILE' [ ';' ] ;
+repeat_statement ::= 
+$'REPEAT' statement_list $'UNTIL' expression $'END_REPEAT' [ ';' ] ;
+exit_statement ::= $'EXIT' [ ';' ] ;
+
