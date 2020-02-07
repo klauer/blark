@@ -6,8 +6,11 @@
 *)
 
 TYPE
+    (* sock_domain comment *)
     SOCK_DOMAIN:    (AF_UNSPEC, AF_INET) := AF_UNSPEC;
+    (* sock_type comment *)
     SOCK_TYPE:      (SOCK_STREAM);
+    {attribute 'pytmc' := 'test'}
     PROTOCOL:       (TCP);
 
     SOCKADDR: STRUCT

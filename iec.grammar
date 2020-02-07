@@ -17,7 +17,7 @@ iec_source ::= { _library_element_declaration | action } ;
 _library_element_declaration ::= data_type_declaration 
 | function_declaration | function_block_declaration 
 | program_declaration | configuration_declaration 
-| global_var_declarations ;
+| global_var_declarations;
 
 # B.1.1
 
@@ -127,10 +127,8 @@ generic_type_name ::= <ANY|ANY_DERIVED|ANY_ELEMENTARY|ANY_MAGNITUDE|ANY_NUM|ANY_
 
 # B.1.3.3
 
-derived_type_name ::= single_element_type_name |array_type_name 
-| structure_type_name | string_type_name ;
-single_element_type_name ::= simple_type_name |subrange_type_name 
-| enumerated_type_name ;
+derived_type_name ::= single_element_type_name |array_type_name | structure_type_name | string_type_name ;
+single_element_type_name ::= simple_type_name |subrange_type_name | enumerated_type_name ;
 simple_type_name ::= _identifier ;
 subrange_type_name ::= _identifier ;
 enumerated_type_name ::= _identifier ;
@@ -165,7 +163,7 @@ array_spec_init ::= [pointer_to] array_specification [':=' array_initialization]
 array_specification ::= $'ARRAY' '[' subrange { ',' subrange } ']' $'OF' ( string_type | non_generic_type_name ) ;
 array_initialization ::= ('[' array_initial_elements {',' array_initial_elements} ']')
 | ( array_initial_elements {',' array_initial_elements} ) ;
-array_initial_elements ::= ( ((integer | enumerated_value) '(' [array_initial_element] ')') | _constant ) | array_initial_element ;
+array_initial_elements ::= ((integer | enumerated_value) '(' [array_initial_element] ')') | array_initial_element ;
 array_initial_element ::= _constant | structure_initialization | enumerated_value ;
 structure_type_declaration ::= 
 structure_type_name ':' _structure_specification ;
@@ -376,15 +374,15 @@ non_generic_type_name [direction] ;
 
 # B.1.6
 
-unknown_in_step ::= <(?s).*?(?=END_STEP)> ;
-unknown_in_transition ::= <(?s).*?(?=END_TRANSITION)> ;
-unknown_in_action ::= <(?s).*?(?=END_ACTION)> ;
-unknown_in_program ::= <(?s).*?(?=END_PROGRAM)> ;
-unknown_in_function ::= <(?s).*?(?=END_FUNCTION)> ;
-unknown_in_function_block ::= <(?s).*?(?=END_FUNCTION_BLOCK)> ;
+unknown_in_step ::= <(?s).+(?=END_STEP)> ;
+unknown_in_transition ::= <(?s).+(?=END_TRANSITION)> ;
+unknown_in_action ::= <(?s).+(?=END_ACTION)> ;
+unknown_in_program ::= <(?s).+(?=END_PROGRAM)> ;
+unknown_in_function ::= <(?s).+(?=END_FUNCTION)> ;
+unknown_in_function_block ::= <(?s).+(?=END_FUNCTION_BLOCK)> ;
 
 sequential_function_chart ::= sfc_network {sfc_network} ;
-sfc_network ::= initial_step { step | transition | action  | entry_action | exit_action } ;
+sfc_network ::= initial_step { step | transition | action | entry_action | exit_action } ;
 initial_step ::= 
 $'INITIAL_STEP' step_name ':' ( sequential_function_chart | statement_list | action_association | unknown_in_step ) [';'] $'END_STEP' [ ';' ] ;
 step ::= $'STEP' step_name ':'[ statement_list | action_association
@@ -412,7 +410,7 @@ transition_condition
 $'END_TRANSITION' [ ';' ] ) ;
 transition_name ::= [logical_not] _identifier ;
 steps ::= step_name | ('(' step_name {',' step_name} ')') ;
-transition_condition ::= ':=' ( (expression [';'] <(?=END_TRANSITION)>) | unknown_in_transition ) ;
+transition_condition ::= ':=' ( (expression [';'])) ;
 
 action ::= $'ACTION' action_name ':' 
 (function_block_body | unknown_in_action)
@@ -502,28 +500,29 @@ il_instruction ::= [label':'] [ il_simple_operation
 | il_jump_operation 
 | il_fb_call 
 | il_formal_funct_call 
-| _il_return_operator ] <\s*$> ;
+| _il_return_operator ] EOL ;
+EOL ::= "\n";
 label ::= _identifier ;
 il_simple_operation ::= ( _il_simple_operator [il_operand] ) 
 | ( _function_name [il_operand_list] ) ;
-il_expression ::= _il_expr_operator '(' [il_operand] <\s*$>
+il_expression ::= _il_expr_operator '(' [il_operand] EOL
 [simple_instr_list] ')' ;
 il_jump_operation ::= _il_jump_operator label ;
 il_fb_call ::= _il_call_operator fb_name ['(' 
-((<\s*$> [ il_param_list ]) | [ il_operand_list ]) ')'] ;
-il_formal_funct_call ::= _function_name '(' <\s*$> [il_param_list] ')' ;
+((EOL [ il_param_list ]) | [ il_operand_list ]) ')'] ;
+il_formal_funct_call ::= _function_name '(' EOL [il_param_list] ')' ;
 il_operand ::= constant | _variable | enumerated_value ;
 il_operand_list ::= il_operand {',' il_operand} ;
 simple_instr_list ::= il_simple_instruction {il_simple_instruction} ;
 il_simple_instruction ::= 
 (il_simple_operation | il_expression | il_formal_funct_call) 
-<\s*$> ;
+EOL ;
 il_param_list ::= {il_param_instruction} il_param_last_instruction ;
 il_param_instruction ::= (il_param_assignment | il_param_out_assignment) 
-',' <\s*$> ;
+',' EOL ;
 il_param_last_instruction ::= 
-( il_param_assignment | il_param_out_assignment ) <\s*$> ;
-il_param_assignment ::= il_assign_operator ( il_operand | ( '(' <\s*$> 
+( il_param_assignment | il_param_out_assignment ) EOL ;
+il_param_assignment ::= il_assign_operator ( il_operand | ( '(' EOL 
 simple_instr_list ')' ) ) ;
 il_param_out_assignment ::= il_assign_out_operator _variable ;
 
@@ -687,4 +686,3 @@ while_statement ::= $'WHILE' expression $'DO' statement_list $'END_WHILE' [ ';' 
 repeat_statement ::= 
 $'REPEAT' statement_list $'UNTIL' expression $'END_REPEAT' [ ';' ] ;
 exit_statement ::= $'EXIT' [ ';' ] ;
-
