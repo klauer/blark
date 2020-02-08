@@ -713,7 +713,10 @@ fb_invocation ::=
     (fb_name | multi_element_variable) 
     '(' [ param_assignment { ',' param_assignment } [','] ] ')' ;
 
-param_assignment ::= ( [ $'NOT' ] variable_name '=>' [expression | multi_element_variable]) | ( [ variable_name ':=' ] (expression | multi_element_variable)) ;
+param_assignment ::= 
+    ( [ $'NOT' ] variable_name '=>' [expression | multi_element_variable]) |
+    ( variable_name ':=' [expression | multi_element_variable]) |
+    ( (expression | multi_element_variable)) ;
 
 # B.3.2.3
 
