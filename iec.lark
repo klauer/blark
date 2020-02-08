@@ -654,23 +654,25 @@ _unary_expression: _constant | (_unary_operator? _primary_expression)
 
 _unary_operator: LOGICAL_NOT | minus | plus
 
-_dotted_function_name: multi_element_variable
+function_call: (_function_name | multi_element_variable) "(" (param_assignment ("," param_assignment)*)? ")"
 
-function_call: (_function_name | _dotted_function_name) "(" (param_assignment ("," param_assignment)*)? ")"
-
-_primary_expression: (("(" expression ")")) | function_call | _variable
+_primary_expression: (("(" expression ")")) | function_call | _variable | multi_element_variable
 statement_list: _statement _statement*
 
-_statement: (";" ";"*) | method | assignment_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
+_statement: (";" ";"*) | method | assignment_statement | set_statement | reset_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
 assignment_statement: _variable ":=" expression ";"
+
+set_statement: _variable "S=" expression ";"
+
+reset_statement: _variable "R=" expression ";"
 method: expression "(" ")" ";"
 return_statement: "RETURN" ";"?
 
 _subprogram_control_statement: return_statement | (fb_invocation ";")
 
-fb_invocation: (fb_name | _dotted_function_name) "(" (param_assignment ("," param_assignment)*)? ")"
+fb_invocation: (fb_name | multi_element_variable) "(" (param_assignment ("," param_assignment)*)? ")"
 
-param_assignment: ("NOT"? variable_name "=>" _variable?) | (((variable_name ":=")? expression))
+param_assignment: (("NOT"? variable_name "=>" (expression | multi_element_variable)?)) | (((variable_name ":=")? (expression | multi_element_variable)))
 _selection_statement: if_statement | case_statement
 
 if_statement: "IF" expression "THEN" statement_list ("ELSIF" expression "THEN" statement_list)* ("ELSE" statement_list)? "END_IF" ";"?
