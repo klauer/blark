@@ -260,7 +260,7 @@ var_init_decl: array_var_init_decl | structured_var_init_decl | string_var_decla
 
 _var1_init_decl: _var1_list ":" (simple_spec_init | subrange_spec_init | enumerated_spec_init)
 
-_var1_list: variable_name location? ("," variable_name location?)*
+_var1_list: variable_name (location | incompl_location)? ("," variable_name location?)*
 
 array_var_init_decl: _var1_list ":" array_spec_init
 

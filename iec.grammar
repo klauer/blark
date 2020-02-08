@@ -171,9 +171,10 @@ _structure_specification ::= [pointer_to] _structure_declaration | initialized_s
 initialized_structure ::= 
  structure_type_name ':=' structure_initialization ;
 _structure_declaration ::= 
-$'STRUCT' structure_element_declaration ';' 
-{structure_element_declaration ';'}
-$'END_STRUCT' [ ';' ] ;
+    $'STRUCT' structure_element_declaration ';' 
+    {structure_element_declaration ';'}
+    $'END_STRUCT' [ ';' ] ;
+
 structure_element_declaration ::= structure_element_name [ incompl_location ] ':' 
 (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
 structure_element_name ::= _identifier ;
@@ -221,11 +222,15 @@ _input_declaration ::= var_init_decl | edge_declaration ;
 r_edge ::= $'R_EDGE';
 f_edge ::= $'F_EDGE';
 edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
-var_init_decl ::= array_var_init_decl
-| structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_name_decl ;
+
+var_init_decl ::= array_var_init_decl | structured_var_init_decl | 
+                  string_var_declaration | _var1_init_decl | fb_name_decl ;
+
 _var1_init_decl ::= _var1_list ':' 
 (simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
-_var1_list ::= variable_name [location] { ',' variable_name [location] } ;
+
+_var1_list ::= variable_name [location | incompl_location] { ',' variable_name [location] } ;
+
 array_var_init_decl ::= _var1_list ':' array_spec_init ;
 structured_var_init_decl ::= _var1_list ':' initialized_structure ;
 fb_name_decl ::= fb_name_list ':' function_block_type_name 
@@ -281,6 +286,7 @@ global_var_spec ::= global_var_list | [global_var_name] location ;
 located_var_spec_init ::= simple_spec_init |subrange_spec_init 
 | enumerated_spec_init | array_spec_init | initialized_structure 
 | single_byte_string_spec | double_byte_string_spec;
+
 location ::= $'AT' direct_variable ;
 global_var_list ::= global_var_name {',' global_var_name} ;
 string_var_declaration ::= single_byte_string_var_declaration
@@ -470,12 +476,14 @@ task_initialization ::=
 '(' [$'SINGLE' ':=' data_source ','] 
 [$'INTERVAL' ':=' data_source ','] 
 $'PRIORITY' ':=' integer ')' ;
-data_source ::= _constant | global_var_reference 
-| program_output_reference | direct_variable ;
-program_configuration ::= 
-$'PROGRAM' [retain | non_retain]
-program_name [$'WITH' task_name] ':' program_type_name 
-['(' prog_conf_elements ')'] ;
+
+data_source ::= _constant | global_var_reference | program_output_reference | direct_variable ;
+
+program_configuration ::=
+    $'PROGRAM' [retain | non_retain]
+    program_name [$'WITH' task_name] ':' program_type_name 
+    ['(' prog_conf_elements ')'] ;
+
 prog_conf_elements ::= prog_conf_element {',' prog_conf_element} ;
 prog_conf_element ::= fb_task | prog_cnxn ;
 fb_task ::= fb_name $'WITH' task_name ;

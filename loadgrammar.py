@@ -207,23 +207,7 @@ PRAGMA: /{[^}]*?}/s
 with open('iec.lark', 'wt') as f:
     print(lark_grammar, file=f)
 
-with open('types.EXP') as f:
-    source_code = f.read()
-
-class AnnotationGatherer(lark.Transformer):
-    def COMMENT(self, token):
-        self.last_comment = token
-        print('comment', token)
-
-    def PRAGMA(self, token):
-        self.last_pragma = token
-        print('pragma', token)
-
-
-iec_parser = lark.Lark(lark_grammar)
-tree = iec_parser.parse(source_code)
-print(tree.pretty())
-
+print('* Saved lark grammar to iec.lark')
 
 # EOL:
 # CR : /\r/
