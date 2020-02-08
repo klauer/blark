@@ -441,7 +441,11 @@ function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived
 
 _other_var_declarations: external_var_declarations | var_declarations | retentive_var_declarations | non_retentive_var_decls | temp_var_decls | incompl_located_var_declarations
 
-temp_var_decls: "VAR_TEMP"i (_temp_var_decl ";")* "END_VAR"i ";"?
+temp_var_decls: "VAR_TEMP"i (var_init_decl ";")* "END_VAR"i ";"?
+
+// TODO: _temp_var_decl, which seemed too restrictive,  was replaced with
+
+// var_init_decl (any further implications here?)
 
 non_retentive_var_decls: "VAR"i "NON_RETAIN"i (var_init_decl ";")* "END_VAR"i ";"?
 
@@ -813,9 +817,9 @@ param_assignment: ((("NOT"i)? variable_name "=>" (expression | multi_element_var
 
 _selection_statement: if_statement | case_statement
 
-if_statement: "IF"i expression "THEN"i statement_list ("ELSIF"i expression "THEN"i statement_list)* ("ELSE"i statement_list)? "END_IF"i ";"?
+if_statement: "IF"i expression "THEN"i statement_list? ("ELSIF"i expression "THEN"i statement_list?)* ("ELSE"i statement_list?)? "END_IF"i ";"?
 
-case_statement: "CASE"i expression "OF"i case_element case_element* ("ELSE"i statement_list)? "END_CASE"i ";"?
+case_statement: "CASE"i expression "OF"i case_element case_element* ("ELSE"i statement_list?)? "END_CASE"i ";"?
 
 case_element: case_list ":" statement_list?
 

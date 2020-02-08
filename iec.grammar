@@ -261,19 +261,27 @@ fb_name_decl ::=
 
 fb_name_list ::= fb_name {',' fb_name} ;
 fb_name ::= _identifier ;
+
 output_declarations ::= 
-$'VAR_OUTPUT' [ retain | non_retain ] 
-{var_init_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_OUTPUT' [ retain | non_retain ] 
+    {var_init_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 input_output_declarations ::= 
-$'VAR_IN_OUT' 
-{var_init_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_IN_OUT' 
+    {var_init_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 var_declaration ::= _temp_var_decl | fb_name_decl ;
-_temp_var_decl ::= _var1_declaration | array_var_declaration 
-| structured_var_declaration | string_var_declaration ;
-_var1_declaration ::= _var1_list ':' (_simple_specification 
-| subrange_specification | enumerated_specification) ;
+
+_temp_var_decl ::= 
+    _var1_declaration | array_var_declaration | structured_var_declaration |
+    string_var_declaration ;
+
+_var1_declaration ::=
+    _var1_list ':' (_simple_specification | subrange_specification |
+    enumerated_specification) ;
+
 array_var_declaration ::= _var1_list ':' array_specification ;
 structured_var_declaration ::= _var1_list ':' structure_type_name ;
 var_declarations ::= 
@@ -298,35 +306,36 @@ external_var_declarations ::=
     {external_declaration ';'} 
     $'END_VAR' [ ';' ] ;
 
-external_declaration ::= global_var_name ':' 
-(_simple_specification | subrange_specification 
-| enumerated_specification | array_specification 
-| structure_type_name | function_block_type_name) ;
+external_declaration ::=
+    global_var_name ':' (_simple_specification | subrange_specification 
+    | enumerated_specification | array_specification 
+    | structure_type_name | function_block_type_name) ;
+
 global_var_name ::= _identifier ;
 persistent ::= $'PERSISTENT';
 global_var_declarations ::= 
-$'VAR_GLOBAL' [constant | retain] [persistent]
-{ (var_init_decl | global_var_decl ) ';' }
-$'END_VAR' [ ';' ] ;
-global_var_decl ::= global_var_spec ':' 
-[ located_var_spec_init | function_block_type_name ] ;
+    $'VAR_GLOBAL' [constant | retain] [persistent]
+    { (var_init_decl | global_var_decl ) ';' }
+    $'END_VAR' [ ';' ] ;
+
+global_var_decl ::= global_var_spec ':' [ located_var_spec_init | function_block_type_name ] ;
 global_var_spec ::= global_var_list | [global_var_name] location ;
-located_var_spec_init ::= simple_spec_init |subrange_spec_init 
-| enumerated_spec_init | array_spec_init | initialized_structure 
-| single_byte_string_spec | double_byte_string_spec;
+located_var_spec_init ::= 
+    simple_spec_init |subrange_spec_init | enumerated_spec_init |
+    array_spec_init | initialized_structure | single_byte_string_spec |
+    double_byte_string_spec;
 
 location ::= $'AT' direct_variable ;
 global_var_list ::= global_var_name {',' global_var_name} ;
-string_var_declaration ::= single_byte_string_var_declaration
-| double_byte_string_var_declaration ;
-single_byte_string_var_declaration ::= 
-_var1_list ':' single_byte_string_spec ;
+string_var_declaration ::= single_byte_string_var_declaration | double_byte_string_var_declaration ;
+
+single_byte_string_var_declaration ::= _var1_list ':' single_byte_string_spec ;
+
 single_byte_string_spec ::= 
-$'STRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' single_byte_character_string] ;
-double_byte_string_var_declaration ::= 
-_var1_list ':' double_byte_string_spec ;
-double_byte_string_spec ::= 
-$'WSTRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' double_byte_character_string] ;
+    $'STRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' single_byte_character_string] ;
+
+double_byte_string_var_declaration ::= _var1_list ':' double_byte_string_spec ;
+double_byte_string_spec ::= $'WSTRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' double_byte_character_string] ;
 
 incompl_located_var_declarations ::= 
     $'VAR' [retain | non_retain]
@@ -366,8 +375,9 @@ function_var_decls ::=
 # | instruction_list | statement_list ;
 function_body ::= statement_list ;
 # | <andere Sprachen> ;
-function_var_decl ::= _var1_init_decl | array_var_init_decl 
-| structured_var_init_decl | string_var_declaration ;
+function_var_decl ::= 
+    _var1_init_decl | array_var_init_decl | structured_var_init_decl |
+    string_var_declaration ;
 
 # B.1.5.2
 
@@ -388,8 +398,11 @@ _other_var_declarations ::= external_var_declarations |var_declarations
 
 temp_var_decls ::=
     $'VAR_TEMP' 
-    {_temp_var_decl ';'} 
+    {var_init_decl ';'} 
     $'END_VAR' [ ';' ] ;
+
+# TODO: _temp_var_decl, which seemed too restrictive,  was replaced with
+# var_init_decl (any further implications here?)
 
 non_retentive_var_decls ::= 
     $'VAR' $'NON_RETAIN' 
