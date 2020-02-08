@@ -789,7 +789,7 @@ _statement: (";" ";"*) | method | assignment_statement | set_statement | reset_s
 
 // B.3.2.1
 
-assignment_statement: _variable ":=" expression ";"
+assignment_statement: _variable ":=" (_variable ":=")* expression ";"
 
 set_statement: _variable "S="i expression ";"
 

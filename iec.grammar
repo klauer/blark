@@ -699,7 +699,7 @@ _statement ::= (';' {';'}) | method | assignment_statement | set_statement | res
 
 # B.3.2.1
 
-assignment_statement ::= _variable ':=' expression ';' ;
+assignment_statement ::= _variable ':=' { _variable ':=' } expression ';' ;
 set_statement ::= _variable 'S=' expression ';' ;
 reset_statement ::= _variable 'R=' expression ';' ;
 # method ::= expression [dereferenced] '.' _identifier '(' ')';
