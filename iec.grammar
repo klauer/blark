@@ -732,17 +732,18 @@ param_assignment ::=
 
 _selection_statement ::= if_statement | case_statement ;
 if_statement ::= 
-$'IF' expression $'THEN' statement_list 
-{ $'ELSIF' expression $'THEN' statement_list } 
-[ $'ELSE' statement_list ] 
-$'END_IF' [ ';' ] ;
+    $'IF' expression $'THEN' [statement_list]
+    { $'ELSIF' expression $'THEN' [statement_list] } 
+    [ $'ELSE' [statement_list] ] 
+    $'END_IF' [ ';' ] ;
+
 case_statement ::= 
-$'CASE' expression $'OF' 
-case_element 
-{case_element} 
-[$'ELSE' statement_list] 
-$'END_CASE' [ ';' ] ;
-case_element ::= case_list ':' statement_list ;
+    $'CASE' expression $'OF' 
+    case_element 
+    {case_element} 
+    [$'ELSE' [statement_list]] 
+    $'END_CASE' [ ';' ] ;
+    case_element ::= case_list ':' [statement_list] ;
 case_list ::= case_list_element {',' case_list_element} ;
 case_list_element ::= subrange | integer_literal |enumerated_value ;
 

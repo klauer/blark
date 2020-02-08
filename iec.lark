@@ -817,7 +817,7 @@ if_statement: "IF"i expression "THEN"i statement_list ("ELSIF"i expression "THEN
 
 case_statement: "CASE"i expression "OF"i case_element case_element* ("ELSE"i statement_list)? "END_CASE"i ";"?
 
-case_element: case_list ":" statement_list
+case_element: case_list ":" statement_list?
 
 case_list: case_list_element ("," case_list_element)*
 
