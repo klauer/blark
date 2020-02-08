@@ -658,8 +658,7 @@ _unary_expression: _constant | (_unary_operator? _primary_expression)
 
 _unary_operator: LOGICAL_NOT | minus | plus
 
-function_call: (_function_name | multi_element_variable) "(" (param_assignment ("," param_assignment)*)? ")"
-
+function_call: (_function_name | multi_element_variable) "(" (param_assignment ("," param_assignment)* ","?)? ")"
 _primary_expression: (("(" expression ")")) | function_call | _variable | multi_element_variable
 statement_list: _statement _statement*
 
@@ -674,7 +673,7 @@ return_statement: "RETURN"i ";"?
 
 _subprogram_control_statement: return_statement | (fb_invocation ";")
 
-fb_invocation: (fb_name | multi_element_variable) "(" (param_assignment ("," param_assignment)*)? ")"
+fb_invocation: (fb_name | multi_element_variable) "(" (param_assignment ("," param_assignment)* ","?)? ")"
 
 param_assignment: ((("NOT"i)? variable_name "=>" (expression | multi_element_variable)?)) | (((variable_name ":=")? (expression | multi_element_variable)))
 _selection_statement: if_statement | case_statement
