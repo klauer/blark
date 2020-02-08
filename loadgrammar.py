@@ -147,12 +147,15 @@ class TestTransformer(lark.Transformer):
             s = s.strip("'")
         elif s.startswith('"'):
             s = s.strip('"')
-        return f'"{s}"'
+
+        flags = 'i' if re.match('[A-Za-z]', s) else ''
+        return f'"{s}"' + flags
 
     def keyword(self, items):
         assert len(items) == 1
         key = items[0].strip("'")
-        return f'"{key}"'
+        flags = 'i' if re.match('[A-Za-z]', key) else ''
+        return f'"{key}"' + flags  # i makes it case insensitive
 
     def comment(self, items):
         return ''
