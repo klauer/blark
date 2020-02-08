@@ -825,7 +825,7 @@ case_element: case_list ":" statement_list?
 
 case_list: case_list_element ("," case_list_element)*
 
-case_list_element: subrange | integer_literal | enumerated_value
+case_list_element: subrange | integer_literal | enumerated_value | _dotted_name
 
 // B.3.2.4
 
