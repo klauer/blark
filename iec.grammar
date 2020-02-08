@@ -345,7 +345,7 @@ derived_function_name ::= _identifier ;
 function_declaration ::= 
     $'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
     { _io_var_declarations | function_var_decls } 
-    (function_body )
+    [function_body]
     $'END_FUNCTION' [ ';' ] ;
 
 _io_var_declarations ::= input_declarations | output_declarations | 
@@ -373,7 +373,7 @@ derived_function_block_name ::= _identifier ;
 function_block_declaration ::= 
     ($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name [$'EXTENDS' _dotted_name]
     { _io_var_declarations | _other_var_declarations } 
-    (function_block_body)
+    [function_block_body]
     ($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;
 
 _other_var_declarations ::= external_var_declarations |var_declarations 
@@ -388,7 +388,7 @@ non_retentive_var_decls ::=
 $'VAR' $'NON_RETAIN' 
 {var_init_decl ';'} 
 $'END_VAR' [ ';' ] ;
-function_block_body ::= sequential_function_chart | statement_list ;
+function_block_body ::= sequential_function_chart | statement_list;
 # | <andere Sprachen> 
 
 # B.1.5.3
@@ -441,42 +441,46 @@ steps ::= step_name | ('(' step_name {',' step_name} ')') ;
 transition_condition ::= ':=' ( (expression [';'])) ;
 
 action ::= $'ACTION' action_name ':' 
-(function_block_body )
-$'END_ACTION' [ ';' ] ;
+    [function_block_body]
+    $'END_ACTION' [ ';' ] ;
+
 entry_action ::= $'ENTRY_ACTION'
-(function_block_body )
-$'END_ACTION' [ ';' ] ;
+    [function_block_body]
+    $'END_ACTION' [ ';' ] ;
+
 exit_action ::= $'EXIT_ACTION'
-(function_block_body )
-$'END_ACTION' [ ';' ] ;
+    [function_block_body]
+    $'END_ACTION' [ ';' ] ;
 
 # B.1.7
 
 configuration_name ::= _identifier ;
 resource_type_name ::= _identifier ;
 configuration_declaration ::= 
-$'CONFIGURATION' configuration_name 
-[global_var_declarations] 
-(single_resource_declaration 
-| (resource_declaration {resource_declaration})) 
-[access_declarations] 
-[instance_specific_initializations] 
-$'END_CONFIGURATION' [ ';' ] ;
+    $'CONFIGURATION' configuration_name 
+    [global_var_declarations] 
+    (single_resource_declaration 
+    | (resource_declaration {resource_declaration})) 
+    [access_declarations] 
+    [instance_specific_initializations] 
+    $'END_CONFIGURATION' [ ';' ] ;
+
 resource_declaration ::= 
-$'RESOURCE' resource_name $'ON' resource_type_name 
-[global_var_declarations] 
-single_resource_declaration 
-$'END_RESOURCE' [ ';' ] ;
+    $'RESOURCE' resource_name $'ON' resource_type_name 
+    [global_var_declarations] 
+    single_resource_declaration 
+    $'END_RESOURCE' [ ';' ] ;
+
 single_resource_declaration ::= 
-{task_configuration ';'} 
-program_configuration ';' 
-{program_configuration ';'} ;
-resource_name ::= _identifier ;
+    {task_configuration ';'} 
+    program_configuration ';' {program_configuration ';'} ;
+    resource_name ::= _identifier ;
+
 access_declarations ::= 
-$'VAR_ACCESS' 
-access_declaration ';' 
-{access_declaration ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_ACCESS' 
+    access_declaration ';' {access_declaration ';'} 
+    $'END_VAR' [ ';' ] ;
+
 access_declaration ::= access_name ':' access_path ':' 
 non_generic_type_name [direction] ;
 

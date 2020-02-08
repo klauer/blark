@@ -343,7 +343,7 @@ var_spec: _simple_specification | subrange_specification | enumerated_specificat
 _function_name: derived_function_name
 derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* function_body "END_FUNCTION"i ";"?
+function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* function_body? "END_FUNCTION"i ";"?
 
 _io_var_declarations: input_declarations | output_declarations | input_output_declarations
 
@@ -359,7 +359,7 @@ standard_function_block_name: IDENTIFIER
 
 derived_function_block_name: IDENTIFIER
 
-function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived_function_block_name ("EXTENDS"i _dotted_name)? (_io_var_declarations | _other_var_declarations)* function_block_body ((("END_FUNCTION_BLOCK"i) | ("END_FUNCTIONBLOCK"i))) ";"?
+function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived_function_block_name ("EXTENDS"i _dotted_name)? (_io_var_declarations | _other_var_declarations)* function_block_body? ((("END_FUNCTION_BLOCK"i) | ("END_FUNCTIONBLOCK"i))) ";"?
 
 _other_var_declarations: external_var_declarations | var_declarations | retentive_var_declarations | non_retentive_var_decls | temp_var_decls | incompl_located_var_declarations
 
@@ -405,11 +405,11 @@ steps: step_name | (("(" step_name ("," step_name)* ")"))
 
 transition_condition: ":=" (expression ";"?)
 
-action: "ACTION"i action_name ":" function_block_body "END_ACTION"i ";"?
+action: "ACTION"i action_name ":" function_block_body? "END_ACTION"i ";"?
 
-entry_action: "ENTRY_ACTION"i function_block_body "END_ACTION"i ";"?
+entry_action: "ENTRY_ACTION"i function_block_body? "END_ACTION"i ";"?
 
-exit_action: "EXIT_ACTION"i function_block_body "END_ACTION"i ";"?
+exit_action: "EXIT_ACTION"i function_block_body? "END_ACTION"i ";"?
 configuration_name: IDENTIFIER
 
 resource_type_name: IDENTIFIER
