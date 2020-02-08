@@ -174,7 +174,7 @@ _structure_declaration ::=
 $'STRUCT' structure_element_declaration ';' 
 {structure_element_declaration ';'}
 $'END_STRUCT' [ ';' ] ;
-structure_element_declaration ::= structure_element_name ':' 
+structure_element_declaration ::= structure_element_name [ incompl_location ] ':' 
 (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
 structure_element_name ::= _identifier ;
 structure_initialization ::= 
@@ -451,9 +451,11 @@ access_declaration ';'
 $'END_VAR' [ ';' ] ;
 access_declaration ::= access_name ':' access_path ':' 
 non_generic_type_name [direction] ;
+
 access_path ::= [resource_name '.'] direct_variable 
-| [resource_name '.'] [program_name '.'] 
-{fb_name'.'} _symbolic_variable ;
+    | [resource_name '.'] [program_name '.'] 
+    {fb_name'.'} _symbolic_variable ;
+
 global_var_reference ::= 
 [resource_name '.'] global_var_name ['.' structure_element_name] ;
 access_name ::= _identifier ;
@@ -642,7 +644,9 @@ _multiply_operator ::= modulo | multiply_with | divide_by ;
 _power_expression ::= _unary_expression { elevated_by _unary_expression } ;
 _unary_expression ::= _constant | ( [_unary_operator] _primary_expression ) ;
 _unary_operator ::= logical_not | minus | plus ;
-function_call ::= _function_name '(' [ param_assignment {',' param_assignment } ] ')' ;
+
+_dotted_function_name ::= multi_element_variable;
+function_call ::= (_function_name | _dotted_function_name) '(' [ param_assignment {',' param_assignment } ] ')' ;
 _primary_expression ::= ('(' expression ')') | function_call | _variable ;
 
 # B.3.2
@@ -661,7 +665,7 @@ method ::= expression '(' ')' ';' ;
 
 return_statement ::= $'RETURN' [ ';' ] ;
 _subprogram_control_statement ::= return_statement | (fb_invocation ';') ;
-fb_invocation ::= fb_name '(' [ param_assignment { ',' param_assignment } ] ')' ;
+fb_invocation ::= (fb_name | _dotted_function_name) '(' [ param_assignment { ',' param_assignment } ] ')' ;
 param_assignment ::= ( [ $'NOT' ] variable_name '=>' _variable ) | ( [ variable_name ':=' ] expression ) ;
 
 # B.3.2.3
