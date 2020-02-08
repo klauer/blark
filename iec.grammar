@@ -352,10 +352,10 @@ _io_var_declarations ::= input_declarations | output_declarations |
 input_output_declarations ;
 function_var_decls ::=
     $'VAR' [ constant ] 
-# {function_var_decl ';'}
     {var_init_decl ';'}
     $'END_VAR' [ ';' ] ;
 
+# TODO: {function_var_decl ';'}
 # function_body ::= ladder_diagram | function_block_diagram 
 # | instruction_list | statement_list ;
 function_body ::= statement_list ;
@@ -709,7 +709,10 @@ method ::= expression '(' ')' ';' ;
 
 return_statement ::= $'RETURN' [ ';' ] ;
 _subprogram_control_statement ::= return_statement | (fb_invocation ';') ;
-fb_invocation ::= (fb_name | multi_element_variable) '(' [ param_assignment { ',' param_assignment } [','] ] ')' ;
+fb_invocation ::=
+    (fb_name | multi_element_variable) 
+    '(' [ param_assignment { ',' param_assignment } [','] ] ')' ;
+
 param_assignment ::= ( [ $'NOT' ] variable_name '=>' [expression | multi_element_variable]) | ( [ variable_name ':=' ] (expression | multi_element_variable)) ;
 
 # B.3.2.3

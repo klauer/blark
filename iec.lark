@@ -1,9 +1,26 @@
 
+// IEC 61131-3 Strucured Text Grammar version 1.2
 
+// Copyright (c) 2009, X-Pie Software GmbH
+
+// extending grammar language by:
+
+// ; terminates production
+
+// <regex> represents regular expression regex
+
+// $'string' or $"string": string is a keyword for whitespace handling
+
+// non-terminal symbols may start with an _ (underscore)
+
+// B.0
 
 iec_source: (_library_element_declaration | action)*
 
 _library_element_declaration: data_type_declaration | function_declaration | function_block_declaration | program_declaration | configuration_declaration | global_var_declarations
+
+// B.1.1
+
 letter: /[A-Za-z]/
 
 digit: /[0-9]/
@@ -13,7 +30,13 @@ octal_digit: /[0-7]/
 hex_digit: /[0-9A-F]/
 
 IDENTIFIER: /\w+/
+
+// B.1.2
+
 _constant: time_literal | _numeric_literal | _character_string | bit_string_literal | boolean_literal
+
+// B.1.2.1
+
 _numeric_literal: real_literal | integer_literal
 
 integer_literal: (integer_type_name "#")? /(2\#(1|0)(_?(1|0))*)|(8\#[0-7](_?[0-7])*)|(16\#[0-9A-F](_?[0-9A-F])*)|((\+|\-)?[0-9](_?[0-9])*)/
@@ -37,6 +60,9 @@ exponent: /(E|e)(\+|\-)?[0-9](_?[0-9])*/
 bit_string_literal: (bit_string_type_name "#")? /(2\#(1|0)(_?(1|0))*)|(8\#[0-7](_?[0-7])*)|(16\#[0-9A-F](_?[0-9A-F])*)|([0-9](_?[0-9])*)/
 
 boolean_literal: ("BOOL#"i)? /1|0|TRUE|FALSE/
+
+// B.1.2.2
+
 _character_string: single_byte_character_string | double_byte_character_string
 
 single_byte_character_string: /\'([^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F])*\'/
@@ -48,7 +74,13 @@ single_byte_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$
 double_byte_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F]/
 
 common_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t/
+
+// B.1.2.3
+
 time_literal: duration | time_of_day | date | date_and_time
+
+// B.1.2.3.1
+
 duration: ((("TIME"i) | ("T"i) | ("t"i))) "#" "-"? _interval
 
 _interval: days | hours | minutes | seconds | milliseconds
@@ -64,6 +96,9 @@ minutes: (fixed_point "m"i) | ((integer "m"i "_"? seconds) (integer "m"i))
 seconds: (fixed_point "s"i) | (integer "s"i "_"? milliseconds) | (integer "s"i)
 
 milliseconds: (fixed_point "ms"i) | (integer "ms"i)
+
+// B.1.2.3.2
+
 time_of_day: ((("TIME_OF_DAY"i) | ("TOD"i))) "#" _daytime
 
 _daytime: day_hour ":" day_minute ":" day_second
@@ -85,9 +120,15 @@ month: integer
 day: integer
 
 date_and_time: ((("DATE_AND_TIME"i) | ("DT"i))) "#" date_literal "-" _daytime
+
+// B.1.3
+
 data_type_name: non_generic_type_name | generic_type_name
 
 non_generic_type_name: pointer_to? (_elementary_type_name | derived_type_name)
+
+// B.1.3.1
+
 _elementary_type_name: _numeric_type_name | date_type_name | bit_string_type_name | string_type_declaration
 
 _numeric_type_name: integer_type_name | real_type_name
@@ -141,7 +182,13 @@ TYPE_DWORD: "DWORD"i
 TYPE_LWORD: "LWORD"i
 
 bit_string_type_name: TYPE_BOOL | TYPE_BYTE | TYPE_WORD | TYPE_DWORD | TYPE_LWORD
+
+// B.1.3.2
+
 generic_type_name: /ANY|ANY_DERIVED|ANY_ELEMENTARY|ANY_MAGNITUDE|ANY_NUM|ANY_REAL|ANY_INT|ANY_BIT|ANY_STRING|ANY_DATE/
+
+// B.1.3.3
+
 derived_type_name: single_element_type_name | array_type_name | structure_type_name | string_type_name
 
 single_element_type_name: simple_type_name | subrange_type_name | enumerated_type_name
@@ -225,16 +272,25 @@ string_type_declaration: string_type_name ":" string_type string_initialization?
 string_type: (STRING | WSTRING) (((("[" (integer | simple_type_name) "]")) | (("(" (integer | simple_type_name) ")"))))?
 
 string_var_type: string_type string_initialization?
+
+// B.1.4
+
 _variable: direct_variable | _symbolic_variable
 
 _symbolic_variable: multi_element_variable | variable_name
 
 variable_name: IDENTIFIER dereferenced?
+
+// B.1.4.1
+
 direct_variable: "%" location_prefix size_prefix? integer ("." integer)*
 
 location_prefix: /I|Q|M/
 
 size_prefix: /X|B|W|D|L/
+
+// B.1.4.2
+
 _subscript: expression
 
 subscript_list: "[" _subscript ("," _subscript)* "]"
@@ -244,6 +300,9 @@ dereferenced: "^"
 field_selector: dereferenced? "." variable_name
 
 multi_element_variable: variable_name (subscript_list | field_selector) (subscript_list | field_selector)*
+
+// B.1.4.3
+
 retain: "RETAIN"i
 
 non_retain: "NON_RETAIN"i
@@ -340,17 +399,36 @@ WSTRING: "WSTRING"i
 
 var_spec: _simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | ((STRING ("[" integer "]")?)) | ((WSTRING ("[" integer "]")?))
 
+// B.1.5.1
+
+// function_name ::= standard_function_name |derived_function_name ;
+
 _function_name: derived_function_name
+
+// standard_function_name ::= <gruschdelwurschdel> ;
+
 derived_function_name: IDENTIFIER
 
 function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* function_body? "END_FUNCTION"i ";"?
 
 _io_var_declarations: input_declarations | output_declarations | input_output_declarations
 
-function_var_decls: "VAR"i constant?  (var_init_decl ";")* "END_VAR"i ";"?
+function_var_decls: "VAR"i constant? (var_init_decl ";")* "END_VAR"i ";"?
+
+// TODO: {function_var_decl ';'}
+
+// function_body ::= ladder_diagram | function_block_diagram 
+
+// | instruction_list | statement_list ;
 
 function_body: statement_list
+
+// | <andere Sprachen> ;
+
 function_var_decl: _var1_init_decl | array_var_init_decl | structured_var_init_decl | string_var_declaration
+
+// B.1.5.2
+
 _dotted_name: IDENTIFIER ("." IDENTIFIER)*
 
 function_block_type_name: standard_function_block_name | derived_function_block_name
@@ -369,6 +447,10 @@ non_retentive_var_decls: "VAR"i "NON_RETAIN"i (var_init_decl ";")* "END_VAR"i ";
 
 function_block_body: sequential_function_chart | statement_list
 
+// | <andere Sprachen> 
+
+// B.1.5.3
+
 program_type_name: IDENTIFIER
 
 program_declaration: "PROGRAM"i program_type_name (_io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls)* function_block_body "END_PROGRAM"i ";"?
@@ -376,6 +458,9 @@ program_declaration: "PROGRAM"i program_type_name (_io_var_declarations | _other
 program_access_decls: "VAR_ACCESS"i program_access_decl ";" (program_access_decl ";")* "END_VAR"i ";"?
 
 program_access_decl: access_name ":" _symbolic_variable ":" non_generic_type_name direction?
+
+// B.1.6
+
 sequential_function_chart: sfc_network sfc_network*
 
 sfc_network: initial_step (step | transition | action | entry_action | exit_action)*
@@ -387,6 +472,9 @@ step: "STEP"i step_name ":" (statement_list | action_association | sequential_fu
 step_name: IDENTIFIER
 
 action_association: action_name "(" action_qualifier? ("," indicator_name)* ")"
+
+// trick to avoid collision of action_name; statements with END_block statements
+
 action_name: /(?!END_)(\w+)/
 
 action_qualifier: /N|R|S|P|P0|P1/ | (timed_qualifier "," action_time)
@@ -410,6 +498,9 @@ action: "ACTION"i action_name ":" function_block_body? "END_ACTION"i ";"?
 entry_action: "ENTRY_ACTION"i function_block_body? "END_ACTION"i ";"?
 
 exit_action: "EXIT_ACTION"i function_block_body? "END_ACTION"i ";"?
+
+// B.1.7
+
 configuration_name: IDENTIFIER
 
 resource_type_name: IDENTIFIER
@@ -467,11 +558,22 @@ data_sink: global_var_reference | direct_variable
 instance_specific_initializations: "VAR_CONFIG"i (instance_specific_init ";")* "END_VAR"i ";"?
 
 instance_specific_init: resource_name "." program_name "." (fb_name ".")* (((variable_name location? ":" located_var_spec_init) | (fb_name ":" function_block_type_name ":=" structure_initialization)))
+
+// B.2.1
+
 instruction_list: il_instruction il_instruction*
 
 il_instruction: (label ":")? (il_simple_operation | il_expression | il_jump_operation | il_fb_call | il_formal_funct_call | _il_return_operator)? EOL
 
 EOL: "\n"
+
+// TODO:
+
+// CR : /\r/
+
+// LF : /\n/
+
+// NEWLINE: (CR? LF)+
 
 label: IDENTIFIER
 
@@ -502,6 +604,9 @@ il_param_last_instruction: (il_param_assignment | il_param_out_assignment) EOL
 il_param_assignment: il_assign_operator ((il_operand | (("(" EOL simple_instr_list ")"))))
 
 il_param_out_assignment: il_assign_out_operator _variable
+
+// B.2.2
+
 IL_OPERATOR_LD: "LD"i
 
 IL_OPERATOR_LDN: "LDN"i
@@ -566,6 +671,15 @@ IL_OPERATOR_LE: "LE"i
 
 IL_OPERATOR_NE: "NE"i
 
+// il_simple_operator ::= 'LD' | 'LDN' | 'ST' | 'STN' | 'NOT' | 'S' 
+
+// | 'R' | 'S1' | 'R1' | 'CLK' | 'CU' | 'CD' | 'PV' 
+
+// | 'IN' | 'PT' | 'AND' | '&' | 'OR' | 'XOR' |'ANDN' |'&N' |'ORN' 
+
+// | 'XORN' | 'ADD' | 'SUB' | 'MUL' | 'DIV' | 'MOD' |'GT' |'GE' |'EQ ' 
+
+// | 'LT' | 'LE' | 'NE' ;
 
 _il_simple_operator: IL_OPERATOR_LD | IL_OPERATOR_LDN | IL_OPERATOR_ST | IL_OPERATOR_STN | IL_OPERATOR_NOT | IL_OPERATOR_S | IL_OPERATOR_R | IL_OPERATOR_S1 | IL_OPERATOR_R1 | IL_OPERATOR_CLK | IL_OPERATOR_CU | IL_OPERATOR_CD | IL_OPERATOR_PV | IL_OPERATOR_IN | IL_OPERATOR_PT | _il_expr_operator
 
@@ -598,6 +712,9 @@ IL_OPERATOR_JMPC: "JMPC"i
 IL_OPERATOR_JMPCN: "JMPCN"i
 
 _il_jump_operator: IL_OPERATOR_JMP | IL_OPERATOR_JMPC | IL_OPERATOR_JMPCN
+
+// B.3.1
+
 LOGICAL_OR: "OR"i
 
 LOGICAL_XOR: "XOR"i
@@ -659,16 +776,31 @@ _unary_expression: _constant | (_unary_operator? _primary_expression)
 _unary_operator: LOGICAL_NOT | minus | plus
 
 function_call: (_function_name | multi_element_variable) "(" (param_assignment ("," param_assignment)* ","?)? ")"
+
+// see also: fb_invocation
+
 _primary_expression: (("(" expression ")")) | function_call | _variable | multi_element_variable
+
+// B.3.2
+
 statement_list: _statement _statement*
 
 _statement: (";" ";"*) | method | assignment_statement | set_statement | reset_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
+
+// B.3.2.1
+
 assignment_statement: _variable ":=" expression ";"
 
 set_statement: _variable "S="i expression ";"
 
 reset_statement: _variable "R="i expression ";"
+
+// method ::= expression [dereferenced] '.' _identifier '(' ')';
+
 method: expression "(" ")" ";"
+
+// B.3.2.2
+
 return_statement: "RETURN"i ";"?
 
 _subprogram_control_statement: return_statement | (fb_invocation ";")
@@ -676,6 +808,9 @@ _subprogram_control_statement: return_statement | (fb_invocation ";")
 fb_invocation: (fb_name | multi_element_variable) "(" (param_assignment ("," param_assignment)* ","?)? ")"
 
 param_assignment: ((("NOT"i)? variable_name "=>" (expression | multi_element_variable)?)) | (((variable_name ":=")? (expression | multi_element_variable)))
+
+// B.3.2.3
+
 _selection_statement: if_statement | case_statement
 
 if_statement: "IF"i expression "THEN"i statement_list ("ELSIF"i expression "THEN"i statement_list)* ("ELSE"i statement_list)? "END_IF"i ";"?
@@ -687,6 +822,9 @@ case_element: case_list ":" statement_list
 case_list: case_list_element ("," case_list_element)*
 
 case_list_element: subrange | integer_literal | enumerated_value
+
+// B.3.2.4
+
 _iteration_statement: for_statement | while_statement | repeat_statement | exit_statement
 
 for_statement: "FOR"i control_variable ":=" for_list "DO"i statement_list "END_FOR"i ";"?

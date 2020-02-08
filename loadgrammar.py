@@ -158,9 +158,9 @@ class TestTransformer(lark.Transformer):
         return f'"{key}"' + flags  # i makes it case insensitive
 
     def comment(self, items):
-        return ''
-        # comment = items[0].lstrip(' #\n\r')
-        # return f'\n// {comment}'
+        # return ''
+        comment = items[0].lstrip(' #\n\r')
+        return f'\n// {comment}'
 
     def optional(self, items):
         items = ' '.join(items)
