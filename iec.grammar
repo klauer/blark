@@ -502,6 +502,14 @@ il_instruction ::= [label':'] [ il_simple_operation
 | il_formal_funct_call 
 | _il_return_operator ] EOL ;
 EOL ::= "\n";
+
+
+# TODO:
+# CR : /\r/
+# LF : /\n/
+# NEWLINE: (CR? LF)+
+
+
 label ::= _identifier ;
 il_simple_operation ::= ( _il_simple_operator [il_operand] ) 
 | ( _function_name [il_operand_list] ) ;

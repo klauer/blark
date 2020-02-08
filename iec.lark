@@ -206,7 +206,7 @@ initialized_structure: structure_type_name ":=" structure_initialization
 
 _structure_declaration: "STRUCT" structure_element_declaration ";" (structure_element_declaration ";")* "END_STRUCT" ";"?
 
-structure_element_declaration: structure_element_name ":" (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init)
+structure_element_declaration: structure_element_name incompl_location? ":" (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init)
 
 structure_element_name: IDENTIFIER
 
@@ -708,12 +708,13 @@ exit_statement: "EXIT" ";"?
 
 start: iec_source
 
-COMMENT: /\(\*.*?\*\)/s
+MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
+SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
 PRAGMA: /{[^}]*?}/s
 
 // Ignore whitespace
 %import common.WS
 %ignore WS
-%ignore COMMENT
+%ignore MULTI_LINE_COMMENT
+%ignore SINGLE_LINE_COMMENT
 %ignore PRAGMA
-

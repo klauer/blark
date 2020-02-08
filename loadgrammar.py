@@ -192,13 +192,15 @@ lark_grammar += r'''
 
 start: iec_source
 
-COMMENT: /\(\*.*?\*\)/s
+MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
+SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
 PRAGMA: /{[^}]*?}/s
 
 // Ignore whitespace
 %import common.WS
 %ignore WS
-%ignore COMMENT
+%ignore MULTI_LINE_COMMENT
+%ignore SINGLE_LINE_COMMENT
 %ignore PRAGMA
 '''
 
@@ -217,6 +219,13 @@ class AnnotationGatherer(lark.Transformer):
         self.last_pragma = token
         print('pragma', token)
 
-iec_parser = lark.Lark(lark_grammar)  # , parser='lalr', transformer=AnnotationGatherer())
+
+iec_parser = lark.Lark(lark_grammar)
 tree = iec_parser.parse(source_code)
 print(tree.pretty())
+
+
+# EOL:
+# CR : /\r/
+# LF : /\n/
+# NEWLINE: (CR? LF)+
