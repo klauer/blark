@@ -321,7 +321,7 @@ derived_function_name ::= _identifier ;
 function_declaration ::= 
 $'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
 { _io_var_declarations | function_var_decls } 
-(function_body | unknown_in_function)
+(function_body )
 $'END_FUNCTION' [ ';' ] ;
 _io_var_declarations ::= input_declarations | output_declarations | 
 input_output_declarations ;
@@ -346,7 +346,7 @@ derived_function_block_name ::= _identifier ;
 function_block_declaration ::= 
     ($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name 
     { _io_var_declarations | _other_var_declarations } 
-    (function_block_body | unknown_in_function_block)
+    (function_block_body)
     ($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;
 
 _other_var_declarations ::= external_var_declarations |var_declarations 
@@ -371,7 +371,7 @@ program_declaration ::=
 $'PROGRAM' program_type_name 
 { _io_var_declarations | _other_var_declarations 
 | located_var_declarations | program_access_decls } 
-(function_block_body | unknown_in_program)
+(function_block_body)
 $'END_PROGRAM' [ ';' ] ;
 program_access_decls ::= 
 $'VAR_ACCESS' program_access_decl ';' 
@@ -382,19 +382,12 @@ non_generic_type_name [direction] ;
 
 # B.1.6
 
-unknown_in_step ::= <(?s).+(?=END_STEP)> ;
-unknown_in_transition ::= <(?s).+(?=END_TRANSITION)> ;
-unknown_in_action ::= <(?s).+(?=END_ACTION)> ;
-unknown_in_program ::= <(?s).+(?=END_PROGRAM)> ;
-unknown_in_function ::= <(?s).+(?=END_FUNCTION)> ;
-unknown_in_function_block ::= <(?s).+(?=END_FUNCTION_BLOCK)> ;
-
 sequential_function_chart ::= sfc_network {sfc_network} ;
 sfc_network ::= initial_step { step | transition | action | entry_action | exit_action } ;
 initial_step ::= 
-$'INITIAL_STEP' step_name ':' ( sequential_function_chart | statement_list | action_association | unknown_in_step ) [';'] $'END_STEP' [ ';' ] ;
+$'INITIAL_STEP' step_name ':' ( sequential_function_chart | statement_list | action_association) [';'] $'END_STEP' [ ';' ] ;
 step ::= $'STEP' step_name ':'[ statement_list | action_association
-| sequential_function_chart | unknown_in_step ]
+| sequential_function_chart ]
 [';'] $'END_STEP' [ ';' ] ;
 step_name ::= _identifier ;
 action_association ::= 
@@ -421,13 +414,13 @@ steps ::= step_name | ('(' step_name {',' step_name} ')') ;
 transition_condition ::= ':=' ( (expression [';'])) ;
 
 action ::= $'ACTION' action_name ':' 
-(function_block_body | unknown_in_action)
+(function_block_body )
 $'END_ACTION' [ ';' ] ;
 entry_action ::= $'ENTRY_ACTION'
-(function_block_body | unknown_in_action)
+(function_block_body )
 $'END_ACTION' [ ';' ] ;
 exit_action ::= $'EXIT_ACTION'
-(function_block_body | unknown_in_action)
+(function_block_body )
 $'END_ACTION' [ ';' ] ;
 
 # B.1.7

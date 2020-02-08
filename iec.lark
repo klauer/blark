@@ -341,7 +341,7 @@ var_spec: _simple_specification | subrange_specification | enumerated_specificat
 _function_name: derived_function_name
 derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION" derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* (function_body | unknown_in_function) "END_FUNCTION" ";"?
+function_declaration: "FUNCTION" derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* function_body "END_FUNCTION" ";"?
 
 _io_var_declarations: input_declarations | output_declarations | input_output_declarations
 
@@ -355,7 +355,7 @@ standard_function_block_name: IDENTIFIER
 
 derived_function_block_name: IDENTIFIER
 
-function_block_declaration: ("FUNCTION_BLOCK" | "FUNCTIONBLOCK") derived_function_block_name (_io_var_declarations | _other_var_declarations)* (function_block_body | unknown_in_function_block) ("END_FUNCTION_BLOCK" | "END_FUNCTIONBLOCK") ";"?
+function_block_declaration: ("FUNCTION_BLOCK" | "FUNCTIONBLOCK") derived_function_block_name (_io_var_declarations | _other_var_declarations)* function_block_body ("END_FUNCTION_BLOCK" | "END_FUNCTIONBLOCK") ";"?
 
 _other_var_declarations: external_var_declarations | var_declarations | retentive_var_declarations | non_retentive_var_decls | temp_var_decls | incompl_located_var_declarations
 
@@ -367,30 +367,18 @@ function_block_body: sequential_function_chart | statement_list
 
 program_type_name: IDENTIFIER
 
-program_declaration: "PROGRAM" program_type_name (_io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls)* (function_block_body | unknown_in_program) "END_PROGRAM" ";"?
+program_declaration: "PROGRAM" program_type_name (_io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls)* function_block_body "END_PROGRAM" ";"?
 
 program_access_decls: "VAR_ACCESS" program_access_decl ";" (program_access_decl ";")* "END_VAR" ";"?
 
 program_access_decl: access_name ":" _symbolic_variable ":" non_generic_type_name direction?
-unknown_in_step: /(?s).+(?=END_STEP)/
-
-unknown_in_transition: /(?s).+(?=END_TRANSITION)/
-
-unknown_in_action: /(?s).+(?=END_ACTION)/
-
-unknown_in_program: /(?s).+(?=END_PROGRAM)/
-
-unknown_in_function: /(?s).+(?=END_FUNCTION)/
-
-unknown_in_function_block: /(?s).+(?=END_FUNCTION_BLOCK)/
-
 sequential_function_chart: sfc_network sfc_network*
 
 sfc_network: initial_step (step | transition | action | entry_action | exit_action)*
 
-initial_step: "INITIAL_STEP" step_name ":" (sequential_function_chart | statement_list | action_association | unknown_in_step) ";"? "END_STEP" ";"?
+initial_step: "INITIAL_STEP" step_name ":" (sequential_function_chart | statement_list | action_association) ";"? "END_STEP" ";"?
 
-step: "STEP" step_name ":" (statement_list | action_association | sequential_function_chart | unknown_in_step)? ";"? "END_STEP" ";"?
+step: "STEP" step_name ":" (statement_list | action_association | sequential_function_chart)? ";"? "END_STEP" ";"?
 
 step_name: IDENTIFIER
 
@@ -413,11 +401,11 @@ steps: step_name | (("(" step_name ("," step_name)* ")"))
 
 transition_condition: ":=" (expression ";"?)
 
-action: "ACTION" action_name ":" (function_block_body | unknown_in_action) "END_ACTION" ";"?
+action: "ACTION" action_name ":" function_block_body "END_ACTION" ";"?
 
-entry_action: "ENTRY_ACTION" (function_block_body | unknown_in_action) "END_ACTION" ";"?
+entry_action: "ENTRY_ACTION" function_block_body "END_ACTION" ";"?
 
-exit_action: "EXIT_ACTION" (function_block_body | unknown_in_action) "END_ACTION" ";"?
+exit_action: "EXIT_ACTION" function_block_body "END_ACTION" ";"?
 configuration_name: IDENTIFIER
 
 resource_type_name: IDENTIFIER
