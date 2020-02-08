@@ -453,7 +453,7 @@ function_block_body: sequential_function_chart | statement_list
 
 program_type_name: IDENTIFIER
 
-program_declaration: "PROGRAM"i program_type_name (_io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls)* function_block_body "END_PROGRAM"i ";"?
+program_declaration: "PROGRAM"i program_type_name (_io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls)* function_block_body? "END_PROGRAM"i ";"?
 
 program_access_decls: "VAR_ACCESS"i program_access_decl ";" (program_access_decl ";")* "END_VAR"i ";"?
 

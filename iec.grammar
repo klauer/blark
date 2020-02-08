@@ -277,23 +277,27 @@ _var1_declaration ::= _var1_list ':' (_simple_specification
 array_var_declaration ::= _var1_list ':' array_specification ;
 structured_var_declaration ::= _var1_list ':' structure_type_name ;
 var_declarations ::= 
-$'VAR' [constant] 
-{var_init_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR' [constant] 
+    {var_init_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 retentive_var_declarations ::= 
-$'VAR' $'RETAIN' 
-{var_init_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR' $'RETAIN' 
+    {var_init_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 constant ::= $'CONSTANT' ;
 located_var_declarations ::= 
-$'VAR' [ constant | retain | non_retain ]
-{located_var_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR' [ constant | retain | non_retain ]
+    {located_var_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 located_var_decl ::= [variable_name] location ':' located_var_spec_init ;
 external_var_declarations ::= 
-$'VAR_EXTERNAL' [constant] 
-{external_declaration ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_EXTERNAL' [constant] 
+    {external_declaration ';'} 
+    $'END_VAR' [ ';' ] ;
+
 external_declaration ::= global_var_name ':' 
 (_simple_specification | subrange_specification 
 | enumerated_specification | array_specification 
@@ -323,10 +327,12 @@ double_byte_string_var_declaration ::=
 _var1_list ':' double_byte_string_spec ;
 double_byte_string_spec ::= 
 $'WSTRING' [('[' (integer | simple_type_name) ']') | ('(' (integer | simple_type_name) ')')] [':=' double_byte_character_string] ;
+
 incompl_located_var_declarations ::= 
-$'VAR' [retain | non_retain]
-{incompl_located_var_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR' [retain | non_retain]
+    {incompl_located_var_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 incompl_located_var_decl ::= variable_name incompl_location ':' var_spec ;
 incompl_location ::= $'AT' <\%(I|Q|M)\*> ;
 string ::= $'STRING';
@@ -381,13 +387,15 @@ _other_var_declarations ::= external_var_declarations |var_declarations
     | temp_var_decls | incompl_located_var_declarations ;
 
 temp_var_decls ::=
-$'VAR_TEMP' 
-{_temp_var_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_TEMP' 
+    {_temp_var_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 non_retentive_var_decls ::= 
-$'VAR' $'NON_RETAIN' 
-{var_init_decl ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR' $'NON_RETAIN' 
+    {var_init_decl ';'} 
+    $'END_VAR' [ ';' ] ;
+
 function_block_body ::= sequential_function_chart | statement_list;
 # | <andere Sprachen> 
 
@@ -395,15 +403,17 @@ function_block_body ::= sequential_function_chart | statement_list;
 
 program_type_name ::= _identifier ;
 program_declaration ::= 
-$'PROGRAM' program_type_name 
-{ _io_var_declarations | _other_var_declarations 
-| located_var_declarations | program_access_decls } 
-(function_block_body)
-$'END_PROGRAM' [ ';' ] ;
+    $'PROGRAM' program_type_name 
+    { _io_var_declarations | _other_var_declarations 
+    | located_var_declarations | program_access_decls } 
+    [function_block_body]
+    $'END_PROGRAM' [ ';' ] ;
+
 program_access_decls ::= 
-$'VAR_ACCESS' program_access_decl ';' 
-{program_access_decl ';' } 
-$'END_VAR' [ ';' ] ;
+    $'VAR_ACCESS' program_access_decl ';' 
+    {program_access_decl ';' } 
+    $'END_VAR' [ ';' ] ;
+
 program_access_decl ::= access_name ':' _symbolic_variable ':' 
 non_generic_type_name [direction] ;
 
