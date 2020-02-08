@@ -145,9 +145,12 @@ _type_declaration ::=
     | ( string_type_declaration ';' ) | ( _single_element_type_declaration ';' ) ;
 
 _single_element_type_declaration ::=
-    simple_type_declaration | subrange_type_declaration | enumerated_type_declaration ;
+    simple_type_declaration | extended_type_declaration |
+    subrange_type_declaration | enumerated_type_declaration ;
 
 simple_type_declaration ::= simple_type_name ':' simple_spec_init ;
+extended_type_declaration ::= simple_type_name $'EXTENDS' _dotted_name ':' simple_spec_init ;
+
 simple_spec_init ::= [pointer_to] _simple_specification [':=' expression] ;
 _simple_specification ::= _elementary_type_name |simple_type_name ;
 subrange_type_declaration ::= subrange_type_name ':' subrange_spec_init ;
@@ -340,17 +343,19 @@ _function_name ::= derived_function_name ;
 # standard_function_name ::= <gruschdelwurschdel> ;
 derived_function_name ::= _identifier ;
 function_declaration ::= 
-$'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
-{ _io_var_declarations | function_var_decls } 
-(function_body )
-$'END_FUNCTION' [ ';' ] ;
+    $'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
+    { _io_var_declarations | function_var_decls } 
+    (function_body )
+    $'END_FUNCTION' [ ';' ] ;
+
 _io_var_declarations ::= input_declarations | output_declarations | 
 input_output_declarations ;
 function_var_decls ::=
-$'VAR' [ constant ] 
+    $'VAR' [ constant ] 
 # {function_var_decl ';'}
-{var_init_decl ';'}
-$'END_VAR' [ ';' ] ;
+    {var_init_decl ';'}
+    $'END_VAR' [ ';' ] ;
+
 # function_body ::= ladder_diagram | function_block_diagram 
 # | instruction_list | statement_list ;
 function_body ::= statement_list ;
@@ -360,12 +365,13 @@ function_var_decl ::= _var1_init_decl | array_var_init_decl
 
 # B.1.5.2
 
-function_block_type_name ::= standard_function_block_name 
-| derived_function_block_name ;
+_dotted_name ::= _identifier {'.' _identifier};
+
+function_block_type_name ::= standard_function_block_name | derived_function_block_name ;
 standard_function_block_name ::= _identifier ;
 derived_function_block_name ::= _identifier ;
 function_block_declaration ::= 
-    ($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name 
+    ($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name [$'EXTENDS' _dotted_name]
     { _io_var_declarations | _other_var_declarations } 
     (function_block_body)
     ($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;

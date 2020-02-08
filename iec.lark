@@ -162,9 +162,11 @@ pointer_to: "POINTER"i "TO"i
 
 _type_declaration: (array_type_declaration ";") | (structure_type_declaration ";"?) | (string_type_declaration ";") | (_single_element_type_declaration ";")
 
-_single_element_type_declaration: simple_type_declaration | subrange_type_declaration | enumerated_type_declaration
+_single_element_type_declaration: simple_type_declaration | extended_type_declaration | subrange_type_declaration | enumerated_type_declaration
 
 simple_type_declaration: simple_type_name ":" simple_spec_init
+
+extended_type_declaration: simple_type_name "EXTENDS"i _dotted_name ":" simple_spec_init
 
 simple_spec_init: pointer_to? _simple_specification (":=" expression)?
 
@@ -349,13 +351,15 @@ function_var_decls: "VAR"i constant?  (var_init_decl ";")* "END_VAR"i ";"?
 
 function_body: statement_list
 function_var_decl: _var1_init_decl | array_var_init_decl | structured_var_init_decl | string_var_declaration
+_dotted_name: IDENTIFIER ("." IDENTIFIER)*
+
 function_block_type_name: standard_function_block_name | derived_function_block_name
 
 standard_function_block_name: IDENTIFIER
 
 derived_function_block_name: IDENTIFIER
 
-function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived_function_block_name (_io_var_declarations | _other_var_declarations)* function_block_body ((("END_FUNCTION_BLOCK"i) | ("END_FUNCTIONBLOCK"i))) ";"?
+function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived_function_block_name ("EXTENDS"i _dotted_name)? (_io_var_declarations | _other_var_declarations)* function_block_body ((("END_FUNCTION_BLOCK"i) | ("END_FUNCTIONBLOCK"i))) ";"?
 
 _other_var_declarations: external_var_declarations | var_declarations | retentive_var_declarations | non_retentive_var_decls | temp_var_decls | incompl_located_var_declarations
 
