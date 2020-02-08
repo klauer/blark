@@ -682,7 +682,7 @@ _subprogram_control_statement: return_statement | (fb_invocation ";")
 
 fb_invocation: (fb_name | _dotted_function_name) "(" (param_assignment ("," param_assignment)*)? ")"
 
-param_assignment: ("NOT"? variable_name "=>" _variable) | (((variable_name ":=")? expression))
+param_assignment: ("NOT"? variable_name "=>" _variable?) | (((variable_name ":=")? expression))
 _selection_statement: if_statement | case_statement
 
 if_statement: "IF" expression "THEN" statement_list ("ELSIF" expression "THEN" statement_list)* ("ELSE" statement_list)? "END_IF" ";"?

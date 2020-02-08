@@ -344,13 +344,15 @@ function_block_type_name ::= standard_function_block_name
 standard_function_block_name ::= _identifier ;
 derived_function_block_name ::= _identifier ;
 function_block_declaration ::= 
-($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name 
-{ _io_var_declarations | _other_var_declarations } 
-(function_block_body | unknown_in_function_block)
-($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;
+    ($'FUNCTION_BLOCK' | $'FUNCTIONBLOCK') derived_function_block_name 
+    { _io_var_declarations | _other_var_declarations } 
+    (function_block_body | unknown_in_function_block)
+    ($'END_FUNCTION_BLOCK' | $'END_FUNCTIONBLOCK') [ ';' ] ;
+
 _other_var_declarations ::= external_var_declarations |var_declarations 
-| retentive_var_declarations | non_retentive_var_decls
-| temp_var_decls | incompl_located_var_declarations ;
+    | retentive_var_declarations | non_retentive_var_decls
+    | temp_var_decls | incompl_located_var_declarations ;
+
 temp_var_decls ::=
 $'VAR_TEMP' 
 {_temp_var_decl ';'} 
@@ -674,7 +676,7 @@ method ::= expression '(' ')' ';' ;
 return_statement ::= $'RETURN' [ ';' ] ;
 _subprogram_control_statement ::= return_statement | (fb_invocation ';') ;
 fb_invocation ::= (fb_name | _dotted_function_name) '(' [ param_assignment { ',' param_assignment } ] ')' ;
-param_assignment ::= ( [ $'NOT' ] variable_name '=>' _variable ) | ( [ variable_name ':=' ] expression ) ;
+param_assignment ::= ( [ $'NOT' ] variable_name '=>' [_variable]) | ( [ variable_name ':=' ] expression ) ;
 
 # B.3.2.3
 
