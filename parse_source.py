@@ -13,10 +13,22 @@ try:
 except IndexError:
     fn = 'types.EXP'
 
-with open(fn) as f:
-    source_code = f.read()
+if fn.endswith('.TcPOU'):
+    import pytmc
+    root = pytmc.parser.parse(fn)
+    pou, = list(root.find(pytmc.parser.POU))
+    source_code = '\n'.join((pou.declaration or '',
+                             pou.implementation or '',
+                             'END_PROGRAM'))
+    print('Source code:')
+    print(source_code)
+else:
+    with open(fn) as f:
+        source_code = f.read()
 
 tree = iec_parser.parse(source_code)
+
+print(tree.pretty())
 
 re_comment = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
 re_pragma = re.compile(r'{[^}]*?}', re.MULTILINE | re.DOTALL)
