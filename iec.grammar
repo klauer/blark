@@ -135,14 +135,18 @@ enumerated_type_name ::= _identifier ;
 array_type_name ::= _identifier ;
 structure_type_name ::= _identifier ;
 data_type_declaration ::= 
-$'TYPE'
-{ _type_declaration }
-$'END_TYPE' [ ';' ] ;
+    $'TYPE'
+    { _type_declaration }
+    $'END_TYPE' [ ';' ] ;
+
 pointer_to ::= $'POINTER' $'TO' ;
-_type_declaration ::= ( array_type_declaration ';' ) | ( structure_type_declaration [';'] )
-| ( string_type_declaration ';' ) | ( _single_element_type_declaration ';' ) ;
-_single_element_type_declaration ::= simple_type_declaration 
-| subrange_type_declaration | enumerated_type_declaration ;
+_type_declaration ::= 
+    ( array_type_declaration ';' ) | ( structure_type_declaration [';'] )
+    | ( string_type_declaration ';' ) | ( _single_element_type_declaration ';' ) ;
+
+_single_element_type_declaration ::=
+    simple_type_declaration | subrange_type_declaration | enumerated_type_declaration ;
+
 simple_type_declaration ::= simple_type_name ':' simple_spec_init ;
 simple_spec_init ::= [pointer_to] _simple_specification [':=' expression] ;
 _simple_specification ::= _elementary_type_name |simple_type_name ;
@@ -151,37 +155,52 @@ subrange_spec_init ::= [pointer_to] subrange_specification [':=' expression] ;
 subrange_specification ::= integer_type_name '(' subrange')' 
 | subrange_type_name ;
 subrange ::= expression '..' expression ;
-enumerated_type_declaration ::= 
-enumerated_type_name ':' enumerated_spec_init ;
+
+enumerated_type_declaration ::= enumerated_type_name ':' enumerated_spec_init ;
+
 enumerated_spec_init ::= [pointer_to] enumerated_specification [':=' enumerated_value] ;
+
 enumerated_specification ::= 
-( '(' enumerated_value {',' enumerated_value} ')' ) 
-| enumerated_type_name ;
+    ( '(' enumerated_value {',' enumerated_value} ')' ) 
+    | enumerated_type_name ;
+
 enumerated_value ::= [enumerated_type_name '#'] _identifier [ ':=' integer_literal ] ;
+
 array_type_declaration ::= array_type_name ':' array_spec_init ;
 array_spec_init ::= [pointer_to] array_specification [':=' array_initialization] ;
 array_specification ::= $'ARRAY' '[' subrange { ',' subrange } ']' $'OF' ( string_type | non_generic_type_name ) ;
-array_initialization ::= ('[' array_initial_elements {',' array_initial_elements} ']')
-| ( array_initial_elements {',' array_initial_elements} ) ;
-array_initial_elements ::= ((integer | enumerated_value) '(' [array_initial_element] ')') | array_initial_element ;
+array_initialization ::= 
+    ('[' array_initial_elements {',' array_initial_elements} ']')
+    | ( array_initial_elements {',' array_initial_elements} ) ;
+
+array_initial_elements ::= 
+    ((integer | enumerated_value) '(' [array_initial_element] ')') | array_initial_element ;
+
 array_initial_element ::= _constant | structure_initialization | enumerated_value ;
 structure_type_declaration ::= 
 structure_type_name ':' _structure_specification ;
 _structure_specification ::= [pointer_to] _structure_declaration | initialized_structure ;
-initialized_structure ::= 
- structure_type_name ':=' structure_initialization ;
+initialized_structure ::= structure_type_name ':=' structure_initialization ;
+
 _structure_declaration ::= 
     $'STRUCT' structure_element_declaration ';' 
     {structure_element_declaration ';'}
     $'END_STRUCT' [ ';' ] ;
 
-structure_element_declaration ::= structure_element_name [ incompl_location ] ':' 
-(initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
+structure_element_declaration ::= 
+    structure_element_name [ incompl_location ] ':' 
+    (initialized_structure | array_spec_init | string_var_type |
+    simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
+
 structure_element_name ::= _identifier ;
 structure_initialization ::= 
-'(' structure_element_initialization
-{',' structure_element_initialization} ')' ;
-structure_element_initialization ::= _constant | ( structure_element_name ':=' (_constant | enumerated_value | array_initialization | structure_initialization) ) ;
+    '(' structure_element_initialization
+    {',' structure_element_initialization} ')' ;
+
+structure_element_initialization ::=
+    _constant | ( structure_element_name ':=' (_constant | expression |
+    enumerated_value | array_initialization | structure_initialization) ) ;
+
 string_type_name ::= _identifier ;
 string_initialization ::= ':=' _character_string ;
 string_type_declaration ::= string_type_name ':' string_type [ string_initialization ] ;
@@ -215,9 +234,10 @@ retain ::= $'RETAIN' ;
 non_retain ::= $'NON_RETAIN' ;
 
 input_declarations ::= 
-$'VAR_INPUT' [ retain | non_retain ]
-{_input_declaration ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_INPUT' [ retain | non_retain ]
+    {_input_declaration ';'} 
+    $'END_VAR' [ ';' ] ;
+    
 _input_declaration ::= var_init_decl | edge_declaration ;
 r_edge ::= $'R_EDGE';
 f_edge ::= $'F_EDGE';
@@ -226,15 +246,16 @@ edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
 var_init_decl ::= array_var_init_decl | structured_var_init_decl | 
                   string_var_declaration | _var1_init_decl | fb_name_decl ;
 
-_var1_init_decl ::= _var1_list ':' 
-(simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
+_var1_init_decl ::= _var1_list ':' (simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
 
 _var1_list ::= variable_name [location | incompl_location] { ',' variable_name [location] } ;
 
 array_var_init_decl ::= _var1_list ':' array_spec_init ;
 structured_var_init_decl ::= _var1_list ':' initialized_structure ;
-fb_name_decl ::= fb_name_list ':' function_block_type_name 
-[ ':=' structure_initialization ] ;
+fb_name_decl ::=
+    fb_name_list ':' function_block_type_name 
+    [ ':=' structure_initialization ] ;
+
 fb_name_list ::= fb_name {',' fb_name} ;
 fb_name ::= _identifier ;
 output_declarations ::= 
@@ -485,17 +506,20 @@ fb_task ::= fb_name $'WITH' task_name ;
 prog_cnxn ::= _symbolic_variable ':=' prog_data_source 
 | _symbolic_variable '=>' data_sink ;
 prog_data_source ::= 
-_constant | enumerated_value | global_var_reference |direct_variable ;
+    _constant | enumerated_value | global_var_reference |direct_variable ;
+
 data_sink ::= global_var_reference | direct_variable ;
+
 instance_specific_initializations ::= 
-$'VAR_CONFIG' 
-{instance_specific_init ';'} 
-$'END_VAR' [ ';' ] ;
+    $'VAR_CONFIG' 
+    {instance_specific_init ';'} 
+    $'END_VAR' [ ';' ] ;
+
 instance_specific_init ::= 
-resource_name '.' program_name '.' {fb_name '.'} 
-((variable_name [location] ':' located_var_spec_init) | 
-(fb_name ':' function_block_type_name ':=' 
-structure_initialization)) ;
+    resource_name '.' program_name '.' {fb_name '.'} 
+    ((variable_name [location] ':' located_var_spec_init) | 
+    (fb_name ':' function_block_type_name ':=' 
+    structure_initialization)) ;
 
 # B.2.1
 

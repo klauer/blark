@@ -212,7 +212,7 @@ structure_element_name: IDENTIFIER
 
 structure_initialization: "(" structure_element_initialization ("," structure_element_initialization)* ")"
 
-structure_element_initialization: _constant | ((structure_element_name ":=" (_constant | enumerated_value | array_initialization | structure_initialization)))
+structure_element_initialization: _constant | ((structure_element_name ":=" (_constant | expression | enumerated_value | array_initialization | structure_initialization)))
 
 string_type_name: IDENTIFIER
 
