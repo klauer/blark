@@ -2,29 +2,24 @@ import re
 import sys
 import lark
 
+RE_COMMENT = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
+RE_PRAGMA = re.compile(r'{[^}]*?}', re.MULTILINE | re.DOTALL)
+
 with open('iec.lark', 'rt') as f:
     lark_grammar = f.read()
 
-# iec_parser = lark.Lark(lark_grammar, parser='lalr')
 iec_parser = lark.Lark(lark_grammar, parser='earley')
+
 
 try:
     fn = sys.argv[1]
 except IndexError:
     fn = 'types.EXP'
 
-if fn.endswith('.TcPOU'):
-    import pytmc
-    root = pytmc.parser.parse(fn)
-    pou, = list(root.find(pytmc.parser.POU))
-    source_code = '\n'.join((pou.declaration or '',
-                             pou.implementation or '',
-                             'END_PROGRAM'))
-else:
-    with open(fn) as f:
-        source_code = f.read()
+from test_parsing import get_source_code
 
 try:
+    source_code = get_source_code(fn)
     tree = iec_parser.parse(source_code)
 except Exception:
     print(f'Failed to parse {fn}:')
@@ -42,10 +37,7 @@ else:
     print('-------------------------------')
     print(f'[Success] End of {fn}')
 
-re_comment = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
-re_pragma = re.compile(r'{[^}]*?}', re.MULTILINE | re.DOTALL)
-
-pragmas = re_pragma.findall(source_code)
+pragmas = RE_PRAGMA.findall(source_code)
 
 
 def _build_map_of_offset_to_line_number(source):
@@ -65,7 +57,7 @@ def _build_map_of_offset_to_line_number(source):
 
 line_numbers = _build_map_of_offset_to_line_number(source_code)
 
-comments = list(re_comment.finditer(source_code))
+comments = list(RE_COMMENT.finditer(source_code))
 
 # decl, = list(tree.find_data('data_type_declaration'))
 # element1 = [c for c in decl.children][0]
