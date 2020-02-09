@@ -1,5 +1,14 @@
-import lark
+'''
+Load the IEC grammar from Volker's original format + convert to Lark grammar
+
+Eventually, this will go away and there will be only lark...
+'''
+
 import re
+import pathlib
+
+import lark
+
 
 parser = lark.Lark(
     r'''
@@ -31,10 +40,9 @@ parser = lark.Lark(
     # debug=True,
 )
 
-with open('iec.grammar') as f:
-    orig_grammar = f.read()
 
-tree = parser.parse(orig_grammar)
+
+MODULE_PATH = pathlib.Path(__file__).parent
 
 
 change_to_terminal = '''
@@ -122,7 +130,7 @@ def parenthesize(s):
     return f'({s})'
 
 
-class TestTransformer(lark.Transformer):
+class GrammarTransformer(lark.Transformer):
     def start(self, items):
         return '\n'.join(items).replace('\n\n\n', '\n')
 
@@ -188,31 +196,53 @@ class TestTransformer(lark.Transformer):
         return '\n' + name + ': ' + value
 
 
-transformer = TestTransformer()
-lark_grammar = transformer.transform(tree)
+def convert_to_lark(orig_grammar):
+    'Original grammar -> Lark grammar'
+    tree = parser.parse(orig_grammar)
 
-lark_grammar += r'''
 
-start: iec_source
+    transformer = GrammarTransformer()
+    lark_grammar = transformer.transform(tree)
 
-MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
-SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
-PRAGMA: /{[^}]*?}/s
+    lark_grammar += r'''
 
-// Ignore whitespace
-%import common.WS
-%ignore WS
-%ignore MULTI_LINE_COMMENT
-%ignore SINGLE_LINE_COMMENT
-%ignore PRAGMA
-'''
+    start: iec_source
 
-with open('iec.lark', 'wt') as f:
-    print(lark_grammar, file=f)
+    MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
+    SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
+    PRAGMA: /{[^}]*?}/s
 
-print('* Saved lark grammar to iec.lark')
+    // Ignore whitespace
+    %import common.WS
+    %ignore WS
+    %ignore MULTI_LINE_COMMENT
+    %ignore SINGLE_LINE_COMMENT
+    %ignore PRAGMA
+    '''
 
+# (TODO)
 # EOL:
 # CR : /\r/
 # LF : /\n/
 # NEWLINE: (CR? LF)+
+
+def main():
+    orig_path = MODULE_PATH / 'iec.grammar'
+    lark_path = MODULE_PATH / 'iec.lark'
+    print(f'Loading original grammar from: {orig_path}...')
+    with open(orig_path) as f:
+        orig_grammar = f.read()
+
+    print(f'Converting to lark grammar...')
+    lark_grammar = convert_to_lark(orig_grammar)
+
+    print(f'Saving lark grammar to: {lark_path}...')
+
+    with open(lark_path, 'wt') as f:
+        print(lark_grammar, file=f)
+
+    return lark_grammar
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,6 @@
+include versioneer.py
+include requirements.txt
+include README.md
+include blark/_version.py
+include blark/iec.lark
+include blark/iec.grammar
