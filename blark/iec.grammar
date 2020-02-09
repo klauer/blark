@@ -227,11 +227,12 @@ size_prefix ::= <X|B|W|D|L> ;
 # B.1.4.2
 
 _subscript ::= expression ;
-subscript_list ::= '[' _subscript { ',' _subscript } ']' ;
+subscript_list ::= '[' _subscript { ',' _subscript } ']' [dereferenced];
 dereferenced ::= '^';
 field_selector ::= [dereferenced] '.' variable_name ;
-multi_element_variable ::= variable_name ( subscript_list | field_selector )
-{ ( subscript_list | field_selector ) } ;
+multi_element_variable ::= 
+    variable_name ( subscript_list | field_selector )
+    { ( subscript_list | field_selector ) } ;
 
 # B.1.4.3
 
