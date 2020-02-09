@@ -358,13 +358,12 @@ _function_name ::= derived_function_name ;
 # standard_function_name ::= <gruschdelwurschdel> ;
 derived_function_name ::= _identifier ;
 function_declaration ::= 
-    $'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name) 
+    $'FUNCTION' derived_function_name ':' (_elementary_type_name | derived_type_name)  [';']
     { _io_var_declarations | function_var_decls } 
     [function_body]
     $'END_FUNCTION' [ ';' ] ;
 
-_io_var_declarations ::= input_declarations | output_declarations | 
-input_output_declarations ;
+_io_var_declarations ::= input_declarations | output_declarations | input_output_declarations ;
 function_var_decls ::=
     $'VAR' [ constant ] 
     {var_init_decl ';'}

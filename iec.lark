@@ -409,7 +409,7 @@ _function_name: derived_function_name
 
 derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_name | derived_type_name) (_io_var_declarations | function_var_decls)* function_body? "END_FUNCTION"i ";"?
+function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_name | derived_type_name) ";"? (_io_var_declarations | function_var_decls)* function_body? "END_FUNCTION"i ";"?
 
 _io_var_declarations: input_declarations | output_declarations | input_output_declarations
 
