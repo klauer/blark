@@ -207,6 +207,8 @@ data_type_declaration: "TYPE"i _type_declaration* "END_TYPE"i ";"?
 
 pointer_to: "POINTER"i "TO"i
 
+reference_to: "REFERENCE"i "TO"i
+
 _type_declaration: (array_type_declaration ";") | (structure_type_declaration ";"?) | (string_type_declaration ";") | (_single_element_type_declaration ";")
 
 _single_element_type_declaration: simple_type_declaration | extended_type_declaration | subrange_type_declaration | enumerated_type_declaration
@@ -215,13 +217,13 @@ simple_type_declaration: simple_type_name ":" simple_spec_init
 
 extended_type_declaration: simple_type_name "EXTENDS"i _dotted_name ":" simple_spec_init
 
-simple_spec_init: pointer_to? _simple_specification (":=" expression)?
+simple_spec_init: (pointer_to | reference_to)? _simple_specification (":=" expression)?
 
 _simple_specification: _elementary_type_name | simple_type_name | _dotted_name
 
 subrange_type_declaration: subrange_type_name ":" subrange_spec_init
 
-subrange_spec_init: pointer_to? subrange_specification (":=" expression)?
+subrange_spec_init: (pointer_to | reference_to)? subrange_specification (":=" expression)?
 
 subrange_specification: (integer_type_name "(" subrange ")") | subrange_type_name
 
@@ -229,7 +231,7 @@ subrange: (expression ".." expression) | "*"
 
 enumerated_type_declaration: enumerated_type_name ":" enumerated_spec_init
 
-enumerated_spec_init: pointer_to? enumerated_specification (":=" enumerated_value)?
+enumerated_spec_init: (pointer_to | reference_to)? enumerated_specification (":=" enumerated_value)?
 
 enumerated_specification: (("(" enumerated_value ("," enumerated_value)* ")")) | enumerated_type_name
 
@@ -237,7 +239,7 @@ enumerated_value: (enumerated_type_name "#")? IDENTIFIER (":=" integer_literal)?
 
 array_type_declaration: array_type_name ":" array_spec_init
 
-array_spec_init: pointer_to? array_specification (":=" array_initialization)?
+array_spec_init: (pointer_to | reference_to)? array_specification (":=" array_initialization)?
 
 array_specification: "ARRAY"i "[" subrange ("," subrange)* "]" "OF"i (string_type | non_generic_type_name)
 
@@ -249,7 +251,7 @@ array_initial_element: _constant | structure_initialization | enumerated_value
 
 structure_type_declaration: structure_type_name ":" _structure_specification
 
-_structure_specification: (pointer_to? _structure_declaration) | initialized_structure
+_structure_specification: ((pointer_to | reference_to)? _structure_declaration) | initialized_structure
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
@@ -789,7 +791,7 @@ _primary_expression: (("(" expression ")")) | function_call | _variable | multi_
 
 statement_list: _statement _statement*
 
-_statement: (";" ";"*) | method | assignment_statement | set_statement | reset_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
+_statement: (";" ";"*) | method | assignment_statement | set_statement | reset_statement | reference_assignment_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
 
 // B.3.2.1
 
@@ -798,6 +800,8 @@ assignment_statement: _variable ":=" (_variable ":=")* expression ";"
 set_statement: _variable "S="i expression ";"
 
 reset_statement: _variable "R="i expression ";"
+
+reference_assignment_statement: _variable "REF="i expression ";"
 
 // method ::= expression [dereferenced] '.' _identifier '(' ')';
 
@@ -843,16 +847,16 @@ repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"
 
 exit_statement: "EXIT"i ";"?
 
-start: iec_source
+    start: iec_source
 
-MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
-SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
-PRAGMA: /{[^}]*?}/s
+    MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
+    SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
+    PRAGMA: /{[^}]*?}/s
 
-// Ignore whitespace
-%import common.WS
-%ignore WS
-%ignore MULTI_LINE_COMMENT
-%ignore SINGLE_LINE_COMMENT
-%ignore PRAGMA
-
+    // Ignore whitespace
+    %import common.WS
+    %ignore WS
+    %ignore MULTI_LINE_COMMENT
+    %ignore SINGLE_LINE_COMMENT
+    %ignore PRAGMA
+    

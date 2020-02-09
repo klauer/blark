@@ -225,6 +225,8 @@ def convert_to_lark(orig_grammar):
 # CR : /\r/
 # LF : /\n/
 # NEWLINE: (CR? LF)+
+    return lark_grammar
+
 
 def main():
     orig_path = MODULE_PATH / 'iec.grammar'

@@ -140,6 +140,8 @@ data_type_declaration ::=
     $'END_TYPE' [ ';' ] ;
 
 pointer_to ::= $'POINTER' $'TO' ;
+reference_to ::= $'REFERENCE' $'TO' ;
+
 _type_declaration ::= 
     ( array_type_declaration ';' ) | ( structure_type_declaration [';'] )
     | ( string_type_declaration ';' ) | ( _single_element_type_declaration ';' ) ;
@@ -151,17 +153,17 @@ _single_element_type_declaration ::=
 simple_type_declaration ::= simple_type_name ':' simple_spec_init ;
 extended_type_declaration ::= simple_type_name $'EXTENDS' _dotted_name ':' simple_spec_init ;
 
-simple_spec_init ::= [pointer_to] _simple_specification [':=' expression] ;
+simple_spec_init ::= [pointer_to | reference_to] _simple_specification [':=' expression] ;
 _simple_specification ::= _elementary_type_name |simple_type_name | _dotted_name;
 subrange_type_declaration ::= subrange_type_name ':' subrange_spec_init ;
-subrange_spec_init ::= [pointer_to] subrange_specification [':=' expression] ;
+subrange_spec_init ::= [pointer_to | reference_to] subrange_specification [':=' expression] ;
 subrange_specification ::= integer_type_name '(' subrange')' 
 | subrange_type_name ;
 subrange ::= (expression '..' expression) | '*' ;
 
 enumerated_type_declaration ::= enumerated_type_name ':' enumerated_spec_init ;
 
-enumerated_spec_init ::= [pointer_to] enumerated_specification [':=' enumerated_value] ;
+enumerated_spec_init ::= [pointer_to | reference_to] enumerated_specification [':=' enumerated_value] ;
 
 enumerated_specification ::= 
     ( '(' enumerated_value {',' enumerated_value} ')' ) 
@@ -170,7 +172,7 @@ enumerated_specification ::=
 enumerated_value ::= [enumerated_type_name '#'] _identifier [ ':=' integer_literal ] ;
 
 array_type_declaration ::= array_type_name ':' array_spec_init ;
-array_spec_init ::= [pointer_to] array_specification [':=' array_initialization] ;
+array_spec_init ::= [pointer_to | reference_to] array_specification [':=' array_initialization] ;
 array_specification ::= $'ARRAY' '[' subrange { ',' subrange } ']' $'OF' ( string_type | non_generic_type_name ) ;
 array_initialization ::= 
     ('[' array_initial_elements {',' array_initial_elements} ']')
@@ -182,7 +184,7 @@ array_initial_elements ::=
 array_initial_element ::= _constant | structure_initialization | enumerated_value ;
 structure_type_declaration ::= 
 structure_type_name ':' _structure_specification ;
-_structure_specification ::= [pointer_to] _structure_declaration | initialized_structure ;
+_structure_specification ::= [pointer_to | reference_to] _structure_declaration | initialized_structure ;
 initialized_structure ::= structure_type_name ':=' structure_initialization ;
 
 _structure_declaration ::= 
@@ -716,14 +718,19 @@ _primary_expression ::= ('(' expression ')') | function_call | _variable | multi
 # B.3.2
 
 statement_list ::= _statement { _statement } ;
-_statement ::= (';' {';'}) | method | assignment_statement | set_statement | reset_statement | _subprogram_control_statement | _selection_statement
-| _iteration_statement | (action_name ';') ;
+_statement ::= 
+    (';' {';'}) | method | assignment_statement | set_statement |
+    reset_statement | reference_assignment_statement |
+    _subprogram_control_statement | _selection_statement | _iteration_statement
+    | (action_name ';') ;
 
 # B.3.2.1
 
 assignment_statement ::= _variable ':=' { _variable ':=' } expression ';' ;
 set_statement ::= _variable 'S=' expression ';' ;
 reset_statement ::= _variable 'R=' expression ';' ;
+reference_assignment_statement ::= _variable 'REF=' expression ';' ;
+
 # method ::= expression [dereferenced] '.' _identifier '(' ')';
 method ::= expression '(' ')' ';' ;
 
