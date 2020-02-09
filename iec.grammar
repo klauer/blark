@@ -157,7 +157,7 @@ subrange_type_declaration ::= subrange_type_name ':' subrange_spec_init ;
 subrange_spec_init ::= [pointer_to] subrange_specification [':=' expression] ;
 subrange_specification ::= integer_type_name '(' subrange')' 
 | subrange_type_name ;
-subrange ::= expression '..' expression ;
+subrange ::= (expression '..' expression) | '*' ;
 
 enumerated_type_declaration ::= enumerated_type_name ':' enumerated_spec_init ;
 
