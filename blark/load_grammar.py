@@ -202,22 +202,20 @@ def convert_to_lark(orig_grammar):
 
 
     transformer = GrammarTransformer()
-    lark_grammar = transformer.transform(tree)
-
+    lark_grammar = '// (Auto-generated Lark grammar from iec.grammar)\n'
+    lark_grammar += transformer.transform(tree)
     lark_grammar += r'''
 
     start: iec_source
 
     MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
     SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
-    PRAGMA: /{[^}]*?}/s
 
     // Ignore whitespace
     %import common.WS
     %ignore WS
     %ignore MULTI_LINE_COMMENT
     %ignore SINGLE_LINE_COMMENT
-    %ignore PRAGMA
     '''
 
 # (TODO)

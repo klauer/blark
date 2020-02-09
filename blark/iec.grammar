@@ -12,7 +12,9 @@
 
 # B.0
 
-iec_source ::= { _library_element_declaration | action } ;
+iec_source ::= { _library_element_declaration | action | pragma } ;
+
+pragma ::= <(?s){[^}]*?}> ;
 
 _library_element_declaration ::= data_type_declaration 
 | function_declaration | function_block_declaration 
@@ -241,16 +243,18 @@ non_retain ::= $'NON_RETAIN' ;
 
 input_declarations ::= 
     $'VAR_INPUT' [ retain | non_retain ]
-    {_input_declaration ';'} 
+    var_input_body
     $'END_VAR' [ ';' ] ;
     
-_input_declaration ::= var_init_decl | edge_declaration ;
+var_input_body ::= {((var_init_decl | edge_declaration) ';') | pragma [';'] };
 r_edge ::= $'R_EDGE';
 f_edge ::= $'F_EDGE';
 edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
 
-var_init_decl ::= array_var_init_decl | structured_var_init_decl | 
-                  string_var_declaration | _var1_init_decl | fb_name_decl | fb_invocation_decl ;
+var_init_decl ::=
+    [pragma] (array_var_init_decl | structured_var_init_decl |
+              string_var_declaration | _var1_init_decl | fb_name_decl |
+              fb_invocation_decl) ;
 
 _var1_init_decl ::= _var1_list ':' (simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
 
@@ -267,14 +271,16 @@ fb_invocation_decl ::= fb_name_list ':' fb_invocation;
 fb_name_list ::= fb_name {',' fb_name} ;
 fb_name ::= _identifier ;
 
+var_body ::= {(var_init_decl ';') | pragma [';'] };
+
 output_declarations ::= 
     $'VAR_OUTPUT' [ retain | non_retain ] 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 input_output_declarations ::= 
     $'VAR_IN_OUT' 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 var_declaration ::= _temp_var_decl | fb_name_decl ;
@@ -291,12 +297,12 @@ array_var_declaration ::= _var1_list ':' array_specification ;
 structured_var_declaration ::= _var1_list ':' structure_type_name ;
 var_declarations ::= 
     $'VAR' [constant | persistent] 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 retentive_var_declarations ::= 
     $'VAR' $'RETAIN' 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 constant ::= $'CONSTANT' ;
@@ -371,7 +377,7 @@ function_declaration ::=
 _io_var_declarations ::= input_declarations | output_declarations | input_output_declarations ;
 function_var_decls ::=
     $'VAR' [ constant ] 
-    {var_init_decl ';'}
+    var_body
     $'END_VAR' [ ';' ] ;
 
 # TODO: {function_var_decl ';'}
@@ -402,7 +408,7 @@ _other_var_declarations ::= external_var_declarations |var_declarations
 
 temp_var_decls ::=
     $'VAR_TEMP' 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 # TODO: _temp_var_decl, which seemed too restrictive,  was replaced with
@@ -410,7 +416,7 @@ temp_var_decls ::=
 
 non_retentive_var_decls ::= 
     $'VAR' $'NON_RETAIN' 
-    {var_init_decl ';'} 
+    var_body
     $'END_VAR' [ ';' ] ;
 
 function_block_body ::= sequential_function_chart | statement_list;
@@ -431,8 +437,8 @@ program_access_decls ::=
     {program_access_decl ';' } 
     $'END_VAR' [ ';' ] ;
 
-program_access_decl ::= access_name ':' _symbolic_variable ':' 
-non_generic_type_name [direction] ;
+program_access_decl ::=
+    access_name ':' _symbolic_variable ':' non_generic_type_name [direction] ;
 
 # B.1.6
 
@@ -725,7 +731,7 @@ _statement ::=
     (';' {';'}) | method | assignment_statement | no_op_statement | set_statement |
     reset_statement | reference_assignment_statement |
     _subprogram_control_statement | _selection_statement | _iteration_statement
-    | (action_name ';') ;
+    | (action_name ';') | pragma;
 
 # B.3.2.1
 

@@ -1,3 +1,4 @@
+// (Auto-generated Lark grammar from iec.grammar)
 
 // IEC 61131-3 Strucured Text Grammar version 1.2
 
@@ -15,7 +16,9 @@
 
 // B.0
 
-iec_source: (_library_element_declaration | action)*
+iec_source: (_library_element_declaration | action | pragma)*
+
+pragma: /(?s){[^}]*?}/
 
 _library_element_declaration: data_type_declaration | function_declaration | function_block_declaration | program_declaration | configuration_declaration | global_var_declarations
 
@@ -309,9 +312,9 @@ retain: "RETAIN"i
 
 non_retain: "NON_RETAIN"i
 
-input_declarations: "VAR_INPUT"i (retain | non_retain)? (_input_declaration ";")* "END_VAR"i ";"?
+input_declarations: "VAR_INPUT"i (retain | non_retain)? var_input_body "END_VAR"i ";"?
 
-_input_declaration: var_init_decl | edge_declaration
+var_input_body: (((((var_init_decl | edge_declaration) ";")) | (pragma ";"?)))*
 
 R_EDGE: "R_EDGE"i
 
@@ -319,7 +322,7 @@ F_EDGE: "F_EDGE"i
 
 edge_declaration: _var1_list ":" "BOOL"i (R_EDGE | F_EDGE)
 
-var_init_decl: array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_name_decl | fb_invocation_decl
+var_init_decl: pragma? (array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_name_decl | fb_invocation_decl)
 
 _var1_init_decl: _var1_list ":" (simple_spec_init | subrange_spec_init | enumerated_spec_init)
 
@@ -337,9 +340,11 @@ fb_name_list: fb_name ("," fb_name)*
 
 fb_name: IDENTIFIER
 
-output_declarations: "VAR_OUTPUT"i (retain | non_retain)? (var_init_decl ";")* "END_VAR"i ";"?
+var_body: (((var_init_decl ";") | (pragma ";"?)))*
 
-input_output_declarations: "VAR_IN_OUT"i (var_init_decl ";")* "END_VAR"i ";"?
+output_declarations: "VAR_OUTPUT"i (retain | non_retain)? var_body "END_VAR"i ";"?
+
+input_output_declarations: "VAR_IN_OUT"i var_body "END_VAR"i ";"?
 
 var_declaration: _temp_var_decl | fb_name_decl
 
@@ -351,9 +356,9 @@ array_var_declaration: _var1_list ":" array_specification
 
 structured_var_declaration: _var1_list ":" structure_type_name
 
-var_declarations: "VAR"i (constant | PERSISTENT)? (var_init_decl ";")* "END_VAR"i ";"?
+var_declarations: "VAR"i (constant | PERSISTENT)? var_body "END_VAR"i ";"?
 
-retentive_var_declarations: "VAR"i "RETAIN"i (var_init_decl ";")* "END_VAR"i ";"?
+retentive_var_declarations: "VAR"i "RETAIN"i var_body "END_VAR"i ";"?
 
 constant: "CONSTANT"i
 
@@ -417,7 +422,7 @@ function_declaration: "FUNCTION"i derived_function_name ":" (_elementary_type_na
 
 _io_var_declarations: input_declarations | output_declarations | input_output_declarations
 
-function_var_decls: "VAR"i constant? (var_init_decl ";")* "END_VAR"i ";"?
+function_var_decls: "VAR"i constant? var_body "END_VAR"i ";"?
 
 // TODO: {function_var_decl ';'}
 
@@ -445,13 +450,13 @@ function_block_declaration: ((("FUNCTION_BLOCK"i) | ("FUNCTIONBLOCK"i))) derived
 
 _other_var_declarations: external_var_declarations | var_declarations | retentive_var_declarations | non_retentive_var_decls | temp_var_decls | incompl_located_var_declarations
 
-temp_var_decls: "VAR_TEMP"i (var_init_decl ";")* "END_VAR"i ";"?
+temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
 
 // TODO: _temp_var_decl, which seemed too restrictive,  was replaced with
 
 // var_init_decl (any further implications here?)
 
-non_retentive_var_decls: "VAR"i "NON_RETAIN"i (var_init_decl ";")* "END_VAR"i ";"?
+non_retentive_var_decls: "VAR"i "NON_RETAIN"i var_body "END_VAR"i ";"?
 
 function_block_body: sequential_function_chart | statement_list
 
@@ -793,7 +798,7 @@ _primary_expression: (("(" expression ")")) | function_call | _variable | multi_
 
 statement_list: _statement _statement*
 
-_statement: (";" ";"*) | method | assignment_statement | no_op_statement | set_statement | reset_statement | reference_assignment_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";")
+_statement: (";" ";"*) | method | assignment_statement | no_op_statement | set_statement | reset_statement | reference_assignment_statement | _subprogram_control_statement | _selection_statement | _iteration_statement | (action_name ";") | pragma
 
 // B.3.2.1
 
@@ -855,12 +860,10 @@ exit_statement: "EXIT"i ";"?
 
     MULTI_LINE_COMMENT: /\(\*.*?\*\)/s
     SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
-    PRAGMA: /{[^}]*?}/s
 
     // Ignore whitespace
     %import common.WS
     %ignore WS
     %ignore MULTI_LINE_COMMENT
     %ignore SINGLE_LINE_COMMENT
-    %ignore PRAGMA
     
