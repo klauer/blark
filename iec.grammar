@@ -129,7 +129,7 @@ generic_type_name ::= <ANY|ANY_DERIVED|ANY_ELEMENTARY|ANY_MAGNITUDE|ANY_NUM|ANY_
 
 derived_type_name ::= single_element_type_name |array_type_name | structure_type_name | string_type_name ;
 single_element_type_name ::= simple_type_name |subrange_type_name | enumerated_type_name ;
-simple_type_name ::= _identifier ;
+simple_type_name ::= _identifier;
 subrange_type_name ::= _identifier ;
 enumerated_type_name ::= _identifier ;
 array_type_name ::= _identifier ;
@@ -152,7 +152,7 @@ simple_type_declaration ::= simple_type_name ':' simple_spec_init ;
 extended_type_declaration ::= simple_type_name $'EXTENDS' _dotted_name ':' simple_spec_init ;
 
 simple_spec_init ::= [pointer_to] _simple_specification [':=' expression] ;
-_simple_specification ::= _elementary_type_name |simple_type_name ;
+_simple_specification ::= _elementary_type_name |simple_type_name | _dotted_name;
 subrange_type_declaration ::= subrange_type_name ':' subrange_spec_init ;
 subrange_spec_init ::= [pointer_to] subrange_specification [':=' expression] ;
 subrange_specification ::= integer_type_name '(' subrange')' 

@@ -217,7 +217,7 @@ extended_type_declaration: simple_type_name "EXTENDS"i _dotted_name ":" simple_s
 
 simple_spec_init: pointer_to? _simple_specification (":=" expression)?
 
-_simple_specification: _elementary_type_name | simple_type_name
+_simple_specification: _elementary_type_name | simple_type_name | _dotted_name
 
 subrange_type_declaration: subrange_type_name ":" subrange_spec_init
 
