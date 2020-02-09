@@ -349,13 +349,13 @@ array_var_declaration: _var1_list ":" array_specification
 
 structured_var_declaration: _var1_list ":" structure_type_name
 
-var_declarations: "VAR"i constant? (var_init_decl ";")* "END_VAR"i ";"?
+var_declarations: "VAR"i (constant | PERSISTENT)? (var_init_decl ";")* "END_VAR"i ";"?
 
 retentive_var_declarations: "VAR"i "RETAIN"i (var_init_decl ";")* "END_VAR"i ";"?
 
 constant: "CONSTANT"i
 
-located_var_declarations: "VAR"i (constant | retain | non_retain)? (located_var_decl ";")* "END_VAR"i ";"?
+located_var_declarations: "VAR"i (constant | retain | non_retain)? PERSISTENT? (located_var_decl ";")* "END_VAR"i ";"?
 
 located_var_decl: variable_name? location ":" located_var_spec_init
 
