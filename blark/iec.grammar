@@ -719,13 +719,14 @@ _primary_expression ::= ('(' expression ')') | function_call | _variable | multi
 
 statement_list ::= _statement { _statement } ;
 _statement ::= 
-    (';' {';'}) | method | assignment_statement | set_statement |
+    (';' {';'}) | method | assignment_statement | no_op_statement | set_statement |
     reset_statement | reference_assignment_statement |
     _subprogram_control_statement | _selection_statement | _iteration_statement
     | (action_name ';') ;
 
 # B.3.2.1
 
+no_op_statement ::= _variable ';' ;
 assignment_statement ::= _variable ':=' { _variable ':=' } expression ';' ;
 set_statement ::= _variable 'S=' expression ';' ;
 reset_statement ::= _variable 'R=' expression ';' ;
