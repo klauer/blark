@@ -250,7 +250,7 @@ f_edge ::= $'F_EDGE';
 edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
 
 var_init_decl ::= array_var_init_decl | structured_var_init_decl | 
-                  string_var_declaration | _var1_init_decl | fb_name_decl ;
+                  string_var_declaration | _var1_init_decl | fb_name_decl | fb_invocation_decl ;
 
 _var1_init_decl ::= _var1_list ':' (simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
 
@@ -261,6 +261,8 @@ structured_var_init_decl ::= _var1_list ':' initialized_structure ;
 fb_name_decl ::=
     fb_name_list ':' function_block_type_name 
     [ ':=' structure_initialization ] ;
+
+fb_invocation_decl ::= fb_name_list ':' fb_invocation;
 
 fb_name_list ::= fb_name {',' fb_name} ;
 fb_name ::= _identifier ;
