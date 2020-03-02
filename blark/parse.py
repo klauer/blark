@@ -10,8 +10,8 @@ import sys
 
 import pytmc
 import lark
+import blark
 
-from . import GRAMMAR_FILENAME
 from .util import get_source_code
 
 
@@ -20,8 +20,9 @@ RE_COMMENT = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
 RE_PRAGMA = re.compile(r'{[^}]*?}', re.MULTILINE | re.DOTALL)
 
 
-with open(GRAMMAR_FILENAME, 'rt') as f:
+with open(blark.GRAMMAR_FILENAME, 'rt') as f:
     lark_grammar = f.read()
+
 
 _PARSER = None
 
@@ -35,10 +36,43 @@ def get_parser():
     return _PARSER
 
 
+def replace_comments(text, replace_char):
+    'Remove (potentially nested) multiline comments from `text`'
+    result = []
+    in_comment = 0
+    skip = 0
+    OPEN_COMMENT = ('(', '*')
+    CLOSE_COMMENT = (')', '*')
+    for c, next_c in zip(text, text[1:] + ' '):
+        if skip:
+            skip -= 1
+            result.append(replace_char)
+            continue
+
+        pair = (c, next_c)
+        if pair == OPEN_COMMENT:
+            in_comment += 1
+            skip = 1
+            c = replace_char
+        elif pair == CLOSE_COMMENT:
+            in_comment -= 1
+            skip = 1
+            c = replace_char
+
+        if in_comment > 0:
+            result.append(replace_char)
+        else:
+            result.append(c)
+
+    return ''.join(result)
+
+
 def parse_source_code(source_code, *, verbose=0, fn='unknown'):
     'Parse source code with the parser'
+    # TODO improve grammar to make this step not required :(
+    commentless_source = replace_comments(source_code, ' ')
     try:
-        tree = get_parser().parse(source_code)
+        tree = get_parser().parse(commentless_source)
     except Exception as ex:
         if verbose > 1:
             print(f'[Failure] Parse failure')
@@ -91,8 +125,7 @@ def _build_map_of_offset_to_line_number(source):
 
 def parse_single_file(fn, *, verbose=0):
     'Parse a single source code file'
-    with open(fn, 'rt') as f:
-        source_code = f.read()
+    source_code = get_source_code(fn)
     return parse_source_code(source_code, fn=fn, verbose=verbose)
 
 
@@ -163,6 +196,7 @@ def build_arg_parser(argparser=None):
     argparser.add_argument(
         '--verbose', '-v',
         action='count',
+        default=0,
         help='Increase verbosity, up to -vvv'
     )
 
@@ -218,14 +252,17 @@ def main(filename, verbose=0, debug=False):
                 yield from find_failures(item)
 
     if not success:
+        print('Failed to parse all source code files:')
+        failures = list(find_failures(results))
+        for name, item in failures:
+            fn = f'[{item.filename}] ' if hasattr(item, 'filename') else ''
+            header = f'{fn}{name}'
+            print(header)
+            print('-' * len(header))
+            print(f'({type(item).__name__}) {item}')
+            print()
+
         if not debug:
-            print('Failed to parse all source code files:')
-            for name, item in find_failures(results):
-                fn = f'[{item.filename}] ' if hasattr(item, 'filename') else ''
-                header = f'{fn}{name}'
-                print(header)
-                print('-' * len(header))
-                print(f'({type(item).__name__}) {item}')
-                print()
+            sys.exit(1)
 
     return results
