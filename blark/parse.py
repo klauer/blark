@@ -42,7 +42,7 @@ def replace_comments(text, *, replace_char=' '):
     in_comment = 0
     skip = 0
     OPEN_COMMENT = ('(', '*')
-    CLOSE_COMMENT = (')', '*')
+    CLOSE_COMMENT = ('*', ')')
     for c, next_c in zip(text, text[1:] + ' '):
         if skip:
             skip -= 1
