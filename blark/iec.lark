@@ -236,7 +236,7 @@ enumerated_type_declaration: enumerated_type_name ":" enumerated_spec_init
 
 enumerated_spec_init: (pointer_to | reference_to)? enumerated_specification (":=" enumerated_value)?
 
-enumerated_specification: (("(" enumerated_value ("," enumerated_value)* ")")) | enumerated_type_name
+enumerated_specification: (("(" enumerated_value ("," enumerated_value)* ")" integer_type_name?)) | enumerated_type_name
 
 enumerated_value: (enumerated_type_name "#")? IDENTIFIER (":=" integer_literal)?
 
