@@ -40,6 +40,7 @@ setup(
     long_description=readme,
     entry_points = {
         'console_scripts': [
+            'blark = blark.__main__:main',
         ]
     },
     package_data={

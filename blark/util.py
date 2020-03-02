@@ -1,14 +1,14 @@
+import pathlib
+
 import pytmc
 
 
 def get_source_code(fn):
-    fn = str(fn)
-    if fn.endswith('.TcPOU'):
-        root = pytmc.parser.parse(fn)
-        pou, = list(root.find(pytmc.parser.POU))
-        source_code = pou.get_source_code()
-    else:
-        with open(fn) as f:
-            source_code = f.read()
+    fn = pathlib.Path(fn)
+    root = pytmc.parser.parse(str(fn))
+    for item in root.find(pytmc.parser.TwincatItem):
+        if hasattr(item, 'get_source_code'):
+            return item.get_source_code()
 
-    return source_code
+    raise ValueError('Unable to find pytmc TwincatItem with source code '
+                     '(i.e., with `get_source_code` as an attribute)')
