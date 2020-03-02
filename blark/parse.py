@@ -36,7 +36,7 @@ def get_parser():
     return _PARSER
 
 
-def replace_comments(text, replace_char):
+def replace_comments(text, *, replace_char=' '):
     'Remove (potentially nested) multiline comments from `text`'
     result = []
     in_comment = 0
@@ -67,12 +67,23 @@ def replace_comments(text, replace_char):
     return ''.join(result)
 
 
-def parse_source_code(source_code, *, verbose=0, fn='unknown'):
+# TODO improve grammar to make this step not required :(
+DEFAULT_PREPROCESSORS = [replace_comments]
+_DEFAULT_PREPROCESSORS = object()
+
+
+def parse_source_code(source_code, *, verbose=0, fn='unknown',
+                      preprocessors=_DEFAULT_PREPROCESSORS):
     'Parse source code with the parser'
-    # TODO improve grammar to make this step not required :(
-    commentless_source = replace_comments(source_code, ' ')
+    if preprocessors is _DEFAULT_PREPROCESSORS:
+        preprocessors = DEFAULT_PREPROCESSORS
+
+    processed_source = source_code
+    for preprocessor in preprocessors:
+        processed_source = preprocessor(processed_source)
+
     try:
-        tree = get_parser().parse(commentless_source)
+        tree = get_parser().parse(processed_source)
     except Exception as ex:
         if verbose > 1:
             print(f'[Failure] Parse failure')
