@@ -39,13 +39,14 @@ def parse_source_code(source_code, *, verbose=0, fn='unknown'):
     'Parse source code with the parser'
     try:
         tree = get_parser().parse(source_code)
-    except Exception:
+    except Exception as ex:
         if verbose > 1:
-            print(f'Failed to parse {fn}:')
+            print(f'[Failure] Parse failure')
             print('-------------------------------')
             print(source_code)
             print('-------------------------------')
-            print(f'[Failure] End of {fn}')
+            print(f'{type(ex).__name__} {ex}')
+            print(f'[Failure] {fn}')
         raise
 
     if verbose > 2:
@@ -221,6 +222,10 @@ def main(filename, verbose=0, debug=False):
             print('Failed to parse all source code files:')
             for name, item in find_failures(results):
                 fn = f'[{item.filename}] ' if hasattr(item, 'filename') else ''
-                print(f'* {fn}{name}: ({type(item).__name__}) {item}')
+                header = f'{fn}{name}'
+                print(header)
+                print('-' * len(header))
+                print(f'({type(item).__name__}) {item}')
+                print()
 
     return results
