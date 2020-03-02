@@ -195,9 +195,10 @@ _structure_declaration ::=
     $'END_STRUCT' [ ';' ] ;
 
 structure_element_declaration ::= 
-    structure_element_name [ incompl_location ] ':' 
-    (initialized_structure | array_spec_init | string_var_type |
-    simple_spec_init | subrange_spec_init | enumerated_spec_init ) ;
+    [pragma] (structure_element_name [ incompl_location ] ':' 
+              (initialized_structure | array_spec_init | string_var_type |
+              simple_spec_init | subrange_spec_init | enumerated_spec_init ) 
+              );
 
 structure_element_name ::= _identifier ;
 structure_initialization ::= 

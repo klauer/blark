@@ -260,7 +260,7 @@ initialized_structure: structure_type_name ":=" structure_initialization
 
 _structure_declaration: "STRUCT"i structure_element_declaration ";" (structure_element_declaration ";")* "END_STRUCT"i ";"?
 
-structure_element_declaration: structure_element_name incompl_location? ":" (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init)
+structure_element_declaration: pragma? (structure_element_name incompl_location? ":" (initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init))
 
 structure_element_name: IDENTIFIER
 
