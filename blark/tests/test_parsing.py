@@ -1,4 +1,3 @@
-import re
 import pathlib
 
 import lark
@@ -33,6 +32,9 @@ def pou_filename(request):
 
 @pytest.fixture
 def pou_source(pou_filename):
+    if not pathlib.Path(pou_filename).exists():
+        pytest.skip(f'File does not exist: {pou_filename}')
+
     return blark.util.get_source_code(pou_filename)
 
 

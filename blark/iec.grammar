@@ -14,7 +14,7 @@
 
 iec_source ::= { _library_element_declaration | action | pragma } ;
 
-pragma ::= <(?s){[^}]*?}> ;
+pragma ::= <(?s){[^}]*?}> [';'] ;
 
 _library_element_declaration ::= data_type_declaration 
 | function_declaration | function_block_declaration 
@@ -246,15 +246,15 @@ input_declarations ::=
     var_input_body
     $'END_VAR' [ ';' ] ;
     
-var_input_body ::= {((var_init_decl | edge_declaration) ';') | pragma [';'] };
+var_input_body ::= {var_init_decl | edge_declaration | pragma };
 r_edge ::= $'R_EDGE';
 f_edge ::= $'F_EDGE';
-edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ;
+edge_declaration ::= _var1_list ':' $'BOOL' (r_edge | f_edge) ';' ;
 
 var_init_decl ::=
     [pragma] (array_var_init_decl | structured_var_init_decl |
               string_var_declaration | _var1_init_decl | fb_name_decl |
-              fb_invocation_decl) ;
+              fb_invocation_decl) ';';
 
 _var1_init_decl ::= _var1_list ':' (simple_spec_init | subrange_spec_init | enumerated_spec_init) ;
 
@@ -308,28 +308,28 @@ retentive_var_declarations ::=
 constant ::= $'CONSTANT' ;
 located_var_declarations ::= 
     $'VAR' [ constant | retain | non_retain ] [persistent]
-    {located_var_decl ';'} 
+    {located_var_decl | pragma} 
     $'END_VAR' [ ';' ] ;
 
-located_var_decl ::= [variable_name] location ':' located_var_spec_init ;
+located_var_decl ::= [variable_name] location ':' located_var_spec_init ';' ;
 external_var_declarations ::= 
     $'VAR_EXTERNAL' [constant] 
-    {external_declaration ';'} 
+    {external_declaration | pragma} 
     $'END_VAR' [ ';' ] ;
 
 external_declaration ::=
     global_var_name ':' (_simple_specification | subrange_specification 
     | enumerated_specification | array_specification 
-    | structure_type_name | function_block_type_name) ;
+    | structure_type_name | function_block_type_name) ';' ;
 
 global_var_name ::= _identifier ;
 persistent ::= $'PERSISTENT';
 global_var_declarations ::= 
     $'VAR_GLOBAL' [constant | retain] [persistent]
-    { (var_init_decl | global_var_decl ) ';' }
+    { var_init_decl | global_var_decl | pragma }
     $'END_VAR' [ ';' ] ;
 
-global_var_decl ::= global_var_spec ':' [ located_var_spec_init | function_block_type_name ] ;
+global_var_decl ::= global_var_spec ':' [ located_var_spec_init | function_block_type_name ] ';' ;
 global_var_spec ::= global_var_list | [global_var_name] location ;
 located_var_spec_init ::= 
     simple_spec_init |subrange_spec_init | enumerated_spec_init |
@@ -350,10 +350,10 @@ double_byte_string_spec ::= $'WSTRING' [('[' (integer | simple_type_name) ']') |
 
 incompl_located_var_declarations ::= 
     $'VAR' [retain | non_retain]
-    {incompl_located_var_decl ';'} 
+    {incompl_located_var_decl | pragma} 
     $'END_VAR' [ ';' ] ;
 
-incompl_located_var_decl ::= variable_name incompl_location ':' var_spec ;
+incompl_located_var_decl ::= variable_name incompl_location ':' var_spec ';';
 incompl_location ::= $'AT' <\%(I|Q|M)\*> ;
 string ::= $'STRING';
 wstring ::= $'WSTRING';
@@ -514,7 +514,7 @@ access_declarations ::=
     access_declaration ';' {access_declaration ';'} 
     $'END_VAR' [ ';' ] ;
 
-access_declaration ::= access_name ':' access_path ':' 
+access_declaration ::= [pragma] access_name ':' access_path ':' 
 non_generic_type_name [direction] ;
 
 access_path ::= [resource_name '.'] direct_variable 
@@ -559,7 +559,7 @@ instance_specific_initializations ::=
     $'END_VAR' [ ';' ] ;
 
 instance_specific_init ::= 
-    resource_name '.' program_name '.' {fb_name '.'} 
+    [pragma] resource_name '.' program_name '.' {fb_name '.'} 
     ((variable_name [location] ':' located_var_spec_init) | 
     (fb_name ':' function_block_type_name ':=' 
     structure_initialization)) ;
