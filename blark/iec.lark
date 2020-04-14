@@ -18,7 +18,7 @@
 
 iec_source: (_library_element_declaration | action | pragma)*
 
-pragma: /(?s){[^}]*?}/
+pragma: /(?s){[^}]*?}/ ";"?
 
 _library_element_declaration: data_type_declaration | function_declaration | function_block_declaration | program_declaration | configuration_declaration | global_var_declarations
 
@@ -314,7 +314,7 @@ non_retain: "NON_RETAIN"i
 
 input_declarations: "VAR_INPUT"i (retain | non_retain)? var_input_body "END_VAR"i ";"?
 
-var_input_body: (((((var_init_decl | edge_declaration) ";")) | (pragma ";"?)))*
+var_input_body: (((((var_init_decl | edge_declaration) ";")) | pragma))*
 
 R_EDGE: "R_EDGE"i
 
@@ -362,21 +362,21 @@ retentive_var_declarations: "VAR"i "RETAIN"i var_body "END_VAR"i ";"?
 
 constant: "CONSTANT"i
 
-located_var_declarations: "VAR"i (constant | retain | non_retain)? PERSISTENT? (located_var_decl ";")* "END_VAR"i ";"?
+located_var_declarations: "VAR"i (constant | retain | non_retain)? PERSISTENT? (located_var_decl | pragma)* "END_VAR"i ";"?
 
-located_var_decl: variable_name? location ":" located_var_spec_init
+located_var_decl: variable_name? location ":" located_var_spec_init ";"
 
-external_var_declarations: "VAR_EXTERNAL"i constant? (external_declaration ";")* "END_VAR"i ";"?
+external_var_declarations: "VAR_EXTERNAL"i constant? (external_declaration | pragma)* "END_VAR"i ";"?
 
-external_declaration: global_var_name ":" (_simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | function_block_type_name)
+external_declaration: global_var_name ":" (_simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | function_block_type_name) ";"
 
 global_var_name: IDENTIFIER
 
 PERSISTENT: "PERSISTENT"i
 
-global_var_declarations: "VAR_GLOBAL"i (constant | retain)? PERSISTENT? ((var_init_decl | global_var_decl) ";")* "END_VAR"i ";"?
+global_var_declarations: "VAR_GLOBAL"i (constant | retain)? PERSISTENT? (var_init_decl | global_var_decl | pragma)* "END_VAR"i ";"?
 
-global_var_decl: global_var_spec ":" (located_var_spec_init | function_block_type_name)?
+global_var_decl: global_var_spec ":" (located_var_spec_init | function_block_type_name)? ";"
 
 global_var_spec: global_var_list | (global_var_name? location)
 
@@ -396,9 +396,9 @@ double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
 
 double_byte_string_spec: "WSTRING"i (((("[" (integer | simple_type_name) "]")) | (("(" (integer | simple_type_name) ")"))))? (":=" double_byte_character_string)?
 
-incompl_located_var_declarations: "VAR"i (retain | non_retain)? (incompl_located_var_decl ";")* "END_VAR"i ";"?
+incompl_located_var_declarations: "VAR"i (retain | non_retain)? (incompl_located_var_decl | pragma)* "END_VAR"i ";"?
 
-incompl_located_var_decl: variable_name incompl_location ":" var_spec
+incompl_located_var_decl: variable_name incompl_location ":" var_spec ";"
 
 incompl_location: "AT"i /\%(I|Q|M)\*/
 
@@ -528,7 +528,7 @@ resource_name: IDENTIFIER
 
 access_declarations: "VAR_ACCESS"i access_declaration ";" (access_declaration ";")* "END_VAR"i ";"?
 
-access_declaration: access_name ":" access_path ":" non_generic_type_name direction?
+access_declaration: pragma? access_name ":" access_path ":" non_generic_type_name direction?
 
 access_path: ((resource_name ".")? direct_variable) | ((resource_name ".")? (program_name ".")? (fb_name ".")* _symbolic_variable)
 
@@ -570,7 +570,7 @@ data_sink: global_var_reference | direct_variable
 
 instance_specific_initializations: "VAR_CONFIG"i (instance_specific_init ";")* "END_VAR"i ";"?
 
-instance_specific_init: resource_name "." program_name "." (fb_name ".")* (((variable_name location? ":" located_var_spec_init) | (fb_name ":" function_block_type_name ":=" structure_initialization)))
+instance_specific_init: pragma? resource_name "." program_name "." (fb_name ".")* (((variable_name location? ":" located_var_spec_init) | (fb_name ":" function_block_type_name ":=" structure_initialization)))
 
 // B.2.1
 
