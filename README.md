@@ -6,7 +6,7 @@ Or for short, blark.  B(eckhoff)-lark. It sounded good in my head, at least.
 The Grammar
 -----------
 
-The [grammar](blark/iec.lark) uses Lark's Earley parser algorithm. 
+The [grammar](blark/iec.lark) uses Lark's Earley parser algorithm.
 
 The grammar itself is not perfect.  It may not reliably parse your source code
 or produce useful Python instances just yet.
@@ -24,6 +24,7 @@ Once I get around to it, I hope to:
 * Create a lark Transformer to take tokenized PLC code and map them onto those
   dataclasses
 * Fix the grammar and improve it as I go
+* Maybe create a ``black``-style autoformatter for PLC code
 
 Requirements
 ------------

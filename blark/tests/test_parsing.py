@@ -6,7 +6,6 @@ import pytest
 import blark
 import blark.util
 
-
 TEST_PATH = pathlib.Path(__file__).parent
 
 

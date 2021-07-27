@@ -11,7 +11,6 @@ import logging
 
 import blark
 
-
 DESCRIPTION = __doc__
 
 
@@ -38,7 +37,7 @@ def _build_commands():
             DESCRIPTION += f'\n    $ blark {module} --help'
 
     if unavailable:
-        DESCRIPTION += f'\n\n'
+        DESCRIPTION += '\n\n'
 
         for module, ex in unavailable:
             DESCRIPTION += (f'WARNING: blark {module!r} is unavailable due to:'
