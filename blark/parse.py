@@ -3,17 +3,16 @@
 files in conjunction with pytmc.
 """
 import argparse
-import ast
 import pathlib
 import re
 import sys
 
-import pytmc
 import lark
+import pytmc
+
 import blark
 
 from .util import get_source_code
-
 
 DESCRIPTION = __doc__
 RE_COMMENT = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
@@ -86,7 +85,7 @@ def parse_source_code(source_code, *, verbose=0, fn='unknown',
         tree = get_parser().parse(processed_source)
     except Exception as ex:
         if verbose > 1:
-            print(f'[Failure] Parse failure')
+            print('[Failure] Parse failure')
             print('-------------------------------')
             print(source_code)
             print('-------------------------------')
@@ -104,9 +103,11 @@ def parse_source_code(source_code, *, verbose=0, fn='unknown',
         print(f'[Success] End of {fn}')
 
     # This is some WIP comment + declaration matching
-    pragmas = RE_PRAGMA.findall(source_code)
-    line_numbers = _build_map_of_offset_to_line_number(source_code)
-    comments = list(RE_COMMENT.finditer(source_code))
+    pragmas = RE_PRAGMA.findall(source_code)  # noqa: F841
+    line_numbers = _build_map_of_offset_to_line_number(  # noqa: F841
+        source_code
+    )
+    comments = list(RE_COMMENT.finditer(source_code))  # noqa: F841
 
     # decl, = list(tree.find_data('data_type_declaration'))
     # element1 = [c for c in decl.children][0]
@@ -143,7 +144,7 @@ def parse_single_file(fn, *, verbose=0):
 def parse_project(tsproj_project, *, print_filenames=None, verbose=0):
     'Parse an entire tsproj project file'
     proj_path = pathlib.Path(tsproj_project)
-    proj_root = proj_path.parent.resolve().absolute()
+    proj_root = proj_path.parent.resolve().absolute()  # noqa: F841 TODO
 
     if proj_path.suffix.lower() not in ('.tsproj', ):
         raise ValueError('Expected a .tsproj file')
