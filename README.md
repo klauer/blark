@@ -48,7 +48,7 @@ $ pip install blark
 ```
 
 3. Run the parser.  Supported file types include those from TwinCAT3 projects (
-   ``.tsproj`., ``.sln``, ``.TcPOU``, ``.TcGVL``).
+   ``.tsproj``, ``.sln``, ``.TcPOU``, ``.TcGVL``).
 
 ```bash
 $ blark parse -vvv blark/tests/POUs/F_SetStateParams.TcPOU
