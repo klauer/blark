@@ -257,10 +257,15 @@ enumerated_type_declaration: enumerated_type_name ":" enumerated_spec_init
 
 enumerated_spec_init: ( pointer_to | reference_to )? enumerated_specification ( ":=" enumerated_value )?
 
-enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" integer_type_name?
+enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" enum_data_type_name?
                         | enumerated_type_name
 
 enumerated_value: ( enumerated_type_name "#" )? IDENTIFIER ( ":=" integer_literal )?
+
+// The following is a Beckhoff extensions of the IEC61131-3 standard
+// https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/2529504395.html
+enum_data_type_name: integer_type_name
+                   | bit_string_type_name
 
 array_type_declaration: array_type_name ":" array_spec_init
 
@@ -288,7 +293,7 @@ _structure_specification: ( ( pointer_to | reference_to )? _structure_declaratio
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
-_structure_declaration: "STRUCT"i structure_element_declaration ";" ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
+_structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
 structure_element_declaration: pragma? ( structure_element_name incompl_location? ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) )
 
