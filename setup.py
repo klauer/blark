@@ -40,6 +40,7 @@ setup(
     packages=find_packages(),
     description="Beckhoff TwinCAT IEC 61131-3 parsing tools",
     long_description=readme,
+    long_description_content_type="text/markdown",
     entry_points={
         "console_scripts": [
             "blark = blark.__main__:main",
