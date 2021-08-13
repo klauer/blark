@@ -224,6 +224,7 @@ pointer_to: "POINTER"i "TO"i
 reference_to: "REFERENCE"i "TO"i
 
 _type_declaration: array_type_declaration ";"
+                 | structure_type_extends_declaration ";"?
                  | structure_type_declaration ";"?
                  | string_type_declaration ";"
                  | _single_element_type_declaration ";"
@@ -276,26 +277,28 @@ array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i array_spe
 array_spec_type_name: string_type
                     | non_generic_type_name
 
-array_initialization: ( ( "[" array_initial_elements ( "," array_initial_elements )* "]" ) )
-                    | ( ( array_initial_elements ( "," array_initial_elements )* ) )
+array_initialization: "[" array_initial_elements ( "," array_initial_elements )* "]"
+                    | array_initial_elements ( "," array_initial_elements )*
 
-array_initial_elements: ( ( ( integer | enumerated_value ) "(" array_initial_element? ")" ) )
+array_initial_elements: ( integer | enumerated_value ) "(" array_initial_element? ")"
                       | array_initial_element
 
 array_initial_element: _constant
                      | structure_initialization
                      | enumerated_value
 
+structure_type_extends_declaration: structure_type_name "EXTENDS"i dotted_name ":" _structure_specification
+
 structure_type_declaration: structure_type_name ":" _structure_specification
 
-_structure_specification: ( ( pointer_to | reference_to )? _structure_declaration )
+_structure_specification: ( pointer_to | reference_to )? _structure_declaration
                         | initialized_structure
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
-_structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
+_structure_declaration: "STRUCT"i ( pragma* structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
-structure_element_declaration: pragma? ( structure_element_name incompl_location? ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init ) )
+structure_element_declaration: structure_element_name incompl_location? ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
 structure_element_name: IDENTIFIER
 
@@ -354,7 +357,7 @@ F_EDGE: "F_EDGE"i
 
 edge_declaration: _var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
 
-var_init_decl: pragma? ( array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_decl)
+var_init_decl: pragma* ( array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_decl)
 
 _var1_init_decl: _var1_list ":" ( simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
