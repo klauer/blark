@@ -2,9 +2,9 @@
 // Distributed under the GPL as part of iec2xml.
 
 // B.0
-iec_source: ( _library_element_declaration | action | pragma )*
+iec_source: ( _library_element_declaration | action )*
 
-pragma: /(?s){[^}]*?}/ ";"?
+PRAGMA: /(?s){[^}]*?}/ ";"?
 
 _library_element_declaration: data_type_declaration
                             | function_declaration
@@ -78,7 +78,7 @@ time_literal: duration
             | date_and_time
 
 // B.1.2.3.1
-duration: ( ( ( "TIME"i ) | ( "T"i ) | ( "t"i ) ) ) "#" "-"? _interval
+duration: ( "TIME"i | "T"i | "t"i ) "#" "-"? _interval
 
 _interval: days
          | hours
@@ -107,7 +107,7 @@ milliseconds: fixed_point "ms"i
             | integer "ms"i
 
 // B.1.2.3.2
-time_of_day: ( ( ( "TIME_OF_DAY"i ) | ( "TOD"i ) ) ) "#" _daytime
+time_of_day: ( "TIME_OF_DAY"i | "TOD"i ) "#" _daytime
 
 _daytime: day_hour ":" day_minute ":" day_second
 
@@ -117,7 +117,7 @@ day_minute: integer
 
 day_second: fixed_point
 
-date: ( ( ( "DATE"i ) | ( "D"i ) | ( "d"i ) ) ) "#" date_literal
+date: ( "DATE"i | "D"i | "d"i ) "#" date_literal
 
 date_literal: year "-" month "-" day
 
@@ -127,7 +127,7 @@ month: integer
 
 day: integer
 
-date_and_time: ( ( ( "DATE_AND_TIME"i ) | ( "DT"i ) ) ) "#" date_literal "-" _daytime
+date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" date_literal "-" _daytime
 
 // B.1.3
 data_type_name: non_generic_type_name
@@ -296,7 +296,7 @@ _structure_specification: ( pointer_to | reference_to )? _structure_declaration
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
-_structure_declaration: "STRUCT"i ( pragma* structure_element_declaration ";" )* "END_STRUCT"i ";"?
+_structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
 structure_element_declaration: structure_element_name incompl_location? ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
@@ -351,13 +351,13 @@ non_retain: "NON_RETAIN"i
 
 input_declarations: "VAR_INPUT"i ( retain | non_retain )? var_input_body "END_VAR"i ";"?
 
-var_input_body: ( ( ( var_init_decl | edge_declaration ) ";" ) | pragma )*
+var_input_body: ( ( var_init_decl | edge_declaration ) ";" )*
 R_EDGE: "R_EDGE"i
 F_EDGE: "F_EDGE"i
 
 edge_declaration: _var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
 
-var_init_decl: pragma* ( array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_decl)
+var_init_decl: ( array_var_init_decl | structured_var_init_decl | string_var_declaration | _var1_init_decl | fb_decl)
 
 _var1_init_decl: _var1_list ":" ( simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
@@ -374,9 +374,7 @@ fb_decl_name_list: fb_name ( "," fb_name )*
 
 fb_name: IDENTIFIER
 
-var_body: _var_body_item*
-_var_body_item: pragma
-              | var_init_decl ";"
+var_body: ( var_init_decl ";" )*
 
 output_declarations: "VAR_OUTPUT"i ( retain | non_retain )? var_body "END_VAR"i ";"?
 
@@ -402,11 +400,11 @@ retentive_var_declarations: "VAR"i "RETAIN"i var_body "END_VAR"i ";"?
 
 constant: "CONSTANT"i
 
-located_var_declarations: "VAR"i ( constant | retain | non_retain )? PERSISTENT? ( located_var_decl | pragma )* "END_VAR"i ";"?
+located_var_declarations: "VAR"i ( constant | retain | non_retain )? PERSISTENT? located_var_decl* "END_VAR"i ";"?
 
 located_var_decl: variable_name? location ":" located_var_spec_init ";"
 
-external_var_declarations: "VAR_EXTERNAL"i constant? ( external_declaration | pragma )* "END_VAR"i ";"?
+external_var_declarations: "VAR_EXTERNAL"i constant? external_declaration* "END_VAR"i ";"?
 
 external_declaration: global_var_name ":" ( simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | function_block_type_name ) ";"
 
@@ -417,7 +415,6 @@ global_var_declarations: "VAR_GLOBAL"i ( constant | retain )? PERSISTENT? _globa
 
 _global_var_body_item: var_init_decl
                      | global_var_decl
-                     | pragma
 
 global_var_decl: global_var_spec ":" ( located_var_spec_init | fb_invocation | function_block_type_name ) ";"
 
@@ -447,7 +444,7 @@ double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
 
 !double_byte_string_spec: "WSTRING"i ( ( ( ( "[" ( integer | simple_type_name ) "]" ) ) | ( ( "(" ( integer | simple_type_name ) ")" ) ) ) )? ( ":=" double_byte_character_string )?
 
-incompl_located_var_declarations: "VAR"i ( retain | non_retain )? ( incompl_located_var_decl | pragma )* "END_VAR"i ";"?
+incompl_located_var_declarations: "VAR"i ( retain | non_retain )? incompl_located_var_decl* "END_VAR"i ";"?
 
 incompl_located_var_decl: variable_name incompl_location ":" var_spec ";"
 
@@ -497,7 +494,10 @@ standard_function_block_name: IDENTIFIER
 
 derived_function_block_name: IDENTIFIER
 
-function_block_declaration: ( ( ( "FUNCTION_BLOCK"i ) | ( "FUNCTIONBLOCK"i ) ) ) derived_function_block_name ( "EXTENDS"i dotted_name )? ( _io_var_declarations | _other_var_declarations )* function_block_body? ( ( ( "END_FUNCTION_BLOCK"i ) | ( "END_FUNCTIONBLOCK"i ) ) ) ";"?
+function_block_declaration: ( "FUNCTION_BLOCK"i | "FUNCTIONBLOCK"i ) derived_function_block_name ( "EXTENDS"i dotted_name )? fb_var_declaration* function_block_body? ( "END_FUNCTION_BLOCK"i | "END_FUNCTIONBLOCK"i ) ";"?
+
+fb_var_declaration: _io_var_declarations
+                  | _other_var_declarations
 
 _other_var_declarations: external_var_declarations
                        | var_declarations
@@ -582,7 +582,7 @@ resource_name: IDENTIFIER
 
 access_declarations: "VAR_ACCESS"i access_declaration ";" ( access_declaration ";" )* "END_VAR"i ";"?
 
-access_declaration: pragma? access_name ":" access_path ":" non_generic_type_name direction?
+access_declaration: access_name ":" access_path ":" non_generic_type_name direction?
 
 access_path: ( resource_name "." )? direct_variable
            | ( ( resource_name "." )? ( program_name "." )? ( fb_name "." )* _symbolic_variable )
@@ -633,7 +633,7 @@ data_sink: global_var_reference
 
 instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";" )* "END_VAR"i ";"?
 
-instance_specific_init: pragma? resource_name "." program_name "." ( fb_name "." )* ( ( variable_name location? ":" located_var_spec_init ) | ( fb_name ":" function_block_type_name ":=" structure_initialization ) )
+instance_specific_init: resource_name "." program_name "." ( fb_name "." )* ( ( variable_name location? ":" located_var_spec_init ) | ( fb_name ":" function_block_type_name ":=" structure_initialization ) )
 
 // B.2.1
 instruction_list: il_instruction il_instruction*
@@ -866,7 +866,6 @@ _statement: ";"+
           | _selection_statement
           | _iteration_statement
           | action_name ";"
-          | pragma
 
 // B.3.2.1
 no_op_statement: _variable ";"
@@ -946,3 +945,4 @@ SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
 %ignore WS
 %ignore MULTI_LINE_COMMENT
 %ignore SINGLE_LINE_COMMENT
+%ignore PRAGMA
