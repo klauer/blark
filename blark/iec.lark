@@ -351,7 +351,7 @@ non_retain: "NON_RETAIN"i
 
 input_declarations: "VAR_INPUT"i ( retain | non_retain )? var_input_body "END_VAR"i ";"?
 
-var_input_body: ( ( ( ( ( var_init_decl | edge_declaration ) ";" ) ) | pragma ) )*
+var_input_body: ( ( ( var_init_decl | edge_declaration ) ";" ) | pragma )*
 R_EDGE: "R_EDGE"i
 F_EDGE: "F_EDGE"i
 
@@ -374,7 +374,9 @@ fb_decl_name_list: fb_name ( "," fb_name )*
 
 fb_name: IDENTIFIER
 
-var_body: ( ( ( var_init_decl ";" ) | ( pragma ";"? ) ) )*
+var_body: _var_body_item*
+_var_body_item: pragma
+              | var_init_decl ";"
 
 output_declarations: "VAR_OUTPUT"i ( retain | non_retain )? var_body "END_VAR"i ";"?
 
@@ -411,12 +413,16 @@ external_declaration: global_var_name ":" ( simple_specification | subrange_spec
 global_var_name: IDENTIFIER
 PERSISTENT: "PERSISTENT"i
 
-global_var_declarations: "VAR_GLOBAL"i ( constant | retain )? PERSISTENT? ( var_init_decl | global_var_decl | pragma )* "END_VAR"i ";"?
+global_var_declarations: "VAR_GLOBAL"i ( constant | retain )? PERSISTENT? _global_var_body_item* "END_VAR"i ";"?
 
-global_var_decl: global_var_spec ":" ( located_var_spec_init | function_block_type_name )? ";"
+_global_var_body_item: var_init_decl
+                     | global_var_decl
+                     | pragma
+
+global_var_decl: global_var_spec ":" ( located_var_spec_init | function_block_type_name ) ";"
 
 global_var_spec: global_var_list
-               | global_var_name? location   -> global_var_spec_location
+               | global_var_name (location | incompl_location) -> global_var_spec_location
 
 located_var_spec_init: simple_spec_init
                      | subrange_spec_init
