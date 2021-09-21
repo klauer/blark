@@ -39,29 +39,35 @@ def replace_comments(text, *, replace_char=' '):
     'Remove (potentially nested) multiline comments from `text`'
     result = []
     in_comment = 0
+    in_single_quote = False
+    in_double_quote = False
     skip = 0
-    OPEN_COMMENT = ('(', '*')
-    CLOSE_COMMENT = ('*', ')')
-    for c, next_c in zip(text, text[1:] + ' '):
+    OPEN_COMMENT = "(*"
+    CLOSE_COMMENT = "*)"
+    for this_ch, next_ch in zip(text, text[1:] + ' '):
         if skip:
             skip -= 1
-            result.append(replace_char)
             continue
 
-        pair = (c, next_c)
-        if pair == OPEN_COMMENT:
-            in_comment += 1
-            skip = 1
-            c = replace_char
-        elif pair == CLOSE_COMMENT:
-            in_comment -= 1
-            skip = 1
-            c = replace_char
+        if not in_single_quote and not in_double_quote:
+            pair = this_ch + next_ch
+            if pair == OPEN_COMMENT:
+                in_comment += 1
+                skip = 1
+                this_ch = replace_char
+            elif pair == CLOSE_COMMENT:
+                in_comment -= 1
+                skip = 1
+                this_ch = replace_char
+        elif this_ch == "'" and not in_double_quote:
+            in_single_quote = not in_single_quote
+        elif this_ch == '"' and not in_single_quote:
+            in_double_quote = not in_double_quote
 
         if in_comment > 0:
             result.append(replace_char)
         else:
-            result.append(c)
+            result.append(this_ch)
 
     return ''.join(result)
 
