@@ -419,7 +419,7 @@ _global_var_body_item: var_init_decl
                      | global_var_decl
                      | pragma
 
-global_var_decl: global_var_spec ":" ( located_var_spec_init | function_block_type_name ) ";"
+global_var_decl: global_var_spec ":" ( located_var_spec_init | fb_invocation | function_block_type_name ) ";"
 
 global_var_spec: global_var_list
                | global_var_name (location | incompl_location) -> global_var_spec_location
