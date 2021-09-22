@@ -8,11 +8,11 @@ from ..parse import parse_single_file
 TEST_PATH = pathlib.Path(__file__).parent
 
 
-pous = list(str(path) for path in TEST_PATH.glob('**/*.TcPOU'))
-additional_pous = TEST_PATH / 'additional_pous.txt'
+pous = list(str(path) for path in TEST_PATH.glob("**/*.TcPOU"))
+additional_pous = TEST_PATH / "additional_pous.txt"
 
 if additional_pous.exists():
-    pous += open(additional_pous, 'rt').read().splitlines()
+    pous += open(additional_pous, "rt").read().splitlines()
 
 
 @pytest.fixture(params=pous)
@@ -37,5 +37,5 @@ def test_instruction_list_grammar_load():
     lark.Lark.open_from_package(
         "blark",
         "instruction_list.lark",
-        parser='earley',
+        parser="earley",
     )
