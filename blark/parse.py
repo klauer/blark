@@ -19,10 +19,6 @@ RE_COMMENT = re.compile(r'(//.*$|\(\*.*?\*\))', re.MULTILINE | re.DOTALL)
 RE_PRAGMA = re.compile(r'{[^}]*?}', re.MULTILINE | re.DOTALL)
 
 
-with open(blark.GRAMMAR_FILENAME, 'rt') as f:
-    lark_grammar = f.read()
-
-
 _PARSER = None
 
 
@@ -31,7 +27,11 @@ def get_parser():
     global _PARSER
 
     if _PARSER is None:
-        _PARSER = lark.Lark(lark_grammar, parser='earley')
+        _PARSER = lark.Lark.open_from_package(
+            "blark",
+            blark.GRAMMAR_FILENAME.name,
+            parser="earley",
+        )
     return _PARSER
 
 

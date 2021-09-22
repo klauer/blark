@@ -14,13 +14,6 @@ _library_element_declaration: data_type_declaration
                             | global_var_declarations
 
 // B.1.1
-letter: /[A-Za-z]/
-
-digit: /[0-9]/
-
-octal_digit: /[0-7]/
-
-hex_digit: /[0-9A-F]/
 IDENTIFIER: /\w+/
 
 // B.1.2
@@ -474,11 +467,11 @@ _io_var_declarations: input_declarations
 function_var_decls: "VAR"i constant? var_body "END_VAR"i ";"?
 
 // TODO: {function_var_decl ';'}
-// function_body ::= ladder_diagram | function_block_diagram
-// | instruction_list | statement_list ;
 function_body: statement_list
+// TODO:     | ladder_diagram
+// TODO:     | function_block_diagram
+// TODO:     | instruction_list
 
-// | <andere Sprachen> ;
 function_var_decl: _var1_init_decl
                  | array_var_init_decl
                  | structured_var_init_decl
@@ -635,147 +628,6 @@ instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";" )*
 instance_specific_init: resource_name "." program_name "." ( fb_name "." )* ( ( variable_name location? ":" located_var_spec_init ) | ( fb_name ":" function_block_type_name ":=" structure_initialization ) )
 
 // B.2.1
-instruction_list: il_instruction il_instruction*
-
-il_instruction: ( label ":" )? ( il_simple_operation | il_expression | il_jump_operation | il_fb_call | il_formal_funct_call | _il_return_operator )? EOL
-EOL: "\n"
-
-label: IDENTIFIER
-
-il_simple_operation: _il_simple_operator il_operand?
-                   | _function_name il_operand_list?
-
-il_expression: _il_expr_operator "(" il_operand? EOL simple_instr_list? ")"
-
-il_jump_operation: _il_jump_operator label
-
-il_fb_call: _il_call_operator fb_name ( "(" ( ( ( EOL il_param_list? ) | ( il_operand_list? ) ) ) ")" )?
-
-il_formal_funct_call: _function_name "(" EOL il_param_list? ")"
-
-il_operand: constant
-          | _variable
-          | enumerated_value
-
-il_operand_list: il_operand ( "," il_operand )*
-
-simple_instr_list: il_simple_instruction il_simple_instruction*
-
-il_simple_instruction: ( il_simple_operation | il_expression | il_formal_funct_call ) EOL
-
-il_param_list: il_param_instruction* il_param_last_instruction
-
-il_param_instruction: ( il_param_assignment | il_param_out_assignment ) "," EOL
-
-il_param_last_instruction: ( il_param_assignment | il_param_out_assignment ) EOL
-
-il_param_assignment: il_assign_operator ( ( il_operand | ( ( "(" EOL simple_instr_list ")" ) ) ) )
-
-il_param_out_assignment: il_assign_out_operator _variable
-
-// B.2.2
-IL_OPERATOR_LD: "LD"i
-IL_OPERATOR_LDN: "LDN"i
-IL_OPERATOR_ST: "ST"i
-IL_OPERATOR_STN: "STN"i
-IL_OPERATOR_NOT: "NOT"i
-IL_OPERATOR_S: "S"i
-IL_OPERATOR_R: "R"i
-IL_OPERATOR_S1: "S1"i
-IL_OPERATOR_R1: "R1"i
-IL_OPERATOR_CLK: "CLK"i
-IL_OPERATOR_CU: "CU"i
-IL_OPERATOR_CD: "CD"i
-IL_OPERATOR_PV: "PV"i
-IL_OPERATOR_IN: "IN"i
-IL_OPERATOR_PT: "PT"i
-
-il_operator_andn: "ANDN"i
-                | "&N"
-
-il_operator_and: "AND"i
-               | "&"
-IL_OPERATOR_OR: "OR"i
-IL_OPERATOR_XOR: "XOR"i
-IL_OPERATOR_ORN: "ORN"i
-IL_OPERATOR_XORN: "XORN"i
-IL_OPERATOR_ADD: "ADD"i
-IL_OPERATOR_SUB: "SUB"i
-IL_OPERATOR_MUL: "MUL"i
-IL_OPERATOR_DIV: "DIV"i
-IL_OPERATOR_MOD: "MOD"i
-IL_OPERATOR_GT: "GT"i
-IL_OPERATOR_GE: "GE"i
-IL_OPERATOR_EQ: "EQ"i
-IL_OPERATOR_LT: "LT"i
-IL_OPERATOR_LE: "LE"i
-IL_OPERATOR_NE: "NE"i
-
-// il_simple_operator ::= 'LD' | 'LDN' | 'ST' | 'STN' | 'NOT' | 'S'
-// | 'R' | 'S1' | 'R1' | 'CLK' | 'CU' | 'CD' | 'PV'
-// | 'IN' | 'PT' | 'AND' | '&' | 'OR' | 'XOR' |'ANDN' |'&N' |'ORN'
-// | 'XORN' | 'ADD' | 'SUB' | 'MUL' | 'DIV' | 'MOD' |'GT' |'GE' |'EQ '
-// | 'LT' | 'LE' | 'NE' ;
-_il_simple_operator: IL_OPERATOR_LD
-                   | IL_OPERATOR_LDN
-                   | IL_OPERATOR_ST
-                   | IL_OPERATOR_STN
-                   | IL_OPERATOR_NOT
-                   | IL_OPERATOR_S
-                   | IL_OPERATOR_R
-                   | IL_OPERATOR_S1
-                   | IL_OPERATOR_R1
-                   | IL_OPERATOR_CLK
-                   | IL_OPERATOR_CU
-                   | IL_OPERATOR_CD
-                   | IL_OPERATOR_PV
-                   | IL_OPERATOR_IN
-                   | IL_OPERATOR_PT
-                   | _il_expr_operator
-
-_il_expr_operator: il_operator_andn
-                 | il_operator_and
-                 | IL_OPERATOR_OR
-                 | IL_OPERATOR_XOR
-                 | IL_OPERATOR_ORN
-                 | IL_OPERATOR_XORN
-                 | IL_OPERATOR_ADD
-                 | IL_OPERATOR_SUB
-                 | IL_OPERATOR_MUL
-                 | IL_OPERATOR_DIV
-                 | IL_OPERATOR_MOD
-                 | IL_OPERATOR_GT
-                 | IL_OPERATOR_GE
-                 | IL_OPERATOR_EQ
-                 | IL_OPERATOR_LT
-                 | IL_OPERATOR_LE
-                 | IL_OPERATOR_NE
-
-il_assign_operator: variable_name ":="
-
-il_assign_out_operator: IL_OPERATOR_NOT? variable_name "=>"
-IL_OPERATOR_CAL: "CAL"i
-IL_OPERATOR_CALC: "CALC"i
-IL_OPERATOR_CALCN: "CALCN"i
-
-_il_call_operator: IL_OPERATOR_CAL
-                 | IL_OPERATOR_CALC
-                 | IL_OPERATOR_CALCN
-IL_OPERATOR_RET: "RET"i
-IL_OPERATOR_RETC: "RETC"i
-IL_OPERATOR_RETCN: "RETCN"i
-
-_il_return_operator: IL_OPERATOR_RET
-                   | IL_OPERATOR_RETC
-                   | IL_OPERATOR_RETCN
-IL_OPERATOR_JMP: "JMP"i
-IL_OPERATOR_JMPC: "JMPC"i
-IL_OPERATOR_JMPCN: "JMPCN"i
-
-_il_jump_operator: IL_OPERATOR_JMP
-                 | IL_OPERATOR_JMPC
-                 | IL_OPERATOR_JMPCN
-
 // B.3.1
 LOGICAL_OR: "OR"i
 LOGICAL_XOR: "XOR"i
@@ -935,7 +787,6 @@ SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
 // Ignore whitespace
 
 %import common.WS
-
 
 %ignore WS
 %ignore MULTI_LINE_COMMENT
