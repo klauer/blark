@@ -27,7 +27,13 @@ _constant: time_literal
 _numeric_literal: real_literal
                 | integer_literal
 
-integer_literal: ( integer_type_name "#" )? /(2\#(1|0)(_?(1|0))*)|(8\#[0-7](_?[0-7])*)|(16\#[0-9A-F](_?[0-9A-F])*)|((\+|\-)?[0-9](_?[0-9])*)/
+integer_literal: integer_type_name "#" _any_integer -> typed_integer_literal
+               | _any_integer                       -> untyped_integer_literal
+
+_any_integer: binary_integer
+            | octal_integer
+            | hex_integer
+            | signed_integer
 
 signed_integer: /(\+|\-)?[0-9](_?[0-9])*/
 
@@ -54,15 +60,11 @@ boolean_literal: ( "BOOL#"i )? /1|0|TRUE|FALSE/
 _character_string: single_byte_character_string
                  | double_byte_character_string
 
-single_byte_character_string: /\'([^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F])*\'/
-
-double_byte_character_string: /\"([^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F])*\"/
-
-single_byte_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F]/
-
-double_byte_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$\'|\"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F]/
-
-common_character_representation: /[^\$\"\']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t/
+single_byte_character_string: /'([^\$"']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$'|"|\$[0-9A-F][0-9A-F])*'/
+double_byte_character_string: /"([^\$"']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$'|"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F])*"/
+single_byte_character_representation: /[^\$"']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$'|"|\$[0-9A-F][0-9A-F]/
+double_byte_character_representation: /[^\$"']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t|\$'|"|\$[0-9A-F][0-9A-F][0-9A-F][0-9A-F]/
+common_character_representation: /[^\$"']|\$\$|\$L|\$N|\$P|\$R|\$T|\$l|\$n|\$p|\$r|\$t/
 
 // B.1.2.3
 time_literal: duration
@@ -306,7 +308,7 @@ string_initialization: ":=" _character_string
 
 string_type_declaration: string_type_name ":" string_type string_initialization?
 
-string_type: ( STRING | WSTRING ) ( ( "[" ( integer | simple_type_name ) "]" ) | ( "(" ( integer | simple_type_name ) ")" ) )?
+string_type: ( STRING | WSTRING ) _string_spec_length?
 
 string_var_type: string_type string_initialization?
 
@@ -431,11 +433,14 @@ string_var_declaration: single_byte_string_var_declaration
 
 single_byte_string_var_declaration: _var1_list ":" single_byte_string_spec
 
-!single_byte_string_spec: "STRING"i ( ( ( ( "[" ( integer | simple_type_name ) "]" ) ) | ( ( "(" ( integer | simple_type_name ) ")" ) ) ) )? ( ":=" single_byte_character_string )?
+_string_spec_length: "[" ( integer | simple_type_name ) "]"
+                   | "(" ( integer | simple_type_name ) ")"
+
+!single_byte_string_spec: "STRING"i _string_spec_length? ( ":=" single_byte_character_string )?
 
 double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
 
-!double_byte_string_spec: "WSTRING"i ( ( ( ( "[" ( integer | simple_type_name ) "]" ) ) | ( ( "(" ( integer | simple_type_name ) ")" ) ) ) )? ( ":=" double_byte_character_string )?
+!double_byte_string_spec: "WSTRING"i _string_spec_length? ( ":=" double_byte_character_string )?
 
 incompl_located_var_declarations: "VAR"i ( retain | non_retain )? incompl_located_var_decl* "END_VAR"i ";"?
 

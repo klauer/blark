@@ -39,3 +39,44 @@ def test_instruction_list_grammar_load():
         "instruction_list.lark",
         parser="earley",
     )
+
+
+def get_partial_grammar(name):
+    return lark.Lark(
+        f"""
+        %import common.WS
+        %ignore WS
+        %import iec.{name} -> {name}
+        """,
+        import_paths=[TEST_PATH.parent],
+        start=name,
+    )
+
+
+must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
+
+
+@pytest.mark.parametrize(
+    "name, value",
+    [
+        pytest.param("integer_literal", "12"),
+        pytest.param("integer_literal", "abc", marks=must_fail),
+        pytest.param("integer_literal", "INT#12"),
+        pytest.param("integer_literal", "UDINT#12"),
+        pytest.param("integer_literal", "UDINT#2#010"),
+        pytest.param("integer_literal", "2#10010"),
+        pytest.param("integer_literal", "8#22"),
+        pytest.param("integer_literal", "16#12"),
+        pytest.param("single_byte_character_string", "'abc'"),
+        pytest.param("double_byte_character_string", '"abc"'),
+        pytest.param("single_byte_string_spec", "STRING[1]"),
+        pytest.param("single_byte_string_spec", "STRING(1)"),
+        pytest.param("single_byte_string_spec", "STRING(1) := 'abc'"),
+        pytest.param("double_byte_string_spec", "WSTRING[1]"),
+        pytest.param("double_byte_string_spec", "WSTRING(1)"),
+        pytest.param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
+    ],
+)
+def test_rule_smoke(name, value):
+    result = get_partial_grammar(name).parse(value)
+    print(f"rule {name} value {value!r} into {result}")
