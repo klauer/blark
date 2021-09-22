@@ -78,7 +78,7 @@ time_literal: duration
             | date_and_time
 
 // B.1.2.3.1
-duration: ( "TIME"i | "T"i | "t"i ) "#" "-"? _interval
+duration: ( "TIME"i | "T"i ) "#" "-"? _interval
 
 _interval: days
          | hours
@@ -313,7 +313,7 @@ string_initialization: ":=" _character_string
 
 string_type_declaration: string_type_name ":" string_type string_initialization?
 
-string_type: ( STRING | WSTRING ) ( ( ( ( "[" ( integer | simple_type_name ) "]" ) ) | ( ( "(" ( integer | simple_type_name ) ")" ) ) ) )?
+string_type: ( STRING | WSTRING ) ( ( "[" ( integer | simple_type_name ) "]" ) | ( "(" ( integer | simple_type_name ) ")" ) )?
 
 string_var_type: string_type string_initialization?
 
@@ -515,7 +515,6 @@ non_retentive_var_decls: "VAR"i "NON_RETAIN"i var_body "END_VAR"i ";"?
 function_block_body: sequential_function_chart
                    | statement_list
 
-// | <andere Sprachen>
 // B.1.5.3
 program_type_name: IDENTIFIER
 
@@ -542,7 +541,7 @@ action_association: action_name "(" action_qualifier? ( "," indicator_name )* ")
 action_name: /(?!END_)(\w+)/
 
 action_qualifier: /N|R|S|P|P0|P1/
-                | ( timed_qualifier "," action_time )
+                | timed_qualifier "," action_time
 
 timed_qualifier: /L|D|SD|DS|SL/
 
@@ -552,7 +551,7 @@ action_time: duration
 indicator_name: variable_name
 
 transition: "TRANSITION"i ( "(" "PRIORITY"i ":=" integer ")" )? "FROM"i steps "TO"i steps transition_condition "END_TRANSITION"i ";"?
-          | ( ( "TRANSITION"i transition_name? ( "(" "PRIORITY"i ":=" integer ")" )? "FROM"i steps "TO"i steps transition_condition "END_TRANSITION"i ";"? ) )
+          | "TRANSITION"i transition_name? ( "(" "PRIORITY"i ":=" integer ")" )? "FROM"i steps "TO"i steps transition_condition "END_TRANSITION"i ";"?
 
 transition_name: LOGICAL_NOT? IDENTIFIER
 
@@ -585,7 +584,7 @@ access_declarations: "VAR_ACCESS"i access_declaration ";" ( access_declaration "
 access_declaration: access_name ":" access_path ":" non_generic_type_name direction?
 
 access_path: ( resource_name "." )? direct_variable
-           | ( ( resource_name "." )? ( program_name "." )? ( fb_name "." )* _symbolic_variable )
+           | ( resource_name "." )? ( program_name "." )? ( fb_name "." )* _symbolic_variable
 
 global_var_reference: ( resource_name "." )? global_var_name ( "." structure_element_name )?
 
@@ -641,10 +640,6 @@ instruction_list: il_instruction il_instruction*
 il_instruction: ( label ":" )? ( il_simple_operation | il_expression | il_jump_operation | il_fb_call | il_formal_funct_call | _il_return_operator )? EOL
 EOL: "\n"
 
-// TODO:
-// CR : /\r/
-// LF : /\n/
-// NEWLINE: (CR? LF)+
 label: IDENTIFIER
 
 il_simple_operation: _il_simple_operator il_operand?
@@ -838,7 +833,7 @@ _multiply_operator: MODULO
 _power_expression: _unary_expression ( elevated_by _unary_expression )*
 
 _unary_expression: _constant
-                 | ( _unary_operator? _primary_expression )
+                 | _unary_operator? _primary_expression
 
 _unary_operator: LOGICAL_NOT
                | minus
