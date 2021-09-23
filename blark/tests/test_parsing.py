@@ -64,6 +64,8 @@ must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
         pytest.param("integer_literal", "INT#12"),
         pytest.param("integer_literal", "UDINT#12"),
         pytest.param("integer_literal", "UDINT#2#010"),
+        pytest.param("integer_literal", "UDINT#2#1001_0011"),
+        pytest.param("integer_literal", "DINT#16#C0FFEE"),
         pytest.param("integer_literal", "2#10010"),
         pytest.param("integer_literal", "8#22"),
         pytest.param("integer_literal", "16#12"),

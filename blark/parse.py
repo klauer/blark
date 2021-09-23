@@ -37,37 +37,47 @@ def get_parser():
 
 def replace_comments(text, *, replace_char=" "):
     "Remove (potentially nested) multiline comments from `text`"
-    result = []
+    result = list(text)
     in_comment = 0
     in_single_quote = False
     in_double_quote = False
     skip = 0
     OPEN_COMMENT = "(*"
     CLOSE_COMMENT = "*)"
-    for this_ch, next_ch in zip(text, text[1:] + " "):
+    for idx, (this_ch, next_ch) in enumerate(zip(text, text[1:] + " ")):
         if skip:
             skip -= 1
             continue
 
+        pair = this_ch + next_ch
         if not in_single_quote and not in_double_quote:
-            pair = this_ch + next_ch
             if pair == OPEN_COMMENT:
                 in_comment += 1
                 skip = 1
-                this_ch = replace_char
-            elif pair == CLOSE_COMMENT:
+                result[idx] = replace_char
+                result[idx + 1] = replace_char
+                continue
+            if pair == CLOSE_COMMENT:
                 in_comment -= 1
                 skip = 1
-                this_ch = replace_char
-        elif this_ch == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-        elif this_ch == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
+                result[idx] = replace_char
+                result[idx + 1] = replace_char
+                continue
 
-        if in_comment > 0:
-            result.append(replace_char)
-        else:
-            result.append(this_ch)
+        if not in_comment:
+            if pair == "$'" and in_single_quote:
+                skip = 1
+                continue
+            elif pair == '$"' and in_double_quote:
+                skip = 1
+                continue
+            elif this_ch == "'" and not in_double_quote:
+                in_single_quote = not in_single_quote
+            elif this_ch == '"' and not in_single_quote:
+                in_double_quote = not in_double_quote
+
+        if in_comment > 0 and this_ch not in "\n\r":
+            result[idx] = replace_char
 
     return "".join(result)
 
