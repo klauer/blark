@@ -38,10 +38,13 @@ def get_parser():
 def replace_comments(text, *, replace_char=" "):
     "Remove (potentially nested) multiline comments from `text`"
     result = list(text)
-    in_comment = 0
+    in_multiline_comment = 0
+    in_single_comment = False
     in_single_quote = False
     in_double_quote = False
     skip = 0
+    NEWLINES = "\n\r"
+    SINGLE_COMMENT = "//"
     OPEN_COMMENT = "(*"
     CLOSE_COMMENT = "*)"
     for idx, (this_ch, next_ch) in enumerate(zip(text, text[1:] + " ")):
@@ -49,35 +52,52 @@ def replace_comments(text, *, replace_char=" "):
             skip -= 1
             continue
 
+        if in_single_comment:
+            result[idx] = replace_char
+            in_single_comment = this_ch not in NEWLINES
+            continue
+
         pair = this_ch + next_ch
         if not in_single_quote and not in_double_quote:
             if pair == OPEN_COMMENT:
-                in_comment += 1
+                in_multiline_comment += 1
                 skip = 1
                 result[idx] = replace_char
                 result[idx + 1] = replace_char
                 continue
             if pair == CLOSE_COMMENT:
-                in_comment -= 1
+                in_multiline_comment -= 1
                 skip = 1
                 result[idx] = replace_char
                 result[idx + 1] = replace_char
                 continue
+            if pair == SINGLE_COMMENT:
+                in_single_comment = True
+                result[idx] = replace_char
+                continue
 
-        if not in_comment:
+        if not in_multiline_comment and not in_single_comment:
             if pair == "$'" and in_single_quote:
+                # This is an escape for single quotes
                 skip = 1
                 continue
             elif pair == '$"' and in_double_quote:
+                # This is an escape for double quotes
                 skip = 1
                 continue
             elif this_ch == "'" and not in_double_quote:
                 in_single_quote = not in_single_quote
             elif this_ch == '"' and not in_single_quote:
                 in_double_quote = not in_double_quote
+            elif pair == SINGLE_COMMENT:
+                in_single_comment = 1
 
-        if in_comment > 0 and this_ch not in "\n\r":
+        if in_multiline_comment > 0 and this_ch not in NEWLINES:
             result[idx] = replace_char
+
+    if in_multiline_comment or in_single_quote or in_double_quote:
+        # Syntax error in source? Return the original and let lark fail
+        return text
 
     return "".join(result)
 
