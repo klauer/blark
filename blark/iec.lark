@@ -291,7 +291,7 @@ enumerated_spec_init: ( POINTER_TO | REFERENCE_TO )? enumerated_specification ( 
 enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" enum_data_type_name?
                         | ENUMERATED_TYPE_NAME
 
-enumerated_value: ( ENUMERATED_TYPE_NAME "#" )? IDENTIFIER ( ":=" integer_literal )?
+enumerated_value: ( ENUMERATED_TYPE_NAME "#" )? DOTTED_NAME ( ":=" integer_literal )?
 
 // The following is a Beckhoff extensions of the IEC61131-3 standard
 // https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/2529504395.html
