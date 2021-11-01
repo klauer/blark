@@ -4,6 +4,7 @@ import lark
 import pytest
 
 from ..parse import parse_single_file
+from .conftest import get_partial_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
 
@@ -41,18 +42,6 @@ def test_instruction_list_grammar_load():
     )
 
 
-def get_partial_grammar(name):
-    return lark.Lark(
-        f"""
-        %import common.WS
-        %ignore WS
-        %import iec.{name} -> {name}
-        """,
-        import_paths=[TEST_PATH.parent],
-        start=name,
-    )
-
-
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
 
 
@@ -77,6 +66,8 @@ must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
         pytest.param("double_byte_string_spec", "WSTRING[1]"),
         pytest.param("double_byte_string_spec", "WSTRING(1)"),
         pytest.param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
+        pytest.param("duration", "TIME#1S"),
+        pytest.param("duration", "TIME#10S"),
     ],
 )
 def test_rule_smoke(name, value):

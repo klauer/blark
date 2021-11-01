@@ -12,6 +12,7 @@ import pytmc
 
 import blark
 
+from .transform import GrammarTransformer
 from .util import get_source_code
 
 DESCRIPTION = __doc__
@@ -31,6 +32,7 @@ def get_parser():
             "blark",
             blark.GRAMMAR_FILENAME.name,
             parser="earley",
+            maybe_placeholders=True,
         )
     return _PARSER
 
@@ -156,7 +158,7 @@ def parse_source_code(
     # print(line_numbers[comments[1].end()])
     # # matches up with definition on line 10:
     # print(element1.children[0].children[0].line)
-    return tree
+    return GrammarTransformer().transform(tree)
 
 
 def _build_map_of_offset_to_line_number(source):
