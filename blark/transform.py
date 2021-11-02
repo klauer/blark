@@ -20,9 +20,7 @@ def _rule_handler(rules: Union[str, List[str]]) -> Callable[[Type[T]], Type[T]]:
         for rule in rules:
             handler = _rule_to_handler.get(rule, None)
             if handler is not None:
-                raise ValueError(
-                    f"Handler already specified for: {rule} ({handler})"
-                )
+                raise ValueError(f"Handler already specified for: {rule} ({handler})")
 
             _rule_to_handler[rule] = cls
 
@@ -38,6 +36,7 @@ def _rule_handler(rules: Union[str, List[str]]) -> Callable[[Type[T]], Type[T]]:
 @dataclass
 class Literal:
     """Literal value."""
+
     def __str__(self) -> str:
         return str(self.value)
 
@@ -46,12 +45,18 @@ class Literal:
 @_rule_handler("integer_literal")
 class Integer(Literal):
     """Integer literal value."""
+
     value: lark.Token
     type: Optional[lark.Token] = None
     base: int = 10
 
     @staticmethod
-    def from_lark(type_name: Optional[lark.Token], value: Union[Integer, lark.Token], *, base: int = 10) -> Integer:
+    def from_lark(
+        type_name: Optional[lark.Token],
+        value: Union[Integer, lark.Token],
+        *,
+        base: int = 10,
+    ) -> Integer:
         if isinstance(value, Integer):
             # Adding type information; wrap Integer
             return Integer(
@@ -66,11 +71,7 @@ class Integer(Literal):
         )
 
     def __str__(self) -> str:
-        value = (
-            f"{self.base}#{self.value}"
-            if self.base != 10
-            else str(self.value)
-        )
+        value = f"{self.base}#{self.value}" if self.base != 10 else str(self.value)
         if self.type:
             return f"{self.type}#{value}"
         return value
@@ -80,6 +81,7 @@ class Integer(Literal):
 @_rule_handler("real_literal")
 class Real(Literal):
     """Floating point (real) literal value."""
+
     value: lark.Token
     type: Optional[lark.Token] = None
 
@@ -97,20 +99,19 @@ class Real(Literal):
 @_rule_handler("bit_string_literal")
 class BitString(Literal):
     """Bit string literal value."""
+
     value: lark.Token
     type: Optional[lark.Token] = None
     base: int = 10
 
     @staticmethod
-    def from_lark(type_name: Optional[lark.Token], value: lark.Token, *, base: int = 10) -> BitString:
+    def from_lark(
+        type_name: Optional[lark.Token], value: lark.Token, *, base: int = 10
+    ) -> BitString:
         return BitString(type=type_name, value=value, base=base)
 
     def __str__(self) -> str:
-        value = (
-            f"{self.base}#{self.value}"
-            if self.base != 10
-            else str(self.value)
-        )
+        value = f"{self.base}#{self.value}" if self.base != 10 else str(self.value)
         if self.type:
             return f"{self.type}#{value}"
         return value
@@ -119,6 +120,7 @@ class BitString(Literal):
 @dataclass
 class Boolean(Literal):
     """Boolean literal value."""
+
     value: lark.Token
 
     def __str__(self) -> str:
@@ -130,6 +132,7 @@ class Boolean(Literal):
 @_rule_handler("duration")
 class Duration(Literal):
     """Duration literal value."""
+
     days: Optional[lark.Token] = None
     hours: Optional[lark.Token] = None
     minutes: Optional[lark.Token] = None
@@ -138,10 +141,7 @@ class Duration(Literal):
 
     @staticmethod
     def from_lark(interval: lark.Tree) -> Duration:
-        kwargs = {
-            tree.data: tree.children[0]
-            for tree in interval.iter_subtrees()
-        }
+        kwargs = {tree.data: tree.children[0] for tree in interval.iter_subtrees()}
 
         return Duration(**kwargs)
 
@@ -168,15 +168,18 @@ class Duration(Literal):
 @_rule_handler("time_of_day")
 class TimeOfDay(Literal):
     """Time of day literal value."""
+
     hour: lark.Token
     minute: lark.Token
     second: lark.Token
 
     @staticmethod
-    def from_lark(_: lark.Token, hour: lark.Tree, minute: lark.Tree, second: lark.Tree) -> TimeOfDay:
-        hour, = hour.children
-        minute, = minute.children
-        second, = second.children
+    def from_lark(
+        _: lark.Token, hour: lark.Tree, minute: lark.Tree, second: lark.Tree
+    ) -> TimeOfDay:
+        (hour,) = hour.children
+        (minute,) = minute.children
+        (second,) = second.children
         return TimeOfDay(
             hour=hour,
             minute=minute,
@@ -196,15 +199,16 @@ class TimeOfDay(Literal):
 @_rule_handler("date")
 class Date(Literal):
     """Date literal value."""
+
     year: lark.Token
     month: lark.Token
     day: lark.Token
 
     @staticmethod
     def from_lark(year: lark.Tree, month: lark.Tree, day: lark.Tree) -> Date:
-        year, = year.children
-        month, = month.children
-        day, = day.children
+        (year,) = year.children
+        (month,) = month.children
+        (day,) = day.children
         return Date(year=year, month=month, day=day)
 
     @property
@@ -220,11 +224,19 @@ class Date(Literal):
 @_rule_handler("date_and_time")
 class DateTime(Literal):
     """Date and time literal value."""
+
     date: Date
     time: TimeOfDay
 
     @staticmethod
-    def from_lark(year: lark.Token, month: lark.Token, day: lark.Token, hour: lark.Token, minute: lark.Token, second: lark.Token) -> DateTime:
+    def from_lark(
+        year: lark.Token,
+        month: lark.Token,
+        day: lark.Token,
+        hour: lark.Token,
+        minute: lark.Token,
+        second: lark.Token,
+    ) -> DateTime:
         return DateTime(
             date=Date(
                 year=year.children[0],
@@ -337,5 +349,6 @@ def _get_class_handlers():
                 result[token_name] = lark.visitors.v_args(inline=True)(obj.from_lark)
 
     return result
+
 
 _class_handlers = _get_class_handlers()
