@@ -42,7 +42,8 @@ OCTAL_STRING: /[0-7](_?[0-7])*/
 HEX_STRING: /[0-9A-F](_?[0-9A-F])*/
 
 INTEGER: /[0-9](_?[0-9])*/
-SIGNED_INTEGER: ("+" | "-") INTEGER
+SIGN: "+" | "-"
+SIGNED_INTEGER: SIGN INTEGER
 FIXED_POINT: INTEGER "." INTEGER
 
 EXPONENT: "E"i /(\+|\-)?[0-9](_?[0-9])*/
@@ -50,13 +51,13 @@ EXPONENT: "E"i /(\+|\-)?[0-9](_?[0-9])*/
 ?numeric_literal: real_literal
                 | integer_literal
 
-integer_literal: INTEGER_TYPE_NAME "#" any_integer -> typed_integer_literal
-               | any_integer                       -> untyped_integer_literal
+integer_literal: [ INTEGER_TYPE_NAME "#" ] any_integer
 
 ?any_integer: "2#" BIT_STRING             -> binary_integer
             | "8#" OCTAL_STRING           -> octal_integer
             | "16#" HEX_STRING            -> hex_integer
-            | SIGNED_INTEGER              -> signed_integer
+            | SIGNED_INTEGER              -> integer
+            | INTEGER                     -> integer
 
 real_literal: [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)\.([0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))?/
             | [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))/
@@ -66,8 +67,11 @@ bit_string_literal: [ BIT_STRING_TYPE_NAME "#" ] "2#" BIT_STRING    -> binary_bi
                   | [ BIT_STRING_TYPE_NAME "#" ] "16#" HEX_STRING   -> hex_bit_string_literal
                   | [ BIT_STRING_TYPE_NAME "#" ] INTEGER
 
-boolean_literal: ( "BOOL#"i )? ( "1" | "TRUE"i )   -> true
-               | ( "BOOL#"i )? ( "0" | "FALSE"i )  -> false
+boolean_literal: ( "BOOL#"i )? TRUE_VALUE   -> true
+               | ( "BOOL#"i )? FALSE_VALUE  -> false
+
+TRUE_VALUE: "1" | "TRUE"i
+FALSE_VALUE: "0" | "FALSE"i
 
 // B.1.2.2
 STRING_LITERAL: SINGLE_BYTE_CHARACTER_STRING
@@ -135,21 +139,21 @@ milliseconds: FIXED_POINT "ms"i
 // B.1.2.3.2
 _daytime: day_hour ":" day_minute ":" day_second
 
-time_of_day: ( "TIME_OF_DAY"i | "TOD"i ) "#" _daytime
+time_of_day: TYPE_TOD "#" _daytime
 
 day_hour: INTEGER
 day_minute: INTEGER
 day_second: FIXED_POINT
 
-date: ( "DATE"i | "D"i | "d"i ) "#" date_literal
+date: ( "DATE"i | "D"i | "d"i ) "#" _date_literal
 
-date_literal: year "-" month "-" day
+_date_literal: year "-" month "-" day
 
 year: INTEGER
 month: INTEGER
 day: INTEGER
 
-date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" date_literal "-" _daytime
+date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
 data_type_name: non_generic_type_name
