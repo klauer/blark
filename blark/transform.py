@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Callable, List, Optional, Type, TypeVar, Union
 
 import lark
@@ -11,11 +12,10 @@ _rule_to_handler = {}
 T = TypeVar("T")
 
 
-def _rule_handler(rules: Union[str, List[str]]) -> Callable[[Type[T]], Type[T]]:
+def _rule_handler(
+    *rules: Union[str, List[str]]
+) -> Callable[[Type[T]], Type[T]]:
     """Decorator - the wrapped class will handle the provided rules."""
-    if isinstance(rules, str):
-        rules = [rules]
-
     def wrapper(cls: Type[T]) -> Type[T]:
         for rule in rules:
             handler = _rule_to_handler.get(rule, None)
@@ -24,10 +24,7 @@ def _rule_handler(rules: Union[str, List[str]]) -> Callable[[Type[T]], Type[T]]:
 
             _rule_to_handler[rule] = cls
 
-        if hasattr(cls, "_lark_"):
-            cls._lark_ += rules
-        else:
-            cls._lark_ = rules
+        cls._lark_ = rules
         return cls
 
     return wrapper
@@ -260,6 +257,183 @@ class DateTime(Literal):
 
 
 @dataclass
+class Expression:
+    ...
+
+
+@dataclass
+class Variable(Expression):
+    ...
+
+
+class VariableLocationPrefix(str, Enum):
+    input = "I"
+    output = "Q"
+    memory = "M"
+
+
+class VariableSizePrefix(str, Enum):
+    bit = "X"
+    byte = "B"
+    word_16 = "W"
+    dword_32 = "D"
+    lword_64 = "L"
+
+
+@dataclass
+@_rule_handler("direct_variable")
+class DirectVariable(Expression):
+    location_prefix: lark.Token
+    location: lark.Token
+    size_prefix: Optional[VariableSizePrefix] = VariableSizePrefix.bit
+    bits: Optional[List[lark.Token]] = None
+
+    @staticmethod
+    def from_lark(*args):
+        ...
+
+
+@dataclass
+@_rule_handler("variable_name")
+class SymbolicVariable(Expression):
+    name: lark.Token
+    dereferenced: bool
+
+    @staticmethod
+    def from_lark(identifier: lark.Token, dereferenced: Optional[lark.Token]):
+        return SymbolicVariable(
+            name=identifier,
+            dereferenced=dereferenced is not None
+        )
+
+    def __str__(self) -> str:
+        return f"{self.name}^" if self.dereferenced else f"{self.name}"
+
+
+@dataclass
+@_rule_handler("subscript_list")
+class SubscriptList:
+    subscripts: List[Expression]
+    dereferenced: bool
+
+    @staticmethod
+    def from_lark(*args):
+        *subscripts, dereferenced = args
+        return SubscriptList(
+            subscripts=list(subscripts),
+            dereferenced=dereferenced is not None,
+        )
+
+    def __str__(self) -> str:
+        parts = ", ".join(str(subscript) for subscript in self.subscripts)
+        return f"[{parts}]^" if self.dereferenced else f"[{parts}]"
+
+
+@dataclass
+@_rule_handler("field_selector")
+class FieldSelector:
+    field: lark.Token
+    dereferenced: bool
+
+    @staticmethod
+    def from_lark(dereferenced: Optional[lark.Token], field: lark.Token):
+        return FieldSelector(
+            field=field,
+            dereferenced=dereferenced is not None
+        )
+
+    def __str__(self) -> str:
+        return f"^.{self.field}" if self.dereferenced else f".{self.field}"
+
+
+@dataclass
+@_rule_handler("multi_element_variable")
+class MultiElementVariable(SymbolicVariable):
+    elements: List[Union[SubscriptList, FieldSelector]]
+
+    @staticmethod
+    def from_lark(variable_name, *subscript_or_field):
+        if not subscript_or_field:
+            return SymbolicVariable(
+                name=variable_name,
+                dereferenced=False
+            )
+        return MultiElementVariable(
+            name=variable_name,
+            elements=list(subscript_or_field),
+            dereferenced=False,
+        )
+
+    def __str__(self) -> str:
+        return "".join(str(part) for part in (self.name, *self.elements))
+
+
+@dataclass
+@_rule_handler("unary_expression")
+class UnaryOperation(Expression):
+    op: lark.Token
+    expr: Expression
+
+    @staticmethod
+    def from_lark(*args):
+        if len(args) == 1:
+            constant, = args
+            return constant
+
+        operator, expr = args
+        if not operator:
+            return expr
+        return UnaryOperation(
+            op=operator,
+            expr=expr,
+        )
+
+    def __str__(self):
+        return f"{self.op} {self.expr}"
+
+
+@dataclass
+@_rule_handler(
+    "expression",
+    "add_expression",
+    "and_expression",
+    "xor_expression",
+    "comparison_expression",
+    "equality_expression",
+    "power_expression",
+    "expression_term"
+)
+class BinaryOperation(Expression):
+    left: Expression
+    op: lark.Token
+    right: Expression
+
+    @staticmethod
+    def from_lark(left: Expression, *operator_and_expr: Union[lark.Token, Expression]):
+        if not operator_and_expr:
+            return left
+
+        op, right = operator_and_expr
+        return BinaryOperation(
+            left=left,
+            op=op,
+            right=right
+        )
+
+    def __str__(self):
+        return f"{self.left} {self.op} {self.right}"
+
+
+@dataclass
+@_rule_handler("parenthesized_expression")
+class ParenthesizedExpression(Expression):
+    expr: Expression
+
+    def __str__(self):
+        return f"({self.expr})"
+
+
+@dataclass
 class Extends:
     name: lark.Token
 
@@ -291,12 +465,20 @@ class Body:
     ...
 
 
+@staticmethod
+def pass_through(obj: Optional[T] = None) -> Optional[T]:
+    """Transformer helper to pass through an optional single argument."""
+    return obj
+
+
 @lark.visitors.v_args(inline=True)
 class GrammarTransformer(lark.visitors.Transformer):
     def __init__(self, fn=None):
         super().__init__()
         self._filename = fn
         self.__dict__.update(**_class_handlers)
+
+    constant = pass_through
 
     def extends(self, name: lark.Token):
         return Extends(name=name)
@@ -338,15 +520,24 @@ class GrammarTransformer(lark.visitors.Transformer):
         return Boolean(value=value)
 
 
+def _get_default_instantiator(cls: type):
+    def instantiator(*args):
+        return cls(*args)
+
+    return instantiator
+
+
 def _get_class_handlers():
     result = {}
-    for obj in globals().values():
-        if hasattr(obj, "_lark_"):
-            token_names = obj._lark_
+    for cls in globals().values():
+        if hasattr(cls, "_lark_"):
+            token_names = cls._lark_
             if isinstance(token_names, str):
                 token_names = [token_names]
             for token_name in token_names:
-                result[token_name] = lark.visitors.v_args(inline=True)(obj.from_lark)
+                if not hasattr(cls, "from_lark"):
+                    cls.from_lark = _get_default_instantiator(cls)
+                result[token_name] = lark.visitors.v_args(inline=True)(cls.from_lark)
 
     return result
 

@@ -27,7 +27,8 @@ _library_element_declaration: data_type_declaration
                             | global_var_declarations
 
 // B.1.1
-IDENTIFIER: /\w+/
+// IDENTIFIER: /\w+/
+IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
 
 // B.1.2
 constant: time_literal
@@ -354,7 +355,7 @@ _variable: direct_variable
 _symbolic_variable: multi_element_variable
                   | variable_name
 
-variable_name: IDENTIFIER [ dereferenced ]
+variable_name: IDENTIFIER [ DEREFERENCED ]
 
 // B.1.4.1
 direct_variable: "%" location_prefix [ size_prefix ] INTEGER ( "." INTEGER )*
@@ -370,15 +371,14 @@ size_prefix: "X"
            | "L"
 
 // B.1.4.2
+DEREFERENCED: "^"
+
 _subscript: expression
+subscript_list: "[" _subscript ( "," _subscript )* "]" [ DEREFERENCED ]
 
-subscript_list: "[" _subscript ( "," _subscript )* "]" [ dereferenced ]
+field_selector: [ DEREFERENCED ] "." variable_name
 
-dereferenced: "^"
-
-field_selector: [ dereferenced ] "." variable_name
-
-multi_element_variable: variable_name ( subscript_list | field_selector ) ( subscript_list | field_selector )*
+multi_element_variable: variable_name ( subscript_list | field_selector )+
 
 // B.1.4.3
 RETAIN: "RETAIN"i
@@ -702,43 +702,51 @@ ELEVATED_BY: "**"
 MINUS: "-"
 PLUS: "+"
 
-expression: _xor_expression ( LOGICAL_OR _xor_expression )*
+expression: xor_expression ( LOGICAL_OR xor_expression )*
 
-_xor_expression: _and_expression ( LOGICAL_XOR _and_expression )*
+xor_expression: and_expression ( LOGICAL_XOR and_expression )*
 
-_and_expression: _comparison ( LOGICAL_AND _comparison )*
+and_expression: comparison_expression ( LOGICAL_AND comparison_expression )*
 
-_comparison: _equ_expression ( ( EQUALS | EQUALS_NOT ) _equ_expression )*
+comparison_expression: equality_expression ( EQUALS_OP equality_expression )*
 
-_equ_expression: _add_expression ( ( LESS_OR_EQUAL | GREATER_OR_EQUAL | LESS_THAN | GREATER_THAN ) _add_expression )*
+EQUALS_OP: EQUALS
+         | EQUALS_NOT
 
-_add_expression: _term ( _add_operator _term )*
+equality_expression: add_expression ( COMPARE_OP add_expression )*
 
-_add_operator: ADDING
-             | SUBTRACTING
+COMPARE_OP: LESS_OR_EQUAL
+          | GREATER_OR_EQUAL
+          | LESS_THAN
+          | GREATER_THAN
 
-_term: _power_expression ( _multiply_operator _power_expression )*
+add_expression: expression_term ( ADD_OPERATOR expression_term )*
 
-_multiply_operator: MODULO
-                  | MULTIPLY_WITH
-                  | DIVIDE_BY
+ADD_OPERATOR: ADDING
+            | SUBTRACTING
 
-_power_expression: _unary_expression ( ELEVATED_BY _unary_expression )*
+expression_term: power_expression ( MULTIPLY_OPERATOR power_expression )*
 
-_unary_expression: constant
-                 | [ _unary_operator ] _primary_expression
+MULTIPLY_OPERATOR: MODULO
+                 | MULTIPLY_WITH
+                 | DIVIDE_BY
 
-_unary_operator: LOGICAL_NOT
-               | MINUS
-               | PLUS
+power_expression: unary_expression ( ELEVATED_BY unary_expression )*
+
+unary_expression: [ UNARY_OPERATOR ] primary_expression
+
+UNARY_OPERATOR: LOGICAL_NOT
+              | MINUS
+              | PLUS
 
 function_call: ( _function_name | multi_element_variable ) "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
 // see also: fb_invocation
-_primary_expression: "(" expression ")"
+?primary_expression: "(" expression ")"      -> parenthesized_expression
                    | function_call
                    | _variable
                    | multi_element_variable
+                   | constant
 
 // B.3.2
 statement_list: _statement+
@@ -766,7 +774,7 @@ reset_statement: _variable "R="i expression ";"
 
 reference_assignment_statement: _variable "REF="i expression ";"
 
-// method ::= expression [dereferenced] '.' _identifier '(' ')';
+// method ::= expression [DEREFERENCED] '.' _identifier '(' ')';
 method: expression "(" ")" ";"
 
 // B.3.2.2
