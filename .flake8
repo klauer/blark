@@ -1,0 +1,3 @@
+[flake8]
+exclude = .git,__pycache__,build,dist,versioneer.py,blark/_version.py
+max-line-length = 100
