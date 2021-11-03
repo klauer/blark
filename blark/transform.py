@@ -285,12 +285,29 @@ class VariableSizePrefix(str, Enum):
 class DirectVariable(Expression):
     location_prefix: lark.Token
     location: lark.Token
-    size_prefix: Optional[VariableSizePrefix] = VariableSizePrefix.bit
+    size_prefix: VariableSizePrefix
     bits: Optional[List[lark.Token]] = None
 
     @staticmethod
-    def from_lark(*args):
-        ...
+    def from_lark(
+        location_prefix: lark.Token,
+        size_prefix: Optional[VariableSizePrefix],
+        location: lark.Token,
+        *bits: lark.Token,
+    ):
+        return DirectVariable(
+            location_prefix=VariableLocationPrefix(location_prefix),
+            size_prefix=(
+                VariableSizePrefix(size_prefix)
+                if size_prefix else VariableSizePrefix.bit
+            ),
+            location=location,
+            bits=list(bits) if bits else None,
+        )
+
+    def __str__(self) -> str:
+        bits = ".".join([""] + self.bits) if self.bits else ""
+        return f"%{self.location_prefix}{self.size_prefix}{self.location}{bits}"
 
 
 @dataclass
@@ -443,7 +460,7 @@ class FunctionBlock:
     name: lark.Token
     extends: Optional[lark.Token]
     declarations: tuple[VariableDeclarationBlock, ...]
-    body: Optional[Code]
+    body: Optional[...]
 
     @staticmethod
     def from_lark(derived_name, extends, *declarations, body):

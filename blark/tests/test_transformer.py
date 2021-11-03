@@ -130,6 +130,18 @@ def test_bool_literal_roundtrip(name, value, expected):
 @pytest.mark.parametrize(
     "name, value",
     [
+        pytest.param("direct_variable", "%IX1.2"),
+        pytest.param("direct_variable", "%IX1"),
+        pytest.param("direct_variable", "%QX1.2"),
+        pytest.param("direct_variable", "%QX1"),
+        pytest.param("direct_variable", "%MX1.2"),
+        pytest.param("direct_variable", "%MX1"),
+        pytest.param("direct_variable", "%IB1.2"),
+        pytest.param("direct_variable", "%IW1"),
+        pytest.param("direct_variable", "%QD1.2"),
+        pytest.param("direct_variable", "%QL1"),
+        pytest.param("direct_variable", "%MW1.2"),
+        pytest.param("direct_variable", "%ML1"),
         pytest.param("multi_element_variable", "a.b"),
         pytest.param("multi_element_variable", "a^.b"),
         pytest.param("multi_element_variable", "a^.b[1, 2]"),

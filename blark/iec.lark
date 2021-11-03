@@ -358,13 +358,13 @@ _symbolic_variable: multi_element_variable
 variable_name: IDENTIFIER [ DEREFERENCED ]
 
 // B.1.4.1
-direct_variable: "%" location_prefix [ size_prefix ] INTEGER ( "." INTEGER )*
+direct_variable: "%" LOCATION_PREFIX [ SIZE_PREFIX ] INTEGER ( "." INTEGER )*
 
-location_prefix: "I"
+LOCATION_PREFIX: "I"
                | "Q"
                | "M"
 
-size_prefix: "X"
+SIZE_PREFIX: "X"
            | "B"
            | "W"
            | "D"
