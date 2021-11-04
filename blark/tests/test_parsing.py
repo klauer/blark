@@ -23,9 +23,11 @@ def pou_filename(request):
 
 def test_parsing(pou_filename):
     try:
-        parse_single_file(pou_filename, verbose=2)
+        result = parse_single_file(pou_filename, verbose=2)
     except FileNotFoundError:
         pytest.skip(f"Missing file: {pou_filename}")
+    else:
+        print("transformed", result)
 
 
 def pytest_html_results_table_row(report, cells):

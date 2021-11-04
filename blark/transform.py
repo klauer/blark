@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, List, Optional, Type, TypeVar, Union
+from typing import Callable, List, Optional, Tuple, Type, TypeVar, Union
 
 import lark
 
@@ -493,12 +493,26 @@ class BinaryOperation(Expression):
         if not operator_and_expr:
             return left
 
-        op, right = operator_and_expr
-        return BinaryOperation(
-            left=left,
-            op=op,
-            right=right
-        )
+        def get_operator_and_expr() -> Tuple[lark.Token, Expression]:
+            operators = operator_and_expr[::2]
+            expressions = operator_and_expr[1::2]
+            yield from zip(operators, expressions)
+
+        binop = None
+        for operator, expression in get_operator_and_expr():
+            if binop is None:
+                binop = BinaryOperation(
+                    left=left,
+                    op=operator,
+                    right=expression
+                )
+            else:
+                binop = BinaryOperation(
+                    left=binop,
+                    op=operator,
+                    right=expression,
+                )
+        return binop
 
     def __str__(self):
         return f"{self.left} {self.op} {self.right}"
@@ -563,8 +577,8 @@ class GrammarTransformer(lark.visitors.Transformer):
     def extends(self, name: lark.Token):
         return Extends(name=name)
 
-    def function_block_body(self, *items):
-        return Body()
+    # def function_block_body(self, *items):
+    #     return Body()
 
     def fb_var_declaration(self, *items):
         return VariableDeclarationBlock()

@@ -160,6 +160,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         pytest.param("expression", "1 + 2 * (3 - 4)"),
         pytest.param("expression", "NOT 1"),
         pytest.param("expression", "NOT (3 - 4)"),
+        pytest.param("expression", "(i_xTrigger OR NOT i_xPress_OK) AND NOT xVeto"),
         pytest.param("simple_type_declaration", "iValue : INT"),
         pytest.param("simple_type_declaration", "iValue : INT := 5"),
         pytest.param("simple_type_declaration", "iValue : INT := 5 + 1 * (2)"),
