@@ -27,7 +27,6 @@ _library_element_declaration: data_type_declaration
                             | global_var_declarations
 
 // B.1.1
-// IDENTIFIER: /\w+/
 IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
 
 // B.1.2
@@ -265,13 +264,10 @@ _type_declaration: array_type_declaration ";"
                  | _single_element_type_declaration ";"
 
 _single_element_type_declaration: simple_type_declaration
-                                | extended_type_declaration
                                 | subrange_type_declaration
                                 | enumerated_type_declaration
 
-simple_type_declaration: SIMPLE_TYPE_NAME ":" simple_spec_init
-
-extended_type_declaration: SIMPLE_TYPE_NAME extends ":" simple_spec_init
+simple_type_declaration: SIMPLE_TYPE_NAME [ EXTENDS ] ":" simple_spec_init
 
 simple_spec_init: [ POINTER_TO | REFERENCE_TO ] SIMPLE_SPECIFICATION [ ":=" expression ]
 
@@ -322,7 +318,7 @@ array_initial_element: constant
                      | structure_initialization
                      | enumerated_value
 
-structure_type_extends_declaration: STRUCTURE_TYPE_NAME extends ":" _structure_specification
+structure_type_extends_declaration: STRUCTURE_TYPE_NAME EXTENDS ":" _structure_specification
 
 structure_type_declaration: STRUCTURE_TYPE_NAME ":" _structure_specification
 
@@ -482,8 +478,8 @@ string_var_declaration: single_byte_string_var_declaration
 
 single_byte_string_var_declaration: _var1_list ":" single_byte_string_spec
 
-_STRING_SPEC_LENGTH: "[" ( INTEGER | SIMPLE_TYPE_NAME ) "]"
-                   | "(" ( INTEGER | SIMPLE_TYPE_NAME ) ")"
+_STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_NAME ) "]"
+                   | "(" ( INTEGER | DOTTED_NAME ) ")"
 
 !single_byte_string_spec: "STRING"i [ _STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
 
@@ -538,9 +534,9 @@ DERIVED_FUNCTION_BLOCK_NAME: IDENTIFIER
 function_block_type_name: STANDARD_FUNCTION_BLOCK_NAME
                         | DERIVED_FUNCTION_BLOCK_NAME
 
-extends: "EXTENDS"i DOTTED_NAME
+EXTENDS: "EXTENDS"i DOTTED_NAME
 
-function_block_declaration: ( "FUNCTION_BLOCK"i | "FUNCTIONBLOCK"i ) DERIVED_FUNCTION_BLOCK_NAME [ extends ] fb_var_declaration* [ function_block_body ] ( "END_FUNCTION_BLOCK"i | "END_FUNCTIONBLOCK"i ) ";"?
+function_block_declaration: ( "FUNCTION_BLOCK"i | "FUNCTIONBLOCK"i ) DERIVED_FUNCTION_BLOCK_NAME [ EXTENDS ] fb_var_declaration* [ function_block_body ] ( "END_FUNCTION_BLOCK"i | "END_FUNCTIONBLOCK"i ) ";"?
 
 fb_var_declaration: _io_var_declarations
                   | _other_var_declarations

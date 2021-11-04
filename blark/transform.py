@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, List, Optional, Type, TypeVar, Union
@@ -266,6 +267,25 @@ class Variable(Expression):
     ...
 
 
+class IndirectionType(Enum):
+    none = enum.auto()
+    pointer = enum.auto()
+    reference = enum.auto()
+
+    @staticmethod
+    def from_token(token: Optional[lark.Token]) -> IndirectionType:
+        if token is None:
+            return IndirectionType.none
+        return IndirectionType[token.lower()]
+
+    def __str__(self):
+        return {
+            IndirectionType.none: "",
+            IndirectionType.pointer: "POINTER TO",
+            IndirectionType.reference: "REFERENCE TO",
+        }
+
+
 class VariableLocationPrefix(str, Enum):
     input = "I"
     output = "Q"
@@ -386,6 +406,49 @@ class MultiElementVariable(SymbolicVariable):
 
 
 @dataclass
+@_rule_handler("simple_spec_init")
+class TypeInitialization:
+    indirection: IndirectionType
+    type_name: Optional[lark.Token]
+    value: Optional[Expression]
+
+    @staticmethod
+    def from_lark(
+        indirection: Optional[lark.Token],
+        type_name: lark.Token,
+        value: Expression
+    ) -> TypeInitialization:
+        return TypeInitialization(
+            indirection=IndirectionType.from_token(indirection),
+            type_name=type_name,
+            value=value,
+        )
+
+    def __str__(self) -> str:
+        if self.indirection != IndirectionType.none:
+            type_ = f"{self.indirection} {self.type_name}"
+        else:
+            type_ = f"{self.type_name}"
+
+        if not self.value:
+            return type_
+
+        return f"{type_} := {self.value}"
+
+
+@dataclass
+@_rule_handler("simple_type_declaration")
+class TypeDeclaration:
+    name: lark.Token
+    extends: Optional[lark.Token]
+    init: TypeInitialization
+
+    def __str__(self) -> str:
+        extends = " EXTENDS" if self.extends else ""
+        return f"{self.name}{extends} : {self.init}"
+
+
+@dataclass
 @_rule_handler("unary_expression")
 class UnaryOperation(Expression):
     op: lark.Token
@@ -405,7 +468,7 @@ class UnaryOperation(Expression):
             expr=expr,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.op} {self.expr}"
 
 
