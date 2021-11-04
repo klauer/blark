@@ -267,23 +267,27 @@ class Variable(Expression):
     ...
 
 
+@_rule_handler("indirection_type")
 class IndirectionType(Enum):
+    """Indirect access through a pointer or reference."""
     none = enum.auto()
     pointer = enum.auto()
     reference = enum.auto()
 
     @staticmethod
-    def from_token(token: Optional[lark.Token]) -> IndirectionType:
-        if token is None:
-            return IndirectionType.none
-        return IndirectionType[token.lower()]
+    def from_lark(token: Optional[lark.Token]) -> IndirectionType:
+        return {
+            "NONE": IndirectionType.none,
+            "POINTER TO": IndirectionType.pointer,
+            "REFERENCE TO": IndirectionType.reference,
+        }[str(token).upper()]
 
     def __str__(self):
         return {
             IndirectionType.none: "",
             IndirectionType.pointer: "POINTER TO",
             IndirectionType.reference: "REFERENCE TO",
-        }
+        }[self]
 
 
 class VariableLocationPrefix(str, Enum):
@@ -408,24 +412,24 @@ class MultiElementVariable(SymbolicVariable):
 @dataclass
 @_rule_handler("simple_spec_init")
 class TypeInitialization:
-    indirection: IndirectionType
+    indirection: Optional[IndirectionType]
     type_name: Optional[lark.Token]
     value: Optional[Expression]
 
     @staticmethod
     def from_lark(
-        indirection: Optional[lark.Token],
+        indirection: Optional[IndirectionType],
         type_name: lark.Token,
         value: Expression
     ) -> TypeInitialization:
         return TypeInitialization(
-            indirection=IndirectionType.from_token(indirection),
+            indirection=indirection,
             type_name=type_name,
             value=value,
         )
 
     def __str__(self) -> str:
-        if self.indirection != IndirectionType.none:
+        if self.indirection:
             type_ = f"{self.indirection} {self.type_name}"
         else:
             type_ = f"{self.type_name}"

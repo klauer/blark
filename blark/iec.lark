@@ -159,7 +159,7 @@ date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 data_type_name: non_generic_type_name
               | GENERIC_TYPE_NAME
 
-non_generic_type_name: [ POINTER_TO ] ( ELEMENTARY_TYPE_NAME | DERIVED_TYPE_NAME )
+non_generic_type_name: [ pointer_type ] ( ELEMENTARY_TYPE_NAME | DERIVED_TYPE_NAME )
 
 // B.1.3.1
 TYPE_SINT: "SINT"i
@@ -243,8 +243,8 @@ STRUCTURE_TYPE_NAME: IDENTIFIER
 STRUCTURE_ELEMENT_NAME: IDENTIFIER
 STRING_TYPE_NAME: IDENTIFIER
 
-POINTER_TO: "POINTER"i "TO"i
-REFERENCE_TO: "REFERENCE"i "TO"i
+POINTER_TO: /POINTER\s*TO/i
+REFERENCE_TO: /REFERENCE\s*TO/i
 
 DERIVED_TYPE_NAME: SINGLE_ELEMENT_TYPE_NAME
                  | ARRAY_TYPE_NAME
@@ -269,7 +269,11 @@ _single_element_type_declaration: simple_type_declaration
 
 simple_type_declaration: SIMPLE_TYPE_NAME [ extends ] ":" simple_spec_init
 
-simple_spec_init: [ POINTER_TO | REFERENCE_TO ] SIMPLE_SPECIFICATION [ ":=" expression ]
+indirection_type: POINTER_TO
+                | REFERENCE_TO
+pointer_type: POINTER_TO
+
+simple_spec_init: [ indirection_type ] SIMPLE_SPECIFICATION [ ":=" expression ]
 
 SIMPLE_SPECIFICATION: ELEMENTARY_TYPE_NAME
                     | SIMPLE_TYPE_NAME
@@ -277,7 +281,7 @@ SIMPLE_SPECIFICATION: ELEMENTARY_TYPE_NAME
 
 subrange_type_declaration: SUBRANGE_TYPE_NAME ":" subrange_spec_init
 
-subrange_spec_init: [ POINTER_TO | REFERENCE_TO ] subrange_specification [ ":=" expression ]
+subrange_spec_init: [ indirection_type ] subrange_specification [ ":=" expression ]
 
 subrange_specification: INTEGER_TYPE_NAME "(" subrange ")"
                       | SUBRANGE_TYPE_NAME
@@ -287,7 +291,7 @@ subrange: expression ".." expression
 
 enumerated_type_declaration: ENUMERATED_TYPE_NAME ":" enumerated_spec_init
 
-enumerated_spec_init: [ POINTER_TO | REFERENCE_TO ] enumerated_specification [ ":=" enumerated_value ]
+enumerated_spec_init: [ indirection_type ] enumerated_specification [ ":=" enumerated_value ]
 
 enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ enum_data_type_name ]
                         | ENUMERATED_TYPE_NAME
@@ -301,7 +305,7 @@ enum_data_type_name: INTEGER_TYPE_NAME
 
 array_type_declaration: ARRAY_TYPE_NAME ":" array_spec_init
 
-array_spec_init: [ POINTER_TO | REFERENCE_TO ] array_specification [ ":=" array_initialization ]
+array_spec_init: [ indirection_type ] array_specification [ ":=" array_initialization ]
 
 array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i array_spec_type_name
 
@@ -322,7 +326,7 @@ structure_type_extends_declaration: STRUCTURE_TYPE_NAME extends ":" _structure_s
 
 structure_type_declaration: STRUCTURE_TYPE_NAME ":" _structure_specification
 
-_structure_specification: [ POINTER_TO | REFERENCE_TO ] _structure_declaration
+_structure_specification: [ indirection_type ] _structure_declaration
                         | initialized_structure
 
 initialized_structure: STRUCTURE_TYPE_NAME ":=" structure_initialization
