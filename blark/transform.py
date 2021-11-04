@@ -307,7 +307,7 @@ class VariableSizePrefix(str, Enum):
 @dataclass
 @_rule_handler("direct_variable")
 class DirectVariable(Expression):
-    location_prefix: lark.Token
+    location_prefix: VariableLocationPrefix
     location: lark.Token
     size_prefix: VariableSizePrefix
     bits: Optional[List[lark.Token]] = None
@@ -444,12 +444,74 @@ class TypeInitialization:
 @_rule_handler("simple_type_declaration")
 class TypeDeclaration:
     name: lark.Token
-    extends: Optional[lark.Token]
+    extends: Optional[Extends]
     init: TypeInitialization
 
     def __str__(self) -> str:
-        extends = " EXTENDS" if self.extends else ""
-        return f"{self.name}{extends} : {self.init}"
+        if self.extends:
+            return f"{self.name} {self.extends} : {self.init}"
+        return f"{self.name} : {self.init}"
+
+
+class Subrange:
+    ...
+
+
+@dataclass
+class FullSubrange(Subrange):
+    def __str__(self) -> str:
+        return "*"
+
+
+@dataclass
+@_rule_handler("subrange")
+class PartialSubrange:
+    start: Expression
+    stop: Expression
+
+    def __str__(self) -> str:
+        return f"{self.start}..{self.stop}"
+
+
+@dataclass
+@_rule_handler("subrange_specification")
+class SubrangeSpecification:
+    type_name: lark.Token
+    subrange: Optional[Subrange] = None
+
+    def __str__(self) -> str:
+        if self.subrange:
+            return f"{self.type_name} ({self.subrange})"
+        return f"{self.type_name}"
+
+
+@dataclass
+@_rule_handler("subrange_spec_init")
+class SubrangeTypeInitialization:
+    indirection: Optional[IndirectionType]
+    spec: Optional[lark.Token] = None
+    value: Optional[Expression] = None
+
+    def __str__(self) -> str:
+        if self.indirection:
+            spec = f"{self.indirection} {self.spec}"
+        else:
+            spec = f"{self.spec}"
+
+        if not self.value:
+            return spec
+
+        return f"{spec} := {self.value}"
+
+
+@dataclass
+@_rule_handler("subrange_type_declaration")
+class SubrangeTypeDeclaration:
+    name: lark.Token
+    init: SubrangeTypeInitialization
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.init}"
 
 
 @dataclass
@@ -527,13 +589,17 @@ class BinaryOperation(Expression):
 class ParenthesizedExpression(Expression):
     expr: Expression
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"({self.expr})"
 
 
 @dataclass
+@_rule_handler("extends")
 class Extends:
     name: lark.Token
+
+    def __str__(self) -> str:
+        return f"EXTENDS {self.name}"
 
 
 @dataclass
@@ -578,11 +644,11 @@ class GrammarTransformer(lark.visitors.Transformer):
 
     constant = pass_through
 
-    def extends(self, name: lark.Token):
-        return Extends(name=name)
-
     # def function_block_body(self, *items):
     #     return Body()
+
+    def full_subrange(self):
+        return FullSubrange()
 
     def fb_var_declaration(self, *items):
         return VariableDeclarationBlock()

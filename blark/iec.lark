@@ -287,7 +287,7 @@ subrange_specification: INTEGER_TYPE_NAME "(" subrange ")"
                       | SUBRANGE_TYPE_NAME
 
 subrange: expression ".." expression
-        | "*"
+        | "*"                        -> full_subrange
 
 enumerated_type_declaration: ENUMERATED_TYPE_NAME ":" enumerated_spec_init
 
