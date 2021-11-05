@@ -176,6 +176,30 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
+        param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
+        param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
+        param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
+        param("structure_type_declaration", tf.multiline_code_block(
+            """
+            TypeName : POINTER TO
+            STRUCT
+                iValue : INT;
+            END_STRUCT
+            """
+        )),
+        param("structure_type_declaration", tf.multiline_code_block(
+            """
+            TypeName : POINTER TO
+            STRUCT
+                iValue : INT := 3 + 4;
+                stTest : ST_Testing := (1, 2);
+                eValue : E_Test := E_Test.ABC;
+                arrValue : ARRAY [1..2] OF INT := [1, 2];
+                arrValue1 : INT (1..2);
+                arrValue1 : (Value1 := 1) INT;
+            END_STRUCT
+            """
+        )),
     ],
 )
 def test_expression_roundtrip(name, value):

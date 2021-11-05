@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import enum
+import textwrap
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, List, Optional, Tuple, Type, TypeVar, Union
 
 import lark
 
@@ -11,6 +12,20 @@ _rule_to_handler = {}
 
 
 T = TypeVar("T")
+INDENT = "    "  # TODO: make it configurable
+
+
+def multiline_code_block(block: str) -> str:
+    """Multiline code block with lax beginning/end newlines."""
+    return textwrap.dedent(block.strip("\n")).rstrip()
+
+
+def join_if(value1: Optional[Any], delimiter: str, value2: Optional[Any]) -> str:
+    """'{value1}{delimiter}{value2} if value1 and value2, otherwise just {value1} or {value2}."""
+    return delimiter.join(
+        str(value) for value in (value1, value2)
+        if value is not None
+    )
 
 
 def _rule_handler(
@@ -294,6 +309,24 @@ class IndirectionType(Enum):
         }[self]
 
 
+@_rule_handler("incomplete_location")
+class IncompleteLocation(Enum):
+    """Incomplete location information."""
+    none = enum.auto()
+    input = "%I*"
+    output = "%Q*"
+    memory = "%M*"
+
+    @staticmethod
+    def from_lark(token: Optional[lark.Token]) -> IncompleteLocation:
+        return IncompleteLocation[str(token).upper()]
+
+    def __str__(self):
+        if self == IncompleteLocation.none:
+            return ""
+        return f"AT {self}"
+
+
 class VariableLocationPrefix(str, Enum):
     input = "I"
     output = "Q"
@@ -421,15 +454,8 @@ class TypeInitialization:
     value: Optional[Expression]
 
     def __str__(self) -> str:
-        if self.indirection:
-            type_ = f"{self.indirection} {self.type_name}"
-        else:
-            type_ = f"{self.type_name}"
-
-        if not self.value:
-            return type_
-
-        return f"{type_} := {self.value}"
+        type_ = join_if(self.indirection, " ", self.type_name)
+        return join_if(type_, " := ", self.value)
 
 
 @dataclass
@@ -514,14 +540,8 @@ class EnumeratedValue:
     value: Optional[Integer]
 
     def __str__(self) -> str:
-        if self.type_name:
-            name = f"{self.type_name}#{self.name}"
-        else:
-            name = f"{self.name}"
-
-        if self.value:
-            return f"{name} := {self.value}"
-        return name
+        name = join_if(self.type_name, "#", self.name)
+        return join_if(name, " := ", self.value)
 
 
 @dataclass
@@ -541,9 +561,7 @@ class EnumeratedSpecification:
     def __str__(self) -> str:
         if self.values:
             values = ", ".join(str(value) for value in self.values)
-            if self.type_name:
-                return f"({values}) {self.type_name}"
-            return f"({values})"
+            return join_if(f"({values})", " ", self.type_name)
         return f"{self.type_name}"
 
 
@@ -555,15 +573,8 @@ class EnumeratedTypeInitialization:
     value: Optional[Expression]
 
     def __str__(self) -> str:
-        if self.indirection:
-            spec = f"{self.indirection} {self.spec}"
-        else:
-            spec = f"{self.spec}"
-
-        if not self.value:
-            return spec
-
-        return f"{spec} := {self.value}"
+        spec = join_if(self.indirection, " ", self.spec)
+        return join_if(spec, " := ", self.value)
 
 
 @dataclass
@@ -606,7 +617,7 @@ class ArraySpecification:
 
 ArrayInitialElementType = Union[
     Constant,
-    # StructureInitialization,
+    "StructureInitialization",
     EnumeratedValue,
 ]
 
@@ -668,6 +679,124 @@ class ArrayTypeInitialization:
 class ArrayTypeDeclaration:
     name: lark.Token
     init: ArrayTypeInitialization
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.init}"
+
+
+@dataclass
+@_rule_handler("structure_type_declaration")
+class StructureTypeDeclaration:
+    name: lark.Token
+    extends: Optional[lark.Token]
+    indirection: Optional[IndirectionType]
+    declarations: List[StructureElementDeclaration]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        extends: Optional[lark.Token],
+        indirection: Optional[IndirectionType],
+        *declarations: List[StructureElementDeclaration],
+    ):
+        return StructureTypeDeclaration(
+            name, extends, indirection, declarations
+        )
+
+    def __str__(self) -> str:
+        if self.declarations:
+            indent = f"\n{INDENT}"
+            declarations = indent + indent.join(str(decl) for decl in self.declarations)
+        else:
+            declarations = ""
+
+        definition = join_if(self.name, " ", self.extends)
+        indirection = f" {self.indirection}" if self.indirection else ""
+        return "\n".join(
+            (
+                f"{definition} :{indirection}",
+                f"STRUCT{declarations}",
+                "END_STRUCT"
+            )
+        )
+
+
+@dataclass
+@_rule_handler("structure_element_declaration")
+class StructureElementDeclaration:
+    name: lark.Token
+    location: Optional[IncompleteLocation]
+    init: Union[
+        StructureInitialization,
+        ArrayTypeInitialization,
+        # StringVarType,  # TODO?
+        TypeInitialization,
+        SubrangeTypeInitialization,
+        EnumeratedTypeInitialization,
+    ]
+
+    def __str__(self) -> str:
+        name_and_location = join_if(self.name, " ", self.location)
+        return f"{name_and_location} : {self.init};"
+
+
+@dataclass
+@_rule_handler("initialized_structure")
+class InitializedStructure:
+    name: lark.Token
+    init: StructureInitialization
+
+    def __str__(self) -> str:
+        return f"{self.name} := {self.init}"
+
+
+@dataclass
+@_rule_handler("structure_initialization")
+class StructureInitialization:
+    elements: List[StructureElementInitialization]
+
+    @staticmethod
+    def from_lark(*elements: StructureElementInitialization):
+        return StructureInitialization(elements=list(elements))
+
+    def __str__(self) -> str:
+        parts = ", ".join(str(element) for element in self.elements)
+        return f"({parts})"
+
+
+@dataclass
+@_rule_handler("structure_element_initialization")
+class StructureElementInitialization:
+    name: Optional[lark.Token]
+    value: Union[
+        Constant,
+        Expression,
+        EnumeratedValue,
+        ArrayInitialization,
+        StructureInitialization,
+    ]
+
+    @staticmethod
+    def from_lark(*args):
+        if len(args) == 1:
+            name = None
+            value, = args
+        else:
+            name, value = args
+        return StructureElementInitialization(name=name, value=value)
+
+    def __str__(self) -> str:
+        if self.name:
+            return f"{self.name} := {self.value}"
+        return f"{self.value}"
+
+
+@dataclass
+@_rule_handler("initialized_structure_type_declaration")
+class InitializedStructureTypeDeclaration:
+    name: lark.Token
+    extends: Optional[lark.Token]
+    init: StructureInitialization
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"

@@ -258,7 +258,6 @@ SINGLE_ELEMENT_TYPE_NAME: SIMPLE_TYPE_NAME
 data_type_declaration: "TYPE"i _type_declaration* "END_TYPE"i ";"?
 
 _type_declaration: array_type_declaration ";"
-                 | structure_type_extends_declaration ";"?
                  | structure_type_declaration ";"?
                  | string_type_declaration ";"
                  | _single_element_type_declaration ";"
@@ -322,18 +321,15 @@ _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
 
-structure_type_extends_declaration: STRUCTURE_TYPE_NAME extends ":" _structure_specification
+structure_type_declaration: STRUCTURE_TYPE_NAME [ extends ] ":" [ indirection_type ] _structure_declaration
 
-structure_type_declaration: STRUCTURE_TYPE_NAME ":" _structure_specification
-
-_structure_specification: [ indirection_type ] _structure_declaration
-                        | initialized_structure
+initialized_structure_type_declaration: STRUCTURE_TYPE_NAME [ extends ] ":" initialized_structure
 
 initialized_structure: STRUCTURE_TYPE_NAME ":=" structure_initialization
 
 _structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
-structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incompl_location ] ":" ( initialized_structure | array_spec_init | STRING_VAR_TYPE | simple_spec_init | subrange_spec_init | enumerated_spec_init )
+structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incomplete_location ] ":" ( initialized_structure | array_spec_init | STRING_VAR_TYPE | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
@@ -396,7 +392,7 @@ var_input_body: ( _var_input_body_item ";" )*
 _var_input_body_item: var_init_decl
                     | edge_declaration
 
-_var1_list: variable_name [ location | incompl_location ] ( "," _var1_list )*
+_var1_list: variable_name [ location | incomplete_location ] ( "," _var1_list )*
 
 edge_declaration: _var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
 
@@ -463,7 +459,7 @@ _global_var_body_item: var_init_decl
 global_var_decl: global_var_spec ":" ( located_var_spec_init | fb_invocation | function_block_type_name ) ";"
 
 global_var_spec: global_var_list
-               | GLOBAL_VAR_NAME (location | incompl_location) -> global_var_spec_location
+               | GLOBAL_VAR_NAME (location | incomplete_location) -> global_var_spec_location
 
 located_var_spec_init: simple_spec_init
                      | subrange_spec_init
@@ -493,9 +489,9 @@ double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
 
 incompl_located_var_declarations: "VAR"i [ RETAIN | NON_RETAIN ] incompl_located_var_decl* "END_VAR"i ";"?
 
-incompl_located_var_decl: variable_name incompl_location ":" var_spec ";"
+incompl_located_var_decl: variable_name incomplete_location ":" var_spec ";"
 
-incompl_location: "AT"i /\%(I|Q|M)\*/
+incomplete_location: "AT"i /\%(I|Q|M)\*/
 STRING: "STRING"i
 WSTRING: "WSTRING"i
 
