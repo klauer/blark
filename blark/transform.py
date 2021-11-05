@@ -379,6 +379,23 @@ class DirectVariable(Expression):
 
 
 @dataclass
+@_rule_handler("location")
+class Location(DirectVariable):
+    @staticmethod
+    def from_lark(var: DirectVariable):
+        return Location(
+            var.location_prefix,
+            var.location,
+            var.size_prefix,
+            var.bits,
+        )
+
+    def __str__(self) -> str:
+        direct_loc = super().__str__()
+        return f"AT {direct_loc}"
+
+
+@dataclass
 @_rule_handler("variable_name")
 class SymbolicVariable(Expression):
     name: lark.Token
@@ -903,6 +920,192 @@ class ParenthesizedExpression(Expression):
 
 
 @dataclass
+@_rule_handler("var1")
+class VariableOne:
+    name: lark.Token
+    location: Optional[Union[IncompleteLocation, Location]]
+
+    def __str__(self) -> str:
+        return join_if(self.name, " ", self.location)
+
+
+@dataclass
+@_rule_handler("var1_list")
+class VariableList:
+    variables: List[VariableOne]
+
+    @staticmethod
+    def from_lark(*items) -> VariableList:
+        return VariableList(list(items))
+
+    def __str__(self) -> str:
+        return ", ".join(str(variable) for variable in self.variables)
+
+
+@dataclass
+@_rule_handler("var1_init_decl")
+class VariableOneInitDeclaration:
+    variables: VariableList
+    init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
+
+    def __str__(self) -> str:
+        return f"{self.variables} : {self.init}"
+
+
+@dataclass
+@_rule_handler("array_var_init_decl")
+class ArrayVariableInitDeclaration:
+    variables: VariableList
+    init: ArrayTypeInitialization
+
+    def __str__(self) -> str:
+        return f"{self.variables} : {self.init}"
+
+
+@dataclass
+@_rule_handler("structured_var_init_decl")
+class StructuredVariableInitDeclaration:
+    variables: VariableList
+    init: InitializedStructure
+
+    def __str__(self) -> str:
+        return f"{self.variables} : {self.init}"
+
+
+@dataclass
+@_rule_handler(
+    "single_byte_string_var_declaration",
+    "double_byte_string_var_declaration"
+)
+class StringVariableInitDeclaration:
+    variables: VariableList
+    type_name: lark.Token
+    length: Optional[lark.Token]
+    value: lark.Token
+
+    @staticmethod
+    def from_lark(variables: VariableList, string_info):
+        type_name, length, _, value = string_info.children
+        return StringVariableInitDeclaration(
+            variables=variables,
+            type_name=type_name,
+            length=length,
+            value=value,
+        )
+
+    def __str__(self) -> str:
+        type_name = join_if(self.type_name, "", self.length)
+        return f"{self.variables} : {type_name} := {self.value}"
+
+
+@dataclass
+@_rule_handler("fb_decl_name_list")
+class FunctionBlockDeclarationNameList:
+    names: List[lark.Token]
+
+    @staticmethod
+    def from_lark(*names: lark.Token) -> FunctionBlockDeclarationNameList:
+        return FunctionBlockDeclarationNameList(list(names))
+
+    def __str__(self) -> str:
+        return ", ".join(str(name) for name in self.names)
+
+
+class FunctionBlockDeclaration:
+    ...
+
+
+@dataclass
+@_rule_handler("fb_name_decl")
+class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
+    names: FunctionBlockDeclarationNameList
+    type_name: lark.Token
+    init: Optional[StructureInitialization] = None
+
+    def __str__(self) -> str:
+        name_and_type = f"{self.names} : {self.type_name}"
+        return join_if(name_and_type, " := ", self.init)
+
+
+@dataclass
+@_rule_handler("param_assignment")
+class ParameterAssignment:
+    name: Optional[lark.Token]
+    value: Optional[Union[Expression, MultiElementVariable]]
+
+    @staticmethod
+    def from_lark(*args) -> ParameterAssignment:
+        if len(args) == 1:
+            value, = args
+            name = None
+        else:
+            name, value = args
+        return ParameterAssignment(name, value)
+
+    def __str__(self) -> str:
+        return join_if(self.name, " := ", self.value)
+
+
+@dataclass
+@_rule_handler("output_parameter_assignment")
+class OutputParameterAssignment(ParameterAssignment):
+    inverted: bool
+
+    @staticmethod
+    def from_lark(
+        inverted: Optional[lark.Token],
+        name: lark.Token,
+        value: Optional[Union[Expression, MultiElementVariable]],
+    ) -> ParameterAssignment:
+        return OutputParameterAssignment(name, value, inverted is not None)
+
+    def __str__(self) -> str:
+        prefix = "NOT " if self.inverted else ""
+        return prefix + join_if(self.name, " => ", self.value)
+
+
+@dataclass
+@_rule_handler("fb_invocation")
+class FunctionBlockInvocation(FunctionBlockDeclaration):
+    name: lark.Token
+    parameters: List[ParameterAssignment]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        *parameters: ParameterAssignment
+    ) -> FunctionBlockInvocation:
+        return FunctionBlockInvocation(
+            name=name,
+            parameters=list(parameters)
+        )
+
+    def __str__(self) -> str:
+        parameters = ", ".join(str(param) for param in self.parameters)
+        return f"{self.name}({parameters})"
+
+
+@dataclass
+@_rule_handler("fb_invocation_decl")
+class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
+    names: FunctionBlockDeclarationNameList
+    invocation: FunctionBlockInvocation
+
+    def __str__(self) -> str:
+        return f"{self.names} : {self.invocation}"
+
+
+@dataclass
+@_rule_handler("edge_declaration")
+class EdgeDeclaration:
+    variables: VariableList
+    edge: lark.Token
+
+    def __str__(self) -> str:
+        return f"{self.variables} : BOOL {self.edge}"
+
+
+@dataclass
 @_rule_handler("extends")
 class Extends:
     name: lark.Token
@@ -931,6 +1134,81 @@ class FunctionBlock:
 @dataclass
 class VariableDeclarationBlock:
     ...
+
+
+InputOutputDeclaration = Union[
+    ArrayVariableInitDeclaration,
+    StringVariableInitDeclaration,
+    VariableOneInitDeclaration,
+    FunctionBlockDeclaration,
+    # EdgeDeclaration,
+]
+
+OutputDeclaration = InputOutputDeclaration
+
+InputDeclaration = Union[
+    OutputDeclaration,
+    EdgeDeclaration,
+]
+
+
+@dataclass
+@_rule_handler("input_declarations")
+class InputDeclarations(VariableDeclarationBlock):
+    retain: Optional[lark.Token]
+    items: List[InputDeclaration]
+
+    @staticmethod
+    def from_lark(retain: Optional[lark.Token], *items: InputDeclaration) -> InputDeclarations:
+        return InputDeclarations(retain, list(items) if items else [])
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if("VAR_INPUT", " ", self.retain),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("output_declarations")
+class OutputDeclarations(VariableDeclarationBlock):
+    retain: Optional[lark.Token]
+    items: List[OutputDeclaration]
+
+    @staticmethod
+    def from_lark(retain: Optional[lark.Token], items: lark.Tree) -> OutputDeclarations:
+        return OutputDeclarations(retain, items.children)
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if("VAR_OUTPUT", " ", self.retain),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("input_output_declarations")
+class InputOutputDeclarations(VariableDeclarationBlock):
+    items: List[InputOutputDeclaration]
+
+    @staticmethod
+    def from_lark(items: lark.Tree) -> InputOutputDeclarations:
+        return InputOutputDeclarations(items.children)
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_IN_OUT",
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
 
 
 @dataclass
@@ -1008,6 +1286,8 @@ def _get_class_handlers():
             if isinstance(token_names, str):
                 token_names = [token_names]
             for token_name in token_names:
+                if token_name in result:
+                    raise ValueError(f"Saw {token_name!r} twice")
                 if not hasattr(cls, "from_lark"):
                     cls.from_lark = _get_default_instantiator(cls)
                 result[token_name] = lark.visitors.v_args(inline=True)(cls.from_lark)

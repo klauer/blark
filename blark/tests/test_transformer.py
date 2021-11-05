@@ -128,8 +128,19 @@ def test_bool_literal_roundtrip(name, value, expected):
     assert str(transformed) == expected
 
 
+def roundtrip_rule(rule_name: str, value: str):
+    parsed = get_grammar(start=rule_name).parse(value)
+    print(f"rule {rule_name} value {value!r} into:\n\n{parsed}")
+    transformed = tf.GrammarTransformer().transform(parsed)
+    print("\n\nTransformed:")
+    print(repr(transformed))
+    print("\n\nOr:")
+    print(transformed)
+    assert str(transformed) == value
+
+
 @pytest.mark.parametrize(
-    "name, value",
+    "rule_name, value",
     [
         param("direct_variable", "%IX1.2"),
         param("direct_variable", "%IX1"),
@@ -211,12 +222,168 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("string_type_declaration", 'TypeName : WSTRING[100] := "literal"'),
     ],
 )
-def test_expression_roundtrip(name, value):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into:\n\n{parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    print("\n\nTransformed:")
-    print(repr(transformed))
-    print("\n\nOr:")
-    print(transformed)
-    assert str(transformed) == value
+def test_expression_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+
+        param("location", "AT %IX1.1"),
+        param("var1", "iValue AT %IX1.1"),
+        param("var1", "iValue AT %I*"),
+        param("var1", "iValue AT %Q*"),
+        param("var1", "iValue AT %M*"),
+        param("var1", "iValue"),
+        param("edge_declaration", "iValue AT %IX1.1 : BOOL R_EDGE"),
+        param("edge_declaration", "iValue : BOOL F_EDGE"),
+        # param("array_var_init_decl", ""),
+        param("input_declarations", tf.multiline_code_block(
+            """
+            VAR_INPUT
+            END_VAR
+            """
+        )),
+        param("input_declarations", tf.multiline_code_block(
+            """
+            VAR_INPUT RETAIN
+            END_VAR
+            """
+        )),
+        param("input_declarations", tf.multiline_code_block(
+            """
+            VAR_INPUT RETAIN
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+            END_VAR
+            """
+        )),
+        param("input_declarations", tf.multiline_code_block(
+            """
+            VAR_INPUT RETAIN
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+                fbTest : FB_Test(1, 2, 3);
+                fbTest : FB_Test(A := 1, B := 2, C => 3);
+                fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
+                fbTest : FB_Test := (1, 2, 3);
+            END_VAR
+            """
+        )),
+        param("input_declarations", tf.multiline_code_block(
+            """
+            VAR_INPUT RETAIN
+                fbTest : FB_Test := (A := 1, B := 2, C := 3);
+            END_VAR
+            """,
+            ),
+            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
+            # Appears to collide with enum rule; need to fix
+        ),
+    ],
+)
+def test_input_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("output_declarations", tf.multiline_code_block(
+            """
+            VAR_OUTPUT
+            END_VAR
+            """
+        )),
+        param("output_declarations", tf.multiline_code_block(
+            """
+            VAR_OUTPUT RETAIN
+            END_VAR
+            """
+        )),
+        param("output_declarations", tf.multiline_code_block(
+            """
+            VAR_OUTPUT RETAIN
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+            END_VAR
+            """
+        )),
+        param("output_declarations", tf.multiline_code_block(
+            """
+            VAR_OUTPUT RETAIN
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+                fbTest : FB_Test(1, 2, 3);
+                fbTest : FB_Test(A := 1, B := 2, C => 3);
+                fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
+                fbTest : FB_Test := (1, 2, 3);
+            END_VAR
+            """
+        )),
+        param("output_declarations", tf.multiline_code_block(
+            """
+            VAR_OUTPUT RETAIN
+                fbTest : FB_Test := (A := 1, B := 2, C := 3);
+            END_VAR
+            """,
+            ),
+            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
+            # Appears to collide with enum rule; need to fix
+        ),
+    ],
+)
+def test_output_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            VAR_IN_OUT
+            END_VAR
+            """
+        )),
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            VAR_IN_OUT
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+            END_VAR
+            """
+        )),
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            VAR_IN_OUT
+                iValue : INT;
+                sValue : STRING := 'abc';
+                wsValue : WSTRING := "abc";
+                fbTest : FB_Test(1, 2, 3);
+                fbTest : FB_Test(A := 1, B := 2, C => 3);
+                fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
+                fbTest : FB_Test := (1, 2, 3);
+            END_VAR
+            """
+        )),
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            VAR_IN_OUT
+                fbTest : FB_Test := (A := 1, B := 2, C := 3);
+            END_VAR
+            """,
+            ),
+            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
+            # Appears to collide with enum rule; need to fix
+        ),
+    ],
+)
+def test_input_output_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)

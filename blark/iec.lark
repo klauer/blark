@@ -193,6 +193,8 @@ ELEMENTARY_TYPE_NAME: _NUMERIC_TYPE_NAME
                     | BIT_STRING_TYPE_NAME
                     | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
 
+STRING_TYPE: ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ]
+
 _NUMERIC_TYPE_NAME: INTEGER_TYPE_NAME
                   | REAL_TYPE_NAME
 
@@ -340,9 +342,6 @@ STRING_INITIALIZATION: ":=" STRING_LITERAL
 
 string_type_declaration: STRING_TYPE_NAME ":" ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ] [ ":=" STRING_LITERAL ]
 
-STRING_TYPE: ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ]
-
-// TODO: Combine?
 string_var_type: STRING_TYPE [ STRING_INITIALIZATION ]
 
 // B.1.4
@@ -386,28 +385,46 @@ F_EDGE: "F_EDGE"i
 
 FB_NAME: IDENTIFIER
 
-input_declarations: "VAR_INPUT"i [ RETAIN | NON_RETAIN ] var_input_body "END_VAR"i ";"?
+?retain: RETAIN
+       | NON_RETAIN
 
-var_input_body: ( _var_input_body_item ";" )*
+?retain_or_const: RETAIN
+                | NON_RETAIN
+                | CONSTANT
+
+input_declarations: "VAR_INPUT"i [ retain ] _var_input_body "END_VAR"i ";"?
+
+output_declarations: "VAR_OUTPUT"i [ retain ] var_body "END_VAR"i ";"?
+
+input_output_declarations: "VAR_IN_OUT"i var_body "END_VAR"i ";"?
+
+temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
+
+non_retentive_var_decls: "VAR"i NON_RETAIN var_body "END_VAR"i ";"?
+
+_var_input_body: ( _var_input_body_item ";" )*
 
 _var_input_body_item: var_init_decl
                     | edge_declaration
 
-_var1_list: variable_name [ location | incomplete_location ] ( "," _var1_list )*
+var1: variable_name [ location ]
+    | variable_name [ incomplete_location ]
 
-edge_declaration: _var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
+var1_list: var1 ( "," var1 )*
 
-var_init_decl: array_var_init_decl
-             | structured_var_init_decl
-             | string_var_declaration
-             | _var1_init_decl
-             | fb_decl
+edge_declaration: var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
 
-_var1_init_decl: _var1_list ":" ( simple_spec_init | subrange_spec_init | enumerated_spec_init )
+?var_init_decl: array_var_init_decl
+              | structured_var_init_decl
+              | string_var_declaration
+              | var1_init_decl
+              | fb_decl
 
-array_var_init_decl: _var1_list ":" array_spec_init
+var1_init_decl: var1_list ":" ( simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
-structured_var_init_decl: _var1_list ":" initialized_structure
+array_var_init_decl: var1_list ":" array_spec_init
+
+structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
 fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
@@ -417,31 +434,17 @@ fb_decl_name_list: FB_NAME ( "," FB_NAME )*
 
 var_body: ( var_init_decl ";" )*
 
-output_declarations: "VAR_OUTPUT"i [ RETAIN | NON_RETAIN ] var_body "END_VAR"i ";"?
+_var1_declaration: var1_list ":" ( SIMPLE_SPECIFICATION | subrange_specification | enumerated_specification )
 
-input_output_declarations: "VAR_IN_OUT"i var_body "END_VAR"i ";"?
+array_var_declaration: var1_list ":" array_specification
 
-var_declaration: _temp_var_decl
-               | fb_decl
-
-_temp_var_decl: _var1_declaration
-              | array_var_declaration
-              | structured_var_declaration
-              | string_var_declaration
-
-_var1_declaration: _var1_list ":" ( SIMPLE_SPECIFICATION | subrange_specification | enumerated_specification )
-
-array_var_declaration: _var1_list ":" array_specification
-
-structured_var_declaration: _var1_list ":" STRUCTURE_TYPE_NAME
+structured_var_declaration: var1_list ":" STRUCTURE_TYPE_NAME
 
 var_declarations: "VAR"i [ CONSTANT | PERSISTENT ] var_body "END_VAR"i ";"?
 
 retentive_var_declarations: "VAR"i RETAIN var_body "END_VAR"i ";"?
 
-CONSTANT: "CONSTANT"i
-
-located_var_declarations: "VAR"i [ CONSTANT | RETAIN | NON_RETAIN ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"?
+located_var_declarations: "VAR"i [ retain_or_const ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"?
 
 located_var_decl: [ variable_name ] location ":" located_var_spec_init ";"
 
@@ -450,6 +453,7 @@ external_var_declarations: "VAR_EXTERNAL"i [ CONSTANT ] external_declaration* "E
 external_declaration: GLOBAL_VAR_NAME ":" ( SIMPLE_SPECIFICATION | subrange_specification | enumerated_specification | array_specification | STRUCTURE_TYPE_NAME | function_block_type_name ) ";"
 
 GLOBAL_VAR_NAME: IDENTIFIER
+CONSTANT: "CONSTANT"i
 PERSISTENT: "PERSISTENT"i
 
 global_var_declarations: "VAR_GLOBAL"i [ CONSTANT | RETAIN ] [ PERSISTENT ] _global_var_body_item* "END_VAR"i ";"?
@@ -474,21 +478,21 @@ location: "AT"i direct_variable
 
 global_var_list: GLOBAL_VAR_NAME ( "," GLOBAL_VAR_NAME )*
 
-string_var_declaration: single_byte_string_var_declaration
-                      | double_byte_string_var_declaration
+?string_var_declaration: single_byte_string_var_declaration
+                       | double_byte_string_var_declaration
 
-single_byte_string_var_declaration: _var1_list ":" single_byte_string_spec
+single_byte_string_var_declaration: var1_list ":" single_byte_string_spec
 
 STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_NAME ) "]"
                   | "(" ( INTEGER | DOTTED_NAME ) ")"
 
 !single_byte_string_spec: "STRING"i [ STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
 
-double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
+double_byte_string_var_declaration: var1_list ":" double_byte_string_spec
 
 !double_byte_string_spec: "WSTRING"i [ STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
-incompl_located_var_declarations: "VAR"i [ RETAIN | NON_RETAIN ] incompl_located_var_decl* "END_VAR"i ";"?
+incompl_located_var_declarations: "VAR"i [ retain ] incompl_located_var_decl* "END_VAR"i ";"?
 
 incompl_located_var_decl: variable_name incomplete_location ":" var_spec ";"
 
@@ -522,7 +526,7 @@ function_body: statement_list
 // TODO:     | function_block_diagram
 // TODO:     | instruction_list
 
-function_var_decl: _var1_init_decl
+function_var_decl: var1_init_decl
                  | array_var_init_decl
                  | structured_var_init_decl
                  | string_var_declaration
@@ -548,10 +552,6 @@ _other_var_declarations: external_var_declarations
                        | non_retentive_var_decls
                        | temp_var_decls
                        | incompl_located_var_declarations
-
-temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
-
-non_retentive_var_decls: "VAR"i NON_RETAIN var_body "END_VAR"i ";"?
 
 function_block_body: sequential_function_chart
                    | statement_list
@@ -655,7 +655,7 @@ data_source: constant
            | program_output_reference
            | direct_variable
 
-program_configuration: "PROGRAM"i [ RETAIN | NON_RETAIN ] PROGRAM_NAME [ "WITH"i TASK_NAME ] ":" PROGRAM_TYPE_NAME [ "(" prog_conf_elements ")" ]
+program_configuration: "PROGRAM"i [ retain ] PROGRAM_NAME [ "WITH"i TASK_NAME ] ":" PROGRAM_TYPE_NAME [ "(" prog_conf_elements ")" ]
 
 prog_conf_elements: prog_conf_element ( "," prog_conf_element )*
 
@@ -782,10 +782,10 @@ _subprogram_control_statement: return_statement
 
 fb_invocation: fb_invocation_name "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
-fb_invocation_name: FB_NAME
-                  | multi_element_variable
+?fb_invocation_name: FB_NAME
+                   | multi_element_variable
 
-param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression | multi_element_variable ]
+param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression | multi_element_variable ] -> output_parameter_assignment
                 | variable_name ":=" [ expression | multi_element_variable ]
                 | expression
                 | multi_element_variable
