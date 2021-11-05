@@ -331,7 +331,7 @@ initialized_structure: STRUCTURE_TYPE_NAME ":=" structure_initialization
 
 _structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
-structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incomplete_location ] ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init )
+structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
@@ -341,8 +341,6 @@ structure_element_initialization: constant
 STRING_INITIALIZATION: ":=" STRING_LITERAL
 
 string_type_declaration: STRING_TYPE_NAME ":" ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ] [ ":=" STRING_LITERAL ]
-
-string_var_type: STRING_TYPE [ STRING_INITIALIZATION ]
 
 // B.1.4
 _variable: direct_variable
@@ -398,10 +396,6 @@ output_declarations: "VAR_OUTPUT"i [ retain ] var_body "END_VAR"i ";"?
 
 input_output_declarations: "VAR_IN_OUT"i var_body "END_VAR"i ";"?
 
-temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
-
-non_retentive_var_decls: "VAR"i NON_RETAIN var_body "END_VAR"i ";"?
-
 _var_input_body: ( _var_input_body_item ";" )*
 
 _var_input_body_item: var_init_decl
@@ -446,7 +440,7 @@ retentive_var_declarations: "VAR"i RETAIN var_body "END_VAR"i ";"?
 
 located_var_declarations: "VAR"i [ retain_or_const ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"?
 
-located_var_decl: [ variable_name ] location ":" located_var_spec_init ";"
+located_var_decl: [ variable_name ] location ":" _located_var_spec_init ";"
 
 external_var_declarations: "VAR_EXTERNAL"i [ CONSTANT ] external_declaration* "END_VAR"i ";"?
 
@@ -456,23 +450,26 @@ GLOBAL_VAR_NAME: IDENTIFIER
 CONSTANT: "CONSTANT"i
 PERSISTENT: "PERSISTENT"i
 
-global_var_declarations: "VAR_GLOBAL"i [ CONSTANT | RETAIN ] [ PERSISTENT ] _global_var_body_item* "END_VAR"i ";"?
+global_var_declarations: "VAR_GLOBAL"i [ global_const_or_retain ] [ PERSISTENT ] global_var_body_item* "END_VAR"i ";"?
 
-_global_var_body_item: var_init_decl
+?global_const_or_retain: CONSTANT
+                       | RETAIN
+
+?global_var_body_item: var_init_decl
                      | global_var_decl
 
-global_var_decl: global_var_spec ":" ( located_var_spec_init | fb_invocation | function_block_type_name ) ";"
+global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation | function_block_type_name ) ";"
 
 global_var_spec: global_var_list
-               | GLOBAL_VAR_NAME (location | incomplete_location) -> global_var_spec_location
+               | GLOBAL_VAR_NAME (location | incomplete_location)
 
-located_var_spec_init: simple_spec_init
-                     | subrange_spec_init
-                     | enumerated_spec_init
-                     | array_spec_init
-                     | initialized_structure
-                     | single_byte_string_spec
-                     | double_byte_string_spec
+_located_var_spec_init: simple_spec_init
+                      | subrange_spec_init
+                      | enumerated_spec_init
+                      | array_spec_init
+                      | initialized_structure
+                      | single_byte_string_spec
+                      | double_byte_string_spec
 
 location: "AT"i direct_variable
 
@@ -552,6 +549,10 @@ _other_var_declarations: external_var_declarations
                        | non_retentive_var_decls
                        | temp_var_decls
                        | incompl_located_var_declarations
+
+temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
+
+non_retentive_var_decls: "VAR"i NON_RETAIN var_body "END_VAR"i ";"?
 
 function_block_body: sequential_function_chart
                    | statement_list
@@ -677,7 +678,7 @@ data_sink: global_var_reference
 
 instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";" )* "END_VAR"i ";"?
 
-instance_specific_init: RESOURCE_NAME "." PROGRAM_NAME "." ( FB_NAME "." )* ( ( variable_name [ location ] ":" located_var_spec_init ) | ( FB_NAME ":" function_block_type_name ":=" structure_initialization ) )
+instance_specific_init: RESOURCE_NAME "." PROGRAM_NAME "." ( FB_NAME "." )* ( ( variable_name [ location ] ":" _located_var_spec_init ) | ( FB_NAME ":" function_block_type_name ":=" structure_initialization ) )
 
 // B.2.1, B.3.1
 LOGICAL_OR: "OR"i

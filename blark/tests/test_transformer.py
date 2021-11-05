@@ -212,6 +212,7 @@ def roundtrip_rule(rule_name: str, value: str):
                 iValue1 AT %I* : INT := 5;
                 iValue2 AT %Q* : INT := 5;
                 iValue3 AT %M* : INT := 5;
+                sValue1 : STRING[10] := 'test';
             END_STRUCT
             """
         )),
@@ -386,4 +387,47 @@ def test_output_roundtrip(rule_name, value):
     ],
 )
 def test_input_output_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL CONSTANT
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL PERSISTENT
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL CONSTANT PERSISTENT
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL CONSTANT PERSISTENT
+                iValue : INT := 5;
+                fbTest1 : FB_Test(1, 2);
+                fbTest2 : FB_Test(A := 1, B := 2);
+                fbTest3 : FB_TestC;
+            END_VAR
+            """
+        )),
+    ],
+)
+def test_global_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)

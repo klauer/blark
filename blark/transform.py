@@ -509,6 +509,35 @@ class StringTypeDeclaration:
         return f"{self.name} : {type_and_value}"
 
 
+@dataclass
+@_rule_handler(
+    "single_byte_string_spec",
+    "double_byte_string_spec",
+)
+class StringTypeInitialization:
+    string_type: lark.Token
+    length: Optional[lark.Token]
+    value: Optional[lark.Token]
+
+    @staticmethod
+    def from_lark(
+        *args: lark.Token,
+    ) -> StringTypeInitialization:
+        if len(args) == 4:
+            string_type, length, _, value = args
+            return StringTypeInitialization(
+                string_type, length, value
+            )
+        string_type, length = args
+        return StringTypeInitialization(
+            string_type, length, None
+        )
+
+    def __str__(self) -> str:
+        type_and_length = join_if(self.string_type, "", self.length)
+        return join_if(type_and_length, " := ", self.value)
+
+
 class Subrange:
     ...
 
@@ -767,7 +796,7 @@ class StructureElementDeclaration:
     init: Union[
         StructureInitialization,
         ArrayTypeInitialization,
-        # StringVarType,  # TODO?
+        StringTypeInitialization,
         TypeInitialization,
         SubrangeTypeInitialization,
         EnumeratedTypeInitialization,
@@ -984,13 +1013,12 @@ class StringVariableInitDeclaration:
     value: lark.Token
 
     @staticmethod
-    def from_lark(variables: VariableList, string_info):
-        type_name, length, _, value = string_info.children
+    def from_lark(variables: VariableList, string_info: StringTypeInitialization):
         return StringVariableInitDeclaration(
             variables=variables,
-            type_name=type_name,
-            length=length,
-            value=value,
+            type_name=string_info.string_type,
+            length=string_info.length,
+            value=string_info.value,
         )
 
     def __str__(self) -> str:
@@ -1106,6 +1134,58 @@ class EdgeDeclaration:
 
 
 @dataclass
+@_rule_handler("global_var_spec")
+class GlobalVariableSpec:
+    names: List[lark.Token]
+    location: Optional[Union[Location, IncompleteLocation]]
+
+    @staticmethod
+    def from_lark(
+        name_or_names: Union[lark.Token, lark.Tree],
+        location: Optional[Union[Location, IncompleteLocation]] = None
+    ) -> GlobalVariableSpec:
+        if location is None:
+            return GlobalVariableSpec(
+                names=name_or_names.children,
+                location=None
+            )
+
+        return GlobalVariableSpec(
+            names=[name_or_names],
+            location=location
+        )
+
+    def __str__(self) -> str:
+        if not self.location:
+            return ", ".join(self.names)
+        return f"{self.names[0]} : {self.location}"
+
+
+LocatedVariableSpecInit = Union[
+    TypeInitialization,
+    SubrangeTypeInitialization,
+    EnumeratedTypeInitialization,
+    ArrayTypeInitialization,
+    InitializedStructure,
+    StringTypeInitialization,
+]
+
+
+@dataclass
+@_rule_handler("global_var_decl")
+class GlobalVariableDeclaration:
+    spec: GlobalVariableSpec
+    init: Union[
+        LocatedVariableSpecInit,
+        FunctionBlockInvocation,
+        lark.Token  # FB type name
+    ]
+
+    def __str__(self) -> str:
+        return f"{self.spec} : {self.init}"
+
+
+@dataclass
 @_rule_handler("extends")
 class Extends:
     name: lark.Token
@@ -1136,7 +1216,7 @@ class VariableDeclarationBlock:
     ...
 
 
-InputOutputDeclaration = Union[
+VarInitDeclaration = Union[
     ArrayVariableInitDeclaration,
     StringVariableInitDeclaration,
     VariableOneInitDeclaration,
@@ -1144,11 +1224,16 @@ InputOutputDeclaration = Union[
     # EdgeDeclaration,
 ]
 
-OutputDeclaration = InputOutputDeclaration
+InputOutputDeclaration = VarInitDeclaration
+OutputDeclaration = VarInitDeclaration
 
 InputDeclaration = Union[
-    OutputDeclaration,
+    VarInitDeclaration,
     EdgeDeclaration,
+]
+GlobalVariableDeclarationType = Union[
+    VarInitDeclaration,
+    GlobalVariableDeclaration,
 ]
 
 
@@ -1212,6 +1297,44 @@ class InputOutputDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
+@_rule_handler("global_var_declarations")
+class GlobalVariableDeclarations(VariableDeclarationBlock):
+    constant: bool
+    retain: bool
+    persistent: bool
+    items: List[GlobalVariableDeclaration]
+
+    @staticmethod
+    def from_lark(
+        const_or_retain: Optional[lark.Token],
+        persistent: Optional[lark.Token],
+        *items: GlobalVariableDeclaration
+    ) -> GlobalVariableDeclarations:
+        return GlobalVariableDeclarations(
+            constant=str(const_or_retain).lower() == "constant",
+            retain=str(const_or_retain).lower() == "retain",
+            persistent=persistent is not None,
+            items=list(items)
+        )
+
+    def __str__(self) -> str:
+        options = []
+        if self.constant:
+            options.append("CONSTANT")
+        if self.retain:
+            options.append("RETAIN")
+        if self.persistent:
+            options.append("PERSISTENT")
+        return "\n".join(
+            (
+                join_if("VAR_GLOBAL", " ", " ".join(options) if options else None),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
 class Body:
     ...
 
@@ -1231,17 +1354,8 @@ class GrammarTransformer(lark.visitors.Transformer):
 
     constant = pass_through
 
-    # def function_block_body(self, *items):
-    #     return Body()
-
     def full_subrange(self):
         return FullSubrange()
-
-    def fb_var_declaration(self, *items):
-        return VariableDeclarationBlock()
-
-    def function_block_declaration(self, *items):
-        return items
 
     def integer(self, value: lark.Token):
         return Integer.from_lark(None, value)
