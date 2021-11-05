@@ -156,8 +156,8 @@ day: INTEGER
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
-data_type_name: non_generic_type_name
-              | GENERIC_TYPE_NAME
+// data_type_name: non_generic_type_name
+//               | GENERIC_TYPE_NAME
 
 non_generic_type_name: [ pointer_type ] ( ELEMENTARY_TYPE_NAME | DERIVED_TYPE_NAME )
 
@@ -307,20 +307,20 @@ array_type_declaration: ARRAY_TYPE_NAME ":" array_spec_init
 
 array_spec_init: [ indirection_type ] array_specification [ ":=" array_initialization ]
 
-array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i array_spec_type_name
+array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_spec_type_name
 
-array_spec_type_name: STRING_TYPE
-                    | non_generic_type_name
+_array_spec_type_name: STRING_TYPE
+                     | non_generic_type_name
 
-array_initialization: "[" array_initial_elements ( "," array_initial_elements )* "]"
-                    | array_initial_elements ( "," array_initial_elements )*
+array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
+                    | array_initial_element ( "," array_initial_element )*
 
-array_initial_elements: ( INTEGER | enumerated_value ) "(" [ array_initial_element ] ")"
-                      | array_initial_element
+array_initial_element: ( INTEGER | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
+                     | _array_initial_element
 
-array_initial_element: constant
-                     | structure_initialization
-                     | enumerated_value
+_array_initial_element: constant
+                      | structure_initialization
+                      | enumerated_value
 
 structure_type_extends_declaration: STRUCTURE_TYPE_NAME extends ":" _structure_specification
 

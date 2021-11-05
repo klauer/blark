@@ -39,6 +39,9 @@ class Literal:
         return str(self.value)
 
 
+Constant = Literal  # an alias for now
+
+
 @dataclass
 @_rule_handler("integer_literal")
 class Integer(Literal):
@@ -268,6 +271,7 @@ class Variable(Expression):
 
 
 @_rule_handler("indirection_type")
+@_rule_handler("pointer_type")
 class IndirectionType(Enum):
     """Indirect access through a pointer or reference."""
     none = enum.auto()
@@ -567,6 +571,103 @@ class EnumeratedTypeInitialization:
 class EnumeratedTypeDeclaration:
     name: lark.Token
     init: EnumeratedTypeInitialization
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.init}"
+
+
+@dataclass
+@_rule_handler("non_generic_type_name")
+class DataType:
+    indirection: Optional[IndirectionType]
+    type_name: lark.Token
+
+    def __str__(self) -> str:
+        if self.indirection and self.indirection != IndirectionType.none:
+            return f"{self.indirection} {self.type_name}"
+        return f"{self.type_name}"
+
+
+@dataclass
+@_rule_handler("array_specification")
+class ArraySpecification:
+    type_name: DataType
+    subranges: List[Subrange]
+
+    @staticmethod
+    def from_lark(*args):
+        *subranges, type_name = args
+        return ArraySpecification(type_name=type_name, subranges=subranges)
+
+    def __str__(self) -> str:
+        subranges = ", ".join(str(subrange) for subrange in self.subranges)
+        return f"ARRAY [{subranges}] OF {self.type_name}"
+
+
+ArrayInitialElementType = Union[
+    Constant,
+    # StructureInitialization,
+    EnumeratedValue,
+]
+
+
+@dataclass
+@_rule_handler("array_initial_element")
+class ArrayInitialElement:
+    element: ArrayInitialElementType
+
+    def __str__(self) -> str:
+        return f"{self.element}"
+
+
+@dataclass
+@_rule_handler("array_initial_element_count")
+class ArrayInitialElementCount:
+    count: Union[EnumeratedValue, Integer]
+    element: ArrayInitialElementType
+
+    def __str__(self) -> str:
+        return f"{self.count}({self.element})"
+
+
+@dataclass
+@_rule_handler("array_initialization")
+class ArrayInitialization:
+    elements: List[ArrayInitialElement]
+
+    @staticmethod
+    def from_lark(*elements):
+        return ArrayInitialization(elements=elements)
+
+    def __str__(self) -> str:
+        elements = ", ".join(str(element) for element in self.elements)
+        return f"[{elements}]"
+
+
+@dataclass
+@_rule_handler("array_spec_init")
+class ArrayTypeInitialization:
+    indirection: Optional[IndirectionType]
+    spec: ArraySpecification
+    value: Optional[ArrayInitialization]
+
+    def __str__(self) -> str:
+        if self.indirection:
+            spec = f"{self.indirection} {self.spec}"
+        else:
+            spec = f"{self.spec}"
+
+        if not self.value:
+            return spec
+
+        return f"{spec} := {self.value}"
+
+
+@dataclass
+@_rule_handler("array_type_declaration")
+class ArrayTypeDeclaration:
+    name: lark.Token
+    init: ArrayTypeInitialization
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
