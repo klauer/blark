@@ -191,7 +191,7 @@ TYPE_LWORD: "LWORD"i
 ELEMENTARY_TYPE_NAME: _NUMERIC_TYPE_NAME
                     | DATE_TYPE_NAME
                     | BIT_STRING_TYPE_NAME
-                    | STRING_VAR_TYPE
+                    | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
 
 _NUMERIC_TYPE_NAME: INTEGER_TYPE_NAME
                   | REAL_TYPE_NAME
@@ -329,7 +329,7 @@ initialized_structure: STRUCTURE_TYPE_NAME ":=" structure_initialization
 
 _structure_declaration: "STRUCT"i ( structure_element_declaration ";" )* "END_STRUCT"i ";"?
 
-structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incomplete_location ] ":" ( initialized_structure | array_spec_init | STRING_VAR_TYPE | simple_spec_init | subrange_spec_init | enumerated_spec_init )
+structure_element_declaration: STRUCTURE_ELEMENT_NAME [ incomplete_location ] ":" ( initialized_structure | array_spec_init | string_var_type | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
@@ -338,11 +338,12 @@ structure_element_initialization: constant
 
 STRING_INITIALIZATION: ":=" STRING_LITERAL
 
-string_type_declaration: STRING_TYPE_NAME ":" STRING_TYPE [ STRING_INITIALIZATION ]
+string_type_declaration: STRING_TYPE_NAME ":" ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ] [ ":=" STRING_LITERAL ]
 
-STRING_TYPE: ( STRING | WSTRING ) [ _STRING_SPEC_LENGTH ]
+STRING_TYPE: ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ]
 
-STRING_VAR_TYPE: STRING_TYPE [ STRING_INITIALIZATION ]
+// TODO: Combine?
+string_var_type: STRING_TYPE [ STRING_INITIALIZATION ]
 
 // B.1.4
 _variable: direct_variable
@@ -478,14 +479,14 @@ string_var_declaration: single_byte_string_var_declaration
 
 single_byte_string_var_declaration: _var1_list ":" single_byte_string_spec
 
-_STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_NAME ) "]"
-                   | "(" ( INTEGER | DOTTED_NAME ) ")"
+STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_NAME ) "]"
+                  | "(" ( INTEGER | DOTTED_NAME ) ")"
 
-!single_byte_string_spec: "STRING"i [ _STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
+!single_byte_string_spec: "STRING"i [ STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
 
 double_byte_string_var_declaration: _var1_list ":" double_byte_string_spec
 
-!double_byte_string_spec: "WSTRING"i [ _STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
+!double_byte_string_spec: "WSTRING"i [ STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
 incompl_located_var_declarations: "VAR"i [ RETAIN | NON_RETAIN ] incompl_located_var_decl* "END_VAR"i ";"?
 

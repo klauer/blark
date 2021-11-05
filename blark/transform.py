@@ -471,6 +471,20 @@ class TypeDeclaration:
         return f"{self.name} : {self.init}"
 
 
+@dataclass
+@_rule_handler("string_type_declaration")
+class StringTypeDeclaration:
+    name: lark.Token
+    string_type: lark.Token
+    length: Optional[lark.Token]
+    value: lark.Token
+
+    def __str__(self) -> str:
+        type_and_length = join_if(self.string_type, "", self.length)
+        type_and_value = join_if(type_and_length, " := ", self.value)
+        return f"{self.name} : {type_and_value}"
+
+
 class Subrange:
     ...
 

@@ -200,6 +200,11 @@ def test_bool_literal_roundtrip(name, value, expected):
             END_STRUCT
             """
         )),
+        param("string_type_declaration", "TypeName : STRING"),
+        param("string_type_declaration", "TypeName : STRING := 'literal'"),
+        param("string_type_declaration", "TypeName : STRING[5]"),
+        param("string_type_declaration", "TypeName : STRING[100] := 'literal'"),
+        param("string_type_declaration", 'TypeName : WSTRING[100] := "literal"'),
     ],
 )
 def test_expression_roundtrip(name, value):
