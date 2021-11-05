@@ -293,14 +293,14 @@ enumerated_type_declaration: ENUMERATED_TYPE_NAME ":" enumerated_spec_init
 
 enumerated_spec_init: [ indirection_type ] enumerated_specification [ ":=" enumerated_value ]
 
-enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ enum_data_type_name ]
+enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ ENUM_DATA_TYPE_NAME ]
                         | ENUMERATED_TYPE_NAME
 
 enumerated_value: [ ENUMERATED_TYPE_NAME "#" ] DOTTED_NAME [ ":=" integer_literal ]
 
 // The following is a Beckhoff extensions of the IEC61131-3 standard
 // https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/2529504395.html
-enum_data_type_name: INTEGER_TYPE_NAME
+ENUM_DATA_TYPE_NAME: INTEGER_TYPE_NAME
                    | BIT_STRING_TYPE_NAME
 
 array_type_declaration: ARRAY_TYPE_NAME ":" array_spec_init

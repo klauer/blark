@@ -169,6 +169,9 @@ def test_bool_literal_roundtrip(name, value, expected):
         pytest.param("simple_type_declaration", "TypeName EXTENDS a.b : POINTER TO INT"),
         pytest.param("subrange_type_declaration", "TypeName : INT (1..2)"),
         pytest.param("subrange_type_declaration", "TypeName : INT (*) := 1"),
+        pytest.param("enumerated_type_declaration", "TypeName : TypeName := Value"),
+        pytest.param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2)"),
+        pytest.param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
     ],
 )
 def test_expression_roundtrip(name, value):

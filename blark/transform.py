@@ -416,18 +416,6 @@ class TypeInitialization:
     type_name: Optional[lark.Token]
     value: Optional[Expression]
 
-    @staticmethod
-    def from_lark(
-        indirection: Optional[IndirectionType],
-        type_name: lark.Token,
-        value: Expression
-    ) -> TypeInitialization:
-        return TypeInitialization(
-            indirection=indirection,
-            type_name=type_name,
-            value=value,
-        )
-
     def __str__(self) -> str:
         if self.indirection:
             type_ = f"{self.indirection} {self.type_name}"
@@ -509,6 +497,76 @@ class SubrangeTypeInitialization:
 class SubrangeTypeDeclaration:
     name: lark.Token
     init: SubrangeTypeInitialization
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.init}"
+
+
+@dataclass
+@_rule_handler("enumerated_value")
+class EnumeratedValue:
+    type_name: Optional[lark.Token]
+    name: lark.Token
+    value: Optional[Integer]
+
+    def __str__(self) -> str:
+        if self.type_name:
+            name = f"{self.type_name}#{self.name}"
+        else:
+            name = f"{self.name}"
+
+        if self.value:
+            return f"{name} := {self.value}"
+        return name
+
+
+@dataclass
+@_rule_handler("enumerated_specification")
+class EnumeratedSpecification:
+    type_name: Optional[lark.Token]
+    values: Optional[List[EnumeratedValue]] = None
+
+    @staticmethod
+    def from_lark(*args):
+        if len(args) == 1:
+            type_name, = args
+            return EnumeratedSpecification(type_name=type_name)
+        *values, type_name = args
+        return EnumeratedSpecification(type_name=type_name, values=list(values))
+
+    def __str__(self) -> str:
+        if self.values:
+            values = ", ".join(str(value) for value in self.values)
+            if self.type_name:
+                return f"({values}) {self.type_name}"
+            return f"({values})"
+        return f"{self.type_name}"
+
+
+@dataclass
+@_rule_handler("enumerated_spec_init")
+class EnumeratedTypeInitialization:
+    indirection: Optional[IndirectionType]
+    spec: EnumeratedSpecification
+    value: Optional[Expression]
+
+    def __str__(self) -> str:
+        if self.indirection:
+            spec = f"{self.indirection} {self.spec}"
+        else:
+            spec = f"{self.spec}"
+
+        if not self.value:
+            return spec
+
+        return f"{spec} := {self.value}"
+
+
+@dataclass
+@_rule_handler("enumerated_type_declaration")
+class EnumeratedTypeDeclaration:
+    name: lark.Token
+    init: EnumeratedTypeInitialization
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
