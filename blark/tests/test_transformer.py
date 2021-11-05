@@ -197,6 +197,10 @@ def test_bool_literal_roundtrip(name, value, expected):
                 arrValue : ARRAY [1..2] OF INT := [1, 2];
                 arrValue1 : INT (1..2);
                 arrValue1 : (Value1 := 1) INT;
+                sValue : STRING := 'abc';
+                iValue1 AT %I* : INT := 5;
+                iValue2 AT %Q* : INT := 5;
+                iValue3 AT %M* : INT := 5;
             END_STRUCT
             """
         )),

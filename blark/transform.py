@@ -276,6 +276,13 @@ class DateTime(Literal):
 
 
 @dataclass
+@_rule_handler("string_literal")
+class String(Literal):
+    """String literal value."""
+    value: lark.Token
+
+
+@dataclass
 class Expression:
     ...
 
@@ -319,12 +326,12 @@ class IncompleteLocation(Enum):
 
     @staticmethod
     def from_lark(token: Optional[lark.Token]) -> IncompleteLocation:
-        return IncompleteLocation[str(token).upper()]
+        return IncompleteLocation(str(token).upper())
 
     def __str__(self):
         if self == IncompleteLocation.none:
             return ""
-        return f"AT {self}"
+        return f"AT {self.value}"
 
 
 class VariableLocationPrefix(str, Enum):
