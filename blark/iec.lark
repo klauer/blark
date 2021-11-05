@@ -21,7 +21,7 @@ iec_source: ( _library_element_declaration | action )*
 
 _library_element_declaration: data_type_declaration
                             | function_declaration
-                            | function_block_declaration
+                            | function_block_type_declaration
                             | program_declaration
                             | configuration_declaration
                             | global_var_declarations
@@ -386,10 +386,6 @@ FB_NAME: IDENTIFIER
 ?retain: RETAIN
        | NON_RETAIN
 
-?retain_or_const: RETAIN
-                | NON_RETAIN
-                | CONSTANT
-
 input_declarations: "VAR_INPUT"i [ retain ] _var_input_body "END_VAR"i ";"?
 
 output_declarations: "VAR_OUTPUT"i [ retain ] var_body "END_VAR"i ";"?
@@ -421,7 +417,7 @@ array_var_init_decl: var1_list ":" array_spec_init
 structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
-fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
+fb_decl: fb_decl_name_list ":" FUNCTION_BLOCK_TYPE_NAME [ ":=" structure_initialization ] -> fb_name_decl
        | fb_decl_name_list ":" fb_invocation                                              -> fb_invocation_decl
 
 fb_decl_name_list: FB_NAME ( "," FB_NAME )*
@@ -434,17 +430,21 @@ array_var_declaration: var1_list ":" array_specification
 
 structured_var_declaration: var1_list ":" STRUCTURE_TYPE_NAME
 
-var_declarations: "VAR"i [ CONSTANT | PERSISTENT ] var_body "END_VAR"i ";"?
+var_declarations: "VAR"i [ var_declaration_config ] var_body "END_VAR"i ";"?
 
-retentive_var_declarations: "VAR"i RETAIN var_body "END_VAR"i ";"?
+?var_declaration_config: CONSTANT | PERSISTENT | RETAIN | NON_RETAIN
 
-located_var_declarations: "VAR"i [ retain_or_const ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"?
+located_var_declarations: "VAR"i [ located_var_config ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"?
+
+?located_var_config: RETAIN
+                   | NON_RETAIN
+                   | CONSTANT
 
 located_var_decl: [ variable_name ] location ":" _located_var_spec_init ";"
 
 external_var_declarations: "VAR_EXTERNAL"i [ CONSTANT ] external_declaration* "END_VAR"i ";"?
 
-external_declaration: GLOBAL_VAR_NAME ":" ( SIMPLE_SPECIFICATION | subrange_specification | enumerated_specification | array_specification | STRUCTURE_TYPE_NAME | function_block_type_name ) ";"
+external_declaration: GLOBAL_VAR_NAME ":" ( SIMPLE_SPECIFICATION | subrange_specification | enumerated_specification | array_specification | STRUCTURE_TYPE_NAME | FUNCTION_BLOCK_TYPE_NAME ) ";"
 
 GLOBAL_VAR_NAME: IDENTIFIER
 CONSTANT: "CONSTANT"i
@@ -458,7 +458,7 @@ global_var_declarations: "VAR_GLOBAL"i [ global_const_or_retain ] [ PERSISTENT ]
 ?global_var_body_item: var_init_decl
                      | global_var_decl
 
-global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation | function_block_type_name ) ";"
+global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation | FUNCTION_BLOCK_TYPE_NAME ) ";"
 
 global_var_spec: global_var_list
                | GLOBAL_VAR_NAME (location | incomplete_location)
@@ -533,26 +533,28 @@ DOTTED_NAME: IDENTIFIER ( "." IDENTIFIER )*
 STANDARD_FUNCTION_BLOCK_NAME: IDENTIFIER
 DERIVED_FUNCTION_BLOCK_NAME: IDENTIFIER
 
-function_block_type_name: STANDARD_FUNCTION_BLOCK_NAME
+FUNCTION_BLOCK_TYPE_NAME: STANDARD_FUNCTION_BLOCK_NAME
                         | DERIVED_FUNCTION_BLOCK_NAME
 
 extends: "EXTENDS"i DOTTED_NAME
 
-function_block_declaration: ( "FUNCTION_BLOCK"i | "FUNCTIONBLOCK"i ) DERIVED_FUNCTION_BLOCK_NAME [ extends ] fb_var_declaration* [ function_block_body ] ( "END_FUNCTION_BLOCK"i | "END_FUNCTIONBLOCK"i ) ";"?
+function_block_type_declaration: _FUNCTION_BLOCK DERIVED_FUNCTION_BLOCK_NAME [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"?
 
-fb_var_declaration: _io_var_declarations
-                  | _other_var_declarations
+_FUNCTION_BLOCK: "FUNCTION_BLOCK"i
+               | "FUNCTIONBLOCK"i
+
+_END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
+                   | "END_FUNCTIONBLOCK"i
+
+?fb_var_declaration: _io_var_declarations
+                   | _other_var_declarations
 
 _other_var_declarations: external_var_declarations
                        | var_declarations
-                       | retentive_var_declarations
-                       | non_retentive_var_decls
                        | temp_var_decls
                        | incompl_located_var_declarations
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"?
-
-non_retentive_var_decls: "VAR"i NON_RETAIN var_body "END_VAR"i ";"?
 
 function_block_body: sequential_function_chart
                    | statement_list
@@ -560,7 +562,12 @@ function_block_body: sequential_function_chart
 // B.1.5.3
 PROGRAM_TYPE_NAME: IDENTIFIER
 
-program_declaration: "PROGRAM"i PROGRAM_TYPE_NAME ( _io_var_declarations | _other_var_declarations | located_var_declarations | program_access_decls )* [ function_block_body ] "END_PROGRAM"i ";"?
+program_declaration: "PROGRAM"i PROGRAM_TYPE_NAME program_var_declaration* [ function_block_body ] "END_PROGRAM"i ";"?
+
+?program_var_declaration: _io_var_declarations
+                        | _other_var_declarations
+                        | located_var_declarations
+                        | program_access_decls
 
 program_access_decls: "VAR_ACCESS"i program_access_decl ";" ( program_access_decl ";" )* "END_VAR"i ";"?
 
@@ -678,7 +685,7 @@ data_sink: global_var_reference
 
 instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";" )* "END_VAR"i ";"?
 
-instance_specific_init: RESOURCE_NAME "." PROGRAM_NAME "." ( FB_NAME "." )* ( ( variable_name [ location ] ":" _located_var_spec_init ) | ( FB_NAME ":" function_block_type_name ":=" structure_initialization ) )
+instance_specific_init: RESOURCE_NAME "." PROGRAM_NAME "." ( FB_NAME "." )* ( ( variable_name [ location ] ":" _located_var_spec_init ) | ( FB_NAME ":" FUNCTION_BLOCK_TYPE_NAME ":=" structure_initialization ) )
 
 // B.2.1, B.3.1
 LOGICAL_OR: "OR"i

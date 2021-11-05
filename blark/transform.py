@@ -1195,19 +1195,37 @@ class Extends:
 
 
 @dataclass
+@_rule_handler("function_block_type_declaration")
 class FunctionBlock:
     name: lark.Token
     extends: Optional[lark.Token]
-    declarations: tuple[VariableDeclarationBlock, ...]
+    declarations: List[VariableDeclarationBlock]
     body: Optional[...]
 
     @staticmethod
-    def from_lark(derived_name, extends, *declarations, body):
+    def from_lark(
+        derived_name: lark.Token,
+        extends: Extends,
+        *args
+    ):
+        *declarations, body = args
         return FunctionBlock(
             name=derived_name,
             extends=extends,
-            declarations=declarations,
+            declarations=list(declarations),
             body=body,
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            line for line in
+            (
+                join_if(f"FUNCTION_BLOCK {self.name}", " ", self.extends),
+                *[str(declaration) for declaration in self.declarations],
+                str(self.body) if self.body else None,
+                "END_FUNCTION_BLOCK",
+            )
+            if line is not None
         )
 
 
@@ -1235,6 +1253,118 @@ GlobalVariableDeclarationType = Union[
     VarInitDeclaration,
     GlobalVariableDeclaration,
 ]
+# FunctionBlockDeclarations = Union[
+#     ...
+# ]
+
+
+@dataclass
+@_rule_handler("var_declarations")
+class VariableDeclarations(VariableDeclarationBlock):
+    config: Optional[lark.Token]
+    items: List[VarInitDeclaration]
+
+    @staticmethod
+    def from_lark(config: Optional[lark.Token], items: lark.Tree) -> VariableDeclarations:
+        return VariableDeclarations(
+            config=config,
+            items=items.children,
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if("VAR", " ", self.config),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("located_var_decl")
+class LocatedVariableDeclaration:
+    name: Optional[lark.Token]
+    location: Location
+    init: LocatedVariableSpecInit
+
+    def __str__(self) -> str:
+        name_and_location = join_if(self.name, " ", self.location)
+        return f"{name_and_location} : {self.init}"
+
+
+@dataclass
+@_rule_handler("located_var_declarations")
+class LocatedVariableDeclarations(VariableDeclarationBlock):
+    config: Optional[lark.Token]
+    persistent: bool
+    items: List[LocatedVariableDeclaration]
+
+    @staticmethod
+    def from_lark(
+        config: Optional[lark.Token],
+        persistent: Optional[lark.Token],
+        *items: LocatedVariableDeclaration,
+    ) -> VariableDeclarations:
+        return LocatedVariableDeclarations(
+            config=config,
+            persistent=persistent is not None,
+            items=list(items),
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if(
+                    join_if("VAR", " ", self.config),
+                    " ",
+                    self.persistent and "PERSISTENT" or None
+                ),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("external_declaration")
+class ExternalVariableDeclaration:
+    name: lark.Token
+    spec: Union[
+        lark.Token,  # SIMPLE_SPECIFICATION / STRUCTURE_TYPE_NAME / FUNCTION_BLOCK_TYPE_NAME
+        SubrangeSpecification,
+        EnumeratedSpecification,
+        ArraySpecification,
+    ]
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.spec}"
+
+
+@dataclass
+@_rule_handler("external_var_declarations")
+class ExternalVariableDeclarations(VariableDeclarationBlock):
+    constant: bool
+    items: List[ExternalVariableDeclaration]
+
+    @staticmethod
+    def from_lark(
+        constant: Optional[lark.Token],
+        *items: ExternalVariableDeclaration,
+    ) -> VariableDeclarations:
+        return ExternalVariableDeclarations(
+            constant=constant is not None,
+            items=list(items),
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if("VAR_EXTERNAL", " ", self.constant and "CONSTANT" or None),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
 
 
 @dataclass

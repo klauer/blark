@@ -431,3 +431,63 @@ def test_input_output_roundtrip(rule_name, value):
 )
 def test_global_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+            VAR_INPUT
+                bExecute : BOOL;
+            END_VAR
+            VAR_OUTPUT
+                iResult : INT;
+            END_VAR
+            VAR_IN_OUT
+                iShared : INT;
+            END_VAR
+            VAR CONSTANT
+                iConstant : INT := 5;
+            END_VAR
+            VAR
+                iInternal : INT;
+            END_VAR
+            VAR RETAIN
+                iRetained : INT;
+            END_VAR
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("located_var_declarations", tf.multiline_code_block(
+            """
+            VAR RETAIN
+                iValue AT %IB1 : INT := 5;
+            END_VAR
+            """
+        )),
+        param("external_var_declarations", tf.multiline_code_block(
+            """
+            VAR_EXTERNAL
+                iGlobalVar : INT;
+            END_VAR
+            """
+        )),
+        param("external_var_declarations", tf.multiline_code_block(
+            """
+            VAR_EXTERNAL CONSTANT
+                iGlobalVar : INT;
+            END_VAR
+            """
+        )),
+    ],
+)
+def test_fb_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
