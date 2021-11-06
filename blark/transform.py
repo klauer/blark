@@ -1195,12 +1195,24 @@ class Extends:
 
 
 @dataclass
+@_rule_handler("function_block_body")
+class FunctionBlockBody:
+    source: Union[
+        StatementList,
+        # SfcNetwork
+    ]
+
+    def __str__(self) -> str:
+        return str(self.source)
+
+
+@dataclass
 @_rule_handler("function_block_type_declaration")
 class FunctionBlock:
     name: lark.Token
     extends: Optional[lark.Token]
     declarations: List[VariableDeclarationBlock]
-    body: Optional[...]
+    body: Optional[FunctionBlockBody]
 
     @staticmethod
     def from_lark(
@@ -1275,6 +1287,25 @@ class VariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR", " ", self.config),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("temp_var_decls")
+class TemporaryVariableDeclarations(VariableDeclarationBlock):
+    items: List[VarInitDeclaration]
+
+    @staticmethod
+    def from_lark(items: lark.Tree) -> TemporaryVariableDeclarations:
+        return TemporaryVariableDeclarations(items.children)
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_TEMP",
                 *[f"{INDENT}{item};" for item in self.items],
                 "END_VAR",
             )
@@ -1462,6 +1493,101 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
                 "END_VAR",
             )
         )
+
+
+class Statement:
+    ...
+
+
+@dataclass
+@_rule_handler("no_op_statement")
+class NoOpStatement(Statement):
+    variable: lark.Token
+
+    def __str__(self):
+        return f"{self.variable};"
+
+
+@dataclass
+@_rule_handler("action_statement")
+class ActionStatement(Statement):
+    # TODO: overlaps with no-op statement?
+    action: lark.Token
+
+    def __str__(self):
+        return f"{self.action};"
+
+
+@dataclass
+@_rule_handler("set_statement")
+class SetStatement(Statement):
+    variable: SymbolicVariable
+    expression: Expression
+
+    def __str__(self):
+        return f"{self.variable} S= {self.expression};"
+
+
+@dataclass
+@_rule_handler("reset_statement")
+class ResetStatement(Statement):
+    variable: SymbolicVariable
+    expression: Expression
+
+    def __str__(self):
+        return f"{self.variable} R= {self.expression};"
+
+
+@dataclass
+@_rule_handler("return_statement")
+class ReturnStatement(Statement):
+    def __str__(self):
+        return "RETURN;"
+
+
+@dataclass
+@_rule_handler("assignment_statement")
+class AssignmentStatement(Statement):
+    variables: List[lark.Token]
+    expression: Expression
+
+    @staticmethod
+    def from_lark(*args) -> AssignmentStatement:
+        *variables, expression = args
+        return AssignmentStatement(
+            variables=list(variables),
+            expression=expression
+        )
+
+    def __str__(self):
+        variables = " := ".join(str(var) for var in self.variables)
+        return f"{variables} := {self.expression};"
+
+
+@dataclass
+@_rule_handler("method_statement")
+class MethodStatement(Statement):
+    method: SymbolicVariable
+
+    def __str__(self):
+        return f"{self.method}();"
+
+
+@dataclass
+@_rule_handler("statement_list")
+class StatementList:
+    statements: List[Statement]
+
+    @staticmethod
+    def from_lark(
+        *statements: Statement
+    ) -> StatementList:
+        return StatementList(
+            statements=list(statements)
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(str(statement) for statement in self.statements)
 
 
 @dataclass

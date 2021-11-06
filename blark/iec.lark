@@ -757,7 +757,7 @@ function_call: ( _function_name | multi_element_variable ) "(" [ param_assignmen
 statement_list: _statement+
 
 _statement: ";"+
-          | method
+          | method_statement
           | assignment_statement
           | no_op_statement
           | set_statement
@@ -766,7 +766,7 @@ _statement: ";"+
           | _subprogram_control_statement
           | _selection_statement
           | _iteration_statement
-          | action_name ";"
+          | action_statement
 
 // B.3.2.1
 no_op_statement: _variable ";"
@@ -780,7 +780,9 @@ reset_statement: _variable "R="i expression ";"
 reference_assignment_statement: _variable "REF="i expression ";"
 
 // method ::= expression [DEREFERENCED] '.' _identifier '(' ')';
-method: expression "(" ")" ";"
+method_statement: _symbolic_variable "(" ")" ";"
+
+action_statement: action_name ";"
 
 // B.3.2.2
 return_statement: "RETURN"i ";"?
@@ -788,10 +790,7 @@ return_statement: "RETURN"i ";"?
 _subprogram_control_statement: return_statement
                              | fb_invocation ";"
 
-fb_invocation: fb_invocation_name "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
-
-?fb_invocation_name: FB_NAME
-                   | multi_element_variable
+fb_invocation: _symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
 param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression | multi_element_variable ] -> output_parameter_assignment
                 | variable_name ":=" [ expression | multi_element_variable ]

@@ -487,6 +487,25 @@ def test_global_roundtrip(rule_name, value):
             END_VAR
             """
         )),
+        param("temp_var_decls", tf.multiline_code_block(
+            """
+            VAR_TEMP
+                iGlobalVar : INT;
+            END_VAR
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+            iValue := 1;
+            iValue;
+            iValue S= 1;
+            iValue R= 1;
+            Method();
+            RETURN;
+            END_FUNCTION_BLOCK
+            """
+        )),
     ],
 )
 def test_fb_roundtrip(rule_name, value):
