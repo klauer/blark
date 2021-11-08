@@ -184,6 +184,7 @@ def roundtrip_rule(rule_name: str, value: str):
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2)"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
+        param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
@@ -497,16 +498,108 @@ def test_global_roundtrip(rule_name, value):
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
-            iValue := 1;
-            iValue;
-            iValue S= 1;
-            iValue R= 1;
-            Method();
-            RETURN;
+                iValue := 1;
+                iValue;
+                iValue S= 1;
+                iValue R= 1;
+                iValue REF= GVL.iTest;
+                fbOther(A := 5, B => iValue, NOT C => iValue1);
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                RETURN;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                Method();
+                IF 1 THEN
+                    EXIT;
+                END_IF
             END_FUNCTION_BLOCK
             """
         )),
     ],
 )
 def test_fb_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF 1 THEN
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                END_IF
+            ELSIF 2 THEN
+                iValue := 2;
+            ELSIF 3 THEN
+                iValue := 2;
+            ELSE
+                iValue := 3;
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF 1 THEN
+                IF 2 THEN
+                    IF 3 * x THEN
+                        y();
+                    ELSE
+                    END_IF
+                END_IF
+            END_IF
+            """
+        )),
+        param("case_statement", tf.multiline_code_block(
+            """
+            CASE expr OF
+            1:
+                abc();
+            2, 3, GVL.Constant:
+                def();
+            ELSE
+                ghi();
+            END_CASE
+            """
+        )),
+        param("case_statement", tf.multiline_code_block(
+            """
+            CASE a.b.c^.d OF
+            1..10:
+                OneToTen := OneToTen + 1;
+            EnumValue:
+            END_CASE
+            """
+        )),
+        param("while_statement", tf.multiline_code_block(
+            """
+            WHILE expr
+            DO
+                iValue := iValue + 1;
+            END_WHILE
+            """
+        )),
+        param("repeat_statement", tf.multiline_code_block(
+            """
+            REPEAT
+                iValue := iValue + 1;
+            UNTIL expr
+            END_REPEAT
+            """
+        )),
+    ],
+)
+def test_statement_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)

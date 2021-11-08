@@ -750,7 +750,6 @@ function_call: ( _function_name | multi_element_variable ) "(" [ param_assignmen
 ?primary_expression: "(" expression ")"      -> parenthesized_expression
                    | function_call
                    | _variable
-                   | multi_element_variable
                    | constant
 
 // B.3.2
@@ -792,27 +791,28 @@ _subprogram_control_statement: return_statement
 
 fb_invocation: _symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
-param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression | multi_element_variable ] -> output_parameter_assignment
-                | variable_name ":=" [ expression | multi_element_variable ]
+param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
+                | variable_name ":=" [ expression ]
                 | expression
-                | multi_element_variable
 
 // B.3.2.3
 _selection_statement: if_statement
                     | case_statement
 
-if_statement: "IF"i expression "THEN"i [ statement_list ] ( "ELSIF"i expression "THEN"i [ statement_list ] )* [ "ELSE"i [ statement_list ] ] "END_IF"i ";"?
+if_statement: "IF"i expression "THEN"i [ statement_list ] ( else_if_clause )* [ else_clause ] "END_IF"i ";"?
+else_if_clause: "ELSIF"i expression "THEN"i [ statement_list ]
+else_clause: "ELSE"i [ statement_list ]
 
-case_statement: "CASE"i expression "OF"i case_element case_element* [ "ELSE"i [ statement_list ] ] "END_CASE"i ";"?
+case_statement: "CASE"i expression "OF"i case_element+ [ else_clause ] "END_CASE"i ";"?
 
 case_element: case_list ":" [ statement_list ]
 
 case_list: case_list_element ( "," case_list_element )*
 
-case_list_element: subrange
-                 | integer_literal
-                 | enumerated_value
-                 | DOTTED_NAME
+?case_list_element: subrange
+                  | integer_literal
+                  | enumerated_value
+                  | _symbolic_variable
 
 // B.3.2.4
 CONTROL_VARIABLE: IDENTIFIER

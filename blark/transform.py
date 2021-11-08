@@ -28,6 +28,13 @@ def join_if(value1: Optional[Any], delimiter: str, value2: Optional[Any]) -> str
     )
 
 
+def indent_if(value: Optional[Any], indent: str = INDENT) -> Optional[str]:
+    """Indented {value} if not None."""
+    if value is not None:
+        return textwrap.indent(str(value), indent)
+    return None
+
+
 def _rule_handler(
     *rules: Union[str, List[str]]
 ) -> Callable[[Type[T]], Type[T]]:
@@ -1059,7 +1066,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 @_rule_handler("param_assignment")
 class ParameterAssignment:
     name: Optional[lark.Token]
-    value: Optional[Union[Expression, MultiElementVariable]]
+    value: Optional[Expression]
 
     @staticmethod
     def from_lark(*args) -> ParameterAssignment:
@@ -1083,7 +1090,7 @@ class OutputParameterAssignment(ParameterAssignment):
     def from_lark(
         inverted: Optional[lark.Token],
         name: lark.Token,
-        value: Optional[Union[Expression, MultiElementVariable]],
+        value: Expression,
     ) -> ParameterAssignment:
         return OutputParameterAssignment(name, value, inverted is not None)
 
@@ -1234,7 +1241,7 @@ class FunctionBlock:
             (
                 join_if(f"FUNCTION_BLOCK {self.name}", " ", self.extends),
                 *[str(declaration) for declaration in self.declarations],
-                str(self.body) if self.body else None,
+                textwrap.indent(str(self.body), INDENT) if self.body else None,
                 "END_FUNCTION_BLOCK",
             )
             if line is not None
@@ -1500,6 +1507,136 @@ class Statement:
 
 
 @dataclass
+@_rule_handler("else_if_clause")
+class ElseIfClause:
+    if_expression: Expression
+    statements: Optional[StatementList]
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                f"ELSIF {self.if_expression} THEN",
+                indent_if(self.statements),
+            )
+            if s is not None
+        )
+
+
+@dataclass
+@_rule_handler("else_clause")
+class ElseClause:
+    statements: Optional[StatementList]
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                "ELSE",
+                indent_if(self.statements),
+            )
+            if s is not None
+        )
+
+
+@dataclass
+@_rule_handler("if_statement")
+class IfStatement(Statement):
+    if_expression: Expression
+    statements: Optional[StatementList]
+    else_ifs: Optional[List[ElseIfClause]]
+    else_clause: Optional[ElseClause]
+
+    @staticmethod
+    def from_lark(
+        if_expr: Expression,
+        then: Optional[StatementList],
+        *args: Union[ElseIfClause, ElseClause]
+    ) -> IfStatement:
+        else_clause = None
+        if args and isinstance(args[-1], ElseClause) or args[-1] is None:
+            else_clause = args[-1]
+            args = args[:-1]
+        return IfStatement(
+            if_expression=if_expr,
+            statements=then,
+            else_ifs=list(args),
+            else_clause=else_clause,
+        )
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                f"IF {self.if_expression} THEN",
+                indent_if(self.statements),
+                *[str(else_if) for else_if in self.else_ifs],
+                str(self.else_clause) if self.else_clause else None,
+                "END_IF",
+            )
+            if s is not None
+        )
+
+
+@dataclass
+@_rule_handler("case_element")
+class CaseElement(Statement):
+    matches: List[Union[Subrange, Integer, EnumeratedValue, SymbolicVariable]]
+    statements: Optional[StatementList]
+
+    @staticmethod
+    def from_lark(
+        matches: lark.Tree,
+        statements: Optional[StatementList],
+    ) -> CaseElement:
+        return CaseElement(
+            matches=matches.children,
+            statements=statements,
+        )
+
+    def __str__(self):
+        matches = ", ".join(str(match) for match in self.matches)
+        return "\n".join(
+            s for s in (
+                f"{matches}:",
+                indent_if(self.statements),
+            )
+            if s is not None
+        )
+
+
+@dataclass
+@_rule_handler("case_statement")
+class CaseStatement(Statement):
+    expression: Expression
+    cases: Optional[StatementList]
+    else_clause: Optional[ElseClause]
+
+    @staticmethod
+    def from_lark(
+        expr: Expression,
+        *args: Union[CaseStatement, ElseClause]
+    ) -> CaseStatement:
+        else_clause = None
+        if args and isinstance(args[-1], ElseClause) or args[-1] is None:
+            else_clause = args[-1]
+            args = args[:-1]
+        return CaseStatement(
+            expression=expr,
+            cases=list(args),
+            else_clause=else_clause,
+        )
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                f"CASE {self.expression} OF",
+                *[str(case) for case in self.cases],
+                str(self.else_clause) if self.else_clause else None,
+                "END_CASE",
+            )
+            if s is not None
+        )
+
+
+@dataclass
 @_rule_handler("no_op_statement")
 class NoOpStatement(Statement):
     variable: lark.Token
@@ -1529,6 +1666,16 @@ class SetStatement(Statement):
 
 
 @dataclass
+@_rule_handler("reference_assignment_statement")
+class ReferenceAssignmentStatement(Statement):
+    variable: SymbolicVariable
+    expression: Expression
+
+    def __str__(self):
+        return f"{self.variable} REF= {self.expression};"
+
+
+@dataclass
 @_rule_handler("reset_statement")
 class ResetStatement(Statement):
     variable: SymbolicVariable
@@ -1536,6 +1683,13 @@ class ResetStatement(Statement):
 
     def __str__(self):
         return f"{self.variable} R= {self.expression};"
+
+
+@dataclass
+@_rule_handler("exit_statement")
+class ExitStatement(Statement):
+    def __str__(self):
+        return "EXIT;"
 
 
 @dataclass
@@ -1574,6 +1728,42 @@ class MethodStatement(Statement):
 
 
 @dataclass
+@_rule_handler("while_statement")
+class WhileStatement(Statement):
+    expression: Expression
+    statements: StatementList
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                f"WHILE {self.expression}",
+                "DO",
+                indent_if(self.statements),
+                "END_WHILE",
+            )
+            if s is not None
+        )
+
+
+@dataclass
+@_rule_handler("repeat_statement")
+class RepeatStatement(Statement):
+    statements: StatementList
+    expression: Expression
+
+    def __str__(self):
+        return "\n".join(
+            s for s in (
+                "REPEAT",
+                indent_if(self.statements),
+                f"UNTIL {self.expression}",
+                "END_REPEAT",
+            )
+            if s is not None
+        )
+
+
+@dataclass
 @_rule_handler("statement_list")
 class StatementList:
     statements: List[Statement]
@@ -1587,7 +1777,16 @@ class StatementList:
         )
 
     def __str__(self) -> str:
-        return "\n".join(str(statement) for statement in self.statements)
+        def stringify_statement(statement: Union[Statement, FunctionBlockInvocation]) -> str:
+            # TODO: this is a bit of a bug; who has the responsibility to
+            # append a semicolon?
+            if not isinstance(statement, Statement):
+                return f"{statement};"
+            return str(statement)
+
+        return "\n".join(
+            stringify_statement(statement) for statement in self.statements
+        )
 
 
 @dataclass
