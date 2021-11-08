@@ -14,7 +14,7 @@ import blark
 DESCRIPTION = __doc__
 
 
-MODULES = ("parse",)
+MODULES = ("parse", "format")
 
 
 def _try_import(module):

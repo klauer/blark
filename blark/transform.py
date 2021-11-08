@@ -956,6 +956,27 @@ class ParenthesizedExpression(Expression):
 
 
 @dataclass
+@_rule_handler("function_call")
+class FunctionCall(Expression):
+    name: SymbolicVariable
+    parameters: List[ParameterAssignment]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        *parameters: ParameterAssignment
+    ) -> FunctionCall:
+        return FunctionCall(
+            name=name,
+            parameters=list(parameters)
+        )
+
+    def __str__(self) -> str:
+        parameters = ", ".join(str(param) for param in self.parameters)
+        return f"{self.name}({parameters})"
+
+
+@dataclass
 @_rule_handler("var1")
 class VariableOne:
     name: lark.Token
@@ -1241,8 +1262,64 @@ class FunctionBlock:
             (
                 join_if(f"FUNCTION_BLOCK {self.name}", " ", self.extends),
                 *[str(declaration) for declaration in self.declarations],
-                textwrap.indent(str(self.body), INDENT) if self.body else None,
+                indent_if(self.body),
                 "END_FUNCTION_BLOCK",
+            )
+            if line is not None
+        )
+
+
+class Action:
+    ...
+
+
+@dataclass
+@_rule_handler("action")
+class NamedAction(Action):
+    name: lark.Token
+    body: Optional[FunctionBlockBody]
+
+    def __str__(self) -> str:
+        return "\n".join(
+            line for line in
+            (
+                f"ACTION {self.name}:",
+                indent_if(self.body),
+                "END_ACTION",
+            )
+            if line is not None
+        )
+
+
+@dataclass
+@_rule_handler("entry_action")
+class EntryAction(Action):
+    body: Optional[FunctionBlockBody]
+
+    def __str__(self) -> str:
+        return "\n".join(
+            line for line in
+            (
+                "ENTRY_ACTION",
+                indent_if(self.body),
+                "END_ACTION",
+            )
+            if line is not None
+        )
+
+
+@dataclass
+@_rule_handler("exit_action")
+class ExitAction(Action):
+    body: Optional[FunctionBlockBody]
+
+    def __str__(self) -> str:
+        return "\n".join(
+            line for line in
+            (
+                "EXIT_ACTION",
+                indent_if(self.body),
+                "END_ACTION",
             )
             if line is not None
         )
@@ -1789,9 +1866,28 @@ class StatementList:
         )
 
 
+SourceCodeItem = Union[
+    # DataTypeDeclaration,  # TODO
+    # FunctionDeclaration,  # TODO
+    FunctionBlock,
+    # ProgramDeclaration,  # TODO
+    # ConfigurationDeclaration,  # TODO
+    GlobalVariableDeclarations,
+]
+
+
 @dataclass
-class Body:
-    ...
+@_rule_handler("iec_source")
+class SourceCode:
+    """Top-level source code item."""
+    items: List[SourceCodeItem]
+
+    @staticmethod
+    def from_lark(*args: SourceCodeItem) -> SourceCode:
+        return SourceCode(list(args))
+
+    def __str__(self):
+        return "\n".join(str(item) for item in self.items)
 
 
 @staticmethod

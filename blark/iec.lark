@@ -1,7 +1,7 @@
 // IEC61131-3 Lark grammar based on X-Pie Software GmbH's original (v1.2)
 // Distributed under the GPL as part of iec2xml.
 
-start: iec_source
+?start: iec_source
 
 // Global settings
 
@@ -103,10 +103,10 @@ SINGLE_BYTE_CHARACTER_STRING: "'" SINGLE_BYTE_CHARACTER* "'"
 DOUBLE_BYTE_CHARACTER_STRING: "\"" DOUBLE_BYTE_CHARACTER* "\""
 
 // B.1.2.3
-time_literal: duration
-            | time_of_day
-            | date
-            | date_and_time
+?time_literal: duration
+             | time_of_day
+             | date
+             | date_and_time
 
 // B.1.2.3.1
 duration: ( "TIME"i | "T"i ) "#" "-"? _interval
@@ -586,8 +586,7 @@ step: "STEP"i STEP_NAME ":" [ statement_list | action_association | sequential_f
 
 action_association: action_name "(" [ action_qualifier ] ( "," indicator_name )* ")"
 
-// trick to avoid collision of action_name; statements with END_block statements
-action_name: /(?!END_)(\w+)/
+?action_name: IDENTIFIER
 
 action_qualifier: "N"
                 | "R"
@@ -744,7 +743,7 @@ UNARY_OPERATOR: LOGICAL_NOT
               | MINUS
               | PLUS
 
-function_call: ( _function_name | multi_element_variable ) "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
+function_call: _symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
 // see also: fb_invocation
 ?primary_expression: "(" expression ")"      -> parenthesized_expression
@@ -765,7 +764,7 @@ _statement: ";"+
           | _subprogram_control_statement
           | _selection_statement
           | _iteration_statement
-          | action_statement
+// | action_statement
 
 // B.3.2.1
 no_op_statement: _variable ";"
@@ -781,7 +780,7 @@ reference_assignment_statement: _variable "REF="i expression ";"
 // method ::= expression [DEREFERENCED] '.' _identifier '(' ')';
 method_statement: _symbolic_variable "(" ")" ";"
 
-action_statement: action_name ";"
+// action_statement: action_name ";"
 
 // B.3.2.2
 return_statement: "RETURN"i ";"?
