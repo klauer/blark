@@ -4,7 +4,8 @@ import enum
 import textwrap
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import (Any, Callable, Generator, List, Optional, Tuple, Type,
+                    TypeVar, Union)
 
 import lark
 
@@ -53,9 +54,10 @@ def _rule_handler(
     return wrapper
 
 
-@dataclass
 class Literal:
     """Literal value."""
+
+    value: Any
 
     def __str__(self) -> str:
         return str(self.value)
@@ -721,8 +723,8 @@ class ArrayInitialization:
     elements: List[ArrayInitialElement]
 
     @staticmethod
-    def from_lark(*elements):
-        return ArrayInitialization(elements=elements)
+    def from_lark(*elements: ArrayInitialElement):
+        return ArrayInitialization(list(elements))
 
     def __str__(self) -> str:
         elements = ", ".join(str(element) for element in self.elements)
@@ -921,7 +923,7 @@ class BinaryOperation(Expression):
         if not operator_and_expr:
             return left
 
-        def get_operator_and_expr() -> Tuple[lark.Token, Expression]:
+        def get_operator_and_expr() -> Generator[Tuple[lark.Token, Expression], None, None]:
             operators = operator_and_expr[::2]
             expressions = operator_and_expr[1::2]
             yield from zip(operators, expressions)
@@ -1451,7 +1453,7 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
         config: Optional[lark.Token],
         persistent: Optional[lark.Token],
         *items: LocatedVariableDeclaration,
-    ) -> VariableDeclarations:
+    ) -> LocatedVariableDeclarations:
         return LocatedVariableDeclarations(
             config=config,
             persistent=persistent is not None,
@@ -1497,7 +1499,7 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
     def from_lark(
         constant: Optional[lark.Token],
         *items: ExternalVariableDeclaration,
-    ) -> VariableDeclarations:
+    ) -> ExternalVariableDeclarations:
         return ExternalVariableDeclarations(
             constant=constant is not None,
             items=list(items),
@@ -1594,7 +1596,7 @@ class AccessDeclarations(VariableDeclarationBlock):
     items: List[AccessDeclaration]
 
     @staticmethod
-    def from_lark(*items: AccessDeclaration) -> InputDeclarations:
+    def from_lark(*items: AccessDeclaration) -> AccessDeclarations:
         return AccessDeclarations(list(items))
 
     def __str__(self) -> str:
@@ -1685,7 +1687,7 @@ class ElseClause:
 class IfStatement(Statement):
     if_expression: Expression
     statements: Optional[StatementList]
-    else_ifs: Optional[List[ElseIfClause]]
+    else_ifs: List[ElseIfClause]
     else_clause: Optional[ElseClause]
 
     @staticmethod
@@ -1694,14 +1696,16 @@ class IfStatement(Statement):
         then: Optional[StatementList],
         *args: Union[ElseIfClause, ElseClause]
     ) -> IfStatement:
-        else_clause = None
+        else_clause: Optional[ElseClause] = None
         if args and isinstance(args[-1], ElseClause) or args[-1] is None:
             else_clause = args[-1]
             args = args[:-1]
+
+        else_ifs: List[ElseIfClause] = list(args)
         return IfStatement(
             if_expression=if_expr,
             statements=then,
-            else_ifs=list(args),
+            else_ifs=else_ifs,
             else_clause=else_clause,
         )
 
@@ -1749,7 +1753,7 @@ class CaseElement(Statement):
 @_rule_handler("case_statement")
 class CaseStatement(Statement):
     expression: Expression
-    cases: Optional[StatementList]
+    cases: List[StatementList]
     else_clause: Optional[ElseClause]
 
     @staticmethod
@@ -1767,7 +1771,7 @@ class CaseStatement(Statement):
             else_clause=else_clause,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n".join(
             s for s in (
                 f"CASE {self.expression} OF",

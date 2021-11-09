@@ -1,5 +1,7 @@
-// IEC61131-3 Lark grammar based on X-Pie Software GmbH's original (v1.2)
-// Distributed under the GPL as part of iec2xml.
+// Beckhoff-flavor IEC61131-3 Lark grammar
+//
+// Based on X-Pie Software GmbH's iec2xml grammar (v1.2) which was distributed
+// under the GPL.  Heavily modified and customized for blark.
 
 ?start: iec_source
 
@@ -156,73 +158,49 @@ day: INTEGER
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
-// data_type_name: non_generic_type_name
-//               | GENERIC_TYPE_NAME
-
 non_generic_type_name: [ pointer_type ] ( ELEMENTARY_TYPE_NAME | DERIVED_TYPE_NAME )
 
 // B.1.3.1
-TYPE_SINT: "SINT"i
-TYPE_INT: "INT"i
-TYPE_DINT: "DINT"i
-TYPE_LINT: "LINT"i
-
-TYPE_USINT: "USINT"i
-TYPE_UINT: "UINT"i
-TYPE_UDINT: "UDINT"i
-TYPE_ULINT: "ULINT"i
-
-TYPE_REAL: "REAL"i
-TYPE_LREAL: "LREAL"i
-
-TYPE_DATE: "DATE"i
-TYPE_TIME: "TIME"i
 TYPE_TOD: "TIME_OF_DAY"i
         | "TOD"i
 TYPE_DATETIME: "DATE_AND_TIME"i
              | "DT"i
 
-TYPE_BOOL: "BOOL"i
-TYPE_BYTE: "BYTE"i
-TYPE_WORD: "WORD"i
-TYPE_DWORD: "DWORD"i
-TYPE_LWORD: "LWORD"i
-
-ELEMENTARY_TYPE_NAME: _NUMERIC_TYPE_NAME
+ELEMENTARY_TYPE_NAME: NUMERIC_TYPE_NAME
                     | DATE_TYPE_NAME
                     | BIT_STRING_TYPE_NAME
                     | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
 
 STRING_TYPE: ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ]
 
-_NUMERIC_TYPE_NAME: INTEGER_TYPE_NAME
-                  | REAL_TYPE_NAME
+NUMERIC_TYPE_NAME: INTEGER_TYPE_NAME
+                 | REAL_TYPE_NAME
 
-INTEGER_TYPE_NAME: _SIGNED_INTEGER_TYPE_NAME
-                 | _UNSIGNED_INTEGER_TYPE_NAME
+INTEGER_TYPE_NAME: SIGNED_INTEGER_TYPE_NAME
+                 | UNSIGNED_INTEGER_TYPE_NAME
 
-_SIGNED_INTEGER_TYPE_NAME: TYPE_SINT
-                         | TYPE_INT
-                         | TYPE_DINT
-                         | TYPE_LINT
+SIGNED_INTEGER_TYPE_NAME: "SINT"i
+                        | "INT"i
+                        | "DINT"i
+                        | "LINT"i
 
-_UNSIGNED_INTEGER_TYPE_NAME: TYPE_USINT
-                           | TYPE_UINT
-                           | TYPE_UDINT
-                           | TYPE_ULINT
-REAL_TYPE_NAME: TYPE_REAL
-              | TYPE_LREAL
+UNSIGNED_INTEGER_TYPE_NAME: "USINT"i
+                          | "UINT"i
+                          | "UDINT"i
+                          | "ULINT"i
+REAL_TYPE_NAME: "REAL"i
+              | "LREAL"i
 
 DATE_TYPE_NAME: TYPE_TOD
               | TYPE_DATETIME
-              | TYPE_DATE
-              | TYPE_TIME
+              | "DATE"i
+              | "TIME"i
 
-BIT_STRING_TYPE_NAME: TYPE_BOOL
-                    | TYPE_BYTE
-                    | TYPE_WORD
-                    | TYPE_DWORD
-                    | TYPE_LWORD
+BIT_STRING_TYPE_NAME: "BOOL"i
+                    | "BYTE"i
+                    | "WORD"i
+                    | "DWORD"i
+                    | "LWORD"i
 
 // B.1.3.2
 GENERIC_TYPE_NAME: "ANY"
