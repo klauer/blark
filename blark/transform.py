@@ -2039,6 +2039,9 @@ class GrammarTransformer(lark.visitors.Transformer):
     def full_subrange(self):
         return FullSubrange()
 
+    def signed_integer(self, value: lark.Token):
+        return Integer.from_lark(None, value)
+
     def integer(self, value: lark.Token):
         return Integer.from_lark(None, value)
 

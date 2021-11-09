@@ -58,7 +58,7 @@ integer_literal: [ INTEGER_TYPE_NAME "#" ] any_integer
 ?any_integer: "2#" BIT_STRING             -> binary_integer
             | "8#" OCTAL_STRING           -> octal_integer
             | "16#" HEX_STRING            -> hex_integer
-            | SIGNED_INTEGER              -> integer
+            | SIGNED_INTEGER              -> signed_integer
             | INTEGER                     -> integer
 
 real_literal: [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)\.([0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))?/
@@ -346,7 +346,8 @@ DEREFERENCED: "^"
 _subscript: expression
 subscript_list: "[" _subscript ( "," _subscript )* "]" [ DEREFERENCED ]
 
-field_selector: [ DEREFERENCED ] "." variable_name
+// TODO: special 'bit_selector' for the last field
+field_selector: [ DEREFERENCED ] "." ( variable_name | INTEGER )
 
 multi_element_variable: variable_name ( subscript_list | field_selector )+
 
