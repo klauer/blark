@@ -1269,6 +1269,37 @@ class FunctionBlock:
         )
 
 
+@dataclass
+@_rule_handler("program_declaration")
+class Program:
+    name: lark.Token
+    declarations: List[VariableDeclarationBlock]
+    body: Optional[FunctionBlockBody]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        declarations: Optional[lark.Tree],
+        body: Optional[FunctionBlockBody]
+    ) -> Program:
+        return Program(
+            name=name,
+            declarations=declarations.children if declarations else [],
+            body=body,
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            s for s in (
+                f"PROGRAM {self.name}",
+                *[indent_if(decl) for decl in self.declarations],
+                indent_if(self.body),
+                "END_PROGRAM",
+            )
+            if s is not None
+        )
+
+
 class Action:
     ...
 
@@ -1535,6 +1566,41 @@ class InputOutputDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 "VAR_IN_OUT",
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("program_access_decl")
+class AccessDeclaration:
+    name: lark.Token
+    variable: SymbolicVariable
+    type_name: DataType
+    direction: Optional[lark.Token]
+
+    def __str__(self) -> str:
+        return join_if(
+            f"{self.name} : {self.variable} : {self.type_name}",
+            " ",
+            self.direction
+        )
+
+
+@dataclass
+@_rule_handler("program_access_decls")
+class AccessDeclarations(VariableDeclarationBlock):
+    items: List[AccessDeclaration]
+
+    @staticmethod
+    def from_lark(*items: AccessDeclaration) -> InputDeclarations:
+        return AccessDeclarations(list(items))
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_ACCESS",
                 *[f"{INDENT}{item};" for item in self.items],
                 "END_VAR",
             )
@@ -1870,7 +1936,7 @@ SourceCodeItem = Union[
     # DataTypeDeclaration,  # TODO
     # FunctionDeclaration,  # TODO
     FunctionBlock,
-    # ProgramDeclaration,  # TODO
+    Program,
     # ConfigurationDeclaration,  # TODO
     GlobalVariableDeclarations,
 ]

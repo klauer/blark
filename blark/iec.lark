@@ -562,16 +562,18 @@ function_block_body: sequential_function_chart
 // B.1.5.3
 PROGRAM_TYPE_NAME: IDENTIFIER
 
-program_declaration: "PROGRAM"i PROGRAM_TYPE_NAME program_var_declaration* [ function_block_body ] "END_PROGRAM"i ";"?
+program_declaration: "PROGRAM"i PROGRAM_TYPE_NAME [ program_var_declarations ] [ function_block_body ] "END_PROGRAM"i ";"?
+
+program_var_declarations: program_var_declaration+
 
 ?program_var_declaration: _io_var_declarations
                         | _other_var_declarations
                         | located_var_declarations
                         | program_access_decls
 
-program_access_decls: "VAR_ACCESS"i program_access_decl ";" ( program_access_decl ";" )* "END_VAR"i ";"?
+program_access_decls: "VAR_ACCESS"i (program_access_decl ";")+ "END_VAR"i ";"?
 
-program_access_decl: ACCESS_NAME ":" _symbolic_variable ":" non_generic_type_name [ direction ]
+program_access_decl: ACCESS_NAME ":" _symbolic_variable ":" non_generic_type_name [ access_direction ]
 
 // B.1.6
 STEP_NAME: IDENTIFIER
@@ -638,7 +640,7 @@ single_resource_declaration: ( task_configuration ";" )* program_configuration "
 
 access_declarations: "VAR_ACCESS"i access_declaration ";" ( access_declaration ";" )* "END_VAR"i ";"?
 
-access_declaration: ACCESS_NAME ":" access_path ":" non_generic_type_name [ direction ]
+access_declaration: ACCESS_NAME ":" access_path ":" non_generic_type_name [ access_direction ]
 
 access_path: [ RESOURCE_NAME "." ] direct_variable
            | [ RESOURCE_NAME "." ] [ PROGRAM_NAME "." ] ( FB_NAME "." )* _symbolic_variable
@@ -647,11 +649,8 @@ global_var_reference: [ RESOURCE_NAME "." ] GLOBAL_VAR_NAME [ "." STRUCTURE_ELEM
 
 program_output_reference: PROGRAM_NAME "." _symbolic_variable
 
-READ_WRITE: "READ_WRITE"i
-READ_ONLY: "READ_ONLY"i
-
-direction: READ_WRITE
-         | READ_ONLY
+!?access_direction: "READ_WRITE"i
+                  | "READ_ONLY"i
 
 task_configuration: "TASK"i TASK_NAME task_initialization
 

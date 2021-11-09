@@ -394,6 +394,24 @@ def test_input_output_roundtrip(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param("program_access_decls", tf.multiline_code_block(
+            """
+            VAR_ACCESS
+                AccessName : SymbolicVariable : TypeName READ_WRITE;
+                AccessName1 : SymbolicVariable1 : TypeName1 READ_ONLY;
+                AccessName2 : SymbolicVariable2 : TypeName2;
+            END_VAR
+            """
+        )),
+    ],
+)
+def test_var_access_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
         param("global_var_declarations", tf.multiline_code_block(
             """
             VAR_GLOBAL
@@ -602,4 +620,32 @@ def test_fb_roundtrip(rule_name, value):
     ],
 )
 def test_statement_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("program_declaration", tf.multiline_code_block(
+            """
+            PROGRAM ProgramName
+            END_PROGRAM
+            """
+        )),
+        param("program_declaration", tf.multiline_code_block(
+            """
+            PROGRAM ProgramName
+                VAR_INPUT
+                    iValue : INT;
+                END_VAR
+                VAR_ACCESS
+                    AccessName : SymbolicVariable : TypeName READ_WRITE;
+                END_VAR
+                iValue := iValue + 1;
+            END_PROGRAM
+            """
+        )),
+    ],
+)
+def test_program_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)
