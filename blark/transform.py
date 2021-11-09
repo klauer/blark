@@ -1272,6 +1272,41 @@ class FunctionBlock:
 
 
 @dataclass
+@_rule_handler("function_declaration")
+class Function:
+    name: lark.Token
+    return_type: Optional[lark.Token]
+    declarations: List[VariableDeclarationBlock]
+    body: Optional[FunctionBlockBody]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        return_type: lark.Token,
+        declarations: Optional[lark.Tree],
+        body: Optional[FunctionBlockBody]
+    ) -> Function:
+        return Function(
+            name=name,
+            return_type=return_type,
+            declarations=declarations.children if declarations else [],
+            body=body,
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            line for line in
+            (
+                f"FUNCTION {self.name} : {self.return_type}",
+                *[indent_if(declaration) for declaration in self.declarations],
+                indent_if(self.body),
+                "END_FUNCTION",
+            )
+            if line is not None
+        )
+
+
+@dataclass
 @_rule_handler("program_declaration")
 class Program:
     name: lark.Token
@@ -1363,7 +1398,7 @@ class VariableDeclarationBlock:
     ...
 
 
-VarInitDeclaration = Union[
+VariableInitDeclaration = Union[
     ArrayVariableInitDeclaration,
     StringVariableInitDeclaration,
     VariableOneInitDeclaration,
@@ -1371,15 +1406,15 @@ VarInitDeclaration = Union[
     # EdgeDeclaration,
 ]
 
-InputOutputDeclaration = VarInitDeclaration
-OutputDeclaration = VarInitDeclaration
+InputOutputDeclaration = VariableInitDeclaration
+OutputDeclaration = VariableInitDeclaration
 
 InputDeclaration = Union[
-    VarInitDeclaration,
+    VariableInitDeclaration,
     EdgeDeclaration,
 ]
 GlobalVariableDeclarationType = Union[
-    VarInitDeclaration,
+    VariableInitDeclaration,
     GlobalVariableDeclaration,
 ]
 # FunctionBlockDeclarations = Union[
@@ -1391,7 +1426,7 @@ GlobalVariableDeclarationType = Union[
 @_rule_handler("var_declarations")
 class VariableDeclarations(VariableDeclarationBlock):
     config: Optional[lark.Token]
-    items: List[VarInitDeclaration]
+    items: List[VariableInitDeclaration]
 
     @staticmethod
     def from_lark(config: Optional[lark.Token], items: lark.Tree) -> VariableDeclarations:
@@ -1413,7 +1448,7 @@ class VariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("temp_var_decls")
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
-    items: List[VarInitDeclaration]
+    items: List[VariableInitDeclaration]
 
     @staticmethod
     def from_lark(items: lark.Tree) -> TemporaryVariableDeclarations:
@@ -1587,6 +1622,32 @@ class AccessDeclaration:
             f"{self.name} : {self.variable} : {self.type_name}",
             " ",
             self.direction
+        )
+
+
+@dataclass
+@_rule_handler("function_var_declarations")
+class FunctionVariableDeclarations(VariableDeclarationBlock):
+    constant: Optional[lark.Token]
+    items: List[VariableInitDeclaration]
+
+    @staticmethod
+    def from_lark(
+        constant: Optional[lark.Token],
+        body: lark.Tree,
+    ) -> FunctionVariableDeclarations:
+        return FunctionVariableDeclarations(
+            constant=constant is not None,
+            items=body.children,
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                ("VAR CONSTANT" if self.constant else "VAR"),
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
         )
 
 
@@ -1938,7 +1999,7 @@ class StatementList:
 
 SourceCodeItem = Union[
     # DataTypeDeclaration,  # TODO
-    # FunctionDeclaration,  # TODO
+    Function,
     FunctionBlock,
     Program,
     # ConfigurationDeclaration,  # TODO

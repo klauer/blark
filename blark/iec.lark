@@ -158,7 +158,7 @@ day: INTEGER
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
-non_generic_type_name: [ pointer_type ] ( ELEMENTARY_TYPE_NAME | derived_type_name )
+non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name )
 
 // B.1.3.1
 TYPE_TOD: "TIME_OF_DAY"i
@@ -166,10 +166,10 @@ TYPE_TOD: "TIME_OF_DAY"i
 TYPE_DATETIME: "DATE_AND_TIME"i
              | "DT"i
 
-ELEMENTARY_TYPE_NAME: NUMERIC_TYPE_NAME
-                    | DATE_TYPE_NAME
-                    | BIT_STRING_TYPE_NAME
-                    | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
+?elementary_type_name: NUMERIC_TYPE_NAME
+                     | DATE_TYPE_NAME
+                     | BIT_STRING_TYPE_NAME
+                     | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
 
 STRING_TYPE: ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ]
 
@@ -254,9 +254,9 @@ pointer_type: POINTER_TO
 
 simple_spec_init: [ indirection_type ] simple_specification [ ":=" expression ]
 
-?simple_specification: ELEMENTARY_TYPE_NAME
+?simple_specification: elementary_type_name
                      | simple_type_name
-                     | DOTTED_NAME
+                     | DOTTED_IDENTIFIER
 
 subrange_type_declaration: subrange_type_name ":" subrange_spec_init
 
@@ -275,7 +275,7 @@ enumerated_spec_init: [ indirection_type ] enumerated_specification [ ":=" enume
 enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ ENUM_DATA_TYPE_NAME ]
                         | enumerated_type_name
 
-enumerated_value: [ enumerated_type_name "#" ] DOTTED_NAME [ ":=" integer_literal ]
+enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" integer_literal ]
 
 // The following is a Beckhoff extensions of the IEC61131-3 standard
 // https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/2529504395.html
@@ -456,8 +456,8 @@ global_var_list: global_var_name ( "," global_var_name )*
 
 single_byte_string_var_declaration: var1_list ":" single_byte_string_spec
 
-STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_NAME ) "]"
-                  | "(" ( INTEGER | DOTTED_NAME ) ")"
+STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_IDENTIFIER ) "]"
+                  | "(" ( INTEGER | DOTTED_IDENTIFIER ) ")"
 
 !single_byte_string_spec: "STRING"i [ STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
 
@@ -482,22 +482,22 @@ var_spec: simple_specification
         | WSTRING [ "[" INTEGER "]" ]
 
 // B.1.5.1
-_function_name: derived_function_name
 ?derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name ":" ( ELEMENTARY_TYPE_NAME | derived_type_name ) ";"? ( _io_var_declarations | function_var_decls )* [ function_body ] "END_FUNCTION"i ";"?
+function_declaration: "FUNCTION"i derived_function_name ":" ( elementary_type_name | derived_type_name ) ";"? [ function_var_blocks ] [ function_body ] "END_FUNCTION"i ";"?
+
+function_var_blocks: (_io_var_declarations | function_var_declarations)+
 
 _io_var_declarations: input_declarations
                     | output_declarations
                     | input_output_declarations
 
-function_var_decls: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"?
+function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"?
 
-// TODO: {function_var_decl ';'}
-function_body: statement_list
-// TODO:     | ladder_diagram
-// TODO:     | function_block_diagram
-// TODO:     | instruction_list
+?function_body: statement_list
+// TODO:      | ladder_diagram
+// TODO:      | function_block_diagram
+// TODO:      | instruction_list
 
 function_var_decl: var1_init_decl
                  | array_var_init_decl
@@ -505,14 +505,14 @@ function_var_decl: var1_init_decl
                  | string_var_declaration
 
 // B.1.5.2
-DOTTED_NAME: IDENTIFIER ( "." IDENTIFIER )*
+DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 ?standard_function_block_name: IDENTIFIER
 ?derived_function_block_name: IDENTIFIER
 
 ?function_block_type_name: standard_function_block_name
                          | derived_function_block_name
 
-extends: "EXTENDS"i DOTTED_NAME
+extends: "EXTENDS"i DOTTED_IDENTIFIER
 
 function_block_type_declaration: _FUNCTION_BLOCK derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"?
 

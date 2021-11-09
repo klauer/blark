@@ -626,6 +626,44 @@ def test_statement_roundtrip(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION FuncName : INT
+                VAR_INPUT
+                    iValue : INT := 0;
+                END_VAR
+                FuncName := iValue;
+            END_FUNCTION
+            """
+        )),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION FuncName : INT
+                VAR_INPUT
+                    iValue : INT := 0;
+                END_VAR
+                VAR_OUTPUT
+                    iOutput : INT;
+                END_VAR
+                VAR
+                    iVar : INT;
+                END_VAR
+                VAR CONSTANT
+                    iVarConst : INT := 123;
+                END_VAR
+                FuncName := iValue;
+            END_FUNCTION
+            """
+        )),
+    ],
+)
+def test_function_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
         param("program_declaration", tf.multiline_code_block(
             """
             PROGRAM ProgramName
