@@ -513,9 +513,10 @@ DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 ?function_block_type_name: standard_function_block_name
                          | derived_function_block_name
 
+ABSTRACT: "ABSTRACT"i
 extends: "EXTENDS"i DOTTED_IDENTIFIER
 
-function_block_type_declaration: _FUNCTION_BLOCK derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"?
+function_block_type_declaration: _FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"*
 
 _FUNCTION_BLOCK: "FUNCTION_BLOCK"i
                | "FUNCTIONBLOCK"i

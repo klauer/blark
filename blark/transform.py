@@ -1240,12 +1240,14 @@ class FunctionBlockBody:
 @_rule_handler("function_block_type_declaration")
 class FunctionBlock:
     name: lark.Token
-    extends: Optional[lark.Token]
+    abstract: bool
+    extends: Optional[Extends]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBlockBody]
 
     @staticmethod
     def from_lark(
+        abstract: Optional[lark.Token],
         derived_name: lark.Token,
         extends: Extends,
         *args
@@ -1253,16 +1255,18 @@ class FunctionBlock:
         *declarations, body = args
         return FunctionBlock(
             name=derived_name,
+            abstract=abstract is not None,
             extends=extends,
             declarations=list(declarations),
             body=body,
         )
 
     def __str__(self) -> str:
+        abstract = "ABSTRACT " if self.abstract else ""
         return "\n".join(
             line for line in
             (
-                join_if(f"FUNCTION_BLOCK {self.name}", " ", self.extends),
+                join_if(f"FUNCTION_BLOCK {abstract}{self.name}", " ", self.extends),
                 *[str(declaration) for declaration in self.declarations],
                 indent_if(self.body),
                 "END_FUNCTION_BLOCK",
