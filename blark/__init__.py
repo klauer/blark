@@ -1,6 +1,8 @@
 import pathlib
 
 from . import _version
+from .parse import get_parser, parse_project, parse_source_code
+from .transform import GrammarTransformer
 
 __version__ = _version.get_versions()["version"]
 
@@ -9,4 +11,10 @@ del pathlib
 
 GRAMMAR_FILENAME = MODULE_PATH / "iec.lark"
 
-__all__ = ["GRAMMAR_FILENAME"]
+__all__ = [
+    "GRAMMAR_FILENAME",
+    "GrammarTransformer",
+    "get_parser",
+    "parse_project",
+    "parse_source_code",
+]

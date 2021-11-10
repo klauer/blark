@@ -742,7 +742,6 @@ _statement: ";"
           | _subprogram_control_statement
           | _selection_statement
           | _iteration_statement
-// | action_statement
 
 // B.3.2.1
 no_op_statement: _variable ";"+
@@ -757,8 +756,6 @@ reference_assignment_statement: _variable "REF="i expression ";"+
 
 // method ::= expression [DEREFERENCED] '.' _identifier '(' ')';
 method_statement: symbolic_variable "(" ")" ";"+
-
-// action_statement: action_name ";"+
 
 // B.3.2.2
 return_statement: "RETURN"i ";"*

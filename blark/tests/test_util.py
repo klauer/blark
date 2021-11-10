@@ -1,11 +1,25 @@
 import pytest
 
-from ..parse import replace_comments
+from ..parse import find_and_clean_comments
 
 
 @pytest.mark.parametrize(
     "code, expected",
     [
+        pytest.param(
+            """
+            // abc
+            """,
+            None,
+            id="simple_single_line",
+        ),
+        pytest.param(
+            """
+            // (* abc *)
+            """,
+            None,
+            id="multi_in_single",
+        ),
         pytest.param(
             """
             (* abc *)
@@ -73,7 +87,7 @@ from ..parse import replace_comments
 )
 def test_replace_comments(code, expected):
     expected = expected if expected is not None else code
-    replaced = replace_comments(code, replace_char="x")
+    comments, replaced = find_and_clean_comments(code, replace_char="x")
     print(f"""
 code:
 -----
@@ -90,3 +104,9 @@ expected:
 """)
 
     assert replaced == expected
+
+    if any(code.strip().startswith(c) for c in ['"', "'"]):
+        expected_comments = []
+    else:
+        expected_comments = [code.strip()]
+    assert [str(comment) for comment in comments] == expected_comments

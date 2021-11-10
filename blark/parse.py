@@ -6,6 +6,7 @@ import argparse
 import pathlib
 import re
 import sys
+from typing import Generator, List, Optional, Tuple
 
 import lark
 import pytmc
@@ -23,21 +24,36 @@ RE_PRAGMA = re.compile(r"{[^}]*?}", re.MULTILINE | re.DOTALL)
 _PARSER = None
 
 
+def new_parser(**kwargs) -> lark.Lark:
+    """
+    Get a new parser for TwinCAT flavor IEC61131-3 code.
+
+    Parameters
+    ----------
+    **kwargs :
+        See :class:`lark.lark.LarkOptions`.
+    """
+    return lark.Lark.open_from_package(
+        "blark",
+        blark.GRAMMAR_FILENAME.name,
+        parser="earley",
+        maybe_placeholders=True,
+        **kwargs
+    )
+
+
 def get_parser() -> lark.Lark:
-    "Get the global lark.Lark parser for IEC61131-3 code"
+    """Get a cached lark.Lark parser for TwinCAT flavor IEC61131-3 code."""
     global _PARSER
 
     if _PARSER is None:
-        _PARSER = lark.Lark.open_from_package(
-            "blark",
-            blark.GRAMMAR_FILENAME.name,
-            parser="earley",
-            maybe_placeholders=True,
-        )
+        _PARSER = new_parser()
     return _PARSER
 
 
-def replace_comments(text: str, *, replace_char: str = " ") -> str:
+def find_and_clean_comments(
+    text: str, *, replace_char: str = " "
+) -> Tuple[List[lark.Token], str]:
     """
     Clean nested multiline comments from ``text``.
 
@@ -45,8 +61,9 @@ def replace_comments(text: str, *, replace_char: str = " ") -> str:
     would be replaced with ``replace_char``, resulting in the return value
     ``"(*    abc    *)"``.
     """
-    result = list(text)
-    in_multiline_comment = 0
+    lines = text.splitlines()
+    original_lines = list(lines)
+    multiline_comments = []
     in_single_comment = False
     in_single_quote = False
     in_double_quote = False
@@ -55,7 +72,48 @@ def replace_comments(text: str, *, replace_char: str = " ") -> str:
     SINGLE_COMMENT = "//"
     OPEN_COMMENT = "(*"
     CLOSE_COMMENT = "*)"
-    for idx, (this_ch, next_ch) in enumerate(zip(text, text[1:] + " ")):
+
+    comments: List[lark.Token] = []
+
+    def get_characters() -> Generator[Tuple[int, int, str, str], None, None]:
+        """Yield line information and characters."""
+        for lineno, line in enumerate(text.splitlines()):
+            colno = 0
+            for colno, (this_ch, next_ch) in enumerate(zip(line, line[1:] + "\n")):
+                yield lineno, colno, this_ch, next_ch
+            yield lineno, colno, "\n", ""
+
+    def fix_line(lineno: int, colno: int) -> str:
+        """Uncomment a nested multiline comment at (line, col)."""
+        replacement_line = list(lines[lineno])
+        replacement_line[colno] = replace_char
+        replacement_line[colno + 1] = replace_char
+        return "".join(replacement_line)
+
+    def add_comment(start_line: int, start_col: int, end_line: int, end_col: int) -> lark.Token:
+        if start_line != end_line:
+            comment = "\n".join(
+                (
+                    original_lines[start_line][start_col:],
+                    *original_lines[start_line + 1:end_line],
+                    original_lines[end_line][:end_col + 1]
+                )
+            )
+        else:
+            comment = original_lines[start_line][start_col:end_col + 1]
+
+        type_ = (
+            "SINGLE_LINE_COMMENT"
+            if comment.startswith("//")
+            else "MULTI_LINE_COMMENT"
+        )
+        return lark.Token(
+            type_, comment,
+            line=start_line + 1, end_line=end_line + 1,
+            column=start_col + 1, end_column=end_col + 1,
+        )
+
+    for lineno, colno, this_ch, next_ch in get_characters():
         if skip:
             skip -= 1
             continue
@@ -67,26 +125,33 @@ def replace_comments(text: str, *, replace_char: str = " ") -> str:
         pair = this_ch + next_ch
         if not in_single_quote and not in_double_quote:
             if pair == OPEN_COMMENT:
-                in_multiline_comment += 1
+                multiline_comments.append((lineno, colno))
                 skip = 1
-                if in_multiline_comment > 1:
+                if len(multiline_comments) > 1:
                     # Nested multi-line comment
-                    result[idx] = replace_char
-                    result[idx + 1] = replace_char
+                    lines[lineno] = fix_line(lineno, colno)
                 continue
             if pair == CLOSE_COMMENT:
-                in_multiline_comment -= 1
-                if in_multiline_comment > 0:
+                start_line, start_col = multiline_comments.pop(-1)
+                if len(multiline_comments) > 0:
                     # Nested multi-line comment
-                    result[idx] = replace_char
-                    result[idx + 1] = replace_char
+                    lines[lineno] = fix_line(lineno, colno)
+                else:
+                    comments.append(
+                        add_comment(start_line, start_col, lineno, colno + 1)
+                    )
                 skip = 1
                 continue
             if pair == SINGLE_COMMENT:
                 in_single_comment = True
+                comments.append(
+                    add_comment(
+                        lineno, colno, lineno, len(lines[lineno])
+                    )
+                )
                 continue
 
-        if not in_multiline_comment and not in_single_comment:
+        if not multiline_comments and not in_single_comment:
             if pair == "$'" and in_single_quote:
                 # This is an escape for single quotes
                 skip = 1
@@ -102,18 +167,14 @@ def replace_comments(text: str, *, replace_char: str = " ") -> str:
             elif pair == SINGLE_COMMENT:
                 in_single_comment = 1
 
-        # if in_multiline_comment > 0 and this_ch not in NEWLINES:
-        #     result[idx] = replace_char
-
-    if in_multiline_comment or in_single_quote or in_double_quote:
+    if multiline_comments or in_single_quote or in_double_quote:
         # Syntax error in source? Return the original and let lark fail
         return text
 
-    return "".join(result)
+    return comments, "\n".join(lines)
 
 
-# TODO improve grammar to make this step not required :(
-DEFAULT_PREPROCESSORS = [replace_comments]
+DEFAULT_PREPROCESSORS = []
 _DEFAULT_PREPROCESSORS = object()
 
 
@@ -122,9 +183,30 @@ def parse_source_code(
     *,
     verbose: int = 0,
     fn: str = "unknown",
-    preprocessors=_DEFAULT_PREPROCESSORS
+    preprocessors=_DEFAULT_PREPROCESSORS,
+    parser: Optional[lark.Lark] = None,
 ):
-    "Parse source code with the parser"
+    """
+    Parse source code and return the transformed result.
+
+    Parameters
+    ----------
+    source_code : str
+        The source code text.
+
+    verbose : int, optional
+        Verbosity level for output.
+
+    fn : str, optional
+        The filename associated with the source code.
+
+    preprocessors : list, optional
+        Callable preprocessors to apply to the source code.
+
+    parser : lark.Lark, optional
+        The parser instance to use.  Defaults to the global shared one from
+        ``get_parser``.
+    """
     if preprocessors is _DEFAULT_PREPROCESSORS:
         preprocessors = DEFAULT_PREPROCESSORS
 
@@ -132,8 +214,12 @@ def parse_source_code(
     for preprocessor in preprocessors:
         processed_source = preprocessor(processed_source)
 
+    comments, processed_source = find_and_clean_comments(processed_source)
+    if parser is None:
+        parser = get_parser()
+
     try:
-        tree = get_parser().parse(processed_source)
+        tree = parser.parse(processed_source)
     except Exception as ex:
         if verbose > 1:
             print("[Failure] Parse failure")
@@ -306,8 +392,9 @@ def main(filename, verbose=0, debug=False):
             print(f"* Parsing {fn}")
         try:
             results[fn] = parse_single_file(fn, verbose=verbose)
-        except Exception:
+        except Exception as ex:
             success = False
+            results[fn] = ex
 
     def find_failures(res):
         for name, item in res.items():
