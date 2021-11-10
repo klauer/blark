@@ -463,6 +463,12 @@ def test_global_roundtrip(rule_name, value):
         )),
         param("function_block_type_declaration", tf.multiline_code_block(
             """
+            FUNCTION_BLOCK ABSTRACT fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
             FUNCTION_BLOCK fbName
             VAR_INPUT
                 bExecute : BOOL;

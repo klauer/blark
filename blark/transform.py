@@ -613,7 +613,7 @@ class SubrangeTypeDeclaration:
 class EnumeratedValue:
     type_name: Optional[lark.Token]
     name: lark.Token
-    value: Optional[Integer]
+    value: Optional[Union[Integer, lark.Token]]
 
     def __str__(self) -> str:
         name = join_if(self.type_name, "#", self.name)
