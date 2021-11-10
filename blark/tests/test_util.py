@@ -11,7 +11,7 @@ from ..parse import replace_comments
             (* abc *)
             """,
             """
-            xxxxxxxxx
+            (* abc *)
             """,
             id="simple",
         ),
@@ -20,7 +20,7 @@ from ..parse import replace_comments
             (* (* abc *) *)
             """,
             """
-            xxxxxxxxxxxxxxx
+            (* xx abc xx *)
             """,
             id="nested_2",
         ),
@@ -33,11 +33,11 @@ from ..parse import replace_comments
             *)
             """,
             """
-            xx
-xxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxx
+            (*
+             xx
+                 xx abc xx
+              xx
+            *)
             """,
             id="nested_3",
         ),

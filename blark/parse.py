@@ -23,7 +23,7 @@ RE_PRAGMA = re.compile(r"{[^}]*?}", re.MULTILINE | re.DOTALL)
 _PARSER = None
 
 
-def get_parser():
+def get_parser() -> lark.Lark:
     "Get the global lark.Lark parser for IEC61131-3 code"
     global _PARSER
 
@@ -37,8 +37,14 @@ def get_parser():
     return _PARSER
 
 
-def replace_comments(text, *, replace_char=" "):
-    "Remove (potentially nested) multiline comments from `text`"
+def replace_comments(text: str, *, replace_char: str = " ") -> str:
+    """
+    Clean nested multiline comments from ``text``.
+
+    For a nested comment like ``"(* (* abc *) *)"``, the inner comment markers
+    would be replaced with ``replace_char``, resulting in the return value
+    ``"(*    abc    *)"``.
+    """
     result = list(text)
     in_multiline_comment = 0
     in_single_comment = False
@@ -55,7 +61,6 @@ def replace_comments(text, *, replace_char=" "):
             continue
 
         if in_single_comment:
-            result[idx] = replace_char
             in_single_comment = this_ch not in NEWLINES
             continue
 
@@ -64,18 +69,21 @@ def replace_comments(text, *, replace_char=" "):
             if pair == OPEN_COMMENT:
                 in_multiline_comment += 1
                 skip = 1
-                result[idx] = replace_char
-                result[idx + 1] = replace_char
+                if in_multiline_comment > 1:
+                    # Nested multi-line comment
+                    result[idx] = replace_char
+                    result[idx + 1] = replace_char
                 continue
             if pair == CLOSE_COMMENT:
                 in_multiline_comment -= 1
+                if in_multiline_comment > 0:
+                    # Nested multi-line comment
+                    result[idx] = replace_char
+                    result[idx + 1] = replace_char
                 skip = 1
-                result[idx] = replace_char
-                result[idx + 1] = replace_char
                 continue
             if pair == SINGLE_COMMENT:
                 in_single_comment = True
-                result[idx] = replace_char
                 continue
 
         if not in_multiline_comment and not in_single_comment:
@@ -94,8 +102,8 @@ def replace_comments(text, *, replace_char=" "):
             elif pair == SINGLE_COMMENT:
                 in_single_comment = 1
 
-        if in_multiline_comment > 0 and this_ch not in NEWLINES:
-            result[idx] = replace_char
+        # if in_multiline_comment > 0 and this_ch not in NEWLINES:
+        #     result[idx] = replace_char
 
     if in_multiline_comment or in_single_quote or in_double_quote:
         # Syntax error in source? Return the original and let lark fail
@@ -110,10 +118,10 @@ _DEFAULT_PREPROCESSORS = object()
 
 
 def parse_source_code(
-    source_code,
+    source_code: str,
     *,
-    verbose=0,
-    fn="unknown",
+    verbose: int = 0,
+    fn: str = "unknown",
     preprocessors=_DEFAULT_PREPROCESSORS
 ):
     "Parse source code with the parser"
