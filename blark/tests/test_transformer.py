@@ -549,6 +549,55 @@ def test_global_roundtrip(rule_name, value):
             END_FUNCTION_BLOCK
             """
         )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PRIVATE MethodName : RETURNTYPE
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PUBLIC MethodName : RETURNTYPE
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PUBLIC MethodName
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD MethodName : RETURNTYPE
+                VAR_INPUT
+                    bExecute : BOOL;
+                END_VAR
+                VAR_OUTPUT
+                    iResult : INT;
+                END_VAR
+                iResult := 5;
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PUBLIC MethodName
+                VAR_INST
+                    bExecute : BOOL;
+                END_VAR
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PUBLIC ABSTRACT MethodName : LREAL
+                VAR_INPUT
+                    I : UINT;
+                END_VAR
+            END_METHOD
+            """
+        )),
     ],
 )
 def test_fb_roundtrip(rule_name, value):

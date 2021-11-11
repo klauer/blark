@@ -67,13 +67,16 @@ def find_and_clean_comments(
     in_single_comment = False
     in_single_quote = False
     in_double_quote = False
+    pragma_state = []
     skip = 0
     NEWLINES = "\n\r"
     SINGLE_COMMENT = "//"
     OPEN_COMMENT = "(*"
     CLOSE_COMMENT = "*)"
+    OPEN_PRAGMA = "{"
+    CLOSE_PRAGMA = "}"
 
-    comments: List[lark.Token] = []
+    comments_and_pragmas: List[lark.Token] = []
 
     def get_characters() -> Generator[Tuple[int, int, str, str], None, None]:
         """Yield line information and characters."""
@@ -90,9 +93,9 @@ def find_and_clean_comments(
         replacement_line[colno + 1] = replace_char
         return "".join(replacement_line)
 
-    def add_comment(start_line: int, start_col: int, end_line: int, end_col: int) -> lark.Token:
+    def get_token(start_line: int, start_col: int, end_line: int, end_col: int) -> lark.Token:
         if start_line != end_line:
-            comment = "\n".join(
+            block = "\n".join(
                 (
                     original_lines[start_line][start_col:],
                     *original_lines[start_line + 1:end_line],
@@ -100,15 +103,20 @@ def find_and_clean_comments(
                 )
             )
         else:
-            comment = original_lines[start_line][start_col:end_col + 1]
+            block = original_lines[start_line][start_col:end_col + 1]
 
-        type_ = (
-            "SINGLE_LINE_COMMENT"
-            if comment.startswith("//")
-            else "MULTI_LINE_COMMENT"
-        )
+        if block.startswith("//"):
+            type_ = "SINGLE_LINE_COMMENT"
+        elif block.startswith("(*"):  # *)
+            type_ = "MULTI_LINE_COMMENT"
+        elif block.startswith("{"):  # }
+            type_ = "PRAGMA"
+        else:
+            raise RuntimeError("Unexpected block: {contents}")
+
         return lark.Token(
-            type_, comment,
+            type_,
+            block,
             line=start_line + 1, end_line=end_line + 1,
             column=start_col + 1, end_column=end_col + 1,
         )
@@ -124,6 +132,20 @@ def find_and_clean_comments(
 
         pair = this_ch + next_ch
         if not in_single_quote and not in_double_quote:
+            if this_ch == OPEN_PRAGMA and not multiline_comments:
+                pragma_state.append((lineno, colno))
+                continue
+            if this_ch == CLOSE_PRAGMA and not multiline_comments:
+                start_line, start_col = pragma_state.pop(-1)
+                if len(pragma_state) == 0:
+                    comments_and_pragmas.append(
+                        get_token(start_line, start_col, lineno, colno + 1)
+                    )
+                continue
+
+            if pragma_state:
+                continue
+
             if pair == OPEN_COMMENT:
                 multiline_comments.append((lineno, colno))
                 skip = 1
@@ -137,15 +159,15 @@ def find_and_clean_comments(
                     # Nested multi-line comment
                     lines[lineno] = fix_line(lineno, colno)
                 else:
-                    comments.append(
-                        add_comment(start_line, start_col, lineno, colno + 1)
+                    comments_and_pragmas.append(
+                        get_token(start_line, start_col, lineno, colno + 1)
                     )
                 skip = 1
                 continue
             if pair == SINGLE_COMMENT:
                 in_single_comment = True
-                comments.append(
-                    add_comment(
+                comments_and_pragmas.append(
+                    get_token(
                         lineno, colno, lineno, len(lines[lineno])
                     )
                 )
@@ -155,23 +177,21 @@ def find_and_clean_comments(
             if pair == "$'" and in_single_quote:
                 # This is an escape for single quotes
                 skip = 1
-                continue
             elif pair == '$"' and in_double_quote:
                 # This is an escape for double quotes
                 skip = 1
-                continue
             elif this_ch == "'" and not in_double_quote:
                 in_single_quote = not in_single_quote
             elif this_ch == '"' and not in_single_quote:
                 in_double_quote = not in_double_quote
             elif pair == SINGLE_COMMENT:
-                in_single_comment = 1
+                in_single_comment = True
 
     if multiline_comments or in_single_quote or in_double_quote:
         # Syntax error in source? Return the original and let lark fail
-        return text
+        return comments_and_pragmas, text
 
-    return comments, "\n".join(lines)
+    return comments_and_pragmas, "\n".join(lines)
 
 
 DEFAULT_PREPROCESSORS = []
@@ -252,7 +272,7 @@ def parse_source_code(
     # print(line_numbers[comments[1].end()])
     # # matches up with definition on line 10:
     # print(element1.children[0].children[0].line)
-    return GrammarTransformer().transform(tree)
+    return GrammarTransformer(comments).transform(tree)
 
 
 def _build_map_of_offset_to_line_number(source):

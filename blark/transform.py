@@ -1251,7 +1251,7 @@ class FunctionBlock:
         derived_name: lark.Token,
         extends: Extends,
         *args
-    ):
+    ) -> FunctionBlock:
         *declarations, body = args
         return FunctionBlock(
             name=derived_name,
@@ -1398,6 +1398,47 @@ class ExitAction(Action):
 
 
 @dataclass
+@_rule_handler("function_block_method_declaration")
+class Method:
+    access: Optional[List[lark.Token]]
+    name: lark.Token
+    return_type: Optional[lark.Token]
+    declarations: List[VariableDeclarationBlock]
+    body: Optional[FunctionBlockBody]
+
+    @staticmethod
+    def from_lark(
+        access: Optional[lark.Tree],
+        name: lark.Token,
+        return_type: lark.Token,
+        *args
+    ) -> Method:
+        *declarations, body = args
+        return Method(
+            name=name,
+            access=list(access.children) if access else [],
+            return_type=return_type,
+            declarations=list(declarations),
+            body=body,
+        )
+
+    def __str__(self) -> str:
+        access = " ".join(self.access) if self.access else None
+        access_and_name = join_if(access, " ", self.name)
+        method = join_if(access_and_name, " : ", self.return_type)
+        return "\n".join(
+            line for line in
+            (
+                f"METHOD {method}",
+                *[indent_if(declaration) for declaration in self.declarations],
+                indent_if(self.body),
+                "END_METHOD",
+            )
+            if line is not None
+        )
+
+
+@dataclass
 class VariableDeclarationBlock:
     ...
 
@@ -1462,6 +1503,25 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 "VAR_TEMP",
+                *[f"{INDENT}{item};" for item in self.items],
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("var_inst_declaration")
+class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
+    items: List[VariableInitDeclaration]
+
+    @staticmethod
+    def from_lark(items: lark.Tree) -> MethodInstanceVariableDeclarations:
+        return MethodInstanceVariableDeclarations(items.children)
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_INST",
                 *[f"{INDENT}{item};" for item in self.items],
                 "END_VAR",
             )
@@ -2005,6 +2065,8 @@ SourceCodeItem = Union[
     # DataTypeDeclaration,  # TODO
     Function,
     FunctionBlock,
+    Action,
+    Method,
     Program,
     # ConfigurationDeclaration,  # TODO
     GlobalVariableDeclarations,
@@ -2033,9 +2095,13 @@ def pass_through(obj: Optional[T] = None) -> Optional[T]:
 
 @lark.visitors.v_args(inline=True)
 class GrammarTransformer(lark.visitors.Transformer):
-    def __init__(self, fn=None):
+    _filename: Optional[str]
+    comments: List[lark.Token]
+
+    def __init__(self, comments: Optional[List[lark.Token]] = None, fn=None):
         super().__init__()
         self._filename = fn
+        self.comments = comments or []
         self.__dict__.update(**_class_handlers)
 
     constant = pass_through

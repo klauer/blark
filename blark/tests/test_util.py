@@ -83,6 +83,69 @@ from ..parse import find_and_clean_comments
             None,
             id="single_quoted_with_escape",
         ),
+        pytest.param(
+            """
+            {pragma}
+            """,
+            None,
+            id="pragma",
+        ),
+        pytest.param(
+            """
+            {pragma'}
+            """,
+            None,
+            id="pragma_mismatch_quote",
+        ),
+        pytest.param(
+            """
+            {'"pragma'}
+            """,
+            None,
+            id="pragma_mismatch_quote",
+        ),
+        pytest.param(
+            """
+            (* {'"pragma'} *)
+            """,
+            None,
+            id="commented_pragma",
+        ),
+        pytest.param(
+            """
+            // (* {'"pragma'} *)
+            """,
+            None,
+            id="commented_pragma",
+        ),
+        pytest.param(
+            """
+            // {'"pragma'}
+            """,
+            None,
+            id="commented_pragma",
+        ),
+        pytest.param(
+            """
+            {pragma (* comment *)}
+            """,
+            None,
+            id="pragma_comment",
+        ),
+        pytest.param(
+            """
+            {pragma // comment}
+            """,
+            None,
+            id="pragma_comment",
+        ),
+        pytest.param(
+            """
+            {pragma (* // comment *)}
+            """,
+            None,
+            id="pragma_comment_why",
+        ),
     ]
 )
 def test_replace_comments(code, expected):
@@ -110,3 +173,4 @@ expected:
     else:
         expected_comments = [code.strip()]
     assert [str(comment) for comment in comments] == expected_comments
+    print("comments=", comments)

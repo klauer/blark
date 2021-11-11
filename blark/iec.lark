@@ -24,6 +24,7 @@ iec_source: ( _library_element_declaration | action )*
 _library_element_declaration: data_type_declaration
                             | function_declaration
                             | function_block_type_declaration
+                            | function_block_method_declaration
                             | program_declaration
                             | configuration_declaration
                             | global_var_declarations
@@ -538,6 +539,23 @@ temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 function_block_body: sequential_function_chart
                    | statement_list
 
+// TODO: really only a couple of these
+METHOD_ACCESS: "ABSTRACT"i
+             | "PUBLIC"i
+             | "PRIVATE"i
+             | "PROTECTED"i
+             | "INTERNAL"i
+             | "FINAL"i
+
+method_access: METHOD_ACCESS+
+
+var_inst_declaration: "VAR_INST"i var_body "END_VAR"i ";"*
+
+?method_var_declaration: fb_var_declaration
+                       | var_inst_declaration
+
+function_block_method_declaration: "METHOD"i [ method_access ] DOTTED_IDENTIFIER [ ":" ( elementary_type_name | derived_type_name ) ] ";"* method_var_declaration* [ function_block_body ] "END_METHOD"i ";"*
+
 // B.1.5.3
 ?program_type_name: IDENTIFIER
 
@@ -567,7 +585,7 @@ step: "STEP"i step_name ":" [ statement_list | action_association | sequential_f
 
 action_association: action_name "(" [ action_qualifier ] ( "," indicator_name )* ")"
 
-?action_name: IDENTIFIER
+?action_name: DOTTED_IDENTIFIER
 
 action_qualifier: "N"
                 | "R"
