@@ -174,6 +174,7 @@ def roundtrip_rule(rule_name: str, value: str):
         param("expression", "NOT 1"),
         param("expression", "NOT (3 - 4)"),
         param("expression", "(i_xTrigger OR NOT i_xPress_OK) AND NOT xVeto"),
+        param("expression", "(nEventIdx := (nEventIdx + 1)) = nMaxEvents"),
         param("simple_type_declaration", "TypeName : INT"),
         param("simple_type_declaration", "TypeName : INT := 5"),
         param("simple_type_declaration", "TypeName : INT := 5 + 1 * (2)"),
@@ -553,6 +554,12 @@ def test_global_roundtrip(rule_name, value):
         param("function_block_method_declaration", tf.multiline_code_block(
             """
             METHOD PRIVATE MethodName : RETURNTYPE
+            END_METHOD
+            """
+        )),
+        param("function_block_method_declaration", tf.multiline_code_block(
+            """
+            METHOD PRIVATE MethodName : ARRAY [1..2] OF INT
             END_METHOD
             """
         )),

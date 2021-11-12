@@ -992,6 +992,7 @@ class UnaryOperation(Expression):
     "expression",
     "add_expression",
     "and_expression",
+    "assignment_expression",
     "xor_expression",
     "comparison_expression",
     "equality_expression",
@@ -1487,7 +1488,7 @@ class ExitAction(Action):
 class Method:
     access: Optional[MethodAccess]
     name: lark.Token
-    return_type: Optional[lark.Token]
+    return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBlockBody]
 
@@ -1495,7 +1496,7 @@ class Method:
     def from_lark(
         access: Optional[MethodAccess],
         name: lark.Token,
-        return_type: lark.Token,
+        return_type: Optional[LocatedVariableSpecInit],
         *args
     ) -> Method:
         *declarations, body = args
