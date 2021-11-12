@@ -15,20 +15,20 @@ TEST_PATH = pathlib.Path(__file__).parent
         param("integer_literal", "-12", tf.Integer(value="-12")),
         param("integer_literal", "12", tf.Integer(value="12")),
         param("integer_literal", "INT#12", tf.Integer(value="12", type="INT")),
-        param("integer_literal", "2#10010", tf.Integer(value="10010", base=2)),
-        param("integer_literal", "8#22", tf.Integer(value="22", base=8)),
-        param("integer_literal", "16#12", tf.Integer(value="12", base=16)),
-        param("integer_literal", "UDINT#12", tf.Integer(value="12", base=10, type="UDINT")),
-        param("integer_literal", "UDINT#2#010", tf.Integer(value="010", base=2, type="UDINT")),  # noqa: E501
-        param("integer_literal", "UDINT#2#1001_0011", tf.Integer(value="1001_0011", base=2, type="UDINT")),  # noqa: E501
-        param("integer_literal", "DINT#16#C0FFEE", tf.Integer(value="C0FFEE", base=16, type="DINT")),  # noqa: E501
+        param("integer_literal", "2#10010", tf.BinaryInteger(value="10010")),
+        param("integer_literal", "8#22", tf.OctalInteger(value="22")),
+        param("integer_literal", "16#12", tf.HexInteger(value="12")),
+        param("integer_literal", "UDINT#12", tf.Integer(value="12", type="UDINT")),
+        param("integer_literal", "UDINT#2#010", tf.BinaryInteger(value="010", type="UDINT")),  # noqa: E501
+        param("integer_literal", "UDINT#2#1001_0011", tf.BinaryInteger(value="1001_0011", type="UDINT")),  # noqa: E501
+        param("integer_literal", "DINT#16#C0FFEE", tf.HexInteger(value="C0FFEE", type="DINT")),  # noqa: E501
         param("real_literal", "-12.0", tf.Real(value="-12.0")),
         param("real_literal", "12.0", tf.Real(value="12.0")),
         param("real_literal", "12.0e5", tf.Real(value="12.0e5")),
         param("bit_string_literal", "WORD#1234", tf.BitString(type="WORD", value="1234")),
-        param("bit_string_literal", "WORD#2#0101", tf.BitString(type="WORD", value="0101", base=2)),  # noqa: E501
-        param("bit_string_literal", "WORD#8#777", tf.BitString(type="WORD", value="777", base=8)),  # noqa: E501
-        param("bit_string_literal", "word#16#FEEE", tf.BitString(type="word", value="FEEE", base=16)),  # noqa: E501
+        param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type="WORD", value="0101")),  # noqa: E501
+        param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type="WORD", value="777")),  # noqa: E501
+        param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type="word", value="FEEE")),  # noqa: E501
         param("boolean_literal", "BOOL#1", tf.Boolean(value="1")),
         param("boolean_literal", "BOOL#0", tf.Boolean(value="0")),
         param("boolean_literal", "BOOL#TRUE", tf.Boolean(value="TRUE")),
@@ -137,6 +137,7 @@ def roundtrip_rule(rule_name: str, value: str):
     print("\n\nOr:")
     print(transformed)
     assert str(transformed) == value
+    return transformed
 
 
 @pytest.mark.parametrize(
@@ -741,4 +742,4 @@ def test_function_roundtrip(rule_name, value):
     ],
 )
 def test_program_roundtrip(rule_name, value):
-    roundtrip_rule(rule_name, value)
+    _ = roundtrip_rule(rule_name, value)

@@ -6,19 +6,14 @@ import pathlib
 import lark
 import pytest
 
-from .. import GRAMMAR_FILENAME
-from ..transform import GrammarTransformer
+from ..parse import new_parser
 
 TEST_PATH = pathlib.Path(__file__).parent
 
 
 @functools.lru_cache(maxsize=100)
 def get_grammar(*, start=None, **kwargs):
-    return lark.Lark.open_from_package(
-        "blark",
-        GRAMMAR_FILENAME.name,
-        parser="earley",
-        maybe_placeholders=True,
+    return new_parser(
         import_paths=[TEST_PATH.parent],
         start=start or ["start"],
         **kwargs

@@ -38,6 +38,7 @@ def new_parser(**kwargs) -> lark.Lark:
         blark.GRAMMAR_FILENAME.name,
         parser="earley",
         maybe_placeholders=True,
+        propagate_positions=True,
         **kwargs
     )
 

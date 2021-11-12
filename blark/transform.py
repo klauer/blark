@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import enum
+import inspect
 import textwrap
 from dataclasses import dataclass
 from enum import Enum
-from typing import (Any, Callable, Generator, List, Optional, Tuple, Type,
-                    TypeVar, Union)
+from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
+                    Tuple, Type, TypeVar, Union)
 
 import lark
 
@@ -73,7 +74,7 @@ class Integer(Literal):
 
     value: lark.Token
     type: Optional[lark.Token] = None
-    base: int = 10
+    base: ClassVar[int] = 10
 
     @staticmethod
     def from_lark(
@@ -84,15 +85,12 @@ class Integer(Literal):
     ) -> Integer:
         if isinstance(value, Integer):
             # Adding type information; wrap Integer
-            return Integer(
-                type=type_name,
-                value=value.value,
-                base=value.base,
-            )
-        return Integer(
+            value.type = type_name
+            return value
+        cls = _base_to_integer_class[base]
+        return cls(
             type=type_name,
             value=value,
-            base=base,
         )
 
     def __str__(self) -> str:
@@ -100,6 +98,50 @@ class Integer(Literal):
         if self.type:
             return f"{self.type}#{value}"
         return value
+
+
+@dataclass
+@_rule_handler("binary_integer")
+class BinaryInteger(Integer):
+    base: ClassVar[int] = 2
+
+    @classmethod
+    def from_lark(
+        cls, value: Union[Integer, lark.Token],
+    ) -> BinaryInteger:
+        return super().from_lark(None, value, base=2)
+
+
+@dataclass
+@_rule_handler("octal_integer")
+class OctalInteger(Integer):
+    base: ClassVar[int] = 8
+
+    @classmethod
+    def from_lark(
+        cls, value: Union[Integer, lark.Token],
+    ) -> Integer:
+        return super().from_lark(None, value, base=8)
+
+
+@dataclass
+@_rule_handler("hex_integer")
+class HexInteger(Integer):
+    base: ClassVar[int] = 16
+
+    @classmethod
+    def from_lark(
+        cls, value: Union[Integer, lark.Token],
+    ) -> Integer:
+        return super().from_lark(None, value, base=16)
+
+
+_base_to_integer_class: Dict[int, Type[Integer]] = {
+    2: BinaryInteger,
+    8: OctalInteger,
+    10: Integer,
+    16: HexInteger,
+}
 
 
 @dataclass
@@ -125,21 +167,40 @@ class Real(Literal):
 class BitString(Literal):
     """Bit string literal value."""
 
+    type: Optional[lark.Token]
     value: lark.Token
-    type: Optional[lark.Token] = None
-    base: int = 10
+    base: ClassVar[int] = 10
 
-    @staticmethod
-    def from_lark(
-        type_name: Optional[lark.Token], value: lark.Token, *, base: int = 10
-    ) -> BitString:
-        return BitString(type=type_name, value=value, base=base)
+    @classmethod
+    def from_lark(cls, type: Optional[lark.Token], value: lark.Token):
+        return cls(type, value)
 
     def __str__(self) -> str:
         value = f"{self.base}#{self.value}" if self.base != 10 else str(self.value)
         if self.type:
             return f"{self.type}#{value}"
         return value
+
+
+@dataclass
+@_rule_handler("binary_bit_string_literal")
+class BinaryBitString(BitString):
+    """Binary bit string literal value."""
+    base: ClassVar[int] = 2
+
+
+@dataclass
+@_rule_handler("octal_bit_string_literal")
+class OctalBitString(BitString):
+    """Octal bit string literal value."""
+    base: ClassVar[int] = 8
+
+
+@dataclass
+@_rule_handler("hex_bit_string_literal")
+class HexBitString(BitString):
+    """Hex bit string literal value."""
+    base: ClassVar[int] = 16
 
 
 @dataclass
@@ -2116,8 +2177,50 @@ def pass_through(obj: Optional[T] = None) -> Optional[T]:
     return obj
 
 
-@lark.visitors.v_args(inline=True)
+def _visitor_meta_monkeypatch(f, _data, children, meta):
+    result = f(*children)
+    # _patch_metadata()
+    return result
+
+
+def _visitor_meta_kwarg(f, _data, children, meta):
+    result = f(*children, meta=meta)
+    if not isinstance(result, (lark.Tree, lark.Token)):
+        # Maybe not monkeypatch
+        result._meta_ = meta
+    return result
+
+
+def _has_meta_kwarg(func: Callable) -> bool:
+    sig = inspect.signature(func)
+    try:
+        meta_param = sig.parameters["meta"]
+    except KeyError:
+        return False
+
+    return inspect.Parameter.KEYWORD_ONLY == meta_param.kind
+
+
+def _annotator_wrapper(obj):
+    if callable(obj) and _has_meta_kwarg(obj):
+        return lark.visitors._apply_v_args(obj, _visitor_meta_kwarg)
+    return lark.visitors._apply_v_args(obj, _visitor_meta_monkeypatch)
+
+
+@_annotator_wrapper
 class GrammarTransformer(lark.visitors.Transformer):
+    """
+    Grammar transformer which takes lark objects and makes a :class:`SourceCode`.
+
+    Attributes
+    ----------
+    _filename : str
+        Filename of grammar being transformed.
+
+    comments : list of lark.Token
+        Sorted list of comments and pragmas for annotating the resulting
+        transformed grammar.
+    """
     _filename: Optional[str]
     comments: List[lark.Token]
 
@@ -2137,24 +2240,6 @@ class GrammarTransformer(lark.visitors.Transformer):
 
     def integer(self, value: lark.Token):
         return Integer.from_lark(None, value)
-
-    def binary_integer(self, value: lark.Token):
-        return Integer.from_lark(None, value, base=2)
-
-    def octal_integer(self, value: lark.Token):
-        return Integer.from_lark(None, value, base=8)
-
-    def hex_integer(self, value: lark.Token):
-        return Integer.from_lark(None, value, base=16)
-
-    def binary_bit_string_literal(self, type_name: lark.Token, value: lark.Token):
-        return BitString.from_lark(type_name, value, base=2)
-
-    def octal_bit_string_literal(self, type_name: lark.Token, value: lark.Token):
-        return BitString.from_lark(type_name, value, base=8)
-
-    def hex_bit_string_literal(self, type_name: lark.Token, value: lark.Token):
-        return BitString.from_lark(type_name, value, base=16)
 
     def true(self, value: lark.Token):
         return Boolean(value=value)
@@ -2182,7 +2267,7 @@ def _get_class_handlers():
                     raise ValueError(f"Saw {token_name!r} twice")
                 if not hasattr(cls, "from_lark"):
                     cls.from_lark = _get_default_instantiator(cls)
-                result[token_name] = lark.visitors.v_args(inline=True)(cls.from_lark)
+                result[token_name] = _annotator_wrapper(cls.from_lark)
 
     return result
 
