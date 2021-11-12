@@ -301,6 +301,30 @@ class Variable(Expression):
     ...
 
 
+@_rule_handler("method_access")
+class MethodAccess(enum.Flag):
+    public = enum.auto()
+    private = enum.auto()
+    abstract = enum.auto()
+    protected = enum.auto()
+    internal = enum.auto()
+    final = enum.auto()
+
+    @staticmethod
+    def from_lark(token: lark.Token, *tokens: List[lark.Token]) -> MethodAccess:
+        result = MethodAccess[token.lower()]
+        for token in tokens:
+            result |= MethodAccess[token.lower()]
+        return result
+
+    def __str__(self):
+        return " ".join(
+            option.name.upper()
+            for option in MethodAccess
+            if option in self
+        )
+
+
 @_rule_handler("indirection_type")
 @_rule_handler("pointer_type")
 class IndirectionType(Enum):
@@ -1400,7 +1424,7 @@ class ExitAction(Action):
 @dataclass
 @_rule_handler("function_block_method_declaration")
 class Method:
-    access: Optional[List[lark.Token]]
+    access: Optional[MethodAccess]
     name: lark.Token
     return_type: Optional[lark.Token]
     declarations: List[VariableDeclarationBlock]
@@ -1408,7 +1432,7 @@ class Method:
 
     @staticmethod
     def from_lark(
-        access: Optional[lark.Tree],
+        access: Optional[MethodAccess],
         name: lark.Token,
         return_type: lark.Token,
         *args
@@ -1416,15 +1440,14 @@ class Method:
         *declarations, body = args
         return Method(
             name=name,
-            access=list(access.children) if access else [],
+            access=access,
             return_type=return_type,
             declarations=list(declarations),
             body=body,
         )
 
     def __str__(self) -> str:
-        access = " ".join(self.access) if self.access else None
-        access_and_name = join_if(access, " ", self.name)
+        access_and_name = join_if(self.access, " ", self.name)
         method = join_if(access_and_name, " : ", self.return_type)
         return "\n".join(
             line for line in
