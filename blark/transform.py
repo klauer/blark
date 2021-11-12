@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import enum
+import functools
 import inspect
 import textwrap
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
                     Tuple, Type, TypeVar, Union)
@@ -35,6 +36,30 @@ def indent_if(value: Optional[Any], indent: str = INDENT) -> Optional[str]:
     if value is not None:
         return textwrap.indent(str(value), indent)
     return None
+
+
+def _commented(meta: lark.tree.Meta, item: Any, indent: str = "", suffix="") -> str:
+    comments = getattr(meta, "comments", None)
+    line = f"{indent}{item}{suffix}"
+    if not comments:
+        return line
+
+    return "\n".join(
+        [
+            *(textwrap.indent(comment, indent) for comment in comments),
+            line
+        ]
+    )
+
+
+def _commented_block(func):
+    @functools.wraps(func)
+    def wrapped(self):
+        return _commented(
+            self.meta,
+            func(self)
+        )
+    return wrapped
 
 
 def _rule_handler(
@@ -1089,6 +1114,7 @@ class VariableList:
 
 @dataclass
 @_rule_handler("var1_init_decl")
+# @_comment_consumer
 class VariableOneInitDeclaration:
     variables: VariableList
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
@@ -1748,11 +1774,12 @@ class InputOutputDeclarations(VariableDeclarationBlock):
     def from_lark(items: lark.Tree) -> InputOutputDeclarations:
         return InputOutputDeclarations(items.children)
 
+    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
                 "VAR_IN_OUT",
-                *[f"{INDENT}{item};" for item in self.items],
+                *[_commented(item.meta, item, indent=INDENT, suffix=";") for item in self.items],
                 "END_VAR",
             )
         )
@@ -2172,26 +2199,6 @@ class SourceCode:
         return "\n".join(str(item) for item in self.items)
 
 
-@staticmethod
-def pass_through(obj: Optional[T] = None) -> Optional[T]:
-    """Transformer helper to pass through an optional single argument."""
-    return obj
-
-
-def _visitor_meta_monkeypatch(f, _data, children, meta):
-    result = f(*children)
-    # _patch_metadata()
-    return result
-
-
-def _visitor_meta_kwarg(f, _data, children, meta):
-    result = f(*children, meta=meta)
-    if not isinstance(result, (lark.Tree, lark.Token)):
-        # Maybe not monkeypatch
-        result._meta_ = meta
-    return result
-
-
 def _has_meta_kwarg(func: Callable) -> bool:
     sig = inspect.signature(func)
     try:
@@ -2202,13 +2209,51 @@ def _has_meta_kwarg(func: Callable) -> bool:
     return inspect.Parameter.KEYWORD_ONLY == meta_param.kind
 
 
-def _annotator_wrapper(obj):
-    if callable(obj) and _has_meta_kwarg(obj):
-        return lark.visitors._apply_v_args(obj, _visitor_meta_kwarg)
-    return lark.visitors._apply_v_args(obj, _visitor_meta_monkeypatch)
+def _annotator_wrapper(handler):
+    def wrapped(self: GrammarTransformer, data: Any, children: list, meta: lark.tree.Meta) -> Any:
+        result = handler(*children)
+        # if type(result) in _comment_consumers:
+        #     meta.comments = []
+        #     while self.consumable_comments and self.consumable_comments[0].line <= meta.line:
+        #         meta.comments.append(self.consumable_comments.pop(0))
+        #         print("COMMENT!", meta.comments, type(result))
+        #     # Maybe not monkeypatch
+        if not isinstance(result, (lark.Tree, lark.Token, list)):
+            result.meta = meta
+        return result
+
+    return wrapped
 
 
-@_annotator_wrapper
+def _get_default_instantiator(cls: type):
+    def instantiator(*args):
+        return cls(*args)
+
+    return instantiator
+
+
+def pass_through(obj: Optional[T] = None) -> Optional[T]:
+    """Transformer helper to pass through an optional single argument."""
+    return obj
+
+
+def _get_class_handlers():
+    result = {}
+    for cls in globals().values():
+        if hasattr(cls, "_lark_"):
+            token_names = cls._lark_
+            if isinstance(token_names, str):
+                token_names = [token_names]
+            for token_name in token_names:
+                if token_name in result:
+                    raise ValueError(f"Saw {token_name!r} twice")
+                if not hasattr(cls, "from_lark"):
+                    cls.from_lark = _get_default_instantiator(cls)
+                result[token_name] = cls.from_lark
+
+    return result
+
+
 class GrammarTransformer(lark.visitors.Transformer):
     """
     Grammar transformer which takes lark objects and makes a :class:`SourceCode`.
@@ -2229,48 +2274,98 @@ class GrammarTransformer(lark.visitors.Transformer):
         super().__init__()
         self._filename = fn
         self.comments = comments or []
-        self.__dict__.update(**_class_handlers)
 
-    constant = pass_through
+    constant = _annotator_wrapper(pass_through)
 
-    def full_subrange(self):
+    locals().update(
+        **{
+            name: _annotator_wrapper(handler)
+            for name, handler in _get_class_handlers().items()
+        }
+    )
+
+    def transform(self, tree):
+        transformed = super().transform(tree)
+        if self.comments:
+            merge_comments(transformed, self.comments)
+        return transformed
+
+    @_annotator_wrapper
+    def full_subrange():
         return FullSubrange()
 
-    def signed_integer(self, value: lark.Token):
+    @_annotator_wrapper
+    def signed_integer(value: lark.Token):
         return Integer.from_lark(None, value)
 
-    def integer(self, value: lark.Token):
+    @_annotator_wrapper
+    def integer(value: lark.Token):
         return Integer.from_lark(None, value)
 
-    def true(self, value: lark.Token):
+    @_annotator_wrapper
+    def true(value: lark.Token):
         return Boolean(value=value)
 
-    def false(self, value: lark.Token):
+    @_annotator_wrapper
+    def false(value: lark.Token):
         return Boolean(value=value)
 
+    def __default__(self, data, children, meta):
+        """
+        Default function that is called if there is no attribute matching ``data``
+        """
+        return lark.Tree(data, children, meta)
 
-def _get_default_instantiator(cls: type):
-    def instantiator(*args):
-        return cls(*args)
+    def _call_userfunc(self, tree, new_children=None):
+        """
+        Assumes tree is already transformed
 
-    return instantiator
+        Re-implementation of lark.visitors.Transformer to make the code paths
+        easier to follow.  May break based on upstream API.
+        """
+        children = new_children if new_children is not None else tree.children
+        try:
+            handler = getattr(self, tree.data)
+        except AttributeError:
+            return self.__default__(tree.data, children, tree.meta)
 
-
-def _get_class_handlers():
-    result = {}
-    for cls in globals().values():
-        if hasattr(cls, "_lark_"):
-            token_names = cls._lark_
-            if isinstance(token_names, str):
-                token_names = [token_names]
-            for token_name in token_names:
-                if token_name in result:
-                    raise ValueError(f"Saw {token_name!r} twice")
-                if not hasattr(cls, "from_lark"):
-                    cls.from_lark = _get_default_instantiator(cls)
-                result[token_name] = _annotator_wrapper(cls.from_lark)
-
-    return result
+        return handler(tree.data, children, tree.meta)
 
 
-_class_handlers = _get_class_handlers()
+_comment_consumers = (
+    VariableOneInitDeclaration,
+    InputOutputDeclarations,
+    ArrayVariableInitDeclaration,
+    StringVariableInitDeclaration,
+    VariableOneInitDeclaration,
+    FunctionBlockDeclaration,
+    FunctionBlockInvocationDeclaration,
+    StructuredVariableInitDeclaration,
+)
+
+
+def merge_comments(source: Any, comments: List[lark.Token]):
+    """
+    Take the transformed tree and annotate comments back into meta information.
+    """
+    if source is None or not comments:
+        return
+
+    if isinstance(source, (lark.Tree, lark.Token)):
+        ...
+    elif isinstance(source, (list, tuple)):
+        for item in source:
+            merge_comments(item, comments)
+    elif is_dataclass(source):
+        meta = getattr(source, "meta", None)
+        if meta:
+            if type(source) in _comment_consumers:
+                if not hasattr(meta, "comments"):
+                    meta.comments = []
+                while comments and comments[0].line <= meta.line:
+                    meta.comments.append(comments.pop(0))
+                    print("comment!", type(source), meta.comments)
+        for field in fields(source):
+            obj = getattr(source, field.name, None)
+            if obj is not None:
+                merge_comments(obj, comments)

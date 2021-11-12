@@ -4,6 +4,7 @@ import pytest
 from pytest import param
 
 from .. import transform as tf
+from ..parse import parse_source_code
 from .conftest import get_grammar, stringify_tokens
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -750,3 +751,33 @@ def test_function_roundtrip(rule_name, value):
 )
 def test_program_roundtrip(rule_name, value):
     _ = roundtrip_rule(rule_name, value)
+
+
+def roundtrip_rule_with_comments(rule_name: str, value: str):
+    parser = get_grammar(start=rule_name)
+    transformed = parse_source_code(value, parser=parser)
+    print("\n\nTransformed:")
+    print(repr(transformed))
+    print("\n\nOr:")
+    print(transformed)
+    assert str(transformed) == value
+    return transformed
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            // Var in and out
+            (* Var in and out *)
+            VAR_IN_OUT
+                // Variable
+                iVar : INT;
+            END_VAR
+            """
+        )),
+    ],
+)
+def test_input_output_comments(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)
