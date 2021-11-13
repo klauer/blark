@@ -14,12 +14,12 @@ import pytmc
 import blark
 
 from .transform import GrammarTransformer
-from .util import get_source_code
+from .util import get_source_code, indent_inner
 
 DESCRIPTION = __doc__
 RE_COMMENT = re.compile(r"(//.*$|\(\*.*?\*\))", re.MULTILINE | re.DOTALL)
 RE_PRAGMA = re.compile(r"{[^}]*?}", re.MULTILINE | re.DOTALL)
-
+RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
 
 _PARSER = None
 
@@ -114,6 +114,17 @@ def find_and_clean_comments(
             type_ = "PRAGMA"
         else:
             raise RuntimeError("Unexpected block: {contents}")
+
+        if start_line != end_line:
+            # TODO: move "*)" to separate line
+            block = indent_inner(
+                RE_LEADING_WHITESPACE.sub("", block),
+                prefix={
+                    "SINGLE_LINE_COMMENT": "",   # this would be a bug
+                    "MULTI_LINE_COMMENT": "    ",
+                    "PRAGMA": "    ",
+                }[type_],
+            )
 
         return lark.Token(
             type_,
