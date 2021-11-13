@@ -17,8 +17,6 @@ from .transform import GrammarTransformer
 from .util import get_source_code, indent_inner
 
 DESCRIPTION = __doc__
-RE_COMMENT = re.compile(r"(//.*$|\(\*.*?\*\))", re.MULTILINE | re.DOTALL)
-RE_PRAGMA = re.compile(r"{[^}]*?}", re.MULTILINE | re.DOTALL)
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
 
 _PARSER = None
