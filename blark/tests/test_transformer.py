@@ -10,6 +10,111 @@ from .conftest import get_grammar, stringify_tokens
 TEST_PATH = pathlib.Path(__file__).parent
 
 
+def test_check_unhandled_rules(grammar):
+    defined_rules = set(
+        rule.origin.name for rule in grammar.rules
+        if not rule.origin.name.startswith("_")
+        and not rule.options.expand1
+    )
+    transformer = tf.GrammarTransformer()
+    unhandled_rules = set(
+        str(name)
+        for name in defined_rules
+        if not hasattr(transformer, name)
+    )
+
+    handled_separately = {
+        # no individual ones for time
+        "day",
+        "day_hour",
+        "day_minute",
+        "day_second",
+        "days",
+        "hours",
+        "month",
+        "year",
+        "seconds",
+        "milliseconds",
+        "minutes",
+
+        # handled as aliases
+        "case_list",
+
+        # handled as tree
+        "global_var_list",
+        "var_body",
+        "function_var_blocks",
+
+    }
+
+    todo_rules = {
+        "access_declaration",
+        "access_declarations",
+        "access_path",
+
+        # for loops
+        "for_list",
+        "for_statement",
+
+        # sfc stuff
+        "sequential_function_chart",
+        "sfc_network",
+        "indicator_name",
+        "initial_step",
+        "step",
+        "steps",
+        "transition",
+        "transition_condition",
+        "transition_name",
+        "action_association",
+        "action_qualifier",
+        "action_time",
+        "timed_qualifier",
+
+        # program configuration
+        "prog_cnxn",
+        "prog_conf_element",
+        "prog_conf_elements",
+        "prog_data_source",
+        "program_configuration",
+        "program_output_reference",
+        "program_var_declarations",
+        "fb_task",
+
+        # tasks
+        "data_sink",
+        "data_source",
+        "global_var_reference",
+        "task_configuration",
+        "task_initialization",
+
+        # configuration / resource
+        "configuration_declaration",
+        "instance_specific_init",
+        "instance_specific_initializations",
+
+        # resources
+        "resource_declaration",
+        "single_resource_declaration",
+
+        # data types
+        "data_type_declaration",
+
+        # incompleted located var declarations
+        # (check - may be aliased with another?)
+        "incompl_located_var_decl",
+        "incompl_located_var_declarations",
+        "var_spec",  # only used in above, but dobule check
+    }
+
+    aliased = {
+        "boolean_literal",
+        "fb_decl",
+    }
+
+    assert set(unhandled_rules) == handled_separately | todo_rules | aliased
+
+
 @pytest.mark.parametrize(
     "name, value, expected",
     [

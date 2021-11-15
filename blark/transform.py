@@ -412,8 +412,10 @@ class MethodAccess(enum.Flag):
         )
 
 
-@_rule_handler("indirection_type")
-@_rule_handler("pointer_type")
+@_rule_handler(
+    "indirection_type",
+    "pointer_type",
+)
 class IndirectionType(Enum):
     """Indirect access through a pointer or reference."""
     none = enum.auto()
