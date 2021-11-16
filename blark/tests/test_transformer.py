@@ -25,14 +25,8 @@ def test_check_unhandled_rules(grammar):
 
     handled_separately = {
         # no individual ones for time
-        "day",
-        "day_hour",
-        "day_minute",
-        "day_second",
         "days",
         "hours",
-        "month",
-        "year",
         "seconds",
         "milliseconds",
         "minutes",
@@ -48,14 +42,6 @@ def test_check_unhandled_rules(grammar):
     }
 
     todo_rules = {
-        "access_declaration",
-        "access_declarations",
-        "access_path",
-
-        # for loops
-        "for_list",
-        "for_statement",
-
         # sfc stuff
         "sequential_function_chart",
         "sfc_network",
@@ -75,20 +61,11 @@ def test_check_unhandled_rules(grammar):
         "prog_cnxn",
         "prog_conf_element",
         "prog_conf_elements",
-        "prog_data_source",
         "program_configuration",
-        "program_output_reference",
         "program_var_declarations",
         "fb_task",
 
         # tasks
-        "data_sink",
-        "data_source",
-        "global_var_reference",
-        "task_configuration",
-        "task_initialization",
-
-        # configuration / resource
         "configuration_declaration",
         "instance_specific_init",
         "instance_specific_initializations",
@@ -96,15 +73,6 @@ def test_check_unhandled_rules(grammar):
         # resources
         "resource_declaration",
         "single_resource_declaration",
-
-        # data types
-        "data_type_declaration",
-
-        # incompleted located var declarations
-        # (check - may be aliased with another?)
-        "incompl_located_var_decl",
-        "incompl_located_var_declarations",
-        "var_spec",  # only used in above, but dobule check
     }
 
     aliased = {
@@ -152,14 +120,6 @@ def test_check_unhandled_rules(grammar):
         param("duration", "T#1D1H1M1S1MS", tf.Duration(days="1", hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
         param("duration", "TIME#1H1M1S1MS", tf.Duration(hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
         param("time_of_day", "TIME_OF_DAY#1:1:1.2", tf.TimeOfDay(hour="1", minute="1", second="1.2")),  # noqa: E501
-        # pytest.param("single_byte_character_string", "'abc'"),
-        # pytest.param("double_byte_character_string", '"abc"'),
-        # pytest.param("single_byte_string_spec", "STRING[1]"),
-        # pytest.param("single_byte_string_spec", "STRING(1)"),
-        # pytest.param("single_byte_string_spec", "STRING(1) := 'abc'"),
-        # pytest.param("double_byte_string_spec", "WSTRING[1]"),
-        # pytest.param("double_byte_string_spec", "WSTRING(1)"),
-        # pytest.param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
     ],
 )
 def test_literal(name, value, expected):
@@ -205,6 +165,12 @@ def test_literal(name, value, expected):
         param("time_of_day", "TIME_OF_DAY#1:1:1.2"),
         param("date", "DATE#1970-1-1"),
         param("date_and_time", "DT#1970-1-1-1:2:30.3"),
+        param("single_byte_string_spec", "STRING[1]"),
+        param("single_byte_string_spec", "STRING(1)"),
+        param("single_byte_string_spec", "STRING(1) := 'abc'"),
+        param("double_byte_string_spec", "WSTRING[1]"),
+        param("double_byte_string_spec", "WSTRING(1)"),
+        param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
     ],
 )
 def test_literal_roundtrip(name, value):
@@ -390,8 +356,10 @@ def test_expression_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
-            # Appears to collide with enum rule; need to fix
+            # marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
+            # Identical paths:
+            #   fb_name_decl -> structure_initialization
+            #   array_initialization -> array_initial_element -> structure_initialization
         ),
     ],
 )
@@ -786,6 +754,30 @@ def test_fb_roundtrip(rule_name, value):
             END_REPEAT
             """
         )),
+        param("for_statement", tf.multiline_code_block(
+            """
+            FOR iIndex := 0 TO 10
+            DO
+                iValue := iIndex * 2;
+            END_FOR
+            """
+        )),
+        param("for_statement", tf.multiline_code_block(
+            """
+            FOR iIndex := 0 TO 10 BY 1
+            DO
+                iValue := iIndex * 2;
+            END_FOR
+            """
+        )),
+        param("for_statement", tf.multiline_code_block(
+            """
+            FOR iIndex := (iValue - 5) TO iValue * 10 BY iValue MOD 10
+            DO
+                arrArray[iIndex] := iIndex * 2;
+            END_FOR
+            """
+        )),
     ],
 )
 def test_statement_roundtrip(rule_name, value):
@@ -885,4 +877,136 @@ def roundtrip_rule_with_comments(rule_name: str, value: str):
     ],
 )
 def test_input_output_comments(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("incomplete_located_var_declarations", tf.multiline_code_block(
+            """
+            VAR
+                iValue AT %Q* : INT;
+                sValue AT %I* : STRING [255];
+                wsValue AT %I* : WSTRING [255];
+            END_VAR
+            """
+        )),
+        param("incomplete_located_var_declarations", tf.multiline_code_block(
+            """
+            VAR RETAIN
+                iValue AT %I* : INT;
+                iValue1 AT %Q* : INT;
+            END_VAR
+            """
+        )),
+    ],
+)
+def test_incomplete_located_var_decls(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                STRUCT
+                    xPLC_CnBitsValid : BOOL;
+                    xPLC_CnBits : ARRAY [0..20] OF BYTE;
+                END_STRUCT;
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE ArrayTypeName : ARRAY [1..10, 2..20] OF INT;
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE StringTypeName : STRING[10] := 'Literal';
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE SimpleTypeName EXTENDS OtherType : POINTER TO INT;
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE SubrangeTypeName : POINTER TO INT (1..5);
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE EnumeratedTypeName : REFERENCE TO Identifier;
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE EnumeratedTypeName : REFERENCE TO (IdentifierA, INT#IdentifierB := 1);
+            END_TYPE
+            """
+        )),
+    ],
+)
+def test_data_type_declaration(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("access_path", "resource.%IX1.1"),
+        param("access_path", "resource.prog.func1.func2.Variable"),
+        param("access_path", "resource.func2.Variable"),
+        param(
+            "config_access_declaration",
+            "AccessName : resource.%IX1.1 : TypeName READ_ONLY"
+        ),
+        param(
+            "config_access_declaration",
+            "AccessName : resource.%IX1.1 : TypeName"
+        ),
+        param(
+            "config_access_declaration",
+            "AccessName : resource.Variable : TypeName READ_WRITE"
+        ),
+        param("config_access_declarations", tf.multiline_code_block(
+            """
+            (* This is an access block *)
+            VAR_ACCESS
+                (* Access 1 *)
+                AccessName1 : resource.Variable : TypeName READ_WRITE;
+                (* Access 2 *)
+                AccessName2 : resource.Variable : TypeName READ_ONLY;
+                (* Access 3 *)
+                AccessName3 : resource.Variable : TypeName;
+                (* Access 4 *)
+                AccessName4 : resource.%IX1.1 : TypeName;
+            END_VAR
+            """
+        )),
+        param("task_initialization", "(SINGLE := 1, INTERVAL := 2, PRIORITY := 3)"),
+        param("task_initialization", "(INTERVAL := 2, PRIORITY := 3)"),
+        param("task_initialization", "(SINGLE := 1, PRIORITY := 3)"),
+        param("task_initialization", "(PRIORITY := 3)"),
+        param("task_initialization", "(SINGLE := abc.def, PRIORITY := 3)"),
+        param("task_configuration", "TASK taskname (PRIORITY := 3)"),
+    ],
+)
+def test_config_roundtrip(rule_name, value):
     roundtrip_rule_with_comments(rule_name, value)

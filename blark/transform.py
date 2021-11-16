@@ -57,7 +57,7 @@ def _commented_block(func):
     return wrapped
 
 
-def _comment_consumer(cls: type) -> type:
+def _comment_consumer(cls):
     """Mark ``cls`` as one that consumes comments when stringifying code. """
     _comment_consumers.append(cls)
     return cls
@@ -280,23 +280,9 @@ class Duration(Literal):
 @_rule_handler("time_of_day")
 class TimeOfDay(Literal):
     """Time of day literal value."""
-
     hour: lark.Token
     minute: lark.Token
     second: lark.Token
-
-    @staticmethod
-    def from_lark(
-        _: lark.Token, hour: lark.Tree, minute: lark.Tree, second: lark.Tree
-    ) -> TimeOfDay:
-        (hour,) = hour.children
-        (minute,) = minute.children
-        (second,) = second.children
-        return TimeOfDay(
-            hour=hour,
-            minute=minute,
-            second=second,
-        )
 
     @property
     def value(self) -> str:
@@ -315,13 +301,6 @@ class Date(Literal):
     year: lark.Token
     month: lark.Token
     day: lark.Token
-
-    @staticmethod
-    def from_lark(year: lark.Tree, month: lark.Tree, day: lark.Tree) -> Date:
-        (year,) = year.children
-        (month,) = month.children
-        (day,) = day.children
-        return Date(year=year, month=month, day=day)
 
     @property
     def value(self) -> str:
@@ -350,16 +329,8 @@ class DateTime(Literal):
         second: lark.Token,
     ) -> DateTime:
         return DateTime(
-            date=Date(
-                year=year.children[0],
-                month=month.children[0],
-                day=day.children[0],
-            ),
-            time=TimeOfDay(
-                hour=hour.children[0],
-                minute=minute.children[0],
-                second=second.children[0],
-            ),
+            date=Date(year=year, month=month, day=day),
+            time=TimeOfDay(hour=hour, minute=minute, second=second),
         )
 
     @property
@@ -472,7 +443,7 @@ class VariableSizePrefix(str, Enum):
 
 @dataclass
 @_rule_handler("direct_variable")
-class DirectVariable(Expression):
+class DirectVariable(Variable):
     location_prefix: VariableLocationPrefix
     location: lark.Token
     size_prefix: VariableSizePrefix
@@ -519,7 +490,7 @@ class Location(DirectVariable):
 
 @dataclass
 @_rule_handler("variable_name")
-class SymbolicVariable(Expression):
+class SymbolicVariable(Variable):
     name: lark.Token
     dereferenced: bool
 
@@ -606,7 +577,7 @@ class TypeInitialization:
 
 @dataclass
 @_rule_handler("simple_type_declaration")
-class TypeDeclaration:
+class SimpleTypeDeclaration:
     name: lark.Token
     extends: Optional[Extends]
     init: TypeInitialization
@@ -629,6 +600,15 @@ class StringTypeDeclaration:
         type_and_length = join_if(self.string_type, "", self.length)
         type_and_value = join_if(type_and_length, " := ", self.value)
         return f"{self.name} : {type_and_value}"
+
+
+@dataclass
+@_rule_handler("string_type_specification")
+class StringTypeSpecification:
+    string_type: lark.Token
+
+    def __str__(self) -> str:
+        return f"{self.string_type}"
 
 
 @dataclass
@@ -1738,6 +1718,58 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
         )
 
 
+IncompleteLocatedVariableSpecInit = Union[
+    TypeInitialization,
+    SubrangeTypeInitialization,
+    EnumeratedTypeInitialization,
+    ArrayTypeInitialization,
+    InitializedStructure,
+    StringTypeSpecification,
+]
+
+
+@dataclass
+@_rule_handler("incomplete_located_var_decl")
+@_comment_consumer
+class IncompleteLocatedVariableDeclaration:
+    name: lark.Token
+    location: IncompleteLocation
+    init: IncompleteLocatedVariableSpecInit
+
+    @_commented_block
+    def __str__(self) -> str:
+        name_and_location = join_if(self.name, " ", self.location)
+        return f"{name_and_location} : {self.init}"
+
+
+@dataclass
+@_rule_handler("incomplete_located_var_declarations")
+@_comment_consumer
+class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
+    retain: bool
+    items: List[IncompleteLocatedVariableDeclaration]
+
+    @staticmethod
+    def from_lark(
+        retain: Optional[lark.Token],
+        *items: IncompleteLocatedVariableDeclaration,
+    ) -> IncompleteLocatedVariableDeclarations:
+        return IncompleteLocatedVariableDeclarations(
+            retain=retain is not None,
+            items=list(items),
+        )
+
+    @_commented_block
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                join_if("VAR", " ", "RETAIN" if self.retain else None),
+                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                "END_VAR",
+            )
+        )
+
+
 @dataclass
 @_rule_handler("external_declaration")
 @_comment_consumer
@@ -2249,6 +2281,30 @@ class RepeatStatement(Statement):
 
 
 @dataclass
+@_rule_handler("for_statement")
+@_comment_consumer
+class ForStatement(Statement):
+    control: lark.Token
+    from_: Expression
+    to: Expression
+    step: Optional[Expression]
+    statements: StatementList
+
+    @_commented_block
+    def __str__(self) -> str:
+        step = f" BY {self.step}" if self.step else ""
+        return "\n".join(
+            line for line in (
+                f"FOR {self.control} := {self.from_} TO {self.to}{step}",
+                "DO",
+                indent_if(self.statements),
+                "END_FOR",
+            )
+            if line is not None
+        )
+
+
+@dataclass
 @_rule_handler("statement_list")
 class StatementList:
     statements: List[Statement]
@@ -2274,8 +2330,169 @@ class StatementList:
         )
 
 
+@dataclass
+@_rule_handler("config_access_declarations")
+@_comment_consumer
+class ConfigAccessDeclarations(VariableDeclarationBlock):
+    items: List[ConfigAccessDeclaration]
+
+    @staticmethod
+    def from_lark(*items: ConfigAccessDeclaration) -> ConfigAccessDeclarations:
+        return ConfigAccessDeclarations(list(items))
+
+    @_commented_block
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_ACCESS",
+                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("config_access_declaration")
+@_comment_consumer
+class ConfigAccessDeclaration:
+    name: lark.Token
+    path: ConfigAccessPath
+    type_name: DataType
+    direction: Optional[lark.Token]
+
+    @_commented_block
+    def __str__(self) -> str:
+        return join_if(
+            f"{self.name} : {self.path} : {self.type_name}",
+            " ",
+            self.direction
+        )
+
+
+@dataclass
+@_rule_handler("direct_access_path")
+class DirectAccessPath:
+    resource_name: Optional[lark.Token]
+    variable: DirectVariable
+
+    def __str__(self):
+        return join_if(self.resource_name, ".", self.variable)
+
+
+@dataclass
+@_rule_handler("access_path")
+class SymbolicAccessPath:
+    # NOTE: these attributes are ambiguous; consider just making into a
+    # "DOTTED_IDENTIFIER".
+    resource_name: Optional[lark.Token]
+    program_name: Optional[lark.Token]
+    function_block_names: List[lark.Token]
+    variable: SymbolicVariable
+
+    @staticmethod
+    def from_lark(
+        resource_name: Optional[lark.Token],
+        program_name: Optional[lark.Token],
+        *remainder: Union[lark.Token, SymbolicVariable],
+    ) -> SymbolicAccessPath:
+        *fb_names, variable = remainder
+        return SymbolicAccessPath(
+            resource_name=resource_name,
+            program_name=program_name,
+            function_block_names=list(fb_names),
+            variable=variable
+        )
+
+    def __str__(self):
+        return ".".join(
+            str(part) for part in [
+                self.resource_name,
+                self.program_name,
+                *self.function_block_names,
+                self.variable
+            ]
+            if part is not None
+        )
+
+
+ConfigAccessPath = Union[DirectAccessPath, SymbolicAccessPath]
+
+
+@dataclass
+@_rule_handler("task_initialization")
+class TaskInitialization:
+    single: Optional[TaskDataSource]
+    interval: Optional[TaskDataSource]
+    priority: lark.Token
+
+    def __str__(self):
+        parts = " ".join(
+            part for part in (
+                f"SINGLE := {self.single}," if self.single else None,
+                f"INTERVAL := {self.interval}," if self.interval else None,
+                f"PRIORITY := {self.priority}"
+            )
+            if part is not None
+        )
+        return f"({parts})"
+
+
+@dataclass
+@_rule_handler("task_configuration")
+@_comment_consumer
+class TaskConfiguration:
+    name: lark.Token
+    init: TaskInitialization
+
+    @_commented_block
+    def __str__(self):
+        return f"TASK {self.name} {self.init}"
+
+
+TaskDataSource = Union[
+    Literal,
+    Variable,
+]
+
+
+TypeDeclarationItem = Union[
+    ArrayTypeDeclaration,
+    StructureTypeDeclaration,
+    StringTypeDeclaration,
+    SimpleTypeDeclaration,
+    SubrangeTypeDeclaration,
+    EnumeratedTypeDeclaration,
+]
+
+
+@dataclass
+@_rule_handler("data_type_declaration")
+@_comment_consumer
+class DataTypeDeclaration:
+    items: List[TypeDeclarationItem]
+
+    @staticmethod
+    def from_lark(*args: TypeDeclarationItem) -> DataTypeDeclaration:
+        return DataTypeDeclaration(list(args))
+
+    @_commented_block
+    def __str__(self) -> str:
+        if not self.items:
+            return "TYPE\nEND_TYPE"
+
+        items = "\n".join(
+            textwrap.indent(f"{item};", INDENT) for item in self.items
+        )
+        return "\n".join(
+            (
+                f"TYPE {items.lstrip()}",
+                "END_TYPE",
+            )
+        )
+
+
 SourceCodeItem = Union[
-    # DataTypeDeclaration,  # TODO
+    DataTypeDeclaration,
     Function,
     FunctionBlock,
     Action,

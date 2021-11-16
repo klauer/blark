@@ -142,19 +142,19 @@ milliseconds: FIXED_POINT "ms"i
 // B.1.2.3.2
 _daytime: day_hour ":" day_minute ":" day_second
 
-time_of_day: TYPE_TOD "#" _daytime
+time_of_day: ("TIME_OF_DAY"i | "TOD"i) "#" _daytime
 
-day_hour: INTEGER
-day_minute: INTEGER
-day_second: FIXED_POINT
+?day_hour: INTEGER
+?day_minute: INTEGER
+?day_second: FIXED_POINT
 
 date: ( "DATE"i | "D"i | "d"i ) "#" _date_literal
 
 _date_literal: year "-" month "-" day
 
-year: INTEGER
-month: INTEGER
-day: INTEGER
+?year: INTEGER
+?month: INTEGER
+?day: INTEGER
 
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
@@ -468,21 +468,22 @@ double_byte_string_var_declaration: var1_list ":" double_byte_string_spec
 
 !double_byte_string_spec: "WSTRING"i [ STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
-incompl_located_var_declarations: "VAR"i [ retain ] incompl_located_var_decl* "END_VAR"i ";"*
+incomplete_located_var_declarations: "VAR"i [ retain ] incomplete_located_var_decl* "END_VAR"i ";"*
 
-incompl_located_var_decl: variable_name incomplete_location ":" var_spec ";"+
+incomplete_located_var_decl: variable_name incomplete_location ":" var_spec ";"+
 
 incomplete_location: "AT"i /\%(I|Q|M)\*/
 STRING: "STRING"i
 WSTRING: "WSTRING"i
 
-var_spec: simple_specification
-        | subrange_specification
-        | enumerated_specification
-        | array_specification
-        | structure_type_name
-        | STRING [ "[" ( INTEGER | DOTTED_IDENTIFIER ) "]" ]
-        | WSTRING [ "[" ( INTEGER | DOTTED_IDENTIFIER ) "]" ]
+string_type_specification: STRING_TYPE
+
+?var_spec: simple_specification
+         | subrange_specification
+         | enumerated_specification
+         | array_specification
+         | structure_type_name
+         | string_type_specification
 
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
@@ -532,7 +533,7 @@ _END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
 _other_var_declarations: external_var_declarations
                        | var_declarations
                        | temp_var_decls
-                       | incompl_located_var_declarations
+                       | incomplete_located_var_declarations
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
@@ -631,34 +632,33 @@ exit_action: "EXIT_ACTION"i [ function_block_body ] "END_ACTION"i ";"*
 ?resource_type_name: IDENTIFIER
 ?task_name: IDENTIFIER
 
-configuration_declaration: "CONFIGURATION"i configuration_name [ global_var_declarations ] ( ( single_resource_declaration | ( resource_declaration resource_declaration* ) ) ) [ access_declarations ] [ instance_specific_initializations ] "END_CONFIGURATION"i ";"*
+configuration_declaration: "CONFIGURATION"i configuration_name [ global_var_declarations ] ( single_resource_declaration | resource_declaration+ ) [ config_access_declarations ] [ instance_specific_initializations ] "END_CONFIGURATION"i ";"*
 
 resource_declaration: "RESOURCE"i resource_name "ON"i resource_type_name [ global_var_declarations ] single_resource_declaration "END_RESOURCE"i ";"*
 
-single_resource_declaration: ( task_configuration ";"+ )* program_configuration ";"+ ( program_configuration ";"+ )*
+single_resource_declaration: ( task_configuration ";"+ )* ( program_configuration ";"+ )+
 
-access_declarations: "VAR_ACCESS"i access_declaration ";"+ ( access_declaration ";"+ )* "END_VAR"i ";"*
+config_access_declarations: "VAR_ACCESS"i ( config_access_declaration ";"+ )* "END_VAR"i ";"*
 
-access_declaration: access_name ":" access_path ":" non_generic_type_name [ access_direction ]
+config_access_declaration: access_name ":" access_path ":" non_generic_type_name [ access_direction ]
 
-access_path: [ resource_name "." ] direct_variable
+access_path: [ resource_name "." ] direct_variable                                        -> direct_access_path
            | [ resource_name "." ] [ program_name "." ] ( fb_name "." )* symbolic_variable
 
 global_var_reference: [ resource_name "." ] global_var_name [ "." structure_element_name ]
-
-program_output_reference: program_name "." symbolic_variable
 
 !?access_direction: "READ_WRITE"i
                   | "READ_ONLY"i
 
 task_configuration: "TASK"i task_name task_initialization
 
-task_initialization: "(" [ "SINGLE"i ":=" data_source "," ] [ "INTERVAL"i ":=" data_source "," ] "PRIORITY"i ":=" INTEGER ")"
+task_initialization: "(" [ "SINGLE"i ":=" task_init_data_source "," ] [ "INTERVAL"i ":=" task_init_data_source "," ] "PRIORITY"i ":=" task_priority ")"
 
-data_source: constant
-           | global_var_reference
-           | program_output_reference
-           | direct_variable
+?task_priority: INTEGER
+
+// program_output_reference: program_name "." symbolic_variable
+?task_init_data_source: constant
+                      | _variable  // global_var_reference or program_output_reference
 
 program_configuration: "PROGRAM"i [ retain ] program_name [ "WITH"i task_name ] ":" program_type_name [ "(" prog_conf_elements ")" ]
 
@@ -672,13 +672,11 @@ fb_task: fb_name "WITH"i task_name
 prog_cnxn: symbolic_variable ":=" prog_data_source
          | symbolic_variable "=>" data_sink
 
-prog_data_source: constant
-                | enumerated_value
-                | global_var_reference
-                | direct_variable
+?prog_data_source: constant
+                 | enumerated_value
+                 | _variable
 
-data_sink: global_var_reference
-         | direct_variable
+?data_sink: _variable
 
 instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";"+ )* "END_VAR"i ";"*
 
@@ -819,9 +817,9 @@ _iteration_statement: for_statement
                     | repeat_statement
                     | exit_statement
 
-for_statement: "FOR"i control_variable ":=" for_list "DO"i statement_list "END_FOR"i ";"*
+for_statement: "FOR"i control_variable ":=" _for_list "DO"i statement_list "END_FOR"i ";"*
 
-for_list: expression "TO"i expression [ "BY"i expression ]
+_for_list: expression "TO"i expression [ "BY"i expression ]
 
 while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
 
