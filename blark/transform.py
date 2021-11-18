@@ -368,7 +368,10 @@ class Variable(Expression):
     ...
 
 
-@_rule_handler("method_access")
+@_rule_handler(
+    "method_access",
+    "property_access",
+)
 class MethodAccess(enum.Flag):
     public = enum.auto()
     private = enum.auto()
@@ -1536,6 +1539,47 @@ class Method:
                 *[indent_if(declaration) for declaration in self.declarations],
                 indent_if(self.body),
                 "END_METHOD",
+            )
+            if line is not None
+        )
+
+
+@dataclass
+@_rule_handler("function_block_property_declaration", comments=True)
+class Property:
+    access: Optional[MethodAccess]
+    name: lark.Token
+    return_type: Optional[LocatedVariableSpecInit]
+    declarations: List[VariableDeclarationBlock]
+    body: Optional[FunctionBlockBody]
+
+    @staticmethod
+    def from_lark(
+        access: Optional[MethodAccess],
+        name: lark.Token,
+        return_type: Optional[LocatedVariableSpecInit],
+        *args
+    ) -> Property:
+        *declarations, body = args
+        return Property(
+            name=name,
+            access=access,
+            return_type=return_type,
+            declarations=list(declarations),
+            body=body,
+        )
+
+    @_commented_block
+    def __str__(self) -> str:
+        access_and_name = join_if(self.access, " ", self.name)
+        property = join_if(access_and_name, " : ", self.return_type)
+        return "\n".join(
+            line for line in
+            (
+                f"PROPERTY {property}",
+                *[indent_if(declaration) for declaration in self.declarations],
+                indent_if(self.body),
+                "END_PROPERTY",
             )
             if line is not None
         )

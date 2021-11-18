@@ -25,6 +25,7 @@ _library_element_declaration: data_type_declaration
                             | function_declaration
                             | function_block_type_declaration
                             | function_block_method_declaration
+                            | function_block_property_declaration
                             | program_declaration
                             | configuration_declaration
                             | global_var_declarations
@@ -560,6 +561,21 @@ var_inst_declaration: "VAR_INST"i var_body "END_VAR"i ";"*
 
 function_block_method_declaration: "METHOD"i [ method_access ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] "END_METHOD"i ";"*
 
+PROPERTY_ACCESS: "ABSTRACT"i
+               | "PUBLIC"i
+               | "PRIVATE"i
+               | "PROTECTED"i
+               | "INTERNAL"i
+               | "FINAL"i
+
+property_access: PROPERTY_ACCESS+
+
+?property_var_declaration: fb_var_declaration
+
+?property_return_type: _located_var_spec_init
+
+function_block_property_declaration: "PROPERTY"i [ property_access ] DOTTED_IDENTIFIER [ ":" property_return_type ] ";"* property_var_declaration* [ function_block_body ] "END_PROPERTY"i ";"*
+
 // B.1.5.3
 ?program_type_name: IDENTIFIER
 
@@ -831,6 +847,5 @@ exit_statement: "EXIT"i ";"*
 
 // Missing:
 //   FB IMPLEMENTS (interface_list)
-//   FB PROPERTY
 //   INTERFACE
 //   Merge back in instruction list grammar
