@@ -3,6 +3,8 @@
 // (v1.2) IEC 61131-3 grammar distributed under the GPL as part of iec2xml)
 
 %import iec.IDENTIFIER
+%import iec.DOTTED_IDENTIFIER
+%import iec.WS
 
 %import iec._variable
 %import iec.constant
@@ -12,24 +14,33 @@
 
 ?start: instruction_list
 
-instruction_list: il_instruction il_instruction*
+%ignore WS
 
-il_instruction: ( label ":" )? ( il_simple_operation | il_expression | il_jump_operation | il_fb_call | il_formal_funct_call | _il_return_operator )? EOL
-EOL: "\n"
+EOL: /\s*[\n\r]+/
+?il_label: IDENTIFIER
+?function_name: DOTTED_IDENTIFIER
 
-label: IDENTIFIER
-function_name: IDENTIFIER
+instruction_list: il_instruction+
 
-il_simple_operation: _il_simple_operator il_operand?
-                   | function_name il_operand_list?
+il_instruction: [ il_label ":" ] [ il_single_operation ] EOL
 
-il_expression: _il_expr_operator "(" il_operand? EOL simple_instr_list? ")"
+il_single_operation: il_simple_operation
+                   | il_expression
+                   | il_jump_operation
+                   | il_fb_call
+                   | il_formal_funct_call
+                   | il_return_operator
 
-il_jump_operation: _il_jump_operator label
+il_simple_operation: IL_SIMPLE_OPERATOR [ il_operand ]
+                   | function_name [ il_operand_list ]
 
-il_fb_call: _il_call_operator fb_name ( "(" ( ( ( EOL il_param_list? ) | ( il_operand_list? ) ) ) ")" )?
+il_expression: IL_EXPR_OPERATOR "(" [ il_operand ] EOL [ _simple_instr_list ] ")"
 
-il_formal_funct_call: function_name "(" EOL il_param_list? ")"
+il_jump_operation: IL_JUMP_OPERATOR il_label
+
+il_fb_call: IL_CALL_OPERATOR fb_name ( "(" ( ( ( EOL [ il_param_list ] ) | ( [ il_operand_list ] ) ) ) ")" )?
+
+il_formal_funct_call: function_name "(" EOL [ il_param_list ] ")"
 
 il_operand: constant
           | _variable
@@ -37,7 +48,7 @@ il_operand: constant
 
 il_operand_list: il_operand ( "," il_operand )*
 
-simple_instr_list: il_simple_instruction il_simple_instruction*
+_simple_instr_list: il_simple_instruction+
 
 il_simple_instruction: ( il_simple_operation | il_expression | il_formal_funct_call ) EOL
 
@@ -47,109 +58,62 @@ il_param_instruction: ( il_param_assignment | il_param_out_assignment ) "," EOL
 
 il_param_last_instruction: ( il_param_assignment | il_param_out_assignment ) EOL
 
-il_param_assignment: il_assign_operator ( ( il_operand | ( ( "(" EOL simple_instr_list ")" ) ) ) )
+il_param_assignment: il_assign_operator ( il_operand | ( "(" EOL _simple_instr_list ")" ) )
 
 il_param_out_assignment: il_assign_out_operator _variable
 
 // B.2.2
-IL_OPERATOR_LD: "LD"i
-IL_OPERATOR_LDN: "LDN"i
-IL_OPERATOR_ST: "ST"i
-IL_OPERATOR_STN: "STN"i
 IL_OPERATOR_NOT: "NOT"i
-IL_OPERATOR_S: "S"i
-IL_OPERATOR_R: "R"i
-IL_OPERATOR_S1: "S1"i
-IL_OPERATOR_R1: "R1"i
-IL_OPERATOR_CLK: "CLK"i
-IL_OPERATOR_CU: "CU"i
-IL_OPERATOR_CD: "CD"i
-IL_OPERATOR_PV: "PV"i
-IL_OPERATOR_IN: "IN"i
-IL_OPERATOR_PT: "PT"i
+IL_OPERATOR_ANDN: "ANDN"i | "&N"i
+IL_OPERATOR_AND: "AND"i | "&"
 
-il_operator_andn: "ANDN"i
-                | "&N"
+IL_SIMPLE_OPERATOR: "LD"i
+                  | "LDN"i
+                  | "ST"i
+                  | "STN"i
+                  | "NOT"i
+                  | "S"i
+                  | "R"i
+                  | "S1"i
+                  | "R1"i
+                  | "CLK"i
+                  | "CU"i
+                  | "CD"i
+                  | "PV"i
+                  | "IN"i
+                  | "PT"i
+                  | IL_EXPR_OPERATOR
 
-il_operator_and: "AND"i
-               | "&"
-IL_OPERATOR_OR: "OR"i
-IL_OPERATOR_XOR: "XOR"i
-IL_OPERATOR_ORN: "ORN"i
-IL_OPERATOR_XORN: "XORN"i
-IL_OPERATOR_ADD: "ADD"i
-IL_OPERATOR_SUB: "SUB"i
-IL_OPERATOR_MUL: "MUL"i
-IL_OPERATOR_DIV: "DIV"i
-IL_OPERATOR_MOD: "MOD"i
-IL_OPERATOR_GT: "GT"i
-IL_OPERATOR_GE: "GE"i
-IL_OPERATOR_EQ: "EQ"i
-IL_OPERATOR_LT: "LT"i
-IL_OPERATOR_LE: "LE"i
-IL_OPERATOR_NE: "NE"i
-
-// il_simple_operator ::= 'LD' | 'LDN' | 'ST' | 'STN' | 'NOT' | 'S'
-// | 'R' | 'S1' | 'R1' | 'CLK' | 'CU' | 'CD' | 'PV'
-// | 'IN' | 'PT' | 'AND' | '&' | 'OR' | 'XOR' |'ANDN' |'&N' |'ORN'
-// | 'XORN' | 'ADD' | 'SUB' | 'MUL' | 'DIV' | 'MOD' |'GT' |'GE' |'EQ '
-// | 'LT' | 'LE' | 'NE' ;
-_il_simple_operator: IL_OPERATOR_LD
-                   | IL_OPERATOR_LDN
-                   | IL_OPERATOR_ST
-                   | IL_OPERATOR_STN
-                   | IL_OPERATOR_NOT
-                   | IL_OPERATOR_S
-                   | IL_OPERATOR_R
-                   | IL_OPERATOR_S1
-                   | IL_OPERATOR_R1
-                   | IL_OPERATOR_CLK
-                   | IL_OPERATOR_CU
-                   | IL_OPERATOR_CD
-                   | IL_OPERATOR_PV
-                   | IL_OPERATOR_IN
-                   | IL_OPERATOR_PT
-                   | _il_expr_operator
-
-_il_expr_operator: il_operator_andn
-                 | il_operator_and
-                 | IL_OPERATOR_OR
-                 | IL_OPERATOR_XOR
-                 | IL_OPERATOR_ORN
-                 | IL_OPERATOR_XORN
-                 | IL_OPERATOR_ADD
-                 | IL_OPERATOR_SUB
-                 | IL_OPERATOR_MUL
-                 | IL_OPERATOR_DIV
-                 | IL_OPERATOR_MOD
-                 | IL_OPERATOR_GT
-                 | IL_OPERATOR_GE
-                 | IL_OPERATOR_EQ
-                 | IL_OPERATOR_LT
-                 | IL_OPERATOR_LE
-                 | IL_OPERATOR_NE
+IL_EXPR_OPERATOR: IL_OPERATOR_ANDN
+                | IL_OPERATOR_AND
+                | "OR"i
+                | "XOR"i
+                | "ORN"i
+                | "XORN"i
+                | "ADD"i
+                | "SUB"i
+                | "MUL"i
+                | "DIV"i
+                | "MOD"i
+                | "GT"i
+                | "GE"i
+                | "EQ"i
+                | "LT"i
+                | "LE"i
+                | "NE"i
 
 il_assign_operator: variable_name ":="
 
-il_assign_out_operator: IL_OPERATOR_NOT? variable_name "=>"
-IL_OPERATOR_CAL: "CAL"i
-IL_OPERATOR_CALC: "CALC"i
-IL_OPERATOR_CALCN: "CALCN"i
+il_assign_out_operator: [ IL_OPERATOR_NOT ] variable_name "=>"
 
-_il_call_operator: IL_OPERATOR_CAL
-                 | IL_OPERATOR_CALC
-                 | IL_OPERATOR_CALCN
-IL_OPERATOR_RET: "RET"i
-IL_OPERATOR_RETC: "RETC"i
-IL_OPERATOR_RETCN: "RETCN"i
+IL_CALL_OPERATOR: "CAL"i
+                | "CALC"i
+                | "CALCN"i
 
-_il_return_operator: IL_OPERATOR_RET
-                   | IL_OPERATOR_RETC
-                   | IL_OPERATOR_RETCN
-IL_OPERATOR_JMP: "JMP"i
-IL_OPERATOR_JMPC: "JMPC"i
-IL_OPERATOR_JMPCN: "JMPCN"i
+il_return_operator: "RET"i
+                  | "RETC"i
+                  | "RETCN"i
 
-_il_jump_operator: IL_OPERATOR_JMP
-                 | IL_OPERATOR_JMPC
-                 | IL_OPERATOR_JMPCN
+IL_JUMP_OPERATOR: "JMP"i
+                | "JMPC"i
+                | "JMPCN"i
