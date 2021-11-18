@@ -3,7 +3,7 @@ import pathlib
 import lark
 import pytest
 
-from ..parse import parse_single_file
+from ..parse import parse_single_file, summarize
 from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -27,7 +27,10 @@ def test_parsing(pou_filename):
     except FileNotFoundError:
         pytest.skip(f"Missing file: {pou_filename}")
     else:
-        print("transformed", result)
+        print("transformed:")
+        print(result)
+        print("summary:")
+        print(summarize(result))
 
 
 def pytest_html_results_table_row(report, cells):

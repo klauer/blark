@@ -6,15 +6,16 @@ import argparse
 import pathlib
 import re
 import sys
-from typing import Generator, List, Optional, Tuple
+from typing import Generator, List, Optional, Tuple, Union
 
 import lark
 import pytmc
 
 import blark
 
+from . import transform as tf
 from .transform import GrammarTransformer
-from .util import get_source_code, indent_inner
+from .util import get_source_code, indent_inner, python_debug_session
 
 DESCRIPTION = __doc__
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
@@ -308,15 +309,6 @@ def parse_project(tsproj_project, *, print_filenames=None, verbose=0):
             if not source_code:
                 continue
 
-            # if '<?xml ' in source_code.splitlines()[0]:
-            #     print('found xml')
-            #     if name in plc.gvl_by_name or name in plc.dut_by_name:
-            #         # TODO pytmc
-            #         source_code = source_item.declaration
-            #     else:
-            #         print('* TODO?', name, source_code)
-            #         continue
-
             try:
                 results[name] = parse_source_code(
                     source_code, fn=source_item.filename, verbose=verbose
@@ -358,14 +350,60 @@ def build_arg_parser(argparser=None):
         help="On failure, still return the results tree"
     )
 
+    argparser.add_argument(
+        "-i", "--interactive", action="store_true",
+        help="Enter IPython (or Python) to explore source trees"
+    )
+
+    argparser.add_argument(
+        "-s", "--summary", action="store_true",
+        help="Summarize code inputs and outputs"
+    )
+
     return argparser
 
 
-def main(filename, verbose=0, debug=False):
+def summarize(code):
+    if isinstance(code, tf.SourceCode):
+        for item in code.items:
+            summarize(item)
+    elif isinstance(code, tf.FunctionBlock):
+        try:
+            comments = code.meta.comments
+        except AttributeError:
+            comments = []
+        print("Function block", code.name, comments)
+        for decl in code.declarations:
+            print(type(decl).__name__, ":")
+            for item in decl.items:
+                try:
+                    comments = item.meta.comments
+                except AttributeError:
+                    comments = []
+
+                # OK, a bit lazy for now
+                try:
+                    spec = item.init.spec
+                except AttributeError:
+                    spec = "?"
+
+                print(
+                    "\t",
+                    " ".join(getattr(var, "name", var) for var in item.variables),
+                    f"({spec}) {comments}"
+                )
+
+
+def main(
+    filename: Union[str, pathlib.Path],
+    verbose: int = 0,
+    debug: bool = False,
+    interactive: bool = False,
+    summary: bool = False,
+):
     """
     Parse the given source code/project.
     """
-
     path = pathlib.Path(filename)
     project_fns = []
     source_fns = []
@@ -397,6 +435,19 @@ def main(filename, verbose=0, debug=False):
         except Exception as ex:
             success = False
             results[fn] = ex
+            if interactive:
+                python_debug_session(
+                    namespace={"fn": fn, "result": ex},
+                    message=f"Failed to parse {fn}. {type(ex).__name__}: {ex}"
+                )
+        else:
+            if summary:
+                summarize(results[fn])
+            if interactive:
+                python_debug_session(
+                    namespace={"fn": fn, "result": results[fn]},
+                    message=f"Parsed {fn} successfully."
+                )
 
     def find_failures(res):
         for name, item in res.items():

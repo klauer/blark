@@ -356,7 +356,7 @@ def test_expression_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            # marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
+            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
             # Identical paths:
             #   fb_name_decl -> structure_initialization
             #   array_initialization -> array_initial_element -> structure_initialization

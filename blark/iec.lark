@@ -41,10 +41,10 @@ constant: time_literal
 
 // B.1.2.1
 BIT_STRING: /(1|0)(_?(1|0))*/
-OCTAL_STRING: /[0-7](_?[0-7])*/
-HEX_STRING: /[0-9A-F](_?[0-9A-F])*/
+OCTAL_STRING: /[0-7][0-7_]*/
+HEX_STRING: /[0-9A-F][0-9A-F_]*/i
 
-INTEGER: /[0-9](_?[0-9])*/
+INTEGER: /[0-9][0-9_]*/
 SIGN: "+" | "-"
 SIGNED_INTEGER: SIGN INTEGER
 FIXED_POINT: INTEGER "." INTEGER
@@ -476,7 +476,8 @@ incomplete_location: "AT"i /\%(I|Q|M)\*/
 STRING: "STRING"i
 WSTRING: "WSTRING"i
 
-string_type_specification: STRING_TYPE
+string_type_specification: STRING [ STRING_SPEC_LENGTH ]
+                         | WSTRING [ STRING_SPEC_LENGTH ]
 
 ?var_spec: simple_specification
          | subrange_specification
@@ -832,3 +833,4 @@ exit_statement: "EXIT"i ";"*
 //   FB IMPLEMENTS (interface_list)
 //   FB PROPERTY
 //   INTERFACE
+//   Merge back in instruction list grammar

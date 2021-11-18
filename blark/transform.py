@@ -11,7 +11,8 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
-_rule_to_handler = {}
+_rule_to_class = {}
+_class_handlers = {}
 _comment_consumers = []
 
 T = TypeVar("T")
@@ -57,25 +58,33 @@ def _commented_block(func):
     return wrapped
 
 
-def _comment_consumer(cls):
-    """Mark ``cls`` as one that consumes comments when stringifying code. """
-    _comment_consumers.append(cls)
-    return cls
+def _get_default_instantiator(cls: type):
+    def instantiator(*args):
+        return cls(*args)
+
+    return instantiator
 
 
 def _rule_handler(
-    *rules: Union[str, List[str]]
+    *rules: Union[str, List[str]],
+    comments: bool = False
 ) -> Callable[[Type[T]], Type[T]]:
     """Decorator - the wrapped class will handle the provided rules."""
     def wrapper(cls: Type[T]) -> Type[T]:
+        if not hasattr(cls, "from_lark"):
+            cls.from_lark = _get_default_instantiator(cls)
+
         for rule in rules:
-            handler = _rule_to_handler.get(rule, None)
+            handler = _rule_to_class.get(rule, None)
             if handler is not None:
                 raise ValueError(f"Handler already specified for: {rule} ({handler})")
 
-            _rule_to_handler[rule] = cls
+            _rule_to_class[rule] = cls
+            _class_handlers[rule] = cls.from_lark
 
-        cls._lark_ = rules
+        if comments:
+            # Mark ``cls`` as one that consumes comments when stringifying code.
+            _comment_consumers.append(cls)
         return cls
 
     return wrapper
@@ -567,11 +576,11 @@ class MultiElementVariable(SymbolicVariable):
 @_rule_handler("simple_spec_init")
 class TypeInitialization:
     indirection: Optional[IndirectionType]
-    type_name: Optional[lark.Token]
+    spec: Optional[lark.Token]
     value: Optional[Expression]
 
     def __str__(self) -> str:
-        type_ = join_if(self.indirection, " ", self.type_name)
+        type_ = join_if(self.indirection, " ", self.spec)
         return join_if(type_, " := ", self.value)
 
 
@@ -605,10 +614,12 @@ class StringTypeDeclaration:
 @dataclass
 @_rule_handler("string_type_specification")
 class StringTypeSpecification:
-    string_type: lark.Token
+    type_name: lark.Token
+    # TODO: length includes brackets or parentheses: [255] or (255) or [Const]
+    length: Optional[lark.Token] = None
 
     def __str__(self) -> str:
-        return f"{self.string_type}"
+        return join_if(self.type_name, "", self.length)
 
 
 @dataclass
@@ -617,27 +628,23 @@ class StringTypeSpecification:
     "double_byte_string_spec",
 )
 class StringTypeInitialization:
-    string_type: lark.Token
-    length: Optional[lark.Token]
+    spec: StringTypeSpecification
     value: Optional[lark.Token]
 
     @staticmethod
     def from_lark(
         *args: lark.Token,
     ) -> StringTypeInitialization:
-        if len(args) == 4:
-            string_type, length, _, value = args
-            return StringTypeInitialization(
-                string_type, length, value
-            )
-        string_type, length = args
-        return StringTypeInitialization(
-            string_type, length, None
-        )
+        string_type, length, *value = args
+        spec = StringTypeSpecification(string_type, length)
+        if len(value):
+            _, value = value
+        else:
+            value = None
+        return StringTypeInitialization(spec, value)
 
     def __str__(self) -> str:
-        type_and_length = join_if(self.string_type, "", self.length)
-        return join_if(type_and_length, " := ", self.value)
+        return join_if(self.spec, " := ", self.value)
 
 
 class Subrange:
@@ -676,15 +683,11 @@ class SubrangeSpecification:
 @_rule_handler("subrange_spec_init")
 class SubrangeTypeInitialization:
     indirection: Optional[IndirectionType]
-    spec: Optional[lark.Token] = None
+    spec: SubrangeSpecification
     value: Optional[Expression] = None
 
     def __str__(self) -> str:
-        if self.indirection:
-            spec = f"{self.indirection} {self.spec}"
-        else:
-            spec = f"{self.spec}"
-
+        spec = join_if(self.indirection, " ", self.spec)
         if not self.value:
             return spec
 
@@ -747,8 +750,7 @@ class EnumeratedTypeInitialization:
 
 
 @dataclass
-@_rule_handler("enumerated_type_declaration")
-@_comment_consumer
+@_rule_handler("enumerated_type_declaration", comments=True)
 class EnumeratedTypeDeclaration:
     name: lark.Token
     init: EnumeratedTypeInitialization
@@ -846,8 +848,7 @@ class ArrayTypeInitialization:
 
 
 @dataclass
-@_rule_handler("array_type_declaration")
-@_comment_consumer
+@_rule_handler("array_type_declaration", comments=True)
 class ArrayTypeDeclaration:
     name: lark.Token
     init: ArrayTypeInitialization
@@ -858,8 +859,7 @@ class ArrayTypeDeclaration:
 
 
 @dataclass
-@_rule_handler("structure_type_declaration")
-@_comment_consumer
+@_rule_handler("structure_type_declaration", comments=True)
 class StructureTypeDeclaration:
     name: lark.Token
     extends: Optional[lark.Token]
@@ -899,8 +899,7 @@ class StructureTypeDeclaration:
 
 
 @dataclass
-@_rule_handler("structure_element_declaration")
-@_comment_consumer
+@_rule_handler("structure_element_declaration", comments=True)
 class StructureElementDeclaration:
     name: lark.Token
     location: Optional[IncompleteLocation]
@@ -971,8 +970,7 @@ class StructureElementInitialization:
 
 
 @dataclass
-@_rule_handler("initialized_structure_type_declaration")
-@_comment_consumer
+@_rule_handler("initialized_structure_type_declaration", comments=True)
 class InitializedStructureTypeDeclaration:
     name: lark.Token
     extends: Optional[lark.Token]
@@ -1004,6 +1002,8 @@ class UnaryOperation(Expression):
         )
 
     def __str__(self) -> str:
+        if self.op in "-+":
+            return f"{self.op}{self.expr}"
         return f"{self.op} {self.expr}"
 
 
@@ -1086,99 +1086,88 @@ class FunctionCall(Expression):
 
 @dataclass
 @_rule_handler("var1")
-class VariableOne:
-    name: lark.Token
+class DeclaredVariable:
+    # Alternate name: VariableWithLocation? MaybeLocatedVariable?
+    variable: SymbolicVariable
     location: Optional[Union[IncompleteLocation, Location]]
 
+    @property
+    def name(self) -> lark.Token:
+        """The variable name."""
+        return self.variable.name
+
+    @property
+    def dereferenced(self) -> bool:
+        """Is the variable dereferenced with '^'?."""
+        return self.variable.dereferenced
+
     def __str__(self) -> str:
-        return join_if(self.name, " ", self.location)
+        return join_if(self.variable, " ", self.location)
 
 
 @dataclass
-@_rule_handler("var1_list")
-class VariableList:
-    variables: List[VariableOne]
+class InitDeclaration:
+    variables: List[DeclaredVariable]
 
-    @staticmethod
-    def from_lark(*items) -> VariableList:
-        return VariableList(list(items))
-
+    @_commented_block
     def __str__(self) -> str:
-        return ", ".join(str(variable) for variable in self.variables)
+        variables = ", ".join(str(variable) for variable in self.variables)
+        return f"{variables} : {self.init}"
 
 
 @dataclass
-@_rule_handler("var1_init_decl")
-@_comment_consumer
-class VariableOneInitDeclaration:
-    variables: VariableList
+@_rule_handler("var1_init_decl", comments=True)
+class VariableOneInitDeclaration(InitDeclaration):
+    variables: List[DeclaredVariable]
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
 
-    @_commented_block
-    def __str__(self) -> str:
-        return f"{self.variables} : {self.init}"
-
 
 @dataclass
-@_rule_handler("array_var_init_decl")
-class ArrayVariableInitDeclaration:
-    variables: VariableList
+@_rule_handler("array_var_init_decl", comments=True)
+class ArrayVariableInitDeclaration(InitDeclaration):
+    variables: List[DeclaredVariable]
     init: ArrayTypeInitialization
 
-    def __str__(self) -> str:
-        return f"{self.variables} : {self.init}"
-
 
 @dataclass
-@_rule_handler("structured_var_init_decl")
-@_comment_consumer
-class StructuredVariableInitDeclaration:
-    variables: VariableList
+@_rule_handler("structured_var_init_decl", comments=True)
+class StructuredVariableInitDeclaration(InitDeclaration):
+    variables: List[DeclaredVariable]
     init: InitializedStructure
-
-    @_commented_block
-    def __str__(self) -> str:
-        return f"{self.variables} : {self.init}"
 
 
 @dataclass
 @_rule_handler(
     "single_byte_string_var_declaration",
-    "double_byte_string_var_declaration"
+    "double_byte_string_var_declaration",
+    comments=True
 )
-@_comment_consumer
-class StringVariableInitDeclaration:
-    variables: VariableList
-    type_name: lark.Token
-    length: Optional[lark.Token]
+class StringVariableInitDeclaration(InitDeclaration):
+    spec: StringTypeSpecification
     value: lark.Token
 
     @staticmethod
-    def from_lark(variables: VariableList, string_info: StringTypeInitialization):
+    def from_lark(variables: List[DeclaredVariable], string_info: StringTypeInitialization):
         return StringVariableInitDeclaration(
             variables=variables,
-            type_name=string_info.string_type,
-            length=string_info.length,
+            spec=string_info.spec,
             value=string_info.value,
         )
 
-    @_commented_block
-    def __str__(self) -> str:
-        type_name = join_if(self.type_name, "", self.length)
-        return f"{self.variables} : {type_name} := {self.value}"
+    @property
+    def init(self) -> str:
+        return join_if(self.spec, " := ", self.value)
 
 
 @dataclass
-@_rule_handler("fb_decl_name_list")
-class FunctionBlockDeclarationNameList:
-    names: List[lark.Token]
+@_rule_handler("edge_declaration", comments=True)
+class EdgeDeclaration(InitDeclaration):
+    variables: List[DeclaredVariable]
+    edge: lark.Token
 
-    @staticmethod
-    def from_lark(*names: lark.Token) -> FunctionBlockDeclarationNameList:
-        return FunctionBlockDeclarationNameList(list(names))
-
-    def __str__(self) -> str:
-        return ", ".join(str(name) for name in self.names)
+    @property
+    def init(self) -> str:
+        return f"BOOL {self.edge}"
 
 
 class FunctionBlockDeclaration:
@@ -1186,17 +1175,29 @@ class FunctionBlockDeclaration:
 
 
 @dataclass
-@_rule_handler("fb_name_decl")
-@_comment_consumer
+@_rule_handler("fb_name_decl", comments=True)
 class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
-    names: FunctionBlockDeclarationNameList
-    type_name: lark.Token
+    variables: List[lark.Token]
+    spec: lark.Token
     init: Optional[StructureInitialization] = None
 
     @_commented_block
     def __str__(self) -> str:
-        name_and_type = f"{self.names} : {self.type_name}"
+        variables = ", ".join(self.variables)
+        name_and_type = f"{variables} : {self.spec}"
         return join_if(name_and_type, " := ", self.init)
+
+
+@dataclass
+@_rule_handler("fb_invocation_decl", comments=True)
+class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
+    variables: List[lark.Token]
+    init: FunctionBlockInvocation
+
+    @_commented_block
+    def __str__(self) -> str:
+        variables = ", ".join(self.variables)
+        return f"{variables} : {self.init}"
 
 
 @dataclass
@@ -1238,7 +1239,7 @@ class OutputParameterAssignment(ParameterAssignment):
 
 @dataclass
 @_rule_handler("fb_invocation")
-class FunctionBlockInvocation(FunctionBlockDeclaration):
+class FunctionBlockInvocation:
     name: lark.Token
     parameters: List[ParameterAssignment]
 
@@ -1258,33 +1259,9 @@ class FunctionBlockInvocation(FunctionBlockDeclaration):
 
 
 @dataclass
-@_rule_handler("fb_invocation_decl")
-@_comment_consumer
-class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
-    names: FunctionBlockDeclarationNameList
-    invocation: FunctionBlockInvocation
-
-    @_commented_block
-    def __str__(self) -> str:
-        return f"{self.names} : {self.invocation}"
-
-
-@dataclass
-@_rule_handler("edge_declaration")
-@_comment_consumer
-class EdgeDeclaration:
-    variables: VariableList
-    edge: lark.Token
-
-    @_commented_block
-    def __str__(self) -> str:
-        return f"{self.variables} : BOOL {self.edge}"
-
-
-@dataclass
 @_rule_handler("global_var_spec")
 class GlobalVariableSpec:
-    names: List[lark.Token]
+    variables: List[lark.Token]
     location: Optional[Union[Location, IncompleteLocation]]
 
     @staticmethod
@@ -1294,19 +1271,19 @@ class GlobalVariableSpec:
     ) -> GlobalVariableSpec:
         if location is None:
             return GlobalVariableSpec(
-                names=name_or_names.children,
+                variables=name_or_names.children,
                 location=None
             )
 
         return GlobalVariableSpec(
-            names=[name_or_names],
+            variables=[name_or_names],
             location=location
         )
 
     def __str__(self) -> str:
         if not self.location:
-            return ", ".join(self.names)
-        return f"{self.names[0]} : {self.location}"
+            return ", ".join(self.variables)
+        return f"{self.variables[0]} : {self.location}"
 
 
 LocatedVariableSpecInit = Union[
@@ -1320,8 +1297,7 @@ LocatedVariableSpecInit = Union[
 
 
 @dataclass
-@_rule_handler("global_var_decl")
-@_comment_consumer
+@_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
     spec: GlobalVariableSpec
     init: Union[
@@ -1345,8 +1321,7 @@ class Extends:
 
 
 @dataclass
-@_rule_handler("function_block_body")
-@_comment_consumer
+@_rule_handler("function_block_body", comments=True)
 class FunctionBlockBody:
     source: Union[
         StatementList,
@@ -1359,8 +1334,7 @@ class FunctionBlockBody:
 
 
 @dataclass
-@_rule_handler("function_block_type_declaration")
-@_comment_consumer
+@_rule_handler("function_block_type_declaration", comments=True)
 class FunctionBlock:
     name: lark.Token
     abstract: bool
@@ -1400,8 +1374,7 @@ class FunctionBlock:
 
 
 @dataclass
-@_rule_handler("function_declaration")
-@_comment_consumer
+@_rule_handler("function_declaration", comments=True)
 class Function:
     name: lark.Token
     return_type: Optional[lark.Token]
@@ -1437,8 +1410,7 @@ class Function:
 
 
 @dataclass
-@_rule_handler("program_declaration")
-@_comment_consumer
+@_rule_handler("program_declaration", comments=True)
 class Program:
     name: lark.Token
     declarations: List[VariableDeclarationBlock]
@@ -1474,8 +1446,7 @@ class Action:
 
 
 @dataclass
-@_rule_handler("action")
-@_comment_consumer
+@_rule_handler("action", comments=True)
 class NamedAction(Action):
     name: lark.Token
     body: Optional[FunctionBlockBody]
@@ -1494,8 +1465,7 @@ class NamedAction(Action):
 
 
 @dataclass
-@_rule_handler("entry_action")
-@_comment_consumer
+@_rule_handler("entry_action", comments=True)
 class EntryAction(Action):
     body: Optional[FunctionBlockBody]
 
@@ -1513,8 +1483,7 @@ class EntryAction(Action):
 
 
 @dataclass
-@_rule_handler("exit_action")
-@_comment_consumer
+@_rule_handler("exit_action", comments=True)
 class ExitAction(Action):
     body: Optional[FunctionBlockBody]
 
@@ -1532,8 +1501,7 @@ class ExitAction(Action):
 
 
 @dataclass
-@_rule_handler("function_block_method_declaration")
-@_comment_consumer
+@_rule_handler("function_block_method_declaration", comments=True)
 class Method:
     access: Optional[MethodAccess]
     name: lark.Token
@@ -1603,8 +1571,7 @@ GlobalVariableDeclarationType = Union[
 
 
 @dataclass
-@_rule_handler("var_declarations")
-@_comment_consumer
+@_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
     config: Optional[lark.Token]
     items: List[VariableInitDeclaration]
@@ -1628,8 +1595,7 @@ class VariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("temp_var_decls")
-@_comment_consumer
+@_rule_handler("temp_var_decls", comments=True)
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
     items: List[VariableInitDeclaration]
 
@@ -1649,8 +1615,7 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("var_inst_declaration")
-@_comment_consumer
+@_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
     items: List[VariableInitDeclaration]
 
@@ -1670,8 +1635,7 @@ class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("located_var_decl")
-@_comment_consumer
+@_rule_handler("located_var_decl", comments=True)
 class LocatedVariableDeclaration:
     name: Optional[lark.Token]
     location: Location
@@ -1684,8 +1648,7 @@ class LocatedVariableDeclaration:
 
 
 @dataclass
-@_rule_handler("located_var_declarations")
-@_comment_consumer
+@_rule_handler("located_var_declarations", comments=True)
 class LocatedVariableDeclarations(VariableDeclarationBlock):
     config: Optional[lark.Token]
     persistent: bool
@@ -1729,8 +1692,7 @@ IncompleteLocatedVariableSpecInit = Union[
 
 
 @dataclass
-@_rule_handler("incomplete_located_var_decl")
-@_comment_consumer
+@_rule_handler("incomplete_located_var_decl", comments=True)
 class IncompleteLocatedVariableDeclaration:
     name: lark.Token
     location: IncompleteLocation
@@ -1743,8 +1705,7 @@ class IncompleteLocatedVariableDeclaration:
 
 
 @dataclass
-@_rule_handler("incomplete_located_var_declarations")
-@_comment_consumer
+@_rule_handler("incomplete_located_var_declarations", comments=True)
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
     retain: bool
     items: List[IncompleteLocatedVariableDeclaration]
@@ -1771,8 +1732,7 @@ class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("external_declaration")
-@_comment_consumer
+@_rule_handler("external_declaration", comments=True)
 class ExternalVariableDeclaration:
     name: lark.Token
     spec: Union[
@@ -1788,8 +1748,7 @@ class ExternalVariableDeclaration:
 
 
 @dataclass
-@_rule_handler("external_var_declarations")
-@_comment_consumer
+@_rule_handler("external_var_declarations", comments=True)
 class ExternalVariableDeclarations(VariableDeclarationBlock):
     constant: bool
     items: List[ExternalVariableDeclaration]
@@ -1816,8 +1775,7 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("input_declarations")
-@_comment_consumer
+@_rule_handler("input_declarations", comments=True)
 class InputDeclarations(VariableDeclarationBlock):
     retain: Optional[lark.Token]
     items: List[InputDeclaration]
@@ -1838,8 +1796,7 @@ class InputDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("output_declarations")
-@_comment_consumer
+@_rule_handler("output_declarations", comments=True)
 class OutputDeclarations(VariableDeclarationBlock):
     retain: Optional[lark.Token]
     items: List[OutputDeclaration]
@@ -1860,8 +1817,7 @@ class OutputDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("input_output_declarations")
-@_comment_consumer
+@_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
     items: List[InputOutputDeclaration]
 
@@ -1881,8 +1837,7 @@ class InputOutputDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("program_access_decl")
-@_comment_consumer
+@_rule_handler("program_access_decl", comments=True)
 class AccessDeclaration:
     name: lark.Token
     variable: SymbolicVariable
@@ -1899,8 +1854,7 @@ class AccessDeclaration:
 
 
 @dataclass
-@_rule_handler("function_var_declarations")
-@_comment_consumer
+@_rule_handler("function_var_declarations", comments=True)
 class FunctionVariableDeclarations(VariableDeclarationBlock):
     constant: Optional[lark.Token]
     items: List[VariableInitDeclaration]
@@ -1927,8 +1881,7 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("program_access_decls")
-@_comment_consumer
+@_rule_handler("program_access_decls", comments=True)
 class AccessDeclarations(VariableDeclarationBlock):
     items: List[AccessDeclaration]
 
@@ -1948,8 +1901,7 @@ class AccessDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("global_var_declarations")
-@_comment_consumer
+@_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
     constant: bool
     retain: bool
@@ -1992,8 +1944,7 @@ class Statement:
 
 
 @dataclass
-@_rule_handler("else_if_clause")
-@_comment_consumer
+@_rule_handler("else_if_clause", comments=True)
 class ElseIfClause:
     if_expression: Expression
     statements: Optional[StatementList]
@@ -2010,8 +1961,7 @@ class ElseIfClause:
 
 
 @dataclass
-@_rule_handler("else_clause")
-@_comment_consumer
+@_rule_handler("else_clause", comments=True)
 class ElseClause:
     statements: Optional[StatementList]
 
@@ -2027,8 +1977,7 @@ class ElseClause:
 
 
 @dataclass
-@_rule_handler("if_statement")
-@_comment_consumer
+@_rule_handler("if_statement", comments=True)
 class IfStatement(Statement):
     if_expression: Expression
     statements: Optional[StatementList]
@@ -2069,8 +2018,7 @@ class IfStatement(Statement):
 
 
 @dataclass
-@_rule_handler("case_element")
-@_comment_consumer
+@_rule_handler("case_element", comments=True)
 class CaseElement(Statement):
     matches: List[Union[Subrange, Integer, EnumeratedValue, SymbolicVariable]]
     statements: Optional[StatementList]
@@ -2098,8 +2046,7 @@ class CaseElement(Statement):
 
 
 @dataclass
-@_rule_handler("case_statement")
-@_comment_consumer
+@_rule_handler("case_statement", comments=True)
 class CaseStatement(Statement):
     expression: Expression
     cases: List[StatementList]
@@ -2134,8 +2081,7 @@ class CaseStatement(Statement):
 
 
 @dataclass
-@_rule_handler("no_op_statement")
-@_comment_consumer
+@_rule_handler("no_op_statement", comments=True)
 class NoOpStatement(Statement):
     variable: lark.Token
 
@@ -2145,8 +2091,7 @@ class NoOpStatement(Statement):
 
 
 @dataclass
-@_rule_handler("action_statement")
-@_comment_consumer
+@_rule_handler("action_statement", comments=True)
 class ActionStatement(Statement):
     # TODO: overlaps with no-op statement?
     action: lark.Token
@@ -2157,8 +2102,7 @@ class ActionStatement(Statement):
 
 
 @dataclass
-@_rule_handler("set_statement")
-@_comment_consumer
+@_rule_handler("set_statement", comments=True)
 class SetStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
@@ -2169,8 +2113,7 @@ class SetStatement(Statement):
 
 
 @dataclass
-@_rule_handler("reference_assignment_statement")
-@_comment_consumer
+@_rule_handler("reference_assignment_statement", comments=True)
 class ReferenceAssignmentStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
@@ -2191,8 +2134,7 @@ class ResetStatement(Statement):
 
 
 @dataclass
-@_rule_handler("exit_statement")
-@_comment_consumer
+@_rule_handler("exit_statement", comments=True)
 class ExitStatement(Statement):
     @_commented_block
     def __str__(self):
@@ -2200,8 +2142,7 @@ class ExitStatement(Statement):
 
 
 @dataclass
-@_rule_handler("return_statement")
-@_comment_consumer
+@_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
     @_commented_block
     def __str__(self):
@@ -2209,8 +2150,7 @@ class ReturnStatement(Statement):
 
 
 @dataclass
-@_rule_handler("assignment_statement")
-@_comment_consumer
+@_rule_handler("assignment_statement", comments=True)
 class AssignmentStatement(Statement):
     variables: List[lark.Token]
     expression: Expression
@@ -2230,8 +2170,7 @@ class AssignmentStatement(Statement):
 
 
 @dataclass
-@_rule_handler("method_statement")
-@_comment_consumer
+@_rule_handler("method_statement", comments=True)
 class MethodStatement(Statement):
     method: SymbolicVariable
 
@@ -2241,8 +2180,7 @@ class MethodStatement(Statement):
 
 
 @dataclass
-@_rule_handler("while_statement")
-@_comment_consumer
+@_rule_handler("while_statement", comments=True)
 class WhileStatement(Statement):
     expression: Expression
     statements: StatementList
@@ -2261,8 +2199,7 @@ class WhileStatement(Statement):
 
 
 @dataclass
-@_rule_handler("repeat_statement")
-@_comment_consumer
+@_rule_handler("repeat_statement", comments=True)
 class RepeatStatement(Statement):
     statements: StatementList
     expression: Expression
@@ -2281,8 +2218,7 @@ class RepeatStatement(Statement):
 
 
 @dataclass
-@_rule_handler("for_statement")
-@_comment_consumer
+@_rule_handler("for_statement", comments=True)
 class ForStatement(Statement):
     control: lark.Token
     from_: Expression
@@ -2331,8 +2267,7 @@ class StatementList:
 
 
 @dataclass
-@_rule_handler("config_access_declarations")
-@_comment_consumer
+@_rule_handler("config_access_declarations", comments=True)
 class ConfigAccessDeclarations(VariableDeclarationBlock):
     items: List[ConfigAccessDeclaration]
 
@@ -2352,8 +2287,7 @@ class ConfigAccessDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
-@_rule_handler("config_access_declaration")
-@_comment_consumer
+@_rule_handler("config_access_declaration", comments=True)
 class ConfigAccessDeclaration:
     name: lark.Token
     path: ConfigAccessPath
@@ -2438,8 +2372,7 @@ class TaskInitialization:
 
 
 @dataclass
-@_rule_handler("task_configuration")
-@_comment_consumer
+@_rule_handler("task_configuration", comments=True)
 class TaskConfiguration:
     name: lark.Token
     init: TaskInitialization
@@ -2466,8 +2399,7 @@ TypeDeclarationItem = Union[
 
 
 @dataclass
-@_rule_handler("data_type_declaration")
-@_comment_consumer
+@_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
     items: List[TypeDeclarationItem]
 
@@ -2537,33 +2469,9 @@ def _annotator_wrapper(handler):
     return wrapped
 
 
-def _get_default_instantiator(cls: type):
-    def instantiator(*args):
-        return cls(*args)
-
-    return instantiator
-
-
 def pass_through(obj: Optional[T] = None) -> Optional[T]:
     """Transformer helper to pass through an optional single argument."""
     return obj
-
-
-def _get_class_handlers():
-    result = {}
-    for cls in globals().values():
-        if hasattr(cls, "_lark_"):
-            token_names = cls._lark_
-            if isinstance(token_names, str):
-                token_names = [token_names]
-            for token_name in token_names:
-                if token_name in result:
-                    raise ValueError(f"Saw {token_name!r} twice")
-                if not hasattr(cls, "from_lark"):
-                    cls.from_lark = _get_default_instantiator(cls)
-                result[token_name] = cls.from_lark
-
-    return result
 
 
 class GrammarTransformer(lark.visitors.Transformer):
@@ -2592,7 +2500,7 @@ class GrammarTransformer(lark.visitors.Transformer):
     locals().update(
         **{
             name: _annotator_wrapper(handler)
-            for name, handler in _get_class_handlers().items()
+            for name, handler in _class_handlers.items()
         }
     )
 
@@ -2605,6 +2513,14 @@ class GrammarTransformer(lark.visitors.Transformer):
     @_annotator_wrapper
     def full_subrange():
         return FullSubrange()
+
+    @_annotator_wrapper
+    def var1_list(*items: DeclaredVariable) -> List[DeclaredVariable]:
+        return list(items)
+
+    @_annotator_wrapper
+    def fb_decl_name_list(*items: lark.Token) -> List[lark.Token]:
+        return list(items)
 
     @_annotator_wrapper
     def signed_integer(value: lark.Token):

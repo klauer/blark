@@ -29,3 +29,35 @@ def indent_inner(text: str, prefix: str) -> str:
             lines[-1],
         )
     )
+
+
+def python_debug_session(namespace, message):
+    """
+    Enter an interactive debug session with pdb or IPython, if available.
+    """
+    import blark  # noqa
+
+    debug_namespace = dict(pytmc=pytmc, blark=blark)
+    debug_namespace.update(
+        **{k: v for k, v in namespace.items()
+           if not k.startswith('__')}
+    )
+    globals().update(debug_namespace)
+
+    print(
+        "\n".join(
+            (
+                "-- blark debug --",
+                message,
+                "-- blark debug --",
+            )
+        )
+    )
+
+    try:
+        from IPython import embed  # noqa
+    except ImportError:
+        import pdb  # noqa
+        pdb.set_trace()
+    else:
+        embed()
