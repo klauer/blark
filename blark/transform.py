@@ -2510,11 +2510,12 @@ class IL_FunctionBlockCall:
 
 
 @dataclass
-@_rule_handler("il_instruction")
+@_rule_handler("il_instruction", comments=True)
 class IL_Instruction:
     label: Optional[lark.Token]
     operation: Optional[IL_Operation]
 
+    @_commented_block
     def __str__(self) -> str:
         if not self.label and not self.operation:
             return ""
@@ -2536,7 +2537,7 @@ IL_ParameterOperand = Union[
 
 
 @dataclass
-@_rule_handler("instruction_list")
+@_rule_handler("instruction_list", comments=True)
 class InstructionList:
     instructions: List[IL_Instruction]
 
@@ -2548,6 +2549,7 @@ class InstructionList:
             instructions=list(instructions)
         )
 
+    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             str(instruction)

@@ -1105,6 +1105,22 @@ def test_config_roundtrip(rule_name, value):
             END_FUNCTION
             """
         )),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            // Comments 0
+            FUNCTION ILTest : INT
+                // Comments 1
+                ADD(iOperand
+                    LD test
+                    ST test1
+                )
+                // Comments 2
+                ADD(iOperand)
+                // Comments 3
+                end: RET
+            END_FUNCTION
+            """
+        )),
     ]
 )
 def test_instruction_list(rule_name, value):
