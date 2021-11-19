@@ -641,7 +641,10 @@ class StringTypeInitialization:
         string_type, length, *value = args
         spec = StringTypeSpecification(string_type, length)
         if len(value):
-            _, value = value
+            if len(value) == 1:  # lark 0.12.0
+                value, = value
+            else:  # lark 1.0
+                _, value = value
         else:
             value = None
         return StringTypeInitialization(spec, value)
@@ -1328,6 +1331,7 @@ class Extends:
 class FunctionBlockBody:
     source: Union[
         StatementList,
+        InstructionList,
         # SfcNetwork
     ]
 
@@ -2307,6 +2311,247 @@ class StatementList:
 
         return "\n".join(
             stringify_statement(statement) for statement in self.statements
+        )
+
+
+class IL_Parameter:
+    ...
+
+
+@dataclass
+@_rule_handler("il_param_operand_assignment")
+class IL_ParameterOperandAssignment(IL_Parameter):
+    variable: SymbolicVariable
+    value: IL_ParameterOperand
+
+    def __str__(self) -> str:
+        return f"{self.variable} := {self.value}"
+
+
+@dataclass
+@_rule_handler("il_param_instruction_assignment")
+class IL_ParameterInstructionAssignment(IL_Parameter):
+    variable: SymbolicVariable
+    instructions: List[IL_Instruction]
+
+    @staticmethod
+    def from_lark(
+        variable: SymbolicVariable,
+        *instructions: IL_Instruction,
+    ) -> IL_ParameterInstructionAssignment:
+        return IL_ParameterInstructionAssignment(
+            variable=variable,
+            instructions=list(instructions),
+        )
+
+    def __str__(self) -> str:
+        instructions = "\n".join(
+            str(instruction) for instruction in self.instructions
+        )
+        return "\n".join(
+            (
+                f"{self.variable} := (",
+                indent_if(instructions),
+                ")",
+            )
+        )
+
+
+class IL_Operation:
+    ...
+
+
+@dataclass
+@_rule_handler("il_simple_operation")
+class IL_SimpleOperation(IL_Operation):
+    function: lark.Token
+    operands: List[IL_ParameterOperand]
+
+    @staticmethod
+    def from_lark(
+        function_or_operator: lark.Token,
+        _,
+        *operands: IL_ParameterOperand,
+    ) -> IL_SimpleOperation:
+        return IL_SimpleOperation(
+            function=function_or_operator,
+            operands=list(operands),
+        )
+
+    def __str__(self) -> str:
+        operands = ", ".join(str(operand) for operand in self.operands)
+        return f"{self.function} {operands}"
+
+
+@dataclass
+@_rule_handler("il_return_operator")
+class IL_Return(IL_Operation):
+    return_token: lark.Token
+
+    def __str__(self) -> str:
+        return str(self.return_token).upper()
+
+
+@dataclass
+@_rule_handler("il_expression")
+class IL_Expression(IL_Operation):
+    operator: lark.Token
+    operand: Optional[IL_ParameterOperand]
+    instructions: List[IL_SimpleInstruction]
+
+    @staticmethod
+    def from_lark(
+        operator: lark.Token,
+        operand: Optional[IL_ParameterOperand],
+        *instructions: IL_SimpleInstruction,
+    ) -> IL_FunctionCall:
+        return IL_Expression(
+            operator=operator,
+            operand=operand,
+            instructions=list(instructions),
+        )
+
+    def __str__(self) -> str:
+        instructions = "\n".join(
+            str(instruction)
+            for instruction in self.instructions
+        )
+        instructions = f"\n{indent_if(instructions)}\n" if instructions else ""
+        operand = (str(self.operand) if self.operand else "")
+        return f"{self.operator}({operand}{instructions})"
+
+
+@dataclass
+@_rule_handler("il_jump_operation")
+class IL_JumpOperation(IL_Operation):
+    operator: lark.Token
+    label: lark.Token
+
+    def __str__(self) -> str:
+        return f"{self.operator.upper()} {self.label}"
+
+
+@dataclass
+@_rule_handler("il_formal_function_call")
+class IL_FunctionCall(IL_Operation):
+    function: lark.Token
+    parameters: List[IL_Parameter]
+
+    @staticmethod
+    def from_lark(
+        function: lark.Token,
+        *parameters: IL_Parameter,
+    ) -> IL_FunctionCall:
+        return IL_FunctionCall(function=function, parameters=list(parameters))
+
+    def __str__(self) -> str:
+        parameters = "".join(
+            f"{indent_if(param)}\n"
+            for param in self.parameters
+        )
+        return f"{self.function}({parameters})"
+
+
+@dataclass
+@_rule_handler("il_param_out_assignment")
+class IL_ParameterOutAssignment(IL_Parameter):
+    inverted: bool
+    variable: SymbolicVariable
+    assign_to: Variable
+
+    @staticmethod
+    def from_lark(
+        not_token: Optional[lark.Token],
+        variable: SymbolicVariable,
+        assign_to: Variable,
+    ) -> IL_ParameterOutAssignment:
+        return IL_ParameterOutAssignment(
+            inverted=not_token is not None,
+            variable=variable,
+            assign_to=assign_to,
+        )
+
+    def __str__(self) -> str:
+        not_prefix = "NOT " if self.inverted else ""
+        return f"{not_prefix}{self.variable} => {self.assign_to}"
+
+
+@dataclass
+@_rule_handler("il_fb_call")
+class IL_FunctionBlockCall:
+    operator: lark.Token
+    function_block: lark.Token
+    arguments: Union[List[IL_Parameter], List[IL_ParameterOperand]]
+
+    @staticmethod
+    def from_lark(
+        operator: lark.Token,
+        function_block: lark.Token,
+        *arguments: Union[IL_Parameter, IL_ParameterOperand],
+    ) -> IL_FunctionCall:
+        return IL_FunctionBlockCall(
+            operator=operator,
+            function_block=function_block,
+            arguments=list(arguments)
+        )
+
+    def __str__(self) -> str:
+        is_param_list = self.arguments and isinstance(self.arguments[0], IL_Parameter)
+        if is_param_list:
+            arguments = ",\n".join(
+                indent_if(arg)
+                for arg in self.arguments
+            )
+            arguments = f"\n{arguments}\n"
+        else:
+            arguments = ", ".join(str(arg) for arg in self.arguments)
+
+        return f"{self.operator.upper()} {self.function_block}({arguments})"
+
+
+@dataclass
+@_rule_handler("il_instruction")
+class IL_Instruction:
+    label: Optional[lark.Token]
+    operation: Optional[IL_Operation]
+
+    def __str__(self) -> str:
+        if not self.label and not self.operation:
+            return ""
+        label = f"{self.label}:" if self.label else None
+        return join_if(label, " ", self.operation)
+
+
+IL_SimpleInstruction = Union[
+    IL_SimpleOperation,
+    IL_Expression,
+    IL_FunctionCall,
+]
+
+IL_ParameterOperand = Union[
+    Literal,
+    Variable,
+    EnumeratedValue,
+]
+
+
+@dataclass
+@_rule_handler("instruction_list")
+class InstructionList:
+    instructions: List[IL_Instruction]
+
+    @staticmethod
+    def from_lark(
+        *instructions: IL_Instruction
+    ) -> InstructionList:
+        return InstructionList(
+            instructions=list(instructions)
+        )
+
+    def __str__(self) -> str:
+        return "\n".join(
+            str(instruction)
+            for instruction in self.instructions
         )
 
 

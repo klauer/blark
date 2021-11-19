@@ -1056,3 +1056,56 @@ def test_data_type_declaration(rule_name, value):
 )
 def test_config_roundtrip(rule_name, value):
     roundtrip_rule_with_comments(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION ILTest : INT
+                LD Speed
+                GT 2000
+                JMPCN VOLTS_OK
+                LD Volts
+                VOLTS_OK: LD 1
+                ST %QX75
+            END_FUNCTION
+            """
+        )),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION ILTest : INT
+                LD LoadVar
+                ST toninstance.IN
+                CAL fb(1, 2, 3)
+                CAL toninstance(
+                    PT := t1,
+                    ET => tOut2
+                )
+                LD toninst1.Q
+                JMPC labelname
+                ST otherton.IN
+                labelname: LD iVar2
+                SUB 100
+            END_FUNCTION
+            """
+        )),
+        # I don't understand IL well enough, but this is apparently valid
+        # grammar
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION ILTest : INT
+                ADD(iOperand
+                    LD test
+                    ST test1
+                )
+                ADD(iOperand)
+                end: RET
+            END_FUNCTION
+            """
+        )),
+    ]
+)
+def test_instruction_list(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)

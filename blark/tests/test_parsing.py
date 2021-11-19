@@ -1,6 +1,5 @@
 import pathlib
 
-import lark
 import pytest
 
 from ..parse import parse_single_file, summarize
@@ -37,27 +36,6 @@ def pytest_html_results_table_row(report, cells):
     # pytest results using pytest-html; show only failures for now:
     if report.passed:
         del cells[:]
-
-
-def test_instruction_list_grammar_load():
-    grammar = lark.Lark.open_from_package(
-        "blark",
-        "instruction_list.lark",
-        parser="earley",
-    )
-
-    print(
-        grammar.parse(
-            """
-          LD     Speed
-          GT     2000
-          JMPCN  VOLTS_OK
-          LD     Volts
-VOLTS_OK: LD     1
-          ST     %Q75
-            """
-        )
-    )
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
