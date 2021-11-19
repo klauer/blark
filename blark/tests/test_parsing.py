@@ -1,27 +1,18 @@
 import pathlib
 
-import lark
 import pytest
 
-import blark
-import blark.util
+from ..parse import parse_single_file, summarize
+from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
 
 
-@pytest.fixture(scope='session')
-def iec_parser():
-    with open(blark.GRAMMAR_FILENAME, 'rt') as f:
-        lark_grammar = f.read()
-
-    return lark.Lark(lark_grammar, parser='earley')
-
-
-pous = list(str(path) for path in TEST_PATH.glob('**/*.TcPOU'))
-additional_pous = TEST_PATH / 'additional_pous.txt'
+pous = list(str(path) for path in TEST_PATH.glob("**/*.TcPOU"))
+additional_pous = TEST_PATH / "additional_pous.txt"
 
 if additional_pous.exists():
-    pous += open(additional_pous, 'rt').read().splitlines()
+    pous += open(additional_pous, "rt").read().splitlines()
 
 
 @pytest.fixture(params=pous)
@@ -29,35 +20,65 @@ def pou_filename(request):
     return request.param
 
 
-@pytest.fixture
-def pou_source(pou_filename):
-    if not pathlib.Path(pou_filename).exists():
-        pytest.skip(f'File does not exist: {pou_filename}')
-
-    return blark.util.get_source_code(pou_filename)
-
-
-def test_parsing(iec_parser, pou_filename, pou_source):
+def test_parsing(pou_filename):
     try:
-        tree = iec_parser.parse(pou_source)
-    except Exception:
-        print(f'Failed to parse {pou_filename}:')
-        print('-------------------------------')
-        print(pou_source)
-        print('-------------------------------')
-        print(f'[Failure] End of {pou_filename}')
-        raise
+        result = parse_single_file(pou_filename, verbose=2)
+    except FileNotFoundError:
+        pytest.skip(f"Missing file: {pou_filename}")
     else:
-        print(f'Successfully parsed {pou_filename}:')
-        print('-------------------------------')
-        print(pou_source)
-        print('-------------------------------')
-        print(tree.pretty())
-        print('-------------------------------')
-        print(f'[Success] End of {pou_filename}')
+        print("transformed:")
+        print(result)
+        print("summary:")
+        print(summarize(result))
 
 
 def pytest_html_results_table_row(report, cells):
     # pytest results using pytest-html; show only failures for now:
     if report.passed:
         del cells[:]
+
+
+must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
+
+
+@pytest.mark.parametrize(
+    "name, value",
+    [
+        pytest.param("integer_literal", "12"),
+        pytest.param("integer_literal", "abc", marks=must_fail),
+        pytest.param("integer_literal", "INT#12"),
+        pytest.param("integer_literal", "UDINT#12"),
+        pytest.param("integer_literal", "UDINT#2#010"),
+        pytest.param("integer_literal", "UDINT#2#1001_0011"),
+        pytest.param("integer_literal", "DINT#16#C0FFEE"),
+        pytest.param("integer_literal", "2#10010"),
+        pytest.param("integer_literal", "8#22"),
+        pytest.param("integer_literal", "16#12"),
+        pytest.param("constant", "'abc'"),
+        pytest.param("constant", '"abc"'),
+        pytest.param("single_byte_string_spec", "STRING[1]"),
+        pytest.param("single_byte_string_spec", "STRING(1)"),
+        pytest.param("single_byte_string_spec", "STRING(1) := 'abc'"),
+        pytest.param("double_byte_string_spec", "WSTRING[1]"),
+        pytest.param("double_byte_string_spec", "WSTRING(1)"),
+        pytest.param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
+        pytest.param("duration", "TIME#1D"),
+        pytest.param("duration", "TIME#1S"),
+        pytest.param("duration", "TIME#10S"),
+        pytest.param("duration", "TIME#1H"),
+        pytest.param("duration", "TIME#1M"),
+        pytest.param("duration", "TIME#10MS"),
+        pytest.param("duration", "TIME#1H1M1S1MS"),
+        pytest.param("duration", "TIME#1.1D"),
+        pytest.param("duration", "TIME#1.1S"),
+        pytest.param("duration", "TIME#1.10S"),
+        pytest.param("duration", "TIME#1.1H"),
+        pytest.param("duration", "TIME#1.1M"),
+        pytest.param("duration", "TIME#1.10MS"),
+        pytest.param("duration", "TIME#1H1M1S1MS"),
+        pytest.param("duration", "TIME#1.1H1M1S1MS", marks=must_fail),
+    ],
+)
+def test_rule_smoke(grammar, name, value):
+    result = get_grammar(start=name).parse(value)
+    print(f"rule {name} value {value!r} into {result}")

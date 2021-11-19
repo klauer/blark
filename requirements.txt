@@ -1,2 +1,2 @@
-lark-parser
+lark
 pytmc
