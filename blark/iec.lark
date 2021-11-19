@@ -19,7 +19,7 @@ SINGLE_LINE_COMMENT: /\s*/ "//" /[^\n]/*
 %ignore PRAGMA
 
 // B.0
-iec_source: ( _library_element_declaration | action )*
+iec_source: _library_element_declaration*
 
 _library_element_declaration: data_type_declaration
                             | function_declaration
@@ -29,6 +29,7 @@ _library_element_declaration: data_type_declaration
                             | program_declaration
                             | configuration_declaration
                             | global_var_declarations
+                            | action
 
 // B.1.1
 IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
@@ -113,7 +114,7 @@ DOUBLE_BYTE_CHARACTER_STRING: "\"" DOUBLE_BYTE_CHARACTER* "\""
              | date_and_time
 
 // B.1.2.3.1
-duration: ( "TIME"i | "T"i ) "#" "-"? _interval
+duration: ( "TIME"i | "T"i ) "#" [ MINUS ] _interval
 
 _interval: days
          | hours
@@ -500,8 +501,9 @@ _io_var_declarations: input_declarations
 
 function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"*
 
-?function_body: statement_list
-              | instruction_list
+function_body: statement_list
+             | instruction_list
+             | sequential_function_chart
 // TODO?      | ladder_diagram
 // TODO?      | function_block_diagram
 
@@ -539,8 +541,9 @@ _other_var_declarations: external_var_declarations
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
-function_block_body: sequential_function_chart
-                   | statement_list
+?function_block_body: sequential_function_chart
+                    | statement_list
+                    | instruction_list
 
 // TODO: really only a couple of these
 METHOD_ACCESS: "ABSTRACT"i
@@ -594,46 +597,53 @@ program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name
 
 // B.1.6
 ?step_name: IDENTIFIER
+INITIAL_STEP: "INITIAL_STEP"i
+STEP: "STEP"i
 
 sequential_function_chart: sfc_network+
 
-sfc_network: initial_step ( step | transition | action | entry_action | exit_action )*
+sfc_network: sfc_initial_step ( sfc_step | sfc_transition | action | entry_action | exit_action )*
+sfc_initial_step: INITIAL_STEP step_name ":" [ sfc_step_body ] ";"* "END_STEP"i ";"*
+sfc_step: STEP step_name ":" [ sfc_step_body ] ";"* "END_STEP"i ";"*
 
-initial_step: "INITIAL_STEP"i step_name ":" ( sequential_function_chart | statement_list | action_association ) ";"* "END_STEP"i ";"*
-
-step: "STEP"i step_name ":" [ statement_list | action_association | sequential_function_chart ] ";"* "END_STEP"i ";"*
+?sfc_step_body: sequential_function_chart
+              | statement_list
+              | action_association
 
 action_association: action_name "(" [ action_qualifier ] ( "," indicator_name )* ")"
 
 ?action_name: DOTTED_IDENTIFIER
 
-action_qualifier: "N"
-                | "R"
-                | "S"
-                | "P"
-                | "P0"
-                | "P1"
-                | timed_qualifier "," action_time
+action_qualifier: NON_TIMED_QUALIFIER
+                | TIMED_QUALIFIER "," action_time
 
-timed_qualifier: "L"
+NON_TIMED_QUALIFIER: "N"
+                   | "R"
+                   | "S"
+                   | "P"
+                   | "P0"
+                   | "P1"
+TIMED_QUALIFIER: "L"
                | "D"
                | "SD"
                | "DS"
                | "SL"
 
-action_time: duration
-           | variable_name
+?action_time: duration
+            | variable_name
 
-indicator_name: variable_name
+?indicator_name: variable_name
 
-transition: "TRANSITION"i [ transition_name ] [ "(" "PRIORITY"i ":=" INTEGER ")" ] "FROM"i steps "TO"i steps transition_condition "END_TRANSITION"i ";"*
+sfc_transition: "TRANSITION"i [ _transition_name ] [ transition_priority ] "FROM"i sfc_transition_steps "TO"i sfc_transition_steps transition_condition "END_TRANSITION"i ";"*
 
-transition_name: [ LOGICAL_NOT ] IDENTIFIER
+?transition_priority: "(" "PRIORITY"i ":=" INTEGER ")"
 
-steps: step_name
-     | "(" step_name ( "," step_name )* ")"
+_transition_name: [ LOGICAL_NOT ] DOTTED_IDENTIFIER
 
-transition_condition: ":=" ( expression ";"* )
+sfc_transition_steps: step_name
+                    | "(" step_name ( "," step_name )* ")"
+
+?transition_condition: ":=" ( expression ";"* )
 
 action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
 

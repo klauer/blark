@@ -259,17 +259,18 @@ class Duration(Literal):
     minutes: Optional[lark.Token] = None
     seconds: Optional[lark.Token] = None
     milliseconds: Optional[lark.Token] = None
+    negative: bool = False
 
     @staticmethod
-    def from_lark(interval: lark.Tree) -> Duration:
+    def from_lark(minus: Optional[lark.Token], interval: lark.Tree) -> Duration:
         kwargs = {tree.data: tree.children[0] for tree in interval.iter_subtrees()}
-
-        return Duration(**kwargs)
+        return Duration(**kwargs, negative=minus is not None)
 
     @property
     def value(self) -> str:
         """The duration value."""
-        return "".join(
+        prefix = "-" if self.negative else ""
+        return prefix + "".join(
             f"{value}{suffix}"
             for value, suffix in (
                 (self.days, "D"),
@@ -1327,12 +1328,16 @@ class Extends:
 
 
 @dataclass
-@_rule_handler("function_block_body", comments=True)
-class FunctionBlockBody:
+@_rule_handler(
+    "function_block_body",
+    "function_body",
+    comments=True
+)
+class FunctionBody:
     source: Union[
         StatementList,
         InstructionList,
-        # SfcNetwork
+        SequentialFunctionChart,
     ]
 
     @_commented_block
@@ -1347,7 +1352,7 @@ class FunctionBlock:
     abstract: bool
     extends: Optional[Extends]
     declarations: List[VariableDeclarationBlock]
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @staticmethod
     def from_lark(
@@ -1386,14 +1391,14 @@ class Function:
     name: lark.Token
     return_type: Optional[lark.Token]
     declarations: List[VariableDeclarationBlock]
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @staticmethod
     def from_lark(
         name: lark.Token,
         return_type: lark.Token,
         declarations: Optional[lark.Tree],
-        body: Optional[FunctionBlockBody]
+        body: Optional[FunctionBody]
     ) -> Function:
         return Function(
             name=name,
@@ -1421,13 +1426,13 @@ class Function:
 class Program:
     name: lark.Token
     declarations: List[VariableDeclarationBlock]
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @staticmethod
     def from_lark(
         name: lark.Token,
         declarations: Optional[lark.Tree],
-        body: Optional[FunctionBlockBody]
+        body: Optional[FunctionBody]
     ) -> Program:
         return Program(
             name=name,
@@ -1456,7 +1461,7 @@ class Action:
 @_rule_handler("action", comments=True)
 class NamedAction(Action):
     name: lark.Token
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @_commented_block
     def __str__(self) -> str:
@@ -1474,7 +1479,7 @@ class NamedAction(Action):
 @dataclass
 @_rule_handler("entry_action", comments=True)
 class EntryAction(Action):
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @_commented_block
     def __str__(self) -> str:
@@ -1492,7 +1497,7 @@ class EntryAction(Action):
 @dataclass
 @_rule_handler("exit_action", comments=True)
 class ExitAction(Action):
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @_commented_block
     def __str__(self) -> str:
@@ -1514,7 +1519,7 @@ class Method:
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @staticmethod
     def from_lark(
@@ -1555,7 +1560,7 @@ class Property:
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
-    body: Optional[FunctionBlockBody]
+    body: Optional[FunctionBody]
 
     @staticmethod
     def from_lark(
@@ -2537,6 +2542,180 @@ IL_ParameterOperand = Union[
 
 
 @dataclass
+@_rule_handler("sfc_transition_steps")
+class SfcTransitionSteps:
+    names: List[lark.Token]
+
+    @staticmethod
+    def from_lark(
+        *names: lark.Token,
+    ) -> SfcTransitionSteps:
+        return SfcTransitionSteps(names=list(names))
+
+    @_commented_block
+    def __str__(self) -> str:
+        if len(self.names) > 1:
+            names = ", ".join(name for name in self.names)
+            return f"({names})"
+        return str(self.names[0])
+
+
+@dataclass
+@_rule_handler("sfc_transition")
+class SfcTransition:
+    inverted: Optional[lark.Token]
+    name: Optional[lark.Token]
+    priority: Optional[lark.Token]
+    start: SfcTransitionSteps
+    stop: SfcTransitionSteps
+    condition: Expression
+
+    @_commented_block
+    def __str__(self) -> str:
+        name_and_priority = " ".join(
+            part for part in (
+                "TRANSITION",
+                self.inverted,
+                self.name,
+                self.priority
+            )
+            if part is not None
+        )
+        return "\n".join(
+            (
+                name_and_priority,
+                f"FROM {self.start} TO {self.stop} := {self.condition}",
+                "END_TRANSITION"
+            )
+        )
+
+
+@dataclass
+@_rule_handler("action_qualifier")
+class SfcActionQualifier:
+    qualifier: lark.Token
+    time: Optional[Union[Duration, SymbolicVariable]] = None
+
+    @_commented_block
+    def __str__(self) -> str:
+        return join_if(self.qualifier, ", ", self.time)
+
+
+@dataclass
+@_rule_handler("action_association")
+class SfcActionAssociation:
+    name: lark.Token
+    qualifier: Optional[SfcActionQualifier]
+    indicators: List[SymbolicVariable]
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        qualifier: Optional[SfcActionQualifier],
+        *indicators: SymbolicVariable,
+    ) -> SfcActionAssociation:
+        return SfcActionAssociation(
+            name=name,
+            qualifier=qualifier,
+            indicators=list(indicators),
+        )
+
+    @_commented_block
+    def __str__(self) -> str:
+        qualifier_and_indicator = ", ".join(
+            str(item)
+            for item in (self.qualifier, *self.indicators)
+            if item is not None
+        )
+        return f"{self.name}({qualifier_and_indicator})"
+
+
+SfcStepBody = Union[
+    StatementList,
+    SfcActionAssociation,
+    "SequentialFunctionChart",
+]
+
+
+@dataclass
+@_rule_handler(
+    "sfc_step",
+    "sfc_initial_step",
+    comments=True
+)
+class SfcStep:
+    name: lark.Token
+    body: Optional[SfcStepBody]
+    initial: bool = False
+
+    @staticmethod
+    def from_lark(
+        step_token: lark.Token,
+        name: lark.Token,
+        body: Optional[SfcStepBody],
+    ) -> SfcStep:
+        return SfcStep(
+            name=name,
+            body=body,
+            initial=(step_token.upper() == "INITIAL_STEP"),
+        )
+
+    @_commented_block
+    def __str__(self) -> str:
+        step_token = "INITIAL_STEP" if self.initial else "STEP"
+        return "\n".join(
+            line for line in
+            (
+                f"{step_token} {self.name} :",
+                indent_if(self.body),
+                "END_STEP",
+            )
+            if line is not None
+        )
+
+
+SfcNetworkPart = Union[
+    SfcStep,
+    SfcTransition,
+    Action,
+    EntryAction,
+    ExitAction,
+]
+
+
+@dataclass
+@_rule_handler("sfc_network", comments=True)
+class SfcNetwork:
+    parts: List[SfcNetworkPart]
+
+    @staticmethod
+    def from_lark(
+        *parts: SfcNetworkPart
+    ) -> SfcNetwork:
+        return SfcNetwork(list(parts))
+
+    @_commented_block
+    def __str__(self) -> str:
+        return "\n".join(str(part) for part in self.parts)
+
+
+@dataclass
+@_rule_handler("sequential_function_chart", comments=True)
+class SequentialFunctionChart:
+    networks: List[SfcNetwork]
+
+    @staticmethod
+    def from_lark(
+        *networks: SfcNetwork
+    ) -> SequentialFunctionChart:
+        return SequentialFunctionChart(list(networks))
+
+    @_commented_block
+    def __str__(self) -> str:
+        return "\n".join(str(network) for network in self.networks)
+
+
+@dataclass
 @_rule_handler("instruction_list", comments=True)
 class InstructionList:
     instructions: List[IL_Instruction]
@@ -2545,6 +2724,11 @@ class InstructionList:
     def from_lark(
         *instructions: IL_Instruction
     ) -> InstructionList:
+        if len(instructions) == 1 and instructions[0] == IL_Instruction(None, None):
+            # TODO: parser ambiguity; il_instruction can match an empty
+            # function block body with no label or operation....
+            return None
+
         return InstructionList(
             instructions=list(instructions)
         )
@@ -2753,7 +2937,7 @@ def _has_meta_kwarg(func: Callable) -> bool:
 def _annotator_wrapper(handler):
     def wrapped(self: GrammarTransformer, data: Any, children: list, meta: lark.tree.Meta) -> Any:
         result = handler(*children)
-        if not isinstance(result, (lark.Tree, lark.Token, list)):
+        if result is not None and not isinstance(result, (lark.Tree, lark.Token, list)):
             result.meta = meta
         return result
 

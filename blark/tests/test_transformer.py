@@ -42,21 +42,6 @@ def test_check_unhandled_rules(grammar):
     }
 
     todo_rules = {
-        # sfc stuff
-        "sequential_function_chart",
-        "sfc_network",
-        "indicator_name",
-        "initial_step",
-        "step",
-        "steps",
-        "transition",
-        "transition_condition",
-        "transition_name",
-        "action_association",
-        "action_qualifier",
-        "action_time",
-        "timed_qualifier",
-
         # program configuration
         "prog_cnxn",
         "prog_conf_element",
@@ -107,6 +92,7 @@ def test_check_unhandled_rules(grammar):
         param("boolean_literal", "BOOL#0", tf.Boolean(value="0")),
         param("boolean_literal", "BOOL#TRUE", tf.Boolean(value="TRUE")),
         param("boolean_literal", "BOOL#FALSE", tf.Boolean(value="FALSE")),
+        param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
         param("duration", "TIME#1H", tf.Duration(hours="1")),
@@ -1124,4 +1110,61 @@ def test_config_roundtrip(rule_name, value):
     ]
 )
 def test_instruction_list(rule_name, value):
+    roundtrip_rule_with_comments(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("action_qualifier", "N"),
+        param("action_qualifier", "D, Variable"),
+        param("action_qualifier", "D, TIME#1D"),
+        param("action_association", "ActionName()"),
+        param("action_association", "ActionName(N)"),
+        param("action_association", "ActionName(D, TIME#1D)"),
+        param("action_association", "ActionName(D, TIME#1D, IndicatorName)"),
+        param("action_association", "ActionName(D, TIME#1D, Name1, Name2^)"),
+        param("sfc_initial_step", tf.multiline_code_block(
+            """
+            INITIAL_STEP StepName :
+            END_STEP
+            """
+        )),
+        param("sfc_step", tf.multiline_code_block(
+            """
+            STEP StepName :
+            END_STEP
+            """
+        )),
+        param("sfc_step", tf.multiline_code_block(
+            """
+            STEP StepName :
+                iValue := iValue + 1;
+            END_STEP
+            """
+        )),
+        param("sfc_step", tf.multiline_code_block(
+            """
+            STEP StepName :
+                ActionName(D, TIME#1D, Name1, Name2^)
+            END_STEP
+            """
+        )),
+        param("sfc_transition", tf.multiline_code_block(
+            """
+            TRANSITION TransitionName
+            FROM StepName1 TO StepName2 := 1
+            END_TRANSITION
+            """
+        )),
+        param("sfc_transition", tf.multiline_code_block(
+            """
+            TRANSITION TransitionName
+            FROM (StepName1, StepName2) TO StepName3 := 1
+            END_TRANSITION
+            """
+        )),
+    ]
+)
+def test_sfc_sequential_function_chart(rule_name, value):
     roundtrip_rule_with_comments(rule_name, value)
