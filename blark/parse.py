@@ -12,6 +12,7 @@ import pytmc
 
 import blark
 
+from . import summary
 from . import transform as tf
 from .transform import GrammarTransformer
 from .util import (find_and_clean_comments, get_source_code,
@@ -222,35 +223,8 @@ def build_arg_parser(argparser=None):
     return argparser
 
 
-def summarize(code):
-    if isinstance(code, tf.SourceCode):
-        for item in code.items:
-            summarize(item)
-    elif isinstance(code, tf.FunctionBlock):
-        try:
-            comments = code.meta.comments
-        except AttributeError:
-            comments = []
-        print("Function block", code.name, comments)
-        for decl in code.declarations:
-            print(type(decl).__name__, ":")
-            for item in decl.items:
-                try:
-                    comments = item.meta.comments
-                except AttributeError:
-                    comments = []
-
-                # OK, a bit lazy for now
-                try:
-                    spec = item.init.spec
-                except AttributeError:
-                    spec = "?"
-
-                print(
-                    "\t",
-                    " ".join(getattr(var, "name", var) for var in item.variables),
-                    f"({spec}) {comments}"
-                )
+def summarize(code: tf.SourceCode) -> summary.CodeSummary:
+    return summary.CodeSummary.from_source(code)
 
 
 def main(
