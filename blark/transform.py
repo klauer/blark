@@ -48,13 +48,18 @@ def _commented(meta: lark.tree.Meta, item: Any, indent: str = "", suffix="") -> 
     return textwrap.indent(block, prefix=indent)
 
 
-def _commented_block(func):
+def _add_comments_to_return_value(func):
     @functools.wraps(func)
     def wrapped(self):
         return _commented(
             self.meta,
             func(self)
         )
+
+    if getattr(func, "_comment_wrapped", None):
+        return func
+
+    wrapped._comment_wrapped = True
     return wrapped
 
 
@@ -85,12 +90,19 @@ def _rule_handler(
         if comments:
             # Mark ``cls`` as one that consumes comments when stringifying code.
             _comment_consumers.append(cls)
+            cls.__str__ = _add_comments_to_return_value(cls.__str__)
+
         return cls
 
     return wrapper
 
 
-class Literal:
+@dataclass
+class Expression:
+    ...
+
+
+class Literal(Expression):
     """Literal value."""
 
     value: Any
@@ -357,11 +369,6 @@ class DateTime(Literal):
 class String(Literal):
     """String literal value."""
     value: lark.Token
-
-
-@dataclass
-class Expression:
-    ...
 
 
 @dataclass
@@ -762,7 +769,6 @@ class EnumeratedTypeDeclaration:
     name: lark.Token
     init: EnumeratedTypeInitialization
 
-    @_commented_block
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
 
@@ -860,7 +866,6 @@ class ArrayTypeDeclaration:
     name: lark.Token
     init: ArrayTypeInitialization
 
-    @_commented_block
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
 
@@ -884,7 +889,6 @@ class StructureTypeDeclaration:
             name, extends, indirection, declarations
         )
 
-    @_commented_block
     def __str__(self) -> str:
         if self.declarations:
             body = "\n".join(
@@ -919,7 +923,6 @@ class StructureElementDeclaration:
         EnumeratedTypeInitialization,
     ]
 
-    @_commented_block
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
         return f"{name_and_location} : {self.init};"
@@ -983,7 +986,6 @@ class InitializedStructureTypeDeclaration:
     extends: Optional[lark.Token]
     init: StructureInitialization
 
-    @_commented_block
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
 
@@ -1116,7 +1118,6 @@ class DeclaredVariable:
 class InitDeclaration:
     variables: List[DeclaredVariable]
 
-    @_commented_block
     def __str__(self) -> str:
         variables = ", ".join(str(variable) for variable in self.variables)
         return f"{variables} : {self.init}"
@@ -1188,7 +1189,6 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
     spec: lark.Token
     init: Optional[StructureInitialization] = None
 
-    @_commented_block
     def __str__(self) -> str:
         variables = ", ".join(self.variables)
         name_and_type = f"{variables} : {self.spec}"
@@ -1201,7 +1201,6 @@ class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
     init: FunctionBlockInvocation
 
-    @_commented_block
     def __str__(self) -> str:
         variables = ", ".join(self.variables)
         return f"{variables} : {self.init}"
@@ -1313,7 +1312,6 @@ class GlobalVariableDeclaration:
         lark.Token  # FB type name
     ]
 
-    @_commented_block
     def __str__(self) -> str:
         return f"{self.spec} : {self.init}"
 
@@ -1340,7 +1338,6 @@ class FunctionBody:
         SequentialFunctionChart,
     ]
 
-    @_commented_block
     def __str__(self) -> str:
         return str(self.source)
 
@@ -1370,7 +1367,6 @@ class FunctionBlock:
             body=body,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         abstract = "ABSTRACT " if self.abstract else ""
         return "\n".join(
@@ -1407,7 +1403,6 @@ class Function:
             body=body,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             line for line in
@@ -1440,7 +1435,6 @@ class Program:
             body=body,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             s for s in (
@@ -1463,7 +1457,6 @@ class NamedAction(Action):
     name: lark.Token
     body: Optional[FunctionBody]
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             line for line in
@@ -1481,7 +1474,6 @@ class NamedAction(Action):
 class EntryAction(Action):
     body: Optional[FunctionBody]
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             line for line in
@@ -1499,7 +1491,6 @@ class EntryAction(Action):
 class ExitAction(Action):
     body: Optional[FunctionBody]
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             line for line in
@@ -1537,7 +1528,6 @@ class Method:
             body=body,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         access_and_name = join_if(self.access, " ", self.name)
         method = join_if(access_and_name, " : ", self.return_type)
@@ -1578,7 +1568,6 @@ class Property:
             body=body,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         access_and_name = join_if(self.access, " ", self.name)
         property = join_if(access_and_name, " : ", self.return_type)
@@ -1636,7 +1625,6 @@ class VariableDeclarations(VariableDeclarationBlock):
             items=items.children,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1656,7 +1644,6 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
     def from_lark(items: lark.Tree) -> TemporaryVariableDeclarations:
         return TemporaryVariableDeclarations(items.children)
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1676,7 +1663,6 @@ class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
     def from_lark(items: lark.Tree) -> MethodInstanceVariableDeclarations:
         return MethodInstanceVariableDeclarations(items.children)
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1694,7 +1680,6 @@ class LocatedVariableDeclaration:
     location: Location
     init: LocatedVariableSpecInit
 
-    @_commented_block
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
         return f"{name_and_location} : {self.init}"
@@ -1719,7 +1704,6 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
             items=list(items),
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1751,7 +1735,6 @@ class IncompleteLocatedVariableDeclaration:
     location: IncompleteLocation
     init: IncompleteLocatedVariableSpecInit
 
-    @_commented_block
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
         return f"{name_and_location} : {self.init}"
@@ -1773,7 +1756,6 @@ class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
             items=list(items),
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1795,7 +1777,6 @@ class ExternalVariableDeclaration:
         ArraySpecification,
     ]
 
-    @_commented_block
     def __str__(self) -> str:
         return f"{self.name} : {self.spec}"
 
@@ -1816,7 +1797,6 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
             items=list(items),
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1837,7 +1817,6 @@ class InputDeclarations(VariableDeclarationBlock):
     def from_lark(retain: Optional[lark.Token], *items: InputDeclaration) -> InputDeclarations:
         return InputDeclarations(retain, list(items) if items else [])
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1858,7 +1837,6 @@ class OutputDeclarations(VariableDeclarationBlock):
     def from_lark(retain: Optional[lark.Token], items: lark.Tree) -> OutputDeclarations:
         return OutputDeclarations(retain, items.children)
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1878,7 +1856,6 @@ class InputOutputDeclarations(VariableDeclarationBlock):
     def from_lark(items: lark.Tree) -> InputOutputDeclarations:
         return InputOutputDeclarations(items.children)
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1897,7 +1874,6 @@ class AccessDeclaration:
     type_name: DataType
     direction: Optional[lark.Token]
 
-    @_commented_block
     def __str__(self) -> str:
         return join_if(
             f"{self.name} : {self.variable} : {self.type_name}",
@@ -1922,7 +1898,6 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
             items=body.children,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1942,7 +1917,6 @@ class AccessDeclarations(VariableDeclarationBlock):
     def from_lark(*items: AccessDeclaration) -> AccessDeclarations:
         return AccessDeclarations(list(items))
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -1974,7 +1948,6 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
             items=list(items)
         )
 
-    @_commented_block
     def __str__(self) -> str:
         options = []
         if self.constant:
@@ -2002,7 +1975,6 @@ class ElseIfClause:
     if_expression: Expression
     statements: Optional[StatementList]
 
-    @_commented_block
     def __str__(self):
         return "\n".join(
             s for s in (
@@ -2018,7 +1990,6 @@ class ElseIfClause:
 class ElseClause:
     statements: Optional[StatementList]
 
-    @_commented_block
     def __str__(self):
         return "\n".join(
             s for s in (
@@ -2056,7 +2027,6 @@ class IfStatement(Statement):
             else_clause=else_clause,
         )
 
-    @_commented_block
     def __str__(self):
         return "\n".join(
             s for s in (
@@ -2086,7 +2056,6 @@ class CaseElement(Statement):
             statements=statements,
         )
 
-    @_commented_block
     def __str__(self):
         matches = ", ".join(str(match) for match in self.matches)
         return "\n".join(
@@ -2120,7 +2089,6 @@ class CaseStatement(Statement):
             else_clause=else_clause,
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             s for s in (
@@ -2138,7 +2106,6 @@ class CaseStatement(Statement):
 class NoOpStatement(Statement):
     variable: lark.Token
 
-    @_commented_block
     def __str__(self):
         return f"{self.variable};"
 
@@ -2149,7 +2116,6 @@ class ActionStatement(Statement):
     # TODO: overlaps with no-op statement?
     action: lark.Token
 
-    @_commented_block
     def __str__(self):
         return f"{self.action};"
 
@@ -2160,7 +2126,6 @@ class SetStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
 
-    @_commented_block
     def __str__(self):
         return f"{self.variable} S= {self.expression};"
 
@@ -2171,7 +2136,6 @@ class ReferenceAssignmentStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
 
-    @_commented_block
     def __str__(self):
         return f"{self.variable} REF= {self.expression};"
 
@@ -2189,7 +2153,6 @@ class ResetStatement(Statement):
 @dataclass
 @_rule_handler("exit_statement", comments=True)
 class ExitStatement(Statement):
-    @_commented_block
     def __str__(self):
         return "EXIT;"
 
@@ -2197,7 +2160,6 @@ class ExitStatement(Statement):
 @dataclass
 @_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
-    @_commented_block
     def __str__(self):
         return "RETURN;"
 
@@ -2216,7 +2178,6 @@ class AssignmentStatement(Statement):
             expression=expression
         )
 
-    @_commented_block
     def __str__(self):
         variables = " := ".join(str(var) for var in self.variables)
         return f"{variables} := {self.expression};"
@@ -2227,7 +2188,6 @@ class AssignmentStatement(Statement):
 class MethodStatement(Statement):
     method: SymbolicVariable
 
-    @_commented_block
     def __str__(self):
         return f"{self.method}();"
 
@@ -2238,7 +2198,6 @@ class WhileStatement(Statement):
     expression: Expression
     statements: StatementList
 
-    @_commented_block
     def __str__(self):
         return "\n".join(
             s for s in (
@@ -2257,7 +2216,6 @@ class RepeatStatement(Statement):
     statements: StatementList
     expression: Expression
 
-    @_commented_block
     def __str__(self):
         return "\n".join(
             s for s in (
@@ -2279,7 +2237,6 @@ class ForStatement(Statement):
     step: Optional[Expression]
     statements: StatementList
 
-    @_commented_block
     def __str__(self) -> str:
         step = f" BY {self.step}" if self.step else ""
         return "\n".join(
@@ -2520,7 +2477,6 @@ class IL_Instruction:
     label: Optional[lark.Token]
     operation: Optional[IL_Operation]
 
-    @_commented_block
     def __str__(self) -> str:
         if not self.label and not self.operation:
             return ""
@@ -2552,7 +2508,6 @@ class SfcTransitionSteps:
     ) -> SfcTransitionSteps:
         return SfcTransitionSteps(names=list(names))
 
-    @_commented_block
     def __str__(self) -> str:
         if len(self.names) > 1:
             names = ", ".join(name for name in self.names)
@@ -2570,7 +2525,6 @@ class SfcTransition:
     stop: SfcTransitionSteps
     condition: Expression
 
-    @_commented_block
     def __str__(self) -> str:
         name_and_priority = " ".join(
             part for part in (
@@ -2596,7 +2550,6 @@ class SfcActionQualifier:
     qualifier: lark.Token
     time: Optional[Union[Duration, SymbolicVariable]] = None
 
-    @_commented_block
     def __str__(self) -> str:
         return join_if(self.qualifier, ", ", self.time)
 
@@ -2620,7 +2573,6 @@ class SfcActionAssociation:
             indicators=list(indicators),
         )
 
-    @_commented_block
     def __str__(self) -> str:
         qualifier_and_indicator = ", ".join(
             str(item)
@@ -2660,7 +2612,6 @@ class SfcStep:
             initial=(step_token.upper() == "INITIAL_STEP"),
         )
 
-    @_commented_block
     def __str__(self) -> str:
         step_token = "INITIAL_STEP" if self.initial else "STEP"
         return "\n".join(
@@ -2694,7 +2645,6 @@ class SfcNetwork:
     ) -> SfcNetwork:
         return SfcNetwork(list(parts))
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(str(part) for part in self.parts)
 
@@ -2710,7 +2660,6 @@ class SequentialFunctionChart:
     ) -> SequentialFunctionChart:
         return SequentialFunctionChart(list(networks))
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(str(network) for network in self.networks)
 
@@ -2733,7 +2682,6 @@ class InstructionList:
             instructions=list(instructions)
         )
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             str(instruction)
@@ -2750,7 +2698,6 @@ class ConfigAccessDeclarations(VariableDeclarationBlock):
     def from_lark(*items: ConfigAccessDeclaration) -> ConfigAccessDeclarations:
         return ConfigAccessDeclarations(list(items))
 
-    @_commented_block
     def __str__(self) -> str:
         return "\n".join(
             (
@@ -2769,7 +2716,6 @@ class ConfigAccessDeclaration:
     type_name: DataType
     direction: Optional[lark.Token]
 
-    @_commented_block
     def __str__(self) -> str:
         return join_if(
             f"{self.name} : {self.path} : {self.type_name}",
@@ -2852,7 +2798,6 @@ class TaskConfiguration:
     name: lark.Token
     init: TaskInitialization
 
-    @_commented_block
     def __str__(self):
         return f"TASK {self.name} {self.init}"
 
@@ -2882,7 +2827,6 @@ class DataTypeDeclaration:
     def from_lark(*args: TypeDeclarationItem) -> DataTypeDeclaration:
         return DataTypeDeclaration(list(args))
 
-    @_commented_block
     def __str__(self) -> str:
         if not self.items:
             return "TYPE\nEND_TYPE"

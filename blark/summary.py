@@ -17,7 +17,8 @@ def _get_comments_and_pragmas(item):
     try:
         all_comments = item.meta.comments
     except AttributeError:
-        return []
+        return [], []
+
     pragmas = []
     comments = []
     by_type = {
