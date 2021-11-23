@@ -166,7 +166,6 @@ def meta_field():
     return dataclasses.field(default=None, repr=False, compare=False)
 
 
-@dataclasses.dataclass
 class Expression:
     ...
 
@@ -438,7 +437,6 @@ class String(Literal):
     meta: Optional[Meta] = meta_field()
 
 
-@dataclasses.dataclass
 class Variable(Expression):
     ...
 
@@ -625,7 +623,7 @@ class SubscriptList:
 @dataclass
 @_rule_handler("field_selector")
 class FieldSelector:
-    field: lark.Token
+    field: SymbolicVariable
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
 
@@ -2886,14 +2884,18 @@ class InstructionList:
     def from_lark(
         *instructions: IL_Instruction
     ) -> Optional[InstructionList]:
-        if len(instructions) == 1 and instructions[0] == IL_Instruction(None, None):
-            # TODO: parser ambiguity; il_instruction can match an empty
-            # function block body with no label or operation....
-            return None
-
-        return InstructionList(
-            instructions=list(instructions)
-        )
+        # TODO: parser ambiguity; il_instruction can match an empty
+        # function block body with no label or operation....
+        instructions = [
+            instr
+            for instr in instructions
+            if instr.label is not None or instr.operation is not None
+        ]
+        if instructions:
+            return InstructionList(
+                instructions=list(instructions)
+            )
+        return None
 
     def __str__(self) -> str:
         return "\n".join(

@@ -8,6 +8,13 @@ from .. import transform as tf
 from ..parse import parse_source_code
 from .conftest import get_grammar
 
+# try:
+#     import apischema
+# except ImportError:
+#     # apischema is optional for serialization testing
+#     apischema = None
+
+
 TEST_PATH = pathlib.Path(__file__).parent
 
 
@@ -868,6 +875,13 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     if expected is None:
         expected = value
     assert str(transformed) == expected
+
+    # if apischema is not None:
+    #     serialized = apischema.serialize(transformed)
+    #     print("serialized", serialized)
+    #     deserialized = apischema.deserialize(type(transformed), serialized)
+    #     print("deserialized", deserialized)
+    #     assert transformed == deserialized
     return transformed
 
 
