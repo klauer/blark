@@ -142,8 +142,8 @@ class Meta:
 
         Returns
         -------
-        pragmas : List[lark.Token]
         comments : List[lark.Token]
+        pragmas : List[lark.Token]
         """
         if not self.comments:
             return [], []
@@ -159,7 +159,7 @@ class Meta:
         for comment in self.comments:
             by_type[comment.type].append(comment)
 
-        return pragmas, comments
+        return comments, pragmas
 
 
 def meta_field():
@@ -675,6 +675,19 @@ class TypeInitialization:
     def __str__(self) -> str:
         type_ = join_if(self.indirection, " ", self.spec)
         return join_if(type_, " := ", self.value)
+
+
+class Declaration:
+    variables: List[DeclaredVariable]
+    items: List[Any]
+    meta: Optional[Meta]
+    init: Union[
+        VariableInitDeclaration,
+        InputOutputDeclaration,
+        OutputDeclaration,
+        InputDeclaration,
+        GlobalVariableDeclarationType,
+    ]
 
 
 @dataclass
@@ -1233,6 +1246,7 @@ class DeclaredVariable:
 class InitDeclaration:
     variables: List[DeclaredVariable]
     init: Any
+    meta: Optional[Meta]
 
     def __str__(self) -> str:
         variables = ", ".join(str(variable) for variable in self.variables)
@@ -1589,7 +1603,9 @@ class Program:
 
 
 class Action:
-    ...
+    name: Union[str, lark.Token]
+    body: Optional[FunctionBody]
+    meta: Optional[Meta]
 
 
 @dataclass
@@ -1617,6 +1633,10 @@ class EntryAction(Action):
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def name(self) -> str:
+        return "ENTRY_ACTION"
+
     def __str__(self) -> str:
         return "\n".join(
             line for line in
@@ -1634,6 +1654,10 @@ class EntryAction(Action):
 class ExitAction(Action):
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def name(self) -> str:
+        return "EXIT_ACTION"
 
     def __str__(self) -> str:
         return "\n".join(
@@ -1734,7 +1758,7 @@ VariableInitDeclaration = Union[
     StringVariableInitDeclaration,
     VariableOneInitDeclaration,
     FunctionBlockDeclaration,
-    # EdgeDeclaration,
+    EdgeDeclaration,
 ]
 
 InputOutputDeclaration = VariableInitDeclaration
@@ -1748,13 +1772,11 @@ GlobalVariableDeclarationType = Union[
     VariableInitDeclaration,
     GlobalVariableDeclaration,
 ]
-# FunctionBlockDeclarations = Union[
-#     ...
-# ]
 
 
 class VariableDeclarationBlock:
-    ...
+    items: List[Any]
+    meta: Optional[Meta]
 
 
 @dataclass
