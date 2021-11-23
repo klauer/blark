@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import dataclasses
 import enum
 import functools
-import inspect
 import textwrap
+import typing
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
@@ -11,7 +12,7 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
-_rule_to_class = {}
+_rule_to_class: Dict[str, type] = {}
 _class_handlers = {}
 _comment_consumers = []
 
@@ -32,14 +33,19 @@ def join_if(value1: Optional[Any], delimiter: str, value2: Optional[Any]) -> str
     )
 
 
-def indent_if(value: Optional[Any], indent: str = INDENT) -> Optional[str]:
-    """Indented {value} if not None."""
+def indent_if(value: Optional[Any], prefix: str = INDENT) -> Optional[str]:
+    """Stringified and indented {value} if not None."""
     if value is not None:
-        return textwrap.indent(str(value), indent)
+        return textwrap.indent(str(value), prefix)
     return None
 
 
-def _commented(meta: lark.tree.Meta, item: Any, indent: str = "", suffix="") -> str:
+def indent(value: Any, prefix: str = INDENT) -> str:
+    """Stringified and indented {value}."""
+    return textwrap.indent(str(value), prefix)
+
+
+def _commented(meta: Meta, item: Any, indent: str = "", suffix="") -> str:
     comments = getattr(meta, "comments", None)
     if not comments:
         return f"{indent}{item}{suffix}"
@@ -63,8 +69,8 @@ def _add_comments_to_return_value(func):
     return wrapped
 
 
-def _get_default_instantiator(cls: type):
-    def instantiator(*args):
+def _get_default_instantiator(cls: Type[T]):
+    def instantiator(*args) -> T:
         return cls(*args)
 
     return instantiator
@@ -97,15 +103,77 @@ def _rule_handler(
     return wrapper
 
 
-@dataclass
+@dataclasses.dataclass
+class Meta:
+    empty: bool = True
+    column: Optional[int] = None
+    comments: List[lark.Token] = dataclasses.field(default_factory=list)
+    container_column: Optional[int] = None
+    container_end_column: Optional[int] = None
+    container_end_line: Optional[int] = None
+    container_line: Optional[int] = None
+    end_column: Optional[int] = None
+    end_line: Optional[int] = None
+    end_pos: Optional[int] = None
+    line: Optional[int] = None
+    start_pos: Optional[int] = None
+
+    @staticmethod
+    def from_lark(lark_meta: lark.tree.Meta) -> Meta:
+        return Meta(
+            empty=lark_meta.empty,
+            column=getattr(lark_meta, "column", None),
+            comments=getattr(lark_meta, "comments", []),
+            container_column=getattr(lark_meta, "container_column", None),
+            container_end_column=getattr(lark_meta, "container_end_column", None),
+            container_end_line=getattr(lark_meta, "container_end_line", None),
+            container_line=getattr(lark_meta, "container_line", None),
+            end_column=getattr(lark_meta, "end_column", None),
+            end_line=getattr(lark_meta, "end_line", None),
+            end_pos=getattr(lark_meta, "end_pos", None),
+            line=getattr(lark_meta, "line", None),
+            start_pos=getattr(lark_meta, "start_pos", None),
+        )
+
+    def get_comments_and_pragmas(self):
+        """
+        Split the contained comments into comments/pragmas.
+
+        Returns
+        -------
+        pragmas : List[lark.Token]
+        comments : List[lark.Token]
+        """
+        if not self.comments:
+            return [], []
+
+        pragmas = []
+        comments = []
+        by_type = {
+            "SINGLE_LINE_COMMENT": comments,
+            "MULTI_LINE_COMMENT": comments,
+            "PRAGMA": pragmas,
+        }
+
+        for comment in self.comments:
+            by_type[comment.type].append(comment)
+
+        return pragmas, comments
+
+
+def meta_field():
+    """Create the Meta field for the dataclass magic."""
+    return dataclasses.field(default=None, repr=False, compare=False)
+
+
+@dataclasses.dataclass
 class Expression:
     ...
 
 
 class Literal(Expression):
     """Literal value."""
-
-    value: Any
+    value: Any  # Type specified in subclass
 
     def __str__(self) -> str:
         return str(self.value)
@@ -122,6 +190,7 @@ class Integer(Literal):
     value: lark.Token
     type: Optional[lark.Token] = None
     base: ClassVar[int] = 10
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -152,35 +221,17 @@ class Integer(Literal):
 class BinaryInteger(Integer):
     base: ClassVar[int] = 2
 
-    @classmethod
-    def from_lark(
-        cls, value: Union[Integer, lark.Token],
-    ) -> BinaryInteger:
-        return super().from_lark(None, value, base=2)
-
 
 @dataclass
 @_rule_handler("octal_integer")
 class OctalInteger(Integer):
     base: ClassVar[int] = 8
 
-    @classmethod
-    def from_lark(
-        cls, value: Union[Integer, lark.Token],
-    ) -> Integer:
-        return super().from_lark(None, value, base=8)
-
 
 @dataclass
 @_rule_handler("hex_integer")
 class HexInteger(Integer):
     base: ClassVar[int] = 16
-
-    @classmethod
-    def from_lark(
-        cls, value: Union[Integer, lark.Token],
-    ) -> Integer:
-        return super().from_lark(None, value, base=16)
 
 
 _base_to_integer_class: Dict[int, Type[Integer]] = {
@@ -198,6 +249,7 @@ class Real(Literal):
 
     value: lark.Token
     type: Optional[lark.Token] = None
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(type_name: Optional[lark.Token], value: lark.Token) -> Real:
@@ -217,6 +269,7 @@ class BitString(Literal):
     type: Optional[lark.Token]
     value: lark.Token
     base: ClassVar[int] = 10
+    meta: Optional[Meta] = meta_field()
 
     @classmethod
     def from_lark(cls, type: Optional[lark.Token], value: lark.Token):
@@ -234,6 +287,7 @@ class BitString(Literal):
 class BinaryBitString(BitString):
     """Binary bit string literal value."""
     base: ClassVar[int] = 2
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
@@ -241,6 +295,7 @@ class BinaryBitString(BitString):
 class OctalBitString(BitString):
     """Octal bit string literal value."""
     base: ClassVar[int] = 8
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
@@ -248,13 +303,14 @@ class OctalBitString(BitString):
 class HexBitString(BitString):
     """Hex bit string literal value."""
     base: ClassVar[int] = 16
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
 class Boolean(Literal):
     """Boolean literal value."""
-
     value: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         value = self.value.lower() in ("1", "true")
@@ -272,11 +328,18 @@ class Duration(Literal):
     seconds: Optional[lark.Token] = None
     milliseconds: Optional[lark.Token] = None
     negative: bool = False
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(minus: Optional[lark.Token], interval: lark.Tree) -> Duration:
-        kwargs = {tree.data: tree.children[0] for tree in interval.iter_subtrees()}
-        return Duration(**kwargs, negative=minus is not None)
+        kwargs = typing.cast(
+            Dict[str, lark.Token],
+            {
+                tree.data: tree.children[0]
+                for tree in interval.iter_subtrees()
+            }
+        )
+        return Duration(**kwargs, negative=minus is not None, meta=None)
 
     @property
     def value(self) -> str:
@@ -305,6 +368,7 @@ class TimeOfDay(Literal):
     hour: lark.Token
     minute: lark.Token
     second: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     @property
     def value(self) -> str:
@@ -323,6 +387,7 @@ class Date(Literal):
     year: lark.Token
     month: lark.Token
     day: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     @property
     def value(self) -> str:
@@ -340,6 +405,7 @@ class DateTime(Literal):
 
     date: Date
     time: TimeOfDay
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -369,9 +435,10 @@ class DateTime(Literal):
 class String(Literal):
     """String literal value."""
     value: lark.Token
+    meta: Optional[Meta] = meta_field()
 
 
-@dataclass
+@dataclasses.dataclass
 class Variable(Expression):
     ...
 
@@ -389,7 +456,7 @@ class MethodAccess(enum.Flag):
     final = enum.auto()
 
     @staticmethod
-    def from_lark(token: lark.Token, *tokens: List[lark.Token]) -> MethodAccess:
+    def from_lark(token: lark.Token, *tokens: lark.Token) -> MethodAccess:
         result = MethodAccess[token.lower()]
         for token in tokens:
             result |= MethodAccess[token.lower()]
@@ -468,6 +535,7 @@ class DirectVariable(Variable):
     location: lark.Token
     size_prefix: VariableSizePrefix
     bits: Optional[List[lark.Token]] = None
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -487,20 +555,20 @@ class DirectVariable(Variable):
         )
 
     def __str__(self) -> str:
-        bits = ".".join([""] + self.bits) if self.bits else ""
+        bits = ("." + ".".join(self.bits)) if self.bits else ""
         return f"%{self.location_prefix}{self.size_prefix}{self.location}{bits}"
 
 
-@dataclass
 @_rule_handler("location")
 class Location(DirectVariable):
     @staticmethod
     def from_lark(var: DirectVariable):
         return Location(
-            var.location_prefix,
-            var.location,
-            var.size_prefix,
-            var.bits,
+            location_prefix=var.location_prefix,
+            location=var.location,
+            size_prefix=var.size_prefix,
+            bits=var.bits,
+            meta=var.meta,
         )
 
     def __str__(self) -> str:
@@ -508,15 +576,24 @@ class Location(DirectVariable):
         return f"AT {direct_loc}"
 
 
-@dataclass
-@_rule_handler("variable_name")
 class SymbolicVariable(Variable):
     name: lark.Token
     dereferenced: bool
+    meta: Optional[Meta]
+
+
+@dataclass
+@_rule_handler("variable_name")
+class SimpleVariable(SymbolicVariable):
+    name: lark.Token
+    dereferenced: bool
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(identifier: lark.Token, dereferenced: Optional[lark.Token]):
-        return SymbolicVariable(
+    def from_lark(
+        identifier: lark.Token, dereferenced: Optional[lark.Token]
+    ) -> SimpleVariable:
+        return SimpleVariable(
             name=identifier,
             dereferenced=dereferenced is not None
         )
@@ -530,6 +607,7 @@ class SymbolicVariable(Variable):
 class SubscriptList:
     subscripts: List[Expression]
     dereferenced: bool
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
@@ -549,6 +627,7 @@ class SubscriptList:
 class FieldSelector:
     field: lark.Token
     dereferenced: bool
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(dereferenced: Optional[lark.Token], field: lark.Token):
@@ -564,7 +643,10 @@ class FieldSelector:
 @dataclass
 @_rule_handler("multi_element_variable")
 class MultiElementVariable(SymbolicVariable):
+    name: lark.Token
+    dereferenced: bool
     elements: List[Union[SubscriptList, FieldSelector]]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(variable_name, *subscript_or_field):
@@ -589,6 +671,7 @@ class TypeInitialization:
     indirection: Optional[IndirectionType]
     spec: Optional[lark.Token]
     value: Optional[Expression]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         type_ = join_if(self.indirection, " ", self.spec)
@@ -601,6 +684,7 @@ class SimpleTypeDeclaration:
     name: lark.Token
     extends: Optional[Extends]
     init: TypeInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         if self.extends:
@@ -615,6 +699,7 @@ class StringTypeDeclaration:
     string_type: lark.Token
     length: Optional[lark.Token]
     value: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         type_and_length = join_if(self.string_type, "", self.length)
@@ -628,6 +713,7 @@ class StringTypeSpecification:
     type_name: lark.Token
     # TODO: length includes brackets or parentheses: [255] or (255) or [Const]
     length: Optional[lark.Token] = None
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(self.type_name, "", self.length)
@@ -641,21 +727,24 @@ class StringTypeSpecification:
 class StringTypeInitialization:
     spec: StringTypeSpecification
     value: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         *args: lark.Token,
     ) -> StringTypeInitialization:
-        string_type, length, *value = args
+        string_type, length, *value_parts = args
         spec = StringTypeSpecification(string_type, length)
-        if len(value):
-            if len(value) == 1:  # lark 0.12.0
-                value, = value
+
+        value: Optional[lark.Token]
+        if len(value_parts):
+            if len(value_parts) == 1:  # lark 0.12.0
+                value, = value_parts
             else:  # lark 1.0
-                _, value = value
+                _, value = value_parts
         else:
             value = None
-        return StringTypeInitialization(spec, value)
+        return StringTypeInitialization(spec=spec, value=value)
 
     def __str__(self) -> str:
         return join_if(self.spec, " := ", self.value)
@@ -667,15 +756,18 @@ class Subrange:
 
 @dataclass
 class FullSubrange(Subrange):
+    meta: Optional[Meta] = meta_field()
+
     def __str__(self) -> str:
         return "*"
 
 
 @dataclass
 @_rule_handler("subrange")
-class PartialSubrange:
+class PartialSubrange(Subrange):
     start: Expression
     stop: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.start}..{self.stop}"
@@ -686,6 +778,7 @@ class PartialSubrange:
 class SubrangeSpecification:
     type_name: lark.Token
     subrange: Optional[Subrange] = None
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         if self.subrange:
@@ -699,6 +792,7 @@ class SubrangeTypeInitialization:
     indirection: Optional[IndirectionType]
     spec: SubrangeSpecification
     value: Optional[Expression] = None
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -713,6 +807,7 @@ class SubrangeTypeInitialization:
 class SubrangeTypeDeclaration:
     name: lark.Token
     init: SubrangeTypeInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
@@ -724,6 +819,7 @@ class EnumeratedValue:
     type_name: Optional[lark.Token]
     name: lark.Token
     value: Optional[Union[Integer, lark.Token]]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         name = join_if(self.type_name, "#", self.name)
@@ -735,6 +831,7 @@ class EnumeratedValue:
 class EnumeratedSpecification:
     type_name: Optional[lark.Token]
     values: Optional[List[EnumeratedValue]] = None
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
@@ -757,6 +854,7 @@ class EnumeratedTypeInitialization:
     indirection: Optional[IndirectionType]
     spec: EnumeratedSpecification
     value: Optional[Expression]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -768,6 +866,7 @@ class EnumeratedTypeInitialization:
 class EnumeratedTypeDeclaration:
     name: lark.Token
     init: EnumeratedTypeInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
@@ -778,6 +877,7 @@ class EnumeratedTypeDeclaration:
 class DataType:
     indirection: Optional[IndirectionType]
     type_name: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         if self.indirection and self.indirection != IndirectionType.none:
@@ -790,6 +890,7 @@ class DataType:
 class ArraySpecification:
     type_name: DataType
     subranges: List[Subrange]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
@@ -812,6 +913,7 @@ ArrayInitialElementType = Union[
 @_rule_handler("array_initial_element")
 class ArrayInitialElement:
     element: ArrayInitialElementType
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.element}"
@@ -822,6 +924,7 @@ class ArrayInitialElement:
 class ArrayInitialElementCount:
     count: Union[EnumeratedValue, Integer]
     element: ArrayInitialElementType
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.count}({self.element})"
@@ -831,6 +934,7 @@ class ArrayInitialElementCount:
 @_rule_handler("array_initialization")
 class ArrayInitialization:
     elements: List[ArrayInitialElement]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*elements: ArrayInitialElement):
@@ -847,6 +951,7 @@ class ArrayTypeInitialization:
     indirection: Optional[IndirectionType]
     spec: ArraySpecification
     value: Optional[ArrayInitialization]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         if self.indirection:
@@ -865,6 +970,7 @@ class ArrayTypeInitialization:
 class ArrayTypeDeclaration:
     name: lark.Token
     init: ArrayTypeInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
@@ -877,16 +983,20 @@ class StructureTypeDeclaration:
     extends: Optional[lark.Token]
     indirection: Optional[IndirectionType]
     declarations: List[StructureElementDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         name: lark.Token,
         extends: Optional[lark.Token],
         indirection: Optional[IndirectionType],
-        *declarations: List[StructureElementDeclaration],
+        *declarations: StructureElementDeclaration,
     ):
         return StructureTypeDeclaration(
-            name, extends, indirection, declarations
+            name=name,
+            extends=extends,
+            indirection=indirection,
+            declarations=list(declarations),
         )
 
     def __str__(self) -> str:
@@ -894,10 +1004,7 @@ class StructureTypeDeclaration:
             body = "\n".join(
                 (
                     "STRUCT",
-                    textwrap.indent(
-                        "\n".join(str(decl) for decl in self.declarations),
-                        prefix=INDENT
-                    ),
+                    indent("\n".join(str(decl) for decl in self.declarations)),
                     "END_STRUCT",
                 )
             )
@@ -922,6 +1029,7 @@ class StructureElementDeclaration:
         SubrangeTypeInitialization,
         EnumeratedTypeInitialization,
     ]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
@@ -933,6 +1041,7 @@ class StructureElementDeclaration:
 class InitializedStructure:
     name: lark.Token
     init: StructureInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} := {self.init}"
@@ -942,6 +1051,7 @@ class InitializedStructure:
 @_rule_handler("structure_initialization")
 class StructureInitialization:
     elements: List[StructureElementInitialization]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*elements: StructureElementInitialization):
@@ -963,6 +1073,7 @@ class StructureElementInitialization:
         ArrayInitialization,
         StructureInitialization,
     ]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
@@ -985,6 +1096,7 @@ class InitializedStructureTypeDeclaration:
     name: lark.Token
     extends: Optional[lark.Token]
     init: StructureInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} : {self.init}"
@@ -995,6 +1107,7 @@ class InitializedStructureTypeDeclaration:
 class UnaryOperation(Expression):
     op: lark.Token
     expr: Expression
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
@@ -1032,6 +1145,7 @@ class BinaryOperation(Expression):
     left: Expression
     op: lark.Token
     right: Expression
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(left: Expression, *operator_and_expr: Union[lark.Token, Expression]):
@@ -1039,8 +1153,8 @@ class BinaryOperation(Expression):
             return left
 
         def get_operator_and_expr() -> Generator[Tuple[lark.Token, Expression], None, None]:
-            operators = operator_and_expr[::2]
-            expressions = operator_and_expr[1::2]
+            operators = typing.cast(Tuple[lark.Token, ...], operator_and_expr[::2])
+            expressions = typing.cast(Tuple[Expression, ...], operator_and_expr[1::2])
             yield from zip(operators, expressions)
 
         binop = None
@@ -1067,6 +1181,7 @@ class BinaryOperation(Expression):
 @_rule_handler("parenthesized_expression")
 class ParenthesizedExpression(Expression):
     expr: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"({self.expr})"
@@ -1077,10 +1192,11 @@ class ParenthesizedExpression(Expression):
 class FunctionCall(Expression):
     name: SymbolicVariable
     parameters: List[ParameterAssignment]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        name: lark.Token,
+        name: SymbolicVariable,
         *parameters: ParameterAssignment
     ) -> FunctionCall:
         return FunctionCall(
@@ -1099,6 +1215,7 @@ class DeclaredVariable:
     # Alternate name: VariableWithLocation? MaybeLocatedVariable?
     variable: SymbolicVariable
     location: Optional[Union[IncompleteLocation, Location]]
+    meta: Optional[Meta] = meta_field()
 
     @property
     def name(self) -> lark.Token:
@@ -1114,9 +1231,9 @@ class DeclaredVariable:
         return join_if(self.variable, " ", self.location)
 
 
-@dataclass
 class InitDeclaration:
     variables: List[DeclaredVariable]
+    init: Any
 
     def __str__(self) -> str:
         variables = ", ".join(str(variable) for variable in self.variables)
@@ -1128,6 +1245,7 @@ class InitDeclaration:
 class VariableOneInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
@@ -1135,6 +1253,7 @@ class VariableOneInitDeclaration(InitDeclaration):
 class ArrayVariableInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     init: ArrayTypeInitialization
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
@@ -1142,6 +1261,7 @@ class ArrayVariableInitDeclaration(InitDeclaration):
 class StructuredVariableInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     init: InitializedStructure
+    meta: Optional[Meta] = meta_field()
 
 
 @dataclass
@@ -1151,8 +1271,10 @@ class StructuredVariableInitDeclaration(InitDeclaration):
     comments=True
 )
 class StringVariableInitDeclaration(InitDeclaration):
+    variables: List[DeclaredVariable]
     spec: StringTypeSpecification
-    value: lark.Token
+    value: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(variables: List[DeclaredVariable], string_info: StringTypeInitialization):
@@ -1172,6 +1294,7 @@ class StringVariableInitDeclaration(InitDeclaration):
 class EdgeDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     edge: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     @property
     def init(self) -> str:
@@ -1188,6 +1311,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
     spec: lark.Token
     init: Optional[StructureInitialization] = None
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         variables = ", ".join(self.variables)
@@ -1200,6 +1324,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
     init: FunctionBlockInvocation
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         variables = ", ".join(self.variables)
@@ -1211,6 +1336,7 @@ class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
 class ParameterAssignment:
     name: Optional[lark.Token]
     value: Optional[Expression]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args) -> ParameterAssignment:
@@ -1228,15 +1354,18 @@ class ParameterAssignment:
 @dataclass
 @_rule_handler("output_parameter_assignment")
 class OutputParameterAssignment(ParameterAssignment):
-    inverted: bool
+    inverted: bool = False
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         inverted: Optional[lark.Token],
         name: lark.Token,
         value: Expression,
-    ) -> ParameterAssignment:
-        return OutputParameterAssignment(name, value, inverted is not None)
+    ) -> OutputParameterAssignment:
+        return OutputParameterAssignment(
+            name=name, value=value, inverted=inverted is not None
+        )
 
     def __str__(self) -> str:
         prefix = "NOT " if self.inverted else ""
@@ -1248,6 +1377,7 @@ class OutputParameterAssignment(ParameterAssignment):
 class FunctionBlockInvocation:
     name: lark.Token
     parameters: List[ParameterAssignment]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1269,6 +1399,7 @@ class FunctionBlockInvocation:
 class GlobalVariableSpec:
     variables: List[lark.Token]
     location: Optional[Union[Location, IncompleteLocation]]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1276,15 +1407,11 @@ class GlobalVariableSpec:
         location: Optional[Union[Location, IncompleteLocation]] = None
     ) -> GlobalVariableSpec:
         if location is None:
-            return GlobalVariableSpec(
-                variables=name_or_names.children,
-                location=None
-            )
-
-        return GlobalVariableSpec(
-            variables=[name_or_names],
-            location=location
-        )
+            name_tree = typing.cast(lark.Tree, name_or_names)
+            variables = typing.cast(List[lark.Token], name_tree.children)
+        else:
+            variables = typing.cast(List[lark.Token], name_or_names)
+        return GlobalVariableSpec(variables=variables, location=location)
 
     def __str__(self) -> str:
         if not self.location:
@@ -1311,6 +1438,7 @@ class GlobalVariableDeclaration:
         FunctionBlockInvocation,
         lark.Token  # FB type name
     ]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.spec} : {self.init}"
@@ -1320,6 +1448,7 @@ class GlobalVariableDeclaration:
 @_rule_handler("extends")
 class Extends:
     name: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"EXTENDS {self.name}"
@@ -1337,6 +1466,7 @@ class FunctionBody:
         InstructionList,
         SequentialFunctionChart,
     ]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return str(self.source)
@@ -1350,6 +1480,7 @@ class FunctionBlock:
     extends: Optional[Extends]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1388,18 +1519,23 @@ class Function:
     return_type: Optional[lark.Token]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         name: lark.Token,
         return_type: lark.Token,
-        declarations: Optional[lark.Tree],
+        declarations_tree: Optional[lark.Tree],
         body: Optional[FunctionBody]
     ) -> Function:
+        declarations = typing.cast(
+            List[VariableDeclarationBlock],
+            declarations_tree.children if declarations_tree else []
+        )
         return Function(
             name=name,
             return_type=return_type,
-            declarations=declarations.children if declarations else [],
+            declarations=declarations,
             body=body,
         )
 
@@ -1422,16 +1558,22 @@ class Program:
     name: lark.Token
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         name: lark.Token,
-        declarations: Optional[lark.Tree],
+        declarations_tree: Optional[lark.Tree],
         body: Optional[FunctionBody]
     ) -> Program:
+        declarations = typing.cast(
+            List[VariableDeclarationBlock],
+            declarations_tree.children
+            if declarations_tree else []
+        )
         return Program(
             name=name,
-            declarations=declarations.children if declarations else [],
+            declarations=declarations,
             body=body,
         )
 
@@ -1456,6 +1598,7 @@ class Action:
 class NamedAction(Action):
     name: lark.Token
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return "\n".join(
@@ -1473,6 +1616,7 @@ class NamedAction(Action):
 @_rule_handler("entry_action", comments=True)
 class EntryAction(Action):
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return "\n".join(
@@ -1490,6 +1634,7 @@ class EntryAction(Action):
 @_rule_handler("exit_action", comments=True)
 class ExitAction(Action):
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return "\n".join(
@@ -1511,6 +1656,7 @@ class Method:
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1551,6 +1697,7 @@ class Property:
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1583,11 +1730,6 @@ class Property:
         )
 
 
-@dataclass
-class VariableDeclarationBlock:
-    ...
-
-
 VariableInitDeclaration = Union[
     ArrayVariableInitDeclaration,
     StringVariableInitDeclaration,
@@ -1612,24 +1754,27 @@ GlobalVariableDeclarationType = Union[
 # ]
 
 
+class VariableDeclarationBlock:
+    ...
+
+
 @dataclass
 @_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
     config: Optional[lark.Token]
     items: List[VariableInitDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(config: Optional[lark.Token], items: lark.Tree) -> VariableDeclarations:
-        return VariableDeclarations(
-            config=config,
-            items=items.children,
-        )
+    def from_lark(config: Optional[lark.Token], tree: lark.Tree) -> VariableDeclarations:
+        items = typing.cast(List[VariableInitDeclaration], tree.children)
+        return VariableDeclarations(config=config, items=items)
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 join_if("VAR", " ", self.config),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1639,16 +1784,19 @@ class VariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("temp_var_decls", comments=True)
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
     items: List[VariableInitDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(items: lark.Tree) -> TemporaryVariableDeclarations:
-        return TemporaryVariableDeclarations(items.children)
+        return TemporaryVariableDeclarations(
+            typing.cast(List[VariableInitDeclaration], items.children)
+        )
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 "VAR_TEMP",
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1658,16 +1806,22 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
     items: List[VariableInitDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(items: lark.Tree) -> MethodInstanceVariableDeclarations:
-        return MethodInstanceVariableDeclarations(items.children)
+        return MethodInstanceVariableDeclarations(
+            typing.cast(
+                List[VariableInitDeclaration],
+                items.children
+            )
+        )
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 "VAR_INST",
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1679,6 +1833,7 @@ class LocatedVariableDeclaration:
     name: Optional[lark.Token]
     location: Location
     init: LocatedVariableSpecInit
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
@@ -1691,6 +1846,7 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
     config: Optional[lark.Token]
     persistent: bool
     items: List[LocatedVariableDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1712,7 +1868,7 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
                     " ",
                     self.persistent and "PERSISTENT" or None
                 ),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1734,6 +1890,7 @@ class IncompleteLocatedVariableDeclaration:
     name: lark.Token
     location: IncompleteLocation
     init: IncompleteLocatedVariableSpecInit
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
@@ -1745,6 +1902,7 @@ class IncompleteLocatedVariableDeclaration:
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
     retain: bool
     items: List[IncompleteLocatedVariableDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1760,7 +1918,7 @@ class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR", " ", "RETAIN" if self.retain else None),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1776,6 +1934,7 @@ class ExternalVariableDeclaration:
         EnumeratedSpecification,
         ArraySpecification,
     ]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.name} : {self.spec}"
@@ -1786,6 +1945,7 @@ class ExternalVariableDeclaration:
 class ExternalVariableDeclarations(VariableDeclarationBlock):
     constant: bool
     items: List[ExternalVariableDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1801,7 +1961,7 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR_EXTERNAL", " ", self.constant and "CONSTANT" or None),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1812,6 +1972,7 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 class InputDeclarations(VariableDeclarationBlock):
     retain: Optional[lark.Token]
     items: List[InputDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(retain: Optional[lark.Token], *items: InputDeclaration) -> InputDeclarations:
@@ -1821,7 +1982,7 @@ class InputDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR_INPUT", " ", self.retain),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1832,16 +1993,19 @@ class InputDeclarations(VariableDeclarationBlock):
 class OutputDeclarations(VariableDeclarationBlock):
     retain: Optional[lark.Token]
     items: List[OutputDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(retain: Optional[lark.Token], items: lark.Tree) -> OutputDeclarations:
-        return OutputDeclarations(retain, items.children)
+        return OutputDeclarations(
+            retain, typing.cast(List[OutputDeclaration], items.children)
+        )
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 join_if("VAR_OUTPUT", " ", self.retain),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1851,16 +2015,19 @@ class OutputDeclarations(VariableDeclarationBlock):
 @_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
     items: List[InputOutputDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(items: lark.Tree) -> InputOutputDeclarations:
-        return InputOutputDeclarations(items.children)
+        return InputOutputDeclarations(
+            typing.cast(List[InputOutputDeclaration], items.children)
+        )
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 "VAR_IN_OUT",
-                *(indent_if(f"{item};") for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1873,6 +2040,7 @@ class AccessDeclaration:
     variable: SymbolicVariable
     type_name: DataType
     direction: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(
@@ -1885,24 +2053,26 @@ class AccessDeclaration:
 @dataclass
 @_rule_handler("function_var_declarations", comments=True)
 class FunctionVariableDeclarations(VariableDeclarationBlock):
-    constant: Optional[lark.Token]
+    constant: bool
     items: List[VariableInitDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         constant: Optional[lark.Token],
         body: lark.Tree,
     ) -> FunctionVariableDeclarations:
+        items = typing.cast(List[VariableInitDeclaration], body.children)
         return FunctionVariableDeclarations(
             constant=constant is not None,
-            items=body.children,
+            items=items,
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
                 ("VAR CONSTANT" if self.constant else "VAR"),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1912,6 +2082,7 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("program_access_decls", comments=True)
 class AccessDeclarations(VariableDeclarationBlock):
     items: List[AccessDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*items: AccessDeclaration) -> AccessDeclarations:
@@ -1921,7 +2092,7 @@ class AccessDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 "VAR_ACCESS",
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1934,6 +2105,7 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
     retain: bool
     persistent: bool
     items: List[GlobalVariableDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -1959,7 +2131,7 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR_GLOBAL", " ", " ".join(options) if options else None),
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -1974,6 +2146,7 @@ class Statement:
 class ElseIfClause:
     if_expression: Expression
     statements: Optional[StatementList]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return "\n".join(
@@ -1989,6 +2162,7 @@ class ElseIfClause:
 @_rule_handler("else_clause", comments=True)
 class ElseClause:
     statements: Optional[StatementList]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return "\n".join(
@@ -2007,6 +2181,7 @@ class IfStatement(Statement):
     statements: Optional[StatementList]
     else_ifs: List[ElseIfClause]
     else_clause: Optional[ElseClause]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2019,7 +2194,7 @@ class IfStatement(Statement):
             else_clause = args[-1]
             args = args[:-1]
 
-        else_ifs: List[ElseIfClause] = list(args)
+        else_ifs = typing.cast(List[ElseIfClause], list(args))
         return IfStatement(
             if_expression=if_expr,
             statements=then,
@@ -2040,11 +2215,15 @@ class IfStatement(Statement):
         )
 
 
+CaseMatch = Union[Subrange, Integer, EnumeratedValue, SymbolicVariable]
+
+
 @dataclass
 @_rule_handler("case_element", comments=True)
 class CaseElement(Statement):
-    matches: List[Union[Subrange, Integer, EnumeratedValue, SymbolicVariable]]
+    matches: List[CaseMatch]
     statements: Optional[StatementList]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2052,7 +2231,7 @@ class CaseElement(Statement):
         statements: Optional[StatementList],
     ) -> CaseElement:
         return CaseElement(
-            matches=matches.children,
+            matches=typing.cast(List[CaseMatch], matches.children),
             statements=statements,
         )
 
@@ -2073,6 +2252,7 @@ class CaseStatement(Statement):
     expression: Expression
     cases: List[StatementList]
     else_clause: Optional[ElseClause]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2081,11 +2261,13 @@ class CaseStatement(Statement):
     ) -> CaseStatement:
         else_clause = None
         if args and isinstance(args[-1], ElseClause) or args[-1] is None:
-            else_clause = args[-1]
-            args = args[:-1]
+            else_clause = typing.cast(ElseClause, args[-1])
+            cases = typing.cast(Tuple[StatementList, ...], args[:-1])
+        else:
+            cases = typing.cast(Tuple[StatementList, ...], args)
         return CaseStatement(
             expression=expr,
-            cases=list(args),
+            cases=list(cases),
             else_clause=else_clause,
         )
 
@@ -2105,6 +2287,7 @@ class CaseStatement(Statement):
 @_rule_handler("no_op_statement", comments=True)
 class NoOpStatement(Statement):
     variable: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.variable};"
@@ -2115,6 +2298,7 @@ class NoOpStatement(Statement):
 class ActionStatement(Statement):
     # TODO: overlaps with no-op statement?
     action: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.action};"
@@ -2125,6 +2309,7 @@ class ActionStatement(Statement):
 class SetStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.variable} S= {self.expression};"
@@ -2135,6 +2320,7 @@ class SetStatement(Statement):
 class ReferenceAssignmentStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.variable} REF= {self.expression};"
@@ -2145,6 +2331,7 @@ class ReferenceAssignmentStatement(Statement):
 class ResetStatement(Statement):
     variable: SymbolicVariable
     expression: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.variable} R= {self.expression};"
@@ -2153,6 +2340,8 @@ class ResetStatement(Statement):
 @dataclass
 @_rule_handler("exit_statement", comments=True)
 class ExitStatement(Statement):
+    meta: Optional[Meta] = meta_field()
+
     def __str__(self):
         return "EXIT;"
 
@@ -2160,6 +2349,8 @@ class ExitStatement(Statement):
 @dataclass
 @_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
+    meta: Optional[Meta] = meta_field()
+
     def __str__(self):
         return "RETURN;"
 
@@ -2169,6 +2360,7 @@ class ReturnStatement(Statement):
 class AssignmentStatement(Statement):
     variables: List[lark.Token]
     expression: Expression
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args) -> AssignmentStatement:
@@ -2187,6 +2379,7 @@ class AssignmentStatement(Statement):
 @_rule_handler("method_statement", comments=True)
 class MethodStatement(Statement):
     method: SymbolicVariable
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"{self.method}();"
@@ -2197,6 +2390,7 @@ class MethodStatement(Statement):
 class WhileStatement(Statement):
     expression: Expression
     statements: StatementList
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return "\n".join(
@@ -2215,6 +2409,7 @@ class WhileStatement(Statement):
 class RepeatStatement(Statement):
     statements: StatementList
     expression: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return "\n".join(
@@ -2236,6 +2431,7 @@ class ForStatement(Statement):
     to: Expression
     step: Optional[Expression]
     statements: StatementList
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         step = f" BY {self.step}" if self.step else ""
@@ -2254,6 +2450,7 @@ class ForStatement(Statement):
 @_rule_handler("statement_list")
 class StatementList:
     statements: List[Statement]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2285,6 +2482,7 @@ class IL_Parameter:
 class IL_ParameterOperandAssignment(IL_Parameter):
     variable: SymbolicVariable
     value: IL_ParameterOperand
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.variable} := {self.value}"
@@ -2295,6 +2493,7 @@ class IL_ParameterOperandAssignment(IL_Parameter):
 class IL_ParameterInstructionAssignment(IL_Parameter):
     variable: SymbolicVariable
     instructions: List[IL_Instruction]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2311,11 +2510,12 @@ class IL_ParameterInstructionAssignment(IL_Parameter):
             str(instruction) for instruction in self.instructions
         )
         return "\n".join(
-            (
+            part for part in (
                 f"{self.variable} := (",
                 indent_if(instructions),
                 ")",
             )
+            if part is not None
         )
 
 
@@ -2328,6 +2528,7 @@ class IL_Operation:
 class IL_SimpleOperation(IL_Operation):
     function: lark.Token
     operands: List[IL_ParameterOperand]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2349,6 +2550,7 @@ class IL_SimpleOperation(IL_Operation):
 @_rule_handler("il_return_operator")
 class IL_Return(IL_Operation):
     return_token: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return str(self.return_token).upper()
@@ -2360,13 +2562,14 @@ class IL_Expression(IL_Operation):
     operator: lark.Token
     operand: Optional[IL_ParameterOperand]
     instructions: List[IL_SimpleInstruction]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         operator: lark.Token,
         operand: Optional[IL_ParameterOperand],
         *instructions: IL_SimpleInstruction,
-    ) -> IL_FunctionCall:
+    ) -> IL_Expression:
         return IL_Expression(
             operator=operator,
             operand=operand,
@@ -2388,6 +2591,7 @@ class IL_Expression(IL_Operation):
 class IL_JumpOperation(IL_Operation):
     operator: lark.Token
     label: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return f"{self.operator.upper()} {self.label}"
@@ -2398,6 +2602,7 @@ class IL_JumpOperation(IL_Operation):
 class IL_FunctionCall(IL_Operation):
     function: lark.Token
     parameters: List[IL_Parameter]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2420,6 +2625,7 @@ class IL_ParameterOutAssignment(IL_Parameter):
     inverted: bool
     variable: SymbolicVariable
     assign_to: Variable
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2444,13 +2650,14 @@ class IL_FunctionBlockCall:
     operator: lark.Token
     function_block: lark.Token
     arguments: Union[List[IL_Parameter], List[IL_ParameterOperand]]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         operator: lark.Token,
         function_block: lark.Token,
         *arguments: Union[IL_Parameter, IL_ParameterOperand],
-    ) -> IL_FunctionCall:
+    ) -> IL_FunctionBlockCall:
         return IL_FunctionBlockCall(
             operator=operator,
             function_block=function_block,
@@ -2460,10 +2667,7 @@ class IL_FunctionBlockCall:
     def __str__(self) -> str:
         is_param_list = self.arguments and isinstance(self.arguments[0], IL_Parameter)
         if is_param_list:
-            arguments = ",\n".join(
-                indent_if(arg)
-                for arg in self.arguments
-            )
+            arguments = ",\n".join(indent(arg) for arg in self.arguments)
             arguments = f"\n{arguments}\n"
         else:
             arguments = ", ".join(str(arg) for arg in self.arguments)
@@ -2476,6 +2680,7 @@ class IL_FunctionBlockCall:
 class IL_Instruction:
     label: Optional[lark.Token]
     operation: Optional[IL_Operation]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         if not self.label and not self.operation:
@@ -2501,6 +2706,7 @@ IL_ParameterOperand = Union[
 @_rule_handler("sfc_transition_steps")
 class SfcTransitionSteps:
     names: List[lark.Token]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2524,6 +2730,7 @@ class SfcTransition:
     start: SfcTransitionSteps
     stop: SfcTransitionSteps
     condition: Expression
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         name_and_priority = " ".join(
@@ -2549,6 +2756,7 @@ class SfcTransition:
 class SfcActionQualifier:
     qualifier: lark.Token
     time: Optional[Union[Duration, SymbolicVariable]] = None
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(self.qualifier, ", ", self.time)
@@ -2560,6 +2768,7 @@ class SfcActionAssociation:
     name: lark.Token
     qualifier: Optional[SfcActionQualifier]
     indicators: List[SymbolicVariable]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2599,6 +2808,7 @@ class SfcStep:
     name: lark.Token
     body: Optional[SfcStepBody]
     initial: bool = False
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2638,6 +2848,7 @@ SfcNetworkPart = Union[
 @_rule_handler("sfc_network", comments=True)
 class SfcNetwork:
     parts: List[SfcNetworkPart]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2653,6 +2864,7 @@ class SfcNetwork:
 @_rule_handler("sequential_function_chart", comments=True)
 class SequentialFunctionChart:
     networks: List[SfcNetwork]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
@@ -2668,11 +2880,12 @@ class SequentialFunctionChart:
 @_rule_handler("instruction_list", comments=True)
 class InstructionList:
     instructions: List[IL_Instruction]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         *instructions: IL_Instruction
-    ) -> InstructionList:
+    ) -> Optional[InstructionList]:
         if len(instructions) == 1 and instructions[0] == IL_Instruction(None, None):
             # TODO: parser ambiguity; il_instruction can match an empty
             # function block body with no label or operation....
@@ -2693,6 +2906,7 @@ class InstructionList:
 @_rule_handler("config_access_declarations", comments=True)
 class ConfigAccessDeclarations(VariableDeclarationBlock):
     items: List[ConfigAccessDeclaration]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*items: ConfigAccessDeclaration) -> ConfigAccessDeclarations:
@@ -2702,7 +2916,7 @@ class ConfigAccessDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 "VAR_ACCESS",
-                *(textwrap.indent(f"{item};", INDENT) for item in self.items),
+                *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
         )
@@ -2715,6 +2929,7 @@ class ConfigAccessDeclaration:
     path: ConfigAccessPath
     type_name: DataType
     direction: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(
@@ -2729,6 +2944,7 @@ class ConfigAccessDeclaration:
 class DirectAccessPath:
     resource_name: Optional[lark.Token]
     variable: DirectVariable
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return join_if(self.resource_name, ".", self.variable)
@@ -2743,19 +2959,20 @@ class SymbolicAccessPath:
     program_name: Optional[lark.Token]
     function_block_names: List[lark.Token]
     variable: SymbolicVariable
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         resource_name: Optional[lark.Token],
         program_name: Optional[lark.Token],
-        *remainder: Union[lark.Token, SymbolicVariable],
+        *remainder,
     ) -> SymbolicAccessPath:
         *fb_names, variable = remainder
         return SymbolicAccessPath(
             resource_name=resource_name,
             program_name=program_name,
-            function_block_names=list(fb_names),
-            variable=variable
+            function_block_names=typing.cast(List[lark.Token], fb_names),
+            variable=typing.cast(SymbolicVariable, variable),
         )
 
     def __str__(self):
@@ -2779,6 +2996,7 @@ class TaskInitialization:
     single: Optional[TaskDataSource]
     interval: Optional[TaskDataSource]
     priority: lark.Token
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         parts = " ".join(
@@ -2797,6 +3015,7 @@ class TaskInitialization:
 class TaskConfiguration:
     name: lark.Token
     init: TaskInitialization
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self):
         return f"TASK {self.name} {self.init}"
@@ -2822,6 +3041,7 @@ TypeDeclarationItem = Union[
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
     items: List[TypeDeclarationItem]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args: TypeDeclarationItem) -> DataTypeDeclaration:
@@ -2832,7 +3052,7 @@ class DataTypeDeclaration:
             return "TYPE\nEND_TYPE"
 
         items = "\n".join(
-            textwrap.indent(f"{item};", INDENT) for item in self.items
+            indent(f"{item};") for item in self.items
         )
         return "\n".join(
             (
@@ -2859,6 +3079,7 @@ SourceCodeItem = Union[
 class SourceCode:
     """Top-level source code item."""
     items: List[SourceCodeItem]
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args: SourceCodeItem) -> SourceCode:
@@ -2868,29 +3089,24 @@ class SourceCode:
         return "\n".join(str(item) for item in self.items)
 
 
-def _has_meta_kwarg(func: Callable) -> bool:
-    sig = inspect.signature(func)
-    try:
-        meta_param = sig.parameters["meta"]
-    except KeyError:
-        return False
-
-    return inspect.Parameter.KEYWORD_ONLY == meta_param.kind
-
-
 def _annotator_wrapper(handler):
     def wrapped(self: GrammarTransformer, data: Any, children: list, meta: lark.tree.Meta) -> Any:
         result = handler(*children)
         if result is not None and not isinstance(result, (lark.Tree, lark.Token, list)):
-            result.meta = meta
+            result.meta = Meta.from_lark(meta)
         return result
 
     return wrapped
 
 
-def pass_through(obj: Optional[T] = None) -> Optional[T]:
-    """Transformer helper to pass through an optional single argument."""
-    return obj
+def _annotator_method_wrapper(handler):
+    def wrapped(self: GrammarTransformer, data: Any, children: list, meta: lark.tree.Meta) -> Any:
+        result = handler(self, *children)
+        if result is not None and not isinstance(result, (lark.Tree, lark.Token, list)):
+            result.meta = Meta.from_lark(meta)
+        return result
+
+    return wrapped
 
 
 class GrammarTransformer(lark.visitors.Transformer):
@@ -2914,13 +3130,11 @@ class GrammarTransformer(lark.visitors.Transformer):
         self._filename = fn
         self.comments = comments or []
 
-    constant = _annotator_wrapper(pass_through)
-
     locals().update(
-        **{
-            name: _annotator_wrapper(handler)
+        **dict(
+            (str(name), _annotator_wrapper(handler))
             for name, handler in _class_handlers.items()
-        }
+        )
     )
 
     def transform(self, tree):
@@ -2929,32 +3143,48 @@ class GrammarTransformer(lark.visitors.Transformer):
             merge_comments(transformed, self.comments)
         return transformed
 
-    @_annotator_wrapper
-    def full_subrange():
+    @_annotator_method_wrapper
+    def constant(self, constant: Constant) -> Constant:
+        return constant
+
+    @_annotator_method_wrapper
+    def full_subrange(self):
         return FullSubrange()
 
-    @_annotator_wrapper
-    def var1_list(*items: DeclaredVariable) -> List[DeclaredVariable]:
+    @_annotator_method_wrapper
+    def var1_list(self, *items: DeclaredVariable) -> List[DeclaredVariable]:
         return list(items)
 
-    @_annotator_wrapper
-    def fb_decl_name_list(*items: lark.Token) -> List[lark.Token]:
+    @_annotator_method_wrapper
+    def fb_decl_name_list(self, *items: lark.Token) -> List[lark.Token]:
         return list(items)
 
-    @_annotator_wrapper
-    def signed_integer(value: lark.Token):
+    @_annotator_method_wrapper
+    def signed_integer(self, value: lark.Token):
         return Integer.from_lark(None, value)
 
-    @_annotator_wrapper
-    def integer(value: lark.Token):
+    @_annotator_method_wrapper
+    def integer(self, value: lark.Token):
         return Integer.from_lark(None, value)
 
-    @_annotator_wrapper
-    def true(value: lark.Token):
+    @_annotator_method_wrapper
+    def binary_integer(self, value: Union[Integer, lark.Token]):
+        return Integer.from_lark(None, value, base=2)
+
+    @_annotator_method_wrapper
+    def octal_integer(self, value: Union[Integer, lark.Token]):
+        return Integer.from_lark(None, value, base=8)
+
+    @_annotator_method_wrapper
+    def hex_integer(self, value: Union[Integer, lark.Token]):
+        return Integer.from_lark(None, value, base=16)
+
+    @_annotator_method_wrapper
+    def true(self, value: lark.Token):
         return Boolean(value=value)
 
-    @_annotator_wrapper
-    def false(value: lark.Token):
+    @_annotator_method_wrapper
+    def false(self, value: lark.Token):
         return Boolean(value=value)
 
     def __default__(self, data, children, meta):

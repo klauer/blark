@@ -13,26 +13,6 @@ def _get_comments(item):
         return []
 
 
-def _get_comments_and_pragmas(item):
-    try:
-        all_comments = item.meta.comments
-    except AttributeError:
-        return [], []
-
-    pragmas = []
-    comments = []
-    by_type = {
-        "SINGLE_LINE_COMMENT": comments,
-        "MULTI_LINE_COMMENT": comments,
-        "PRAGMA": pragmas,
-    }
-
-    for comment in all_comments:
-        by_type[comment.type].append(comment)
-
-    return pragmas, comments
-
-
 @dataclass
 class Declaration:
     name: str
@@ -72,7 +52,7 @@ class FunctionBlockSummary:
                 for var in item.variables:
                     name = getattr(var, "name", var)
                     location = getattr(var, "location", None)
-                    comments, pragmas = _get_comments_and_pragmas(item)
+                    comments, pragmas = item.meta.get_comments_and_pragmas()
                     summary.declarations[name] = Declaration(
                         name=name,
                         location=location,
