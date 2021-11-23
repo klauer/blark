@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import enum
 import functools
+import pathlib
 import textwrap
 import typing
 from dataclasses import dataclass, fields, is_dataclass
@@ -3081,6 +3082,8 @@ SourceCodeItem = Union[
 class SourceCode:
     """Top-level source code item."""
     items: List[SourceCodeItem]
+    filename: Optional[pathlib.Path] = None
+    raw_source: Optional[str] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
@@ -3111,7 +3114,7 @@ def _annotator_method_wrapper(handler):
     return wrapped
 
 
-class GrammarTransformer(lark.visitors.Transformer):
+class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
     """
     Grammar transformer which takes lark objects and makes a :class:`SourceCode`.
 
@@ -3127,9 +3130,15 @@ class GrammarTransformer(lark.visitors.Transformer):
     _filename: Optional[str]
     comments: List[lark.Token]
 
-    def __init__(self, comments: Optional[List[lark.Token]] = None, fn=None):
+    def __init__(
+        self,
+        comments: Optional[List[lark.Token]] = None,
+        fn: Optional[str] = None,
+        source_code: Optional[str] = None,
+    ):
         super().__init__()
-        self._filename = fn
+        self._filename = pathlib.Path(fn) if fn else None
+        self._source_code = source_code
         self.comments = comments or []
 
     locals().update(
@@ -3143,6 +3152,9 @@ class GrammarTransformer(lark.visitors.Transformer):
         transformed = super().transform(tree)
         if self.comments:
             merge_comments(transformed, self.comments)
+        if isinstance(transformed, SourceCode):
+            transformed.source_code = self._source_code
+            transformed.filename = self._filename
         return transformed
 
     @_annotator_method_wrapper

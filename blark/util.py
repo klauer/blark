@@ -1,11 +1,12 @@
 import pathlib
 import re
-from typing import Generator, List, Tuple
+from typing import Generator, List, Tuple, Union
 
 import lark
 import pytmc
 
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
+AnyPath = Union[str, pathlib.Path]
 
 
 def get_source_code(fn):

@@ -6,13 +6,6 @@ from typing import Dict, List, Union
 from . import transform as tf
 
 
-def _get_comments(item):
-    try:
-        return item.meta.comments
-    except AttributeError:
-        return []
-
-
 @dataclass
 class Declaration:
     name: str
@@ -34,7 +27,9 @@ class FunctionBlockSummary:
 
     @classmethod
     def from_function_block(cls, fb: tf.FunctionBlock) -> FunctionBlockSummary:
-        summary = FunctionBlockSummary(name=fb.name, comments=_get_comments(fb))
+        summary = FunctionBlockSummary(
+            name=fb.name, comments=fb.meta.comments if fb.meta else None
+        )
 
         for decl in fb.declarations:
             for item in decl.items:

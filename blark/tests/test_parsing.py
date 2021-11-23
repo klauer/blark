@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from ..parse import parse_single_file, summarize
+from ..parse import parse, summarize
 from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -22,7 +22,7 @@ def pou_filename(request):
 
 def test_parsing(pou_filename):
     try:
-        result = parse_single_file(pou_filename, verbose=2)
+        ((fn, result),) = list(parse(pou_filename))
     except FileNotFoundError:
         pytest.skip(f"Missing file: {pou_filename}")
     else:
