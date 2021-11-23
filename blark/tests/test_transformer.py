@@ -1,11 +1,12 @@
 import pathlib
+from typing import Optional
 
 import pytest
 from pytest import param
 
 from .. import transform as tf
 from ..parse import parse_source_code
-from .conftest import get_grammar, stringify_tokens
+from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
 
@@ -88,10 +89,6 @@ def test_check_unhandled_rules(grammar):
         param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type="WORD", value="0101")),  # noqa: E501
         param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type="WORD", value="777")),  # noqa: E501
         param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type="word", value="FEEE")),  # noqa: E501
-        param("boolean_literal", "BOOL#1", tf.Boolean(value="1")),
-        param("boolean_literal", "BOOL#0", tf.Boolean(value="0")),
-        param("boolean_literal", "BOOL#TRUE", tf.Boolean(value="TRUE")),
-        param("boolean_literal", "BOOL#FALSE", tf.Boolean(value="FALSE")),
         param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
@@ -109,11 +106,8 @@ def test_check_unhandled_rules(grammar):
     ],
 )
 def test_literal(name, value, expected):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    print(f"transformed -> {transformed}")
-    assert stringify_tokens(transformed) == expected
+    transformed = roundtrip_rule(name, value, expected=str(expected))
+    assert transformed == expected
 
 
 @pytest.mark.parametrize(
@@ -160,10 +154,7 @@ def test_literal(name, value, expected):
     ],
 )
 def test_literal_roundtrip(name, value):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    assert str(transformed) == value
+    roundtrip_rule(name, value)
 
 
 @pytest.mark.parametrize(
@@ -180,22 +171,7 @@ def test_literal_roundtrip(name, value):
     ],
 )
 def test_bool_literal_roundtrip(name, value, expected):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    assert str(transformed) == expected
-
-
-def roundtrip_rule(rule_name: str, value: str):
-    parsed = get_grammar(start=rule_name).parse(value)
-    print(f"rule {rule_name} value {value!r} into:\n\n{parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    print("\n\nTransformed:")
-    print(repr(transformed))
-    print("\n\nOr:")
-    print(transformed)
-    assert str(transformed) == value
-    return transformed
+    roundtrip_rule(name, value, expected=expected)
 
 
 @pytest.mark.parametrize(
@@ -882,14 +858,16 @@ def test_program_roundtrip(rule_name, value):
     _ = roundtrip_rule(rule_name, value)
 
 
-def roundtrip_rule_with_comments(rule_name: str, value: str):
+def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     parser = get_grammar(start=rule_name)
     transformed = parse_source_code(value, parser=parser)
     print("\n\nTransformed:")
     print(repr(transformed))
     print("\n\nOr:")
     print(transformed)
-    assert str(transformed) == value
+    if expected is None:
+        expected = value
+    assert str(transformed) == expected
     return transformed
 
 
@@ -909,7 +887,7 @@ def roundtrip_rule_with_comments(rule_name: str, value: str):
     ],
 )
 def test_input_output_comments(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -935,7 +913,7 @@ def test_input_output_comments(rule_name, value):
     ],
 )
 def test_incomplete_located_var_decls(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -996,7 +974,7 @@ def test_incomplete_located_var_decls(rule_name, value):
     ],
 )
 def test_data_type_declaration(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1041,7 +1019,7 @@ def test_data_type_declaration(rule_name, value):
     ],
 )
 def test_config_roundtrip(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1110,7 +1088,7 @@ def test_config_roundtrip(rule_name, value):
     ]
 )
 def test_instruction_list(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1167,4 +1145,4 @@ def test_instruction_list(rule_name, value):
     ]
 )
 def test_sfc_sequential_function_chart(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
