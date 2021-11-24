@@ -5,10 +5,10 @@ source code files.
 import argparse
 import pathlib
 import sys
+import traceback
 
-import pytmc
-
-from .parse import parse_project, parse_single_file
+from .parse import parse
+from .util import AnyPath, python_debug_session
 
 DESCRIPTION = __doc__
 
@@ -37,63 +37,70 @@ def build_arg_parser(argparser=None):
     return argparser
 
 
-def main(filename, verbose=0, debug=False):
-    """
-    Parse the given source code/project.
-    """
-
-    path = pathlib.Path(filename)
-    project_fns = []
-    source_fns = []
-    if path.suffix.lower() in (".tsproj",):
-        project_fns = [path]
-    elif path.suffix.lower() in (".sln",):
-        project_fns = pytmc.parser.projects_from_solution(path)
-    elif path.suffix.lower() in (".tcpou", ".tcgvl", ".tcdut"):
-        source_fns = [path]
-    else:
-        raise ValueError(f"Expected a tsproj or sln file, got: {path.suffix}")
-
-    results = {}
-    success = True
+def main(
+    filename: AnyPath,
+    verbose: int = 0,
+    debug: bool = False,
+    interactive: bool = False,
+):
+    result_by_filename = {}
+    failures = []
     print_filenames = sys.stdout if verbose > 0 else None
+    filename = pathlib.Path(filename)
 
-    for fn in project_fns:
+    for fn, result in parse(filename):
         if print_filenames:
-            print(f"* Loading project {fn}")
-        success, results[fn] = parse_project(
-            fn, print_filenames=print_filenames, verbose=verbose
-        )
-
-    for fn in source_fns:
-        if print_filenames:
-            print(f"* Parsing {fn}")
-        try:
-            results[fn] = parse_single_file(fn, verbose=verbose)
-        except Exception:
-            success = False
-            if debug:
-                raise
+            print(f"* Loading {fn}")
+        result_by_filename[fn] = result
+        if isinstance(result, Exception):
+            failures.append((fn, result))
+            if interactive:
+                python_debug_session(
+                    namespace={"fn": fn, "result": result},
+                    message=(
+                        f"Failed to parse {fn}. {type(result).__name__}: {result}\n"
+                        f"{result.traceback}"
+                    ),
+                )
+            elif verbose > 1:
+                print(result.traceback)
         else:
-            print(results[fn])
+            print(result)
 
-    def find_failures(res):
-        for name, item in res.items():
-            if isinstance(item, Exception):
-                yield name, item
-            elif isinstance(item, dict):
-                yield from find_failures(item)
+    if not result_by_filename:
+        return {}
 
-    if not success:
-        print("Failed to parse all source code files:")
-        failures = list(find_failures(results))
-        for name, item in failures:
-            fn = f"[{item.filename}] " if hasattr(item, "filename") else ""
-            header = f"{fn}{name}"
+    if interactive:
+        if len(result_by_filename) > 1:
+            python_debug_session(
+                namespace={"fn": filename, "results": result_by_filename},
+                message=(
+                    "Parsed all files successfully: {list(result_by_filename)}\n"
+                    "Access all results by filename in the variable ``results``"
+                )
+            )
+        else:
+            ((filename, result),) = list(result_by_filename.items())
+            python_debug_session(
+                namespace={"fn": filename, "result": result},
+                message=(
+                    f"Parsed single file successfully: {filename}.\n"
+                    f"Access its transformed value in the variable ``result``."
+                )
+            )
+
+    if failures:
+        print("Failed to parse some source code files:")
+        for fn, exception in failures:
+            header = f"{fn}"
             print(header)
             print("-" * len(header))
-            print(f"({type(item).__name__}) {item}")
+            print(f"({type(exception).__name__}) {exception}")
             print()
+            # if verbose > 1:
+            traceback.print_exc()
 
         if not debug:
             sys.exit(1)
+
+    return result_by_filename
