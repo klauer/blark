@@ -1423,13 +1423,13 @@ class GlobalVariableSpec:
             name_tree = typing.cast(lark.Tree, name_or_names)
             variables = typing.cast(List[lark.Token], name_tree.children)
         else:
-            variables = typing.cast(List[lark.Token], name_or_names)
+            variables = typing.cast(List[lark.Token], [name_or_names])
         return GlobalVariableSpec(variables=variables, location=location)
 
     def __str__(self) -> str:
         if not self.location:
             return ", ".join(self.variables)
-        return f"{self.variables[0]} : {self.location}"
+        return f"{self.variables[0]} {self.location}"
 
 
 LocatedVariableSpecInit = Union[

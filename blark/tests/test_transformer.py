@@ -488,6 +488,7 @@ def test_var_access_roundtrip(rule_name, value):
                 fbTest1 : FB_Test(1, 2);
                 fbTest2 : FB_Test(A := 1, B := 2);
                 fbTest3 : FB_TestC;
+                i_iFscEB1Ch0AI AT %I* : INT;
             END_VAR
             """
         )),
