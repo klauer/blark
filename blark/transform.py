@@ -3175,8 +3175,11 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
         if self.comments:
             merge_comments(transformed, self.comments)
         if isinstance(transformed, SourceCode):
-            transformed.source_code = self._source_code
-            transformed.filename = self._filename
+            transformed.raw_source = self._source_code
+            transformed.filename = (
+                pathlib.Path(self._filename)
+                if self._filename is not None else None
+            )
         return transformed
 
     @_annotator_method_wrapper

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import textwrap
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from . import transform as tf
 
@@ -86,7 +86,7 @@ class DeclarationSummary(Summary):
     location: Optional[str]
     block: str
     type: str
-    value: str
+    value: Optional[str]
 
     @classmethod
     def from_declaration(
@@ -97,12 +97,13 @@ class DeclarationSummary(Summary):
         try:
             spec = item.init.spec
         except AttributeError:
-            spec = "?"
+            spec = item.init
+            spec = getattr(spec, "name", spec)
 
         try:
             value = item.init.value
         except AttributeError:
-            value = ""
+            value = item.init
 
         for var in item.variables:
             name = getattr(var, "name", var)
@@ -123,7 +124,7 @@ class DeclarationSummary(Summary):
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         for decl in block.items:
-            result.update(cls.from_declaration(decl, block_type=type(decl).__name__))
+            result.update(cls.from_declaration(decl, block_type=type(block).__name__))
         return result
 
 
@@ -141,13 +142,27 @@ class ActionSummary(Summary):
 
 @dataclass
 class MethodSummary(Summary):
+    name: str
     return_type: Optional[tf.LocatedVariableSpecInit]
+    source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        result = {}
+        for decl in self.declarations.values():
+            result.setdefault(decl.block, {})[decl.name] = decl
+        return result
+
     @classmethod
-    def from_method(cls, method: tf.Method) -> MethodSummary:
+    def from_method(cls, method: tf.Method, source_code: Optional[str] = None) -> MethodSummary:
+        if source_code is None:
+            source_code = str(method)
+
         summary = MethodSummary(
+            name=method.name,
             return_type=method.return_type,
+            source_code=source_code,
             **Summary.get_meta_kwargs(method.meta),
         )
         for decl in method.declarations:
@@ -159,14 +174,28 @@ class MethodSummary(Summary):
 @dataclass
 class FunctionBlockSummary(Summary):
     name: str
+    source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
 
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        result = {}
+        for decl in self.declarations.values():
+            result.setdefault(decl.block, {})[decl.name] = decl
+        return result
+
     @classmethod
-    def from_function_block(cls, fb: tf.FunctionBlock) -> FunctionBlockSummary:
+    def from_function_block(
+        cls, fb: tf.FunctionBlock, source_code: Optional[str] = None
+    ) -> FunctionBlockSummary:
+        if source_code is None:
+            source_code = str(fb)
+
         summary = FunctionBlockSummary(
             name=fb.name,
+            source_code=source_code,
             **Summary.get_meta_kwargs(fb.meta),
         )
 
@@ -189,23 +218,32 @@ class CodeSummary:
         )
 
     @staticmethod
-    def from_source(code: Union[tf.SourceCode, tf.SourceCodeItem]) -> CodeSummary:
+    def from_source(code: tf.SourceCode) -> CodeSummary:
         result = CodeSummary()
-        if isinstance(code, tf.SourceCode):
-            items = code.items
-        else:
-            items = [code]
+        code_by_lines = [""] + code.raw_source.splitlines()
+        items = code.items
+
+        def get_code_by_meta(meta: Optional[tf.Meta]) -> str:
+            if not meta:
+                return ""
+            return "\n".join(code_by_lines[meta.line:meta.end_line + 1])
 
         last_function_block = None
         for item in items:
             if isinstance(item, tf.FunctionBlock):
-                summary = FunctionBlockSummary.from_function_block(item)
+                summary = FunctionBlockSummary.from_function_block(
+                    item,
+                    source_code=get_code_by_meta(item.meta)
+                )
                 result.function_blocks[item.name] = summary
                 last_function_block = summary
             elif isinstance(item, tf.Method):
                 if last_function_block is not None:
                     last_function_block.methods.append(
-                        MethodSummary.from_method(item)
+                        MethodSummary.from_method(
+                            item,
+                            source_code=get_code_by_meta(item.meta)
+                        )
                     )
             elif isinstance(item, tf.Action):
                 if last_function_block is not None:
