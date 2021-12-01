@@ -48,6 +48,7 @@ global_macros = {
                 </div>
                 </summary>
             </details>
+            <br />
         {% endmacro %}
         """
 
@@ -78,7 +79,7 @@ global_macros = {
                 {% elif block == "VariableDeclarations" %}
                     {% set block_name = "VAR" %}
                 {% elif block == "MethodInstanceVariableDeclarations" %}
-                    {% set block_name = "VAR" %}
+                    {% set block_name = "VAR_INST" %}
                 {% else %}
                     {% set block_name = block %}
                 {% endif %}
@@ -96,6 +97,7 @@ global_macros = {
                         <dd>
                             {% if decl.value %}
                                 <span class="paraminfo">Default: <code>{{decl.value}}</code></span>
+                                <br />
                             {% endif %}
                             {% for comment in decl.comments %}
                                 <span class="paraminfo">{{ comment | trim("/(*)") }}</span>
@@ -263,6 +265,7 @@ class BlarkDomain(Domain):
         "functionblock": {},
         "parameter": {},
         "method": {},
+        "action": {},
     }
     indices = [
         # BlarkModuleIndex,
@@ -313,7 +316,7 @@ def setup(app: sphinx.application.Sphinx):
     app.add_config_value('blark_projects', [], 'html')
     app.add_config_value('blark_signature_show_type', True, 'html')
 
-    for cls in (FunctionBlockNode, ParameterNode, MethodNode):
+    for cls in (FunctionBlockNode, ParameterNode, ActionNode, MethodNode):
         app.add_node(
             cls,
             html=(
@@ -459,6 +462,47 @@ class ElementWithDeclarations(BlarkNode):
                 child.register(docname, scope, domaindata)
 
 
+class ActionNode(BlarkNode):
+    objtype: str = "action"
+
+    _jinja_format_ = {
+        "html": (
+            """\
+            <dl class="function">
+                <dt id="{{ node.name }}">
+                    <span class="sig">
+                        <em class="property">ACTION</em>
+                        <code class="descname">
+                            {{ node.name }}
+                        </code>
+                        {{ make_permalink(node.name, "action") }}
+                        </dt>
+                    </span>
+                    <dd>
+                    {% if node.declarations %}
+                        {{ render_declarations(node, node.declarations) }}
+                    {% endif %}
+                    </dd>
+                    {{ node_source(node) }}
+            """,
+
+            """\
+            </dd></dl>
+            """
+        )
+    }
+
+    @classmethod
+    def from_action(
+        cls, fb: summary.FunctionBlockSummary, action: summary.ActionSummary
+    ) -> ActionNode:
+        return cls(
+            name=action.name,
+            ids=[f"{fb.name}.{action.name}"],
+            source_code=action.source_code,
+        )
+
+
 class MethodNode(ElementWithDeclarations):
     objtype: str = "method"
 
@@ -480,7 +524,7 @@ class MethodNode(ElementWithDeclarations):
                             formatted_decls | join(", ")
                         }}<span class="sig-paren">)</span>
 
-                        {{ make_permalink(node.name, "function block") }}
+                        {{ make_permalink(node.name, "function block method") }}
                         </dt>
                     </span>
                     <dd>
@@ -560,9 +604,9 @@ class FunctionBlockNode(ElementWithDeclarations):
             for block, decls in fb.declarations_by_block.items()
             for decl in decls.values()
         ]
-        # children.extend(
-        #     [ActionNode.from_action(fb, action) for action in fb.actions]
-        # )
+        children.extend(
+            [ActionNode.from_action(fb, action) for action in fb.actions]
+        )
         children.extend(
             [MethodNode.from_method(fb, method) for method in fb.methods]
         )

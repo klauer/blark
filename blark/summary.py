@@ -131,11 +131,16 @@ class DeclarationSummary(Summary):
 @dataclass
 class ActionSummary(Summary):
     name: str
+    source_code: str
 
     @classmethod
-    def from_action(cls, action: tf.Action) -> ActionSummary:
+    def from_action(cls, action: tf.Action, source_code: Optional[str] = None) -> ActionSummary:
+        if source_code is None:
+            source_code = str(action)
+
         return ActionSummary(
             name=str(action.name),
+            source_code=source_code,
             **Summary.get_meta_kwargs(action.meta),
         )
 
@@ -248,6 +253,9 @@ class CodeSummary:
             elif isinstance(item, tf.Action):
                 if last_function_block is not None:
                     last_function_block.actions.append(
-                        ActionSummary.from_action(item)
+                        ActionSummary.from_action(
+                            item,
+                            source_code=get_code_by_meta(item.meta)
+                        )
                     )
         return result
