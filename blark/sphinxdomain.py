@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 
 global_macros = {
     "html": (
-        """
+        """\
         {% macro make_permalink(identifier, type) %}
             {% if node.ids and translator.config.html_permalinks %}
-                {% if  translator.builder.add_permalinks %}
+                {% if translator.builder.add_permalinks %}
                     <a class="headerlink" href="#{{ identifier }}"
                         title="Permalink to this {{ type }}">{{
                             translator.config.html_permalinks_icon
@@ -40,13 +40,16 @@ global_macros = {
         """
 
         """
-        {% macro node_source(node) %}
+        {% macro node_source(node, title="") %}
             <details>
-                <summary>{{ node.ids[0] }} source code</summary>
+                {% if title %}
+                    <summary>{{ title }}</summary>
+                {% else %}
+                    <summary>{{ node.ids[0] }} source code</summary>
+                {% endif %}
                 <div class="highlight">
                     <pre>{{ node.source_code }}</pre>
                 </div>
-                </summary>
             </details>
             <br />
         {% endmacro %}
@@ -68,10 +71,16 @@ global_macros = {
 
         """
         {% macro render_declarations(node, declarations) %}
+            {% set shown_block_types = ["VAR_INPUT", "VAR_OUTPUT", "VAR_IN_OUT"] %}
             {% for block, decls in declarations.items() %}
-                <dl class="field-list">
-                <dt class="field-odd">{{ block }}</dt>
-                <dd class="field-odd">
+                {% if block not in shown_block_types %}
+                    <details>
+                    <summary>{{ block }}</summary>
+                {% else %}
+                    <dl class="field-list">
+                    <dt class="field-odd">{{ block }}</dt>
+                    <dd class="field-odd">
+                {% endif %}
                     <dl class="{{ block | lower }}">
                     {% for decl in decls.values() %}
                         {% set qualified_name = node.name + "." + decl.name %}
@@ -97,8 +106,12 @@ global_macros = {
                         </dd>
                     {% endfor %}
                     </dl>
-                </dd>
-                </dl>
+                {% if block not in shown_block_types %}
+                    </details>
+                {% else %}
+                    </dd>
+                    </dl>
+                {% endif %}
             {% endfor %}
         {% endmacro %}
         """
@@ -367,7 +380,7 @@ def render_block(
     else:
         ctx = {}
     formatted = FormatContext().render_template(
-        global_macros.get(format, "") + template,
+        textwrap.dedent(global_macros.get(format, "")) + template,
         node=node,
         translator=translator,
         app=app,
@@ -507,18 +520,20 @@ class ActionNode(BlarkNode):
                             {{ node.name }}
                         </code>
                         {{ make_permalink(node.name, "action") }}
-                        </dt>
                     </span>
-                    <dd>
-                    {% if node.declarations %}
-                        {{ render_declarations(node, node.declarations) }}
-                    {% endif %}
-                    </dd>
-                    {{ node_source(node) }}
+                </dt>
+                <dd>
+                {% if node.declarations %}
+                    {{ render_declarations(node, node.declarations) }}
+                {% endif %}
+                </dd>
+                <dd>
+                    {{ node_source(node, "Source code") }}
             """,
 
             """\
-            </dd></dl>
+                </dd>
+            </dl>
             """
         )
     }
@@ -556,13 +571,14 @@ class MethodNode(ElementWithDeclarations):
                         }}<span class="sig-paren">)</span>
 
                         {{ make_permalink(node.name, "function block method") }}
-                        </dt>
                     </span>
-                    <dd>
+                </dt>
+                <dd>
                     {% if node.declarations %}
-                        {{ render_declarations(node, node.declarations) }}
+                    {{ render_declarations(node, node.declarations) }}
                     {% endif %}
-                    </dd>
+                </dd>
+                <dd>
                     {{ node_source(node) }}
             """,
 
@@ -612,18 +628,20 @@ class FunctionBlockNode(ElementWithDeclarations):
                         }}<span class="sig-paren">)</span>
 
                         {{ make_permalink(node.name, "function block") }}
-                        </dt>
                     </span>
-                    <dd>
+                </dt>
+                <dd>
                     {% if node.declarations %}
                         {{ render_declarations(node, node.declarations) }}
                     {% endif %}
-                    </dd>
+                </dd>
+                <dd>
                     {{ node_source(node) }}
             """,
 
             """\
-            </dd></dl>
+                </dd>
+            </dl>
             """
         )
     }
@@ -674,18 +692,20 @@ class FunctionNode(ElementWithDeclarations):
                         </span>
 
                         {{ make_permalink(node.name, "function block") }}
-                        </dt>
                     </span>
-                    <dd>
-                    {% if node.declarations %}
-                        {{ render_declarations(node, node.declarations) }}
-                    {% endif %}
-                    </dd>
+                </dt>
+                <dd>
+                {% if node.declarations %}
+                    {{ render_declarations(node, node.declarations) }}
+                {% endif %}
+                </dd>
+                <dd>
                     {{ node_source(node) }}
             """,
 
             """\
-            </dd></dl>
+                </dd>
+            </dl>
             """
         )
     }
