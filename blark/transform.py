@@ -1775,6 +1775,7 @@ GlobalVariableDeclarationType = Union[
 
 
 class VariableDeclarationBlock:
+    block_header: ClassVar[str] = "VAR"
     items: List[Any]
     meta: Optional[Meta]
 
@@ -1782,6 +1783,7 @@ class VariableDeclarationBlock:
 @dataclass
 @_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR"
     config: Optional[lark.Token]
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -1804,6 +1806,7 @@ class VariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("temp_var_decls", comments=True)
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_TEMP"
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
@@ -1826,6 +1829,7 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_INST"
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
@@ -1864,6 +1868,7 @@ class LocatedVariableDeclaration:
 @dataclass
 @_rule_handler("located_var_declarations", comments=True)
 class LocatedVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR"
     config: Optional[lark.Token]
     persistent: bool
     items: List[LocatedVariableDeclaration]
@@ -1921,6 +1926,7 @@ class IncompleteLocatedVariableDeclaration:
 @dataclass
 @_rule_handler("incomplete_located_var_declarations", comments=True)
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR"
     retain: bool
     items: List[IncompleteLocatedVariableDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -1964,6 +1970,7 @@ class ExternalVariableDeclaration:
 @dataclass
 @_rule_handler("external_var_declarations", comments=True)
 class ExternalVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_EXTERNAL"
     constant: bool
     items: List[ExternalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -1991,6 +1998,7 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_declarations", comments=True)
 class InputDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_INPUT"
     retain: Optional[lark.Token]
     items: List[InputDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -2012,6 +2020,7 @@ class InputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("output_declarations", comments=True)
 class OutputDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_OUTPUT"
     retain: Optional[lark.Token]
     items: List[OutputDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -2035,6 +2044,7 @@ class OutputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_IN_OUT"
     items: List[InputOutputDeclaration]
     meta: Optional[Meta] = meta_field()
 
@@ -2074,6 +2084,7 @@ class AccessDeclaration:
 @dataclass
 @_rule_handler("function_var_declarations", comments=True)
 class FunctionVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR"
     constant: bool
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -2102,6 +2113,7 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("program_access_decls", comments=True)
 class AccessDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_ACCESS"
     items: List[AccessDeclaration]
     meta: Optional[Meta] = meta_field()
 
@@ -2122,6 +2134,7 @@ class AccessDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_GLOBAL"
     constant: bool
     retain: bool
     persistent: bool
@@ -2930,6 +2943,7 @@ class InstructionList:
 @dataclass
 @_rule_handler("config_access_declarations", comments=True)
 class ConfigAccessDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_ACCESS"
     items: List[ConfigAccessDeclaration]
     meta: Optional[Meta] = meta_field()
 

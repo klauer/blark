@@ -5,7 +5,7 @@ import functools
 import inspect
 import logging
 import textwrap
-from typing import ClassVar, Dict
+from typing import ClassVar, Dict, Union
 
 import jinja2
 import sphinx
@@ -15,11 +15,11 @@ from sphinx.directives import ObjectDescription
 from sphinx.domains import Domain, ObjType
 from sphinx.locale import _ as l_
 from sphinx.roles import XRefRole
-from sphinx.util.docfields import DocFieldTransformer, TypedField
+from sphinx.util.docfields import DocFieldTransformer, Field, TypedField
 from sphinx.util.docutils import SphinxTranslator
 from sphinx.util.nodes import make_refnode
 
-from . import summary
+from . import summary, util
 from .parse import parse
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ global_macros = {
         """
         {% macro formatted_decl(decl) %}
             {% if app.config.blark_signature_show_type %}
-                {% if decl.block == "OutputDeclarations" %}
+                {% if decl.block == "VAR_OUTPUT" %}
                     {{ decl.type }} <em>{{decl.name}} =&gt;</em>
                 {% else %}
                     {{ decl.type }} <em>{{decl.name}}</em>
@@ -70,22 +70,9 @@ global_macros = {
         {% macro render_declarations(node, declarations) %}
             {% for block, decls in declarations.items() %}
                 <dl class="field-list">
-                {% if block == "InputDeclarations" %}
-                    {% set block_name = "VAR_INPUT" %}
-                {% elif block == "OutputDeclarations" %}
-                    {% set block_name = "VAR_OUTPUT" %}
-                {% elif block == "InputOutputDeclarations" %}
-                    {% set block_name = "VAR_INOUT" %}
-                {% elif block == "VariableDeclarations" %}
-                    {% set block_name = "VAR" %}
-                {% elif block == "MethodInstanceVariableDeclarations" %}
-                    {% set block_name = "VAR_INST" %}
-                {% else %}
-                    {% set block_name = block %}
-                {% endif %}
-                <dt class="field-odd">{{ block_name }}</dt>
+                <dt class="field-odd">{{ block }}</dt>
                 <dd class="field-odd">
-                    <dl class="{{ block_name | lower }}">
+                    <dl class="{{ block | lower }}">
                     {% for decl in decls.values() %}
                         {% set qualified_name = node.name + "." + decl.name %}
                         <dt id="{{ qualified_name }}">
@@ -100,7 +87,9 @@ global_macros = {
                                 <br />
                             {% endif %}
                             {% for comment in decl.comments %}
-                                <span class="paraminfo">{{ comment | trim("/(*)") }}</span>
+                                <span class="paraminfo">{{
+                                    comment | remove_comment_characters
+                                }}</span>
                             {% endfor %}
                             {% for pragma in decl.pragmas %}
                             <span class="pragma"><pre>{{ pragma }}</pre></span>
@@ -134,6 +123,12 @@ class BlarkSphinxCache:
                 return item.function_blocks[name]
             except KeyError:
                 ...
+
+            try:
+                return item.functions[name]
+            except KeyError:
+                ...
+
         raise KeyError(f"{name!r} not found")
 
     def configure(self, app: sphinx.application.Sphinx, config):
@@ -167,7 +162,14 @@ class BlarkDirective(ObjectDescription):
             logger.error("Could not find: %s", obj_name)
             return []
 
-        node = FunctionBlockNode.from_fb(obj)
+        # TODO: this should really be in the directive subclass
+        if isinstance(obj, summary.FunctionBlockSummary):
+            node = FunctionBlockNode.from_summary(obj)
+        elif isinstance(obj, summary.FunctionSummary):
+            node = FunctionNode.from_summary(obj)
+        else:
+            raise NotImplementedError(f"TODO: {type(obj)}")
+
         node.register(docname, scope, domaindata)
         DocFieldTransformer(self).transform_all(node)
         return [node]
@@ -188,6 +190,26 @@ class BlarkDirective(ObjectDescription):
 #         self.env.ref_context["bk:scope"].append(modelnode.name)
 #         super().parse_content(modelnode)
 #         self.env.ref_context["bk:scope"].pop()
+
+
+class Function(BlarkDirective):
+    doc_field_types = [
+        TypedField(
+            "parameter",
+            label=l_("Parameters"),
+            names=("param", "parameter", "arg", "argument"),
+            typerolename="obj",
+            typenames=("paramtype", "type"),
+            can_collapse=True,
+        ),
+        Field(
+            "returntype",
+            label=l_("Return type"),
+            has_arg=False,
+            names=("rtype",),
+            bodyrolename="obj",
+        ),
+    ]
 
 
 class FunctionBlock(BlarkDirective):
@@ -237,7 +259,8 @@ class BlarkDomain(Domain):
     name = "bk"
     label = "Blark"
     object_types = {
-        "functionblock": ObjType(l_("functionblock"), l_("func"), l_("fb")),
+        "functionblock": ObjType(l_("functionblock"), l_("fb")),
+        "function": ObjType(l_("function"), l_("func")),
         "type": ObjType(l_("type"), "type"),
         "module": ObjType(l_("module"), "mod"),
         "parameter": ObjType(l_("parameter"), "parameter"),
@@ -245,12 +268,14 @@ class BlarkDomain(Domain):
 
     directives = {
         "functionblock": FunctionBlock,
+        "function": Function,
         # "type": Type,
         # "module": Module,
     }
 
     roles = {
         "functionblock": BlarkXRefRole(fix_parens=False),
+        "function": BlarkXRefRole(fix_parens=False),
         "fb": BlarkXRefRole(fix_parens=False),
         "parameter": BlarkXRefRole(),
         "type": BlarkXRefRole(),
@@ -262,6 +287,7 @@ class BlarkDomain(Domain):
         "module": {},
         "type": {},
         # name -> [{docname, scope, templateparameters, signature, qualified_name}]
+        "function": {},
         "functionblock": {},
         "parameter": {},
         "method": {},
@@ -316,7 +342,7 @@ def setup(app: sphinx.application.Sphinx):
     app.add_config_value('blark_projects', [], 'html')
     app.add_config_value('blark_signature_show_type', True, 'html')
 
-    for cls in (FunctionBlockNode, ParameterNode, ActionNode, MethodNode):
+    for cls in (FunctionNode, FunctionBlockNode, ParameterNode, ActionNode, MethodNode):
         app.add_node(
             cls,
             html=(
@@ -384,6 +410,8 @@ class FormatContext:
                 return obj.__name__
             return type(obj).__name__
 
+        remove_comment_characters = util.remove_comment_characters  # noqa: F841
+
         return {
             key: value
             for key, value in locals().items()
@@ -434,12 +462,15 @@ class ParameterNode(BlarkNode):
 
     @classmethod
     def from_decl(
-        cls, owner: summary.FunctionBlockSummary, decl: summary.DeclarationSummary
+        cls,
+        owner: Union[summary.FunctionBlockSummary, summary.FunctionSummary],
+        decl: summary.DeclarationSummary,
     ) -> ParameterNode:
         return cls(
             name=decl.name,
             owner=owner,
             decl=decl,
+            block=decl.block,
             ids=[f"{owner.name}.{decl.name}"],
         )
 
@@ -598,7 +629,7 @@ class FunctionBlockNode(ElementWithDeclarations):
     }
 
     @classmethod
-    def from_fb(cls, fb: summary.FunctionBlockSummary) -> FunctionBlockNode:
+    def from_summary(cls, fb: summary.FunctionBlockSummary) -> FunctionBlockNode:
         children = [
             ParameterNode.from_decl(fb, decl)
             for block, decls in fb.declarations_by_block.items()
@@ -616,4 +647,61 @@ class FunctionBlockNode(ElementWithDeclarations):
             ids=[fb.name],
             declarations=fb.declarations_by_block,
             source_code=fb.source_code,
+        )
+
+
+class FunctionNode(ElementWithDeclarations):
+    objtype: str = "function"
+
+    _jinja_format_ = {
+        "html": (
+            """\
+            <dl class="function">
+                <dt id="{{ node.name }}">
+                    <span class="sig">
+                        <em class="property">FUNCTION</em>
+                        <code class="descname">
+                            {{ node.name }}
+                        </code>
+                        {% set formatted_decls = [] %}
+                        {% for decl in inputs + outputs %}
+                            {% set _ = formatted_decls.append(formatted_decl(decl)) %}
+                        {% endfor %}
+                        <span class="sig-paren">(</span>{{
+                            formatted_decls | join(", ")
+                        }}<span class="sig-paren">)
+                        : {{ node.return_type }}
+                        </span>
+
+                        {{ make_permalink(node.name, "function block") }}
+                        </dt>
+                    </span>
+                    <dd>
+                    {% if node.declarations %}
+                        {{ render_declarations(node, node.declarations) }}
+                    {% endif %}
+                    </dd>
+                    {{ node_source(node) }}
+            """,
+
+            """\
+            </dd></dl>
+            """
+        )
+    }
+
+    @classmethod
+    def from_summary(cls, func: summary.FunctionSummary) -> FunctionNode:
+        children = [
+            ParameterNode.from_decl(func, decl)
+            for block, decls in func.declarations_by_block.items()
+            for decl in decls.values()
+        ]
+        return cls(
+            *children,
+            name=func.name,
+            ids=[func.name],
+            declarations=func.declarations_by_block,
+            source_code=func.source_code,
+            return_type=func.return_type,
         )

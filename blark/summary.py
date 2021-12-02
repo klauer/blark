@@ -90,7 +90,7 @@ class DeclarationSummary(Summary):
 
     @classmethod
     def from_declaration(
-        cls, item: tf.InitDeclaration, block_type: str = "unknown"
+        cls, item: tf.InitDeclaration, block_header: str = "unknown"
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         # OK, a bit lazy for now
@@ -111,7 +111,7 @@ class DeclarationSummary(Summary):
             result[name] = DeclarationSummary(
                 name=str(name),
                 location=str(location) if location else None,
-                block=block_type,
+                block=block_header,
                 type=str(spec),
                 value=value,
                 **Summary.get_meta_kwargs(item.meta),
@@ -124,7 +124,7 @@ class DeclarationSummary(Summary):
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         for decl in block.items:
-            result.update(cls.from_declaration(decl, block_type=type(block).__name__))
+            result.update(cls.from_declaration(decl, block_header=block.block_header))
         return result
 
 
@@ -177,6 +177,40 @@ class MethodSummary(Summary):
 
 
 @dataclass
+class FunctionSummary(Summary):
+    name: str
+    return_type: str
+    source_code: str
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        result = {}
+        for decl in self.declarations.values():
+            result.setdefault(decl.block, {})[decl.name] = decl
+        return result
+
+    @classmethod
+    def from_function(
+        cls, func: tf.Function, source_code: Optional[str] = None
+    ) -> FunctionSummary:
+        if source_code is None:
+            source_code = str(func)
+
+        summary = FunctionSummary(
+            name=func.name,
+            return_type=str(func.return_type),
+            source_code=source_code,
+            **Summary.get_meta_kwargs(func.meta),
+        )
+
+        for decl in func.declarations:
+            summary.declarations.update(DeclarationSummary.from_block(decl))
+
+        return summary
+
+
+@dataclass
 class FunctionBlockSummary(Summary):
     name: str
     source_code: str
@@ -212,6 +246,7 @@ class FunctionBlockSummary(Summary):
 
 @dataclass
 class CodeSummary:
+    functions: Dict[str, FunctionSummary] = field(default_factory=dict)
     function_blocks: Dict[str, FunctionBlockSummary] = field(
         default_factory=dict
     )
@@ -242,6 +277,13 @@ class CodeSummary:
                 )
                 result.function_blocks[item.name] = summary
                 last_function_block = summary
+            elif isinstance(item, tf.Function):
+                summary = FunctionSummary.from_function(
+                    item,
+                    source_code=get_code_by_meta(item.meta)
+                )
+                result.functions[item.name] = summary
+                last_function_block = None
             elif isinstance(item, tf.Method):
                 if last_function_block is not None:
                     last_function_block.methods.append(

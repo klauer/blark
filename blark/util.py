@@ -221,3 +221,11 @@ def find_and_clean_comments(
         return comments_and_pragmas, text
 
     return comments_and_pragmas, "\n".join(lines)
+
+
+def remove_comment_characters(text: str) -> str:
+    """Take only the inner contents of a given comment."""
+    text = text.strip()
+    if text.startswith("/"):
+        return text.lstrip("/ ")
+    return text.strip("()").strip("* ")
