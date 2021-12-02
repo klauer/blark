@@ -478,9 +478,9 @@ class ParameterNode(BlarkNode):
 class ElementWithDeclarations(BlarkNode):
     def get_render_context(self, translator: SphinxTranslator, format: str):
         decls = self["declarations"]
-        inputs = dict(decls.get("InputDeclarations", {}))
-        inputs.update(decls.get("InputOutputDeclarations", {}))
-        outputs = decls.get("OutputDeclarations", {})
+        inputs = dict(decls.get("VAR_INPUT", {}))
+        inputs.update(decls.get("VAR_IN_OUT", {}))
+        outputs = decls.get("VAR_OUTPUT", {})
         return dict(
             inputs=list(inputs.values()),
             outputs=list(outputs.values()),
