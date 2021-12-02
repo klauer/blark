@@ -5,14 +5,14 @@ import functools
 import inspect
 import logging
 import textwrap
-from typing import ClassVar, Dict, Union
+from typing import Any, ClassVar, Dict, List, Union
 
 import jinja2
 import sphinx
 import sphinx.application
 from docutils import nodes
 from sphinx.directives import ObjectDescription
-from sphinx.domains import Domain, ObjType
+from sphinx.domains import Domain, Index, ObjType
 from sphinx.locale import _ as l_
 from sphinx.roles import XRefRole
 from sphinx.util.docfields import DocFieldTransformer, Field, TypedField
@@ -175,17 +175,13 @@ class BlarkDirective(ObjectDescription):
             logger.error("Could not find: %s", obj_name)
             return []
 
-        # TODO: this should really be in the directive subclass
-        if isinstance(obj, summary.FunctionBlockSummary):
-            node = FunctionBlockNode.from_summary(obj)
-        elif isinstance(obj, summary.FunctionSummary):
-            node = FunctionNode.from_summary(obj)
-        else:
-            raise NotImplementedError(f"TODO: {type(obj)}")
-
+        node = self.get_node(obj)
         node.register(docname, scope, domaindata)
         DocFieldTransformer(self).transform_all(node)
         return [node]
+
+    def get_node(self, obj: Any) -> BlarkNode:
+        raise NotImplementedError("Not yet implemented: {type(obj)}")
 
     def parse_arguments(self):
         return self.arguments[0]
@@ -205,7 +201,7 @@ class BlarkDirective(ObjectDescription):
 #         self.env.ref_context["bk:scope"].pop()
 
 
-class Function(BlarkDirective):
+class FunctionDirective(BlarkDirective):
     doc_field_types = [
         TypedField(
             "parameter",
@@ -224,8 +220,15 @@ class Function(BlarkDirective):
         ),
     ]
 
+    def get_node(self, obj: summary.FunctionSummary) -> FunctionNode:
+        if not isinstance(obj, summary.FunctionSummary):
+            raise ValueError(
+                f"Expected a Function, but got a {type(obj).__name__}"
+            )
+        return FunctionNode.from_summary(obj)
 
-class FunctionBlock(BlarkDirective):
+
+class FunctionBlockDirective(BlarkDirective):
     doc_field_types = [
         TypedField(
             "parameter",
@@ -244,9 +247,12 @@ class FunctionBlock(BlarkDirective):
         # ),
     ]
 
-
-# class Type(BlarkDirective):
-#     pass
+    def get_node(self, obj: summary.FunctionBlockSummary) -> FunctionBlockNode:
+        if not isinstance(obj, summary.FunctionBlockSummary):
+            raise ValueError(
+                f"Expected a FunctionBlock, but got a {type(obj).__name__}"
+            )
+        return FunctionBlockNode.from_summary(obj)
 
 
 class BlarkXRefRole(XRefRole):
@@ -257,8 +263,8 @@ class BlarkXRefRole(XRefRole):
             target = target.lstrip("~")  # only has a meaning for the title
             # if the first character is a tilde, don't display the module/class
             # parts of the contents
-            if title[0:1] == "~":
-                title = title[1:]
+            if title.startswith("~"):
+                title = title.lstrip("~")
                 dot = title.rfind(".")
                 if dot != -1:
                     title = title[dot + 1:]
@@ -271,7 +277,7 @@ class BlarkDomain(Domain):
     """
     name = "bk"
     label = "Blark"
-    object_types = {
+    object_types: ClassVar[Dict[str, ObjType]] = {
         "functionblock": ObjType(l_("functionblock"), l_("fb")),
         "function": ObjType(l_("function"), l_("func")),
         "type": ObjType(l_("type"), "type"),
@@ -279,14 +285,13 @@ class BlarkDomain(Domain):
         "parameter": ObjType(l_("parameter"), "parameter"),
     }
 
-    directives = {
-        "functionblock": FunctionBlock,
-        "function": Function,
+    directives: ClassVar[Dict[str, BlarkDirective]] = {
+        "functionblock": FunctionBlockDirective,
+        "function": FunctionDirective,
         # "type": Type,
-        # "module": Module,
     }
 
-    roles = {
+    roles: Dict[str, BlarkXRefRole] = {
         "functionblock": BlarkXRefRole(fix_parens=False),
         "function": BlarkXRefRole(fix_parens=False),
         "fb": BlarkXRefRole(fix_parens=False),
@@ -295,18 +300,16 @@ class BlarkDomain(Domain):
         "mod": BlarkXRefRole(),
     }
 
-    initial_data = {
-        # name -> [{docname, scope, qualified_name}, ...]
+    initial_data: ClassVar[str, Dict[str, Any]] = {
         "module": {},
         "type": {},
-        # name -> [{docname, scope, templateparameters, signature, qualified_name}]
         "function": {},
         "functionblock": {},
         "parameter": {},
         "method": {},
         "action": {},
     }
-    indices = [
+    indices: List[Index] = [
         # BlarkModuleIndex,
     ]
 
@@ -410,7 +413,7 @@ class FormatContext:
         self.env.filters.update(self.get_filters())
         self.default_render_context = self.get_render_context()
 
-    def get_filters(self, **user_config):
+    def get_filters(self):
         """Default jinja filters for all contexts."""
 
         @pass_eval_context
