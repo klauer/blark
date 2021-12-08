@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
+import pathlib
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Union
 
 import sphinx
 import sphinx.application
@@ -21,6 +22,11 @@ from . import summary, util
 from .parse import parse
 
 logger = logging.getLogger(__name__)
+
+
+MODULE_PATH = pathlib.Path(__file__).parent.resolve()
+STATIC_PATH = MODULE_PATH / "docs"
+DEFAULT_CSS_FILE = STATIC_PATH / "blark_default.css"
 
 
 @dataclasses.dataclass
@@ -87,6 +93,7 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     doc_field_types = []
     option_spec: ClassVar[OptionSpec] = {
         "noblocks": directives.flag,
+        "nosource": directives.flag,
         "noindex": directives.flag,
         "noindexentry": directives.flag,
         "canonical": directives.unchanged,
@@ -94,7 +101,16 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     }
 
 
-def declaration_to_nodes(obj: summary.DeclarationSummary):
+def declaration_to_signature(obj: summary.DeclarationSummary):
+    yield addnodes.desc_sig_name(obj.name, obj.name)
+    yield addnodes.desc_sig_punctuation(text=" : ")
+    yield addnodes.pending_xref(
+        obj.type, nodes.Text(obj.type), refdomain="bk",
+        reftype="type", reftarget=obj.type
+    )
+
+
+def declaration_to_content(obj: summary.DeclarationSummary):
     if obj.value:
         default = nodes.paragraph(text="Default:")
         default += addnodes.literal_strong(text=str(obj.value))
@@ -111,6 +127,30 @@ def declaration_to_nodes(obj: summary.DeclarationSummary):
         yield nodes.paragraph(comment, text=util.remove_comment_characters(comment))
 
 
+def declarations_to_block(owner_name: str, declarations: Iterable[summary.DeclarationSummary]):
+    # These nodes translate into the following in html:
+    # desc -> dl
+    # desc_signature -> dt
+    # desc_content -> dd
+    # So:
+    #  desc
+    #  -> desc_signature
+    #      -> desc_sig_name, desc_sig_punctuation, etc.
+    #  -> desc_content
+    #      -> paragraph, etc.
+    for decl in declarations:
+        desc = addnodes.desc(classes=["declaration"])
+        signode = addnodes.desc_signature(ids=[f"{owner_name}.{decl.name}"])
+        signode += declaration_to_signature(decl)
+
+        decl_info = addnodes.desc_content()
+        decl_info += declaration_to_content(decl)
+
+        desc += signode
+        desc += decl_info
+        yield desc
+
+
 class DeclarationDirective(BlarkDirective):
     block_header: str
     obj: summary.DeclarationSummary
@@ -121,17 +161,11 @@ class DeclarationDirective(BlarkDirective):
         variable = sig
         self.obj = func.declarations[variable]
         signode["ids"] = [f"{func.name}.{variable}"]
-        signode += addnodes.desc_sig_name(variable, variable)
-        signode += addnodes.desc_sig_punctuation(text=" : ")
-        signode += addnodes.pending_xref(
-            self.obj.type, nodes.Text(self.obj.type), refdomain="bk",
-            reftype="type", reftarget=self.obj.type
-        )
+        signode += declaration_to_signature(self.obj)
         return sig, func.name
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
-        for node in declaration_to_nodes(self.obj):
-            contentnode += node
+        contentnode += declaration_to_content(self.obj)
 
 
 class VariableBlockDirective(BlarkDirective):
@@ -147,33 +181,13 @@ class VariableBlockDirective(BlarkDirective):
         self.owner_name = func.name
         self.declarations = list(func.declarations_by_block[self.block_header].values())
         signode += addnodes.desc_name(
-            text=self.block_header, classes=["variable-block", self.block_header]
+            text=self.block_header, classes=["variable_block", self.block_header]
         )
+        signode.classes = ["variable_block"]
         return self.block_header, ""
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
-        # desc -> dl
-        # desc_signature -> dt
-        # desc_content -> dd
-        for decl in self.declarations:
-            desc = addnodes.desc(classes=["declaration"])
-            signode = addnodes.desc_signature(
-                ids=[f"{self.owner_name}.{decl.name}"]
-            )
-            signode += addnodes.desc_sig_name(decl.name, decl.name)
-            signode += addnodes.desc_sig_punctuation(text=" : ")
-            signode += addnodes.pending_xref(
-                decl.type, nodes.Text(decl.type), refdomain="bk",
-                reftype="type", reftarget=decl.type
-            )
-
-            decl_info = addnodes.desc_content()
-            for node in declaration_to_nodes(decl):
-                decl_info += node
-
-            desc += signode
-            desc += decl_info
-            contentnode += desc
+        contentnode += declarations_to_block(self.owner_name, self.declarations)
 
 
 class BlarkDirectiveWithDeclarations(BlarkDirective):
@@ -250,12 +264,29 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         self.env.ref_context['bk:obj'] = self.obj
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
+        if "noblocks" not in self.options:
+            for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
+                decls = self.obj.declarations_by_block.get(block, {})
+                print("adding variable blocks", self.obj.name, block, list(decls))
+                if not decls:
+                    continue
 
-        contentnode += nodes.container(
-            "",
-            nodes.literal_block(self.obj.source_code, self.obj.source_code),
-            classes=["plc_source"]
-        )
+                block_desc = addnodes.desc()
+                block_desc += addnodes.desc_name(
+                    text=block, classes=["variable_block", block]
+                )
+                block_contents = addnodes.desc_content()
+                block_contents += declarations_to_block(self.obj.name, decls.values())
+
+                block_desc += block_contents
+                contentnode += block_desc
+
+        if "nosource" not in self.options:
+            contentnode += nodes.container(
+                "",
+                nodes.literal_block(self.obj.source_code, self.obj.source_code),
+                classes=["plc_source"]
+            )
 
     def get_signature_prefix(self, sig: str) -> List[nodes.Node]:
         return [
@@ -380,16 +411,20 @@ class BlarkDomain(Domain):
         )
 
     def clear_doc(self, docname):
-        dictionaries = self.env.domaindata["bk"]
-        for dicname in self.initial_data.keys():
-            dictionary = dictionaries[dicname]
-            for name, methods in dictionary.items():
-                items_to_delete = []
-                for i, m in enumerate(methods):
-                    if m["docname"] == docname:
-                        items_to_delete.insert(0, i)
-                for i in items_to_delete:
-                    methods.pop(i)
+        for name in self.initial_data:
+            for name, methods in self.env.domaindata["bk"][name].items():
+                to_delete = []
+                for idx, method in enumerate(methods):
+                    if method["docname"] == docname:
+                        to_delete.insert(0, idx)
+                for idx in to_delete:
+                    methods.pop(idx)
+
+
+def _initialize_domain(app: sphinx.application.Sphinx, config):
+    """Callback function for 'config-inited'."""
+    cache = BlarkSphinxCache.instance()
+    cache.configure(app, config)
 
 
 def setup(app: sphinx.application.Sphinx):
@@ -397,4 +432,4 @@ def setup(app: sphinx.application.Sphinx):
     app.add_config_value('blark_signature_show_type', True, 'html')
 
     app.add_domain(BlarkDomain)
-    app.connect("config-inited", BlarkSphinxCache.instance().configure)
+    app.connect("config-inited", _initialize_domain)
