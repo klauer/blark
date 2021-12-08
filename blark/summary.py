@@ -88,6 +88,18 @@ class DeclarationSummary(Summary):
     type: str
     value: Optional[str]
 
+    @property
+    def location_type(self) -> Optional[str]:
+        if not self.location:
+            return None
+
+        location = self.location.upper()
+        if location.startswith("AT %I"):
+            return "input"
+        if location.startswith("AT %Q"):
+            return "output"
+        return None
+
     @classmethod
     def from_declaration(
         cls, item: tf.InitDeclaration, block_header: str = "unknown"
