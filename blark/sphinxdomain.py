@@ -3,7 +3,8 @@ from __future__ import annotations
 import dataclasses
 import logging
 import pathlib
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Union
+from typing import (Any, ClassVar, Dict, Generator, Iterable, List, Optional,
+                    Tuple, Union)
 
 import sphinx
 import sphinx.application
@@ -14,7 +15,7 @@ from sphinx.directives import ObjectDescription
 from sphinx.domains import Domain, Index, ObjType
 from sphinx.locale import _ as l_
 from sphinx.roles import XRefRole
-from sphinx.util.docfields import Field, GroupedField, TypedField
+from sphinx.util.docfields import Field, GroupedField
 from sphinx.util.nodes import make_refnode
 from sphinx.util.typing import OptionSpec
 
@@ -93,6 +94,7 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     doc_field_types = []
     option_spec: ClassVar[OptionSpec] = {
         "noblocks": directives.flag,
+        "nolinks": directives.flag,
         "nosource": directives.flag,
         "noindex": directives.flag,
         "noindexentry": directives.flag,
@@ -101,12 +103,24 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     }
 
 
-def declaration_to_signature(obj: summary.DeclarationSummary):
+def declaration_to_signature(
+    signode: addnodes.desc_signature,
+    obj: summary.DeclarationSummary,
+    *,
+    env: Optional[sphinx.environment.BuildEnvironment] = None,
+):
+    if env is not None:
+        signode["ids"] = [obj.qualified_name]
+        signode["docname"] = env.docname
+        signode["qualified_name"] = obj.qualified_name
+        env.domaindata["bk"]["declaration"].setdefault(obj.qualified_name, []).append(
+            signode
+        )
     yield addnodes.desc_sig_name(obj.name, obj.name)
     yield addnodes.desc_sig_punctuation(text=" : ")
     yield addnodes.pending_xref(
-        obj.type, nodes.Text(obj.type), refdomain="bk",
-        reftype="type", reftarget=obj.type
+        obj.base_type, nodes.Text(obj.type), refdomain="bk",
+        reftype="type", reftarget=obj.base_type
     )
 
 
@@ -127,7 +141,11 @@ def declaration_to_content(obj: summary.DeclarationSummary):
         yield nodes.paragraph(comment, text=util.remove_comment_characters(comment))
 
 
-def declarations_to_block(owner_name: str, declarations: Iterable[summary.DeclarationSummary]):
+def declarations_to_block(
+    parent_name: str, declarations: Iterable[summary.DeclarationSummary],
+    *,
+    env: Optional[sphinx.environment.BuildEnvironment] = None,
+):
     # These nodes translate into the following in html:
     # desc -> dl
     # desc_signature -> dt
@@ -140,14 +158,15 @@ def declarations_to_block(owner_name: str, declarations: Iterable[summary.Declar
     #      -> paragraph, etc.
     for decl in declarations:
         desc = addnodes.desc(classes=["declaration"])
-        signode = addnodes.desc_signature(ids=[f"{owner_name}.{decl.name}"])
-        signode += declaration_to_signature(decl)
+        signode = addnodes.desc_signature()
+        signode += declaration_to_signature(signode, decl, env=env)
 
         decl_info = addnodes.desc_content()
         decl_info += declaration_to_content(decl)
 
         desc += signode
         desc += decl_info
+
         yield desc
 
 
@@ -160,8 +179,7 @@ class DeclarationDirective(BlarkDirective):
         func = self.env.ref_context["bk:function"]
         variable = sig
         self.obj = func.declarations[variable]
-        signode["ids"] = [f"{func.name}.{variable}"]
-        signode += declaration_to_signature(self.obj)
+        signode += declaration_to_signature(signode, self.obj, env=self.env)
         return sig, func.name
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
@@ -170,7 +188,7 @@ class DeclarationDirective(BlarkDirective):
 
 class VariableBlockDirective(BlarkDirective):
     block_header: str
-    owner_name: str
+    parent_name: str
     declarations: List[summary.DeclarationSummary]
 
     def handle_signature(
@@ -178,7 +196,7 @@ class VariableBlockDirective(BlarkDirective):
     ) -> Tuple[str, str]:
         self.block_header = sig.upper()
         func = self.env.ref_context["bk:function"]
-        self.owner_name = func.name
+        self.parent_name = func.name
         self.declarations = list(func.declarations_by_block[self.block_header].values())
         signode += addnodes.desc_name(
             text=self.block_header, classes=["variable_block", self.block_header]
@@ -187,20 +205,80 @@ class VariableBlockDirective(BlarkDirective):
         return self.block_header, ""
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
-        contentnode += declarations_to_block(self.owner_name, self.declarations)
+        contentnode += declarations_to_block(self.parent_name, self.declarations, env=self.env)
+
+
+def _build_table_from_lists(
+    table_data: List[List[nodes.Element]],
+    col_widths: List[int],
+    *,
+    header_rows: int = 1,
+    stub_columns: int = 0,
+) -> nodes.table:
+    """Create a docutils table from a list of elements."""
+    table = nodes.table()
+    tgroup = nodes.tgroup(cols=len(col_widths))
+    table += tgroup
+    for col_width in col_widths:
+        colspec = nodes.colspec(colwidth=col_width)
+        if stub_columns:
+            colspec.attributes["stub"] = 1
+            stub_columns -= 1
+        tgroup += colspec
+
+    def _to_row(row: List[nodes.Element]) -> nodes.row:
+        row_node = nodes.row()
+        for cell in row:
+            entry = nodes.entry()
+            entry += cell
+            row_node += entry
+        return row_node
+
+    rows = list(_to_row(row) for row in table_data)
+    if header_rows:
+        thead = nodes.thead()
+        thead += rows[:header_rows]
+        tgroup += thead
+
+    tbody = nodes.tbody()
+    tbody += rows[header_rows:]
+    tgroup += tbody
+    return table
+
+
+def _to_link_table(
+    parent_name: str, decls: Iterable[summary.DeclarationSummary]
+) -> nodes.table:
+    def decl_items() -> Generator[Tuple[nodes.paragraph, nodes.Text], None, None]:
+        for decl in sorted(decls, key=lambda decl: decl.name):
+            if decl.location:
+                location = " ".join(decl.location.split(" ")[1:]).strip()
+            else:
+                location = "?"  # shouldn't technically get here
+
+            paragraph = nodes.paragraph()
+            paragraph += addnodes.pending_xref(
+                decl.qualified_name,
+                nodes.Text(decl.name),
+                refdomain="bk",
+                reftype="declaration",
+                reftarget=decl.qualified_name,
+            )
+            yield paragraph, nodes.Text(location)
+
+    return _build_table_from_lists(
+        table_data=[
+            [nodes.Text("Name"), nodes.Text("Link")],
+            *decl_items()
+        ],
+        col_widths=[50, 50],
+        header_rows=1
+    )
 
 
 class BlarkDirectiveWithDeclarations(BlarkDirective):
     obj: Union[summary.FunctionSummary, summary.FunctionBlockSummary]
     doc_field_types = [
-        TypedField(
-            "parameter",
-            label=l_("Parameters"),
-            names=("param", "parameter", "arg", "argument"),
-            typerolename="obj",
-            typenames=("paramtype", "type"),
-            can_collapse=True,
-        ),
         GroupedField(
             "declaration",
             label=l_("VAR"),
@@ -232,6 +310,10 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         self.env.ref_context["bk:function"] = self.obj
 
         signode["ids"] = [sig]
+        signode["docname"] = self.env.docname
+        signode["qualified_name"] = sig
+        domain_data = self.env.domaindata["bk"][self.signature_prefix.lower()]
+        domain_data.setdefault(sig, []).append(signode)
         sig_prefix = self.get_signature_prefix(sig)
         signode += addnodes.desc_annotation(str(sig_prefix), '', *sig_prefix)
         signode += addnodes.desc_name(self.obj.name, self.obj.name)
@@ -264,10 +346,31 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         self.env.ref_context['bk:obj'] = self.obj
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
+        if "nolinks" not in self.options:
+            linkable = summary.get_linkable_declarations(
+                self.obj.declarations.values()
+            )
+            for attr in ("input", "output", "memory"):
+                addnodes.tabular_col_spec()
+                decls = getattr(linkable, attr, [])
+                if decls:
+                    block_desc = addnodes.desc()
+                    name = {
+                        "input": "Inputs",
+                        "output": "Outputs",
+                        "memory": "Memory",
+                    }[attr]
+                    block_desc += addnodes.desc_name(
+                        text=f"Linkable {name}",
+                        classes=[f"linkable_{attr}", "linkable"]
+                    )
+
+                    block_desc += _to_link_table(self.obj.name, decls)
+                    contentnode += block_desc
+
         if "noblocks" not in self.options:
             for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
                 decls = self.obj.declarations_by_block.get(block, {})
-                print("adding variable blocks", self.obj.name, block, list(decls))
                 if not decls:
                     continue
 
@@ -276,7 +379,7 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
                     text=block, classes=["variable_block", block]
                 )
                 block_contents = addnodes.desc_content()
-                block_contents += declarations_to_block(self.obj.name, decls.values())
+                block_contents += declarations_to_block(self.obj.name, decls.values(), env=self.env)
 
                 block_desc += block_contents
                 contentnode += block_desc
@@ -339,18 +442,17 @@ class BlarkDomain(Domain):
     name = "bk"
     label = "Blark"
     object_types: ClassVar[Dict[str, ObjType]] = {
-        "functionblock": ObjType(l_("functionblock"), l_("fb")),
+        "function_block": ObjType(l_("functionblock"), l_("function_block"), l_("fb")),
         "function": ObjType(l_("function"), l_("func")),
         "type": ObjType(l_("type"), "type"),
         "module": ObjType(l_("module"), "mod"),
-        "parameter": ObjType(l_("parameter"), "parameter"),
         "variable_block": ObjType(l_("variable_block"), "var"),
         "source_code": ObjType(l_("source_code"), "plc_source"),
         "declaration": ObjType(l_("declaration"), "declaration"),
     }
 
     directives: ClassVar[Dict[str, BlarkDirective]] = {
-        "functionblock": FunctionBlockDirective,
+        "function_block": FunctionBlockDirective,
         "function": FunctionDirective,
         "variable_block": VariableBlockDirective,
         "declaration": DeclarationDirective,
@@ -358,10 +460,9 @@ class BlarkDomain(Domain):
     }
 
     roles: Dict[str, BlarkXRefRole] = {
-        "functionblock": BlarkXRefRole(fix_parens=False),
+        "function_block": BlarkXRefRole(fix_parens=False),
         "function": BlarkXRefRole(fix_parens=False),
         "fb": BlarkXRefRole(fix_parens=False),
-        "parameter": BlarkXRefRole(),
         "type": BlarkXRefRole(),
         "mod": BlarkXRefRole(),
         "declaration": BlarkXRefRole(),
@@ -372,8 +473,7 @@ class BlarkDomain(Domain):
         "type": {},
         "function": {},
         "declaration": {},
-        "functionblock": {},
-        "parameter": {},
+        "function_block": {},
         "method": {},
         "action": {},
     }
@@ -391,6 +491,7 @@ class BlarkDomain(Domain):
         # parent_obj = self.env.ref_context.get("bk:function", None)
         # print("scope", parent_obj, rolename, node)
         domaindata = self.env.domaindata["bk"][typename]
+        # print("scope", rolename, node, list(domaindata))
         return domaindata.get(targetstring, [])
 
     def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):

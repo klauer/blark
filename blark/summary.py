@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import textwrap
+import typing
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from . import transform as tf
 
@@ -80,16 +81,33 @@ class Summary:
         )
 
 
+if hasattr(typing, "Literal"):
+    from typing import Literal
+    LocationType = Union[Literal["input"], Literal["output"], Literal["memory"]]
+else:
+    LocationType = str
+
+
 @dataclass
 class DeclarationSummary(Summary):
     name: str
+    parent: str
     location: Optional[str]
     block: str
+    base_type: str
     type: str
     value: Optional[str]
 
     @property
-    def location_type(self) -> Optional[str]:
+    def qualified_name(self) -> str:
+        """Qualified name including parent. For example, ``fbName.DeclName``."""
+        if self.parent:
+            return f"{self.parent}.{self.name}"
+        return self.name
+
+    @property
+    def location_type(self) -> Optional[LocationType]:
+        """If located, one of {'input', 'output', 'memory"}."""
         if not self.location:
             return None
 
@@ -98,11 +116,16 @@ class DeclarationSummary(Summary):
             return "input"
         if location.startswith("AT %Q"):
             return "output"
+        if location.startswith("AT %M"):
+            return "memory"
         return None
 
     @classmethod
     def from_declaration(
-        cls, item: tf.InitDeclaration, block_header: str = "unknown"
+        cls,
+        item: tf.InitDeclaration,
+        parent: Optional[Union[tf.Function, tf.Method, tf.FunctionBlock]] = None,
+        block_header: str = "unknown",
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         # OK, a bit lazy for now
@@ -111,6 +134,15 @@ class DeclarationSummary(Summary):
         except AttributeError:
             spec = item.init
             spec = getattr(spec, "name", spec)
+
+        if isinstance(spec, str):
+            base_type = str(spec)
+        elif hasattr(spec, "type_name"):
+            base_type = str(spec.type_name)
+        elif hasattr(spec, "type"):
+            base_type = spec.type.type_name
+        else:
+            raise ValueError(f"TODO: {type(spec)}")
 
         try:
             value = item.init.value
@@ -125,18 +157,24 @@ class DeclarationSummary(Summary):
                 location=str(location) if location else None,
                 block=block_header,
                 type=str(spec),
+                base_type=base_type,
                 value=value,
+                parent=parent.name if parent is not None else "",
                 **Summary.get_meta_kwargs(item.meta),
             )
         return result
 
     @classmethod
     def from_block(
-        cls, block: tf.VariableDeclarationBlock
+        cls,
+        block: tf.VariableDeclarationBlock,
+        parent: Union[tf.Function, tf.Method, tf.FunctionBlock],
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         for decl in block.items:
-            result.update(cls.from_declaration(decl, block_header=block.block_header))
+            result.update(
+                cls.from_declaration(decl, parent=parent, block_header=block.block_header)
+            )
         return result
 
 
@@ -183,7 +221,7 @@ class MethodSummary(Summary):
             **Summary.get_meta_kwargs(method.meta),
         )
         for decl in method.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl))
+            summary.declarations.update(DeclarationSummary.from_block(decl, parent=method))
 
         return summary
 
@@ -217,7 +255,7 @@ class FunctionSummary(Summary):
         )
 
         for decl in func.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl))
+            summary.declarations.update(DeclarationSummary.from_block(decl, parent=func))
 
         return summary
 
@@ -251,7 +289,7 @@ class FunctionBlockSummary(Summary):
         )
 
         for decl in fb.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl))
+            summary.declarations.update(DeclarationSummary.from_block(decl, parent=fb))
 
         return summary
 
@@ -313,3 +351,25 @@ class CodeSummary:
                         )
                     )
         return result
+
+
+@dataclass
+class LinkableItems:
+    """A summary of linkable (located) declarations."""
+    input: List[DeclarationSummary] = field(default_factory=list)
+    output: List[DeclarationSummary] = field(default_factory=list)
+    memory: List[DeclarationSummary] = field(default_factory=list)
+
+
+def get_linkable_declarations(
+    declarations: Iterable[DeclarationSummary],
+) -> LinkableItems:
+    """
+    Get all located/linkable declarations.
+    """
+    linkable = LinkableItems()
+    for decl in declarations:
+        linkable_list = getattr(linkable, decl.location_type or "", None)
+        if linkable_list is not None:
+            linkable_list.append(decl)
+    return linkable
