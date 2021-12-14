@@ -8,17 +8,34 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 from . import transform as tf
 
 
-def _indented_outline(text: Optional[str]) -> Optional[str]:
-    text = text_outline(text)
+def _indented_outline(item: Any, indent: str = "    ") -> Optional[str]:
+    """Outline and indent the given item."""
+    text = text_outline(item)
     if text is None:
         return None
-    result = textwrap.indent(text, "    ")
+    result = textwrap.indent(text, indent)
     if "\n" in result:
         return "\n" + result
     return result.lstrip()
 
 
-def text_outline(item):
+def text_outline(item: Any) -> Optional[str]:
+    """
+    Get a generic multiline string representation of the given object.
+
+    Attempts to include field information for dataclasses, put list items
+    on separate lines, and generally keep sensible indentation.
+
+    Parameters
+    ----------
+    item : Any
+        The item to outline.
+
+    Returns
+    -------
+    formatted : str or None
+        The formatted result.
+    """
     if item is None:
         return None
 
@@ -57,6 +74,7 @@ def text_outline(item):
 
 @dataclass
 class Summary:
+    """Base class for summary objects."""
     comments: List[str]
     pragmas: List[str]
     meta: Optional[tf.Meta] = field(repr=False)
@@ -90,6 +108,7 @@ else:
 
 @dataclass
 class DeclarationSummary(Summary):
+    """Summary representation of a single declaration."""
     name: str
     parent: str
     location: Optional[str]
@@ -180,6 +199,7 @@ class DeclarationSummary(Summary):
 
 @dataclass
 class ActionSummary(Summary):
+    """Summary representation of a single action."""
     name: str
     source_code: str
 
@@ -197,8 +217,9 @@ class ActionSummary(Summary):
 
 @dataclass
 class MethodSummary(Summary):
+    """Summary representation of a single method."""
     name: str
-    return_type: Optional[tf.LocatedVariableSpecInit]
+    return_type: Optional[str]
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
@@ -216,7 +237,7 @@ class MethodSummary(Summary):
 
         summary = MethodSummary(
             name=method.name,
-            return_type=method.return_type,
+            return_type=str(method.return_type) if method.return_type else None,
             source_code=source_code,
             **Summary.get_meta_kwargs(method.meta),
         )
@@ -228,8 +249,9 @@ class MethodSummary(Summary):
 
 @dataclass
 class FunctionSummary(Summary):
+    """Summary representation of a single function."""
     name: str
-    return_type: str
+    return_type: Optional[str]
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
@@ -249,7 +271,7 @@ class FunctionSummary(Summary):
 
         summary = FunctionSummary(
             name=func.name,
-            return_type=str(func.return_type),
+            return_type=str(func.return_type) if func.return_type else None,
             source_code=source_code,
             **Summary.get_meta_kwargs(func.meta),
         )
@@ -262,6 +284,7 @@ class FunctionSummary(Summary):
 
 @dataclass
 class FunctionBlockSummary(Summary):
+    """Summary representation of a single function block."""
     name: str
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
@@ -296,6 +319,7 @@ class FunctionBlockSummary(Summary):
 
 @dataclass
 class CodeSummary:
+    """Summary representation of a set of code - functions, function blocks, etc."""
     functions: Dict[str, FunctionSummary] = field(default_factory=dict)
     function_blocks: Dict[str, FunctionBlockSummary] = field(
         default_factory=dict

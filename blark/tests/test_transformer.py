@@ -845,6 +845,17 @@ def test_statement_roundtrip(rule_name, value):
             """),
             id="no_return_type",
         ),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION FuncName : Tc2_System.T_MaxString
+                VAR_INPUT
+                    Ptr : POINTER TO UINT;
+                END_VAR
+                Ptr^ := 5;
+            END_FUNCTION
+            """),
+            id="dotted_return_type",
+        ),
     ],
 )
 def test_function_roundtrip(rule_name, value):
