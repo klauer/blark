@@ -161,7 +161,7 @@ _date_literal: year "-" month "-" day
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
-non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name )
+non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name | DOTTED_IDENTIFIER )
 
 // B.1.3.1
 TYPE_TOD: "TIME_OF_DAY"i
@@ -957,4 +957,3 @@ IL_OPERATOR_AND: "AND"i | "&"
 // Missing:
 //   FB IMPLEMENTS (interface_list)
 //   INTERFACE
-//   Merge back in instruction list grammar
