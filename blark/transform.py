@@ -188,7 +188,7 @@ class Integer(Literal):
     """Integer literal value."""
 
     value: lark.Token
-    type: Optional[lark.Token] = None
+    type_name: Optional[lark.Token] = None
     base: ClassVar[int] = 10
     meta: Optional[Meta] = meta_field()
 
@@ -200,19 +200,19 @@ class Integer(Literal):
         base: int = 10,
     ) -> Integer:
         if isinstance(value, Integer):
-            # Adding type information; wrap Integer
-            value.type = type_name
+            # Adding type_name information; wrap Integer
+            value.type_name = type_name
             return value
         cls = _base_to_integer_class[base]
         return cls(
-            type=type_name,
+            type_name=type_name,
             value=value,
         )
 
     def __str__(self) -> str:
         value = f"{self.base}#{self.value}" if self.base != 10 else str(self.value)
-        if self.type:
-            return f"{self.type}#{value}"
+        if self.type_name:
+            return f"{self.type_name}#{value}"
         return value
 
 
@@ -248,16 +248,16 @@ class Real(Literal):
     """Floating point (real) literal value."""
 
     value: lark.Token
-    type: Optional[lark.Token] = None
+    type_name: Optional[lark.Token] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(type_name: Optional[lark.Token], value: lark.Token) -> Real:
-        return Real(type=type_name, value=value)
+        return Real(type_name=type_name, value=value)
 
     def __str__(self) -> str:
-        if self.type:
-            return f"{self.type}#{self.value}"
+        if self.type_name:
+            return f"{self.type_name}#{self.value}"
         return str(self.value)
 
 
@@ -266,19 +266,19 @@ class Real(Literal):
 class BitString(Literal):
     """Bit string literal value."""
 
-    type: Optional[lark.Token]
+    type_name: Optional[lark.Token]
     value: lark.Token
     base: ClassVar[int] = 10
     meta: Optional[Meta] = meta_field()
 
     @classmethod
-    def from_lark(cls, type: Optional[lark.Token], value: lark.Token):
-        return cls(type, value)
+    def from_lark(cls, type_name: Optional[lark.Token], value: lark.Token):
+        return cls(type_name, value)
 
     def __str__(self) -> str:
         value = f"{self.base}#{self.value}" if self.base != 10 else str(self.value)
-        if self.type:
-            return f"{self.type}#{value}"
+        if self.type_name:
+            return f"{self.type_name}#{value}"
         return value
 
 
@@ -900,18 +900,18 @@ class DataType:
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type_name: DataType
+    type: DataType
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args):
-        *subranges, type_name = args
-        return ArraySpecification(type_name=type_name, subranges=subranges)
+        *subranges, type = args
+        return ArraySpecification(type=type, subranges=subranges)
 
     def __str__(self) -> str:
         subranges = ", ".join(str(subrange) for subrange in self.subranges)
-        return f"ARRAY [{subranges}] OF {self.type_name}"
+        return f"ARRAY [{subranges}] OF {self.type}"
 
 
 ArrayInitialElementType = Union[
@@ -1537,7 +1537,7 @@ class Function:
     @staticmethod
     def from_lark(
         name: lark.Token,
-        return_type: lark.Token,
+        return_type: Optional[lark.Token],
         declarations_tree: Optional[lark.Tree],
         body: Optional[FunctionBody]
     ) -> Function:
@@ -1553,10 +1553,12 @@ class Function:
         )
 
     def __str__(self) -> str:
+        function = f"FUNCTION {self.name}"
+        return_type = f": {self.return_type}" if self.return_type else None
         return "\n".join(
             line for line in
             (
-                f"FUNCTION {self.name} : {self.return_type}",
+                join_if(function, " ", return_type),
                 *[indent_if(declaration) for declaration in self.declarations],
                 indent_if(self.body),
                 "END_FUNCTION",
@@ -2069,13 +2071,13 @@ class InputOutputDeclarations(VariableDeclarationBlock):
 class AccessDeclaration:
     name: lark.Token
     variable: SymbolicVariable
-    type_name: DataType
+    type: DataType
     direction: Optional[lark.Token]
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(
-            f"{self.name} : {self.variable} : {self.type_name}",
+            f"{self.name} : {self.variable} : {self.type}",
             " ",
             self.direction
         )
@@ -2966,13 +2968,13 @@ class ConfigAccessDeclarations(VariableDeclarationBlock):
 class ConfigAccessDeclaration:
     name: lark.Token
     path: ConfigAccessPath
-    type_name: DataType
+    type: DataType
     direction: Optional[lark.Token]
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         return join_if(
-            f"{self.name} : {self.path} : {self.type_name}",
+            f"{self.name} : {self.path} : {self.type}",
             " ",
             self.direction
         )

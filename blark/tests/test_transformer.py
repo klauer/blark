@@ -81,21 +81,21 @@ def test_check_unhandled_rules(grammar):
     [
         param("integer_literal", "-12", tf.Integer(value="-12")),
         param("integer_literal", "12", tf.Integer(value="12")),
-        param("integer_literal", "INT#12", tf.Integer(value="12", type="INT")),
+        param("integer_literal", "INT#12", tf.Integer(value="12", type_name="INT")),
         param("integer_literal", "2#10010", tf.BinaryInteger(value="10010")),
         param("integer_literal", "8#22", tf.OctalInteger(value="22")),
         param("integer_literal", "16#12", tf.HexInteger(value="12")),
-        param("integer_literal", "UDINT#12", tf.Integer(value="12", type="UDINT")),
-        param("integer_literal", "UDINT#2#010", tf.BinaryInteger(value="010", type="UDINT")),  # noqa: E501
-        param("integer_literal", "UDINT#2#1001_0011", tf.BinaryInteger(value="1001_0011", type="UDINT")),  # noqa: E501
-        param("integer_literal", "DINT#16#C0FFEE", tf.HexInteger(value="C0FFEE", type="DINT")),  # noqa: E501
+        param("integer_literal", "UDINT#12", tf.Integer(value="12", type_name="UDINT")),
+        param("integer_literal", "UDINT#2#010", tf.BinaryInteger(value="010", type_name="UDINT")),  # noqa: E501
+        param("integer_literal", "UDINT#2#1001_0011", tf.BinaryInteger(value="1001_0011", type_name="UDINT")),  # noqa: E501
+        param("integer_literal", "DINT#16#C0FFEE", tf.HexInteger(value="C0FFEE", type_name="DINT")),  # noqa: E501
         param("real_literal", "-12.0", tf.Real(value="-12.0")),
         param("real_literal", "12.0", tf.Real(value="12.0")),
         param("real_literal", "12.0e5", tf.Real(value="12.0e5")),
-        param("bit_string_literal", "WORD#1234", tf.BitString(type="WORD", value="1234")),
-        param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type="WORD", value="0101")),  # noqa: E501
-        param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type="WORD", value="777")),  # noqa: E501
-        param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type="word", value="FEEE")),  # noqa: E501
+        param("bit_string_literal", "WORD#1234", tf.BitString(type_name="WORD", value="1234")),
+        param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
+        param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501
+        param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type_name="word", value="FEEE")),  # noqa: E501
         param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
@@ -811,8 +811,9 @@ def test_statement_roundtrip(rule_name, value):
                 END_VAR
                 FuncName := iValue;
             END_FUNCTION
-            """
-        )),
+            """),
+            id="int_with_input",
+        ),
         param("function_declaration", tf.multiline_code_block(
             """
             FUNCTION FuncName : INT
@@ -830,8 +831,20 @@ def test_statement_roundtrip(rule_name, value):
                 END_VAR
                 FuncName := iValue;
             END_FUNCTION
+            """),
+            id="int_with_input_output",
+          ),
+        param("function_declaration", tf.multiline_code_block(
             """
-        )),
+            FUNCTION FuncName
+                VAR_INPUT
+                    Ptr : POINTER TO UINT;
+                END_VAR
+                Ptr^ := 5;
+            END_FUNCTION
+            """),
+            id="no_return_type",
+        ),
     ],
 )
 def test_function_roundtrip(rule_name, value):

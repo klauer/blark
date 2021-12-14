@@ -491,7 +491,7 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name ":" ( elementary_type_name | derived_type_name ) ";"* [ function_var_blocks ] [ function_body ] "END_FUNCTION"i ";"*
+function_declaration: "FUNCTION"i derived_function_name [ ":" ( elementary_type_name | derived_type_name ) ] ";"* [ function_var_blocks ] [ function_body ] "END_FUNCTION"i ";"*
 
 function_var_blocks: (_io_var_declarations | function_var_declarations)+
 
