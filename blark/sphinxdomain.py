@@ -46,15 +46,14 @@ class BlarkSphinxCache:
 
     def find_by_name(self, name: str):
         for item in self.cache.values():
-            try:
-                return item.function_blocks[name]
-            except KeyError:
-                ...
-
-            try:
-                return item.functions[name]
-            except KeyError:
-                ...
+            for container in (
+                item.function_blocks,
+                item.functions,
+                item.data_types,
+            ):
+                obj = container.get(name, None)
+                if obj is not None:
+                    return obj
 
         raise KeyError(f"{name!r} not found")
 
@@ -318,7 +317,7 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
 
         paramlist = addnodes.desc_parameterlist("paramlist")
 
-        for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
+        for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT", "STRUCT"):
             decls = self.obj.declarations_by_block.get(block, {})
             for variable, decl in decls.items():
                 node = addnodes.desc_parameter()
@@ -444,6 +443,11 @@ class FunctionBlockDirective(BlarkDirectiveWithDeclarations):
     signature_prefix: ClassVar[str] = "FUNCTION_BLOCK"
 
 
+class TypeDirective(BlarkDirectiveWithDeclarations):
+    obj: summary.DataTypeSummary
+    signature_prefix: ClassVar[str] = "TYPE"
+
+
 class BlarkXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         refnode["bk:scope"] = list(env.ref_context.get("bk:scope", []))
@@ -481,7 +485,7 @@ class BlarkDomain(Domain):
         "function": FunctionDirective,
         "variable_block": VariableBlockDirective,
         "declaration": DeclarationDirective,
-        # "type": Type,
+        "type": TypeDirective,
     }
 
     roles: Dict[str, BlarkXRefRole] = {

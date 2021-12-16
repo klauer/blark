@@ -1043,6 +1043,11 @@ class StructureElementDeclaration:
     ]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def variables(self) -> List[str]:
+        """API compat"""
+        return [self.name]
+
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
         return f"{name_and_location} : {self.init};"

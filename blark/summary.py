@@ -143,7 +143,9 @@ class DeclarationSummary(Summary):
     def from_declaration(
         cls,
         item: tf.InitDeclaration,
-        parent: Optional[Union[tf.Function, tf.Method, tf.FunctionBlock]] = None,
+        parent: Optional[
+            Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
+        ] = None,
         block_header: str = "unknown",
     ) -> Dict[str, DeclarationSummary]:
         result = {}
@@ -321,12 +323,50 @@ class FunctionBlockSummary(Summary):
 
 
 @dataclass
+class DataTypeSummary(Summary):
+    """Summary representation of a single function block."""
+    name: str
+    source_code: str
+    type: str
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        return {
+            "STRUCT": self.declarations
+        }
+
+    @classmethod
+    def from_data_type(
+        cls, dtype: tf.TypeDeclarationItem, source_code: Optional[str] = None
+    ) -> DataTypeSummary:
+        if source_code is None:
+            source_code = str(dtype)
+
+        summary = DataTypeSummary(
+            name=dtype.name,
+            source_code=source_code,
+            type=type(dtype).__name__,
+            **Summary.get_meta_kwargs(dtype.meta),
+        )
+
+        if isinstance(dtype, tf.StructureTypeDeclaration):
+            for decl in dtype.declarations:
+                summary.declarations.update(
+                    DeclarationSummary.from_declaration(decl, parent=dtype, block_header="STRUCT")
+                )
+
+        return summary
+
+
+@dataclass
 class CodeSummary:
     """Summary representation of a set of code - functions, function blocks, etc."""
     functions: Dict[str, FunctionSummary] = field(default_factory=dict)
     function_blocks: Dict[str, FunctionBlockSummary] = field(
         default_factory=dict
     )
+    data_types: Dict[str, DataTypeSummary] = field(default_factory=dict)
 
     def __str__(self):
         return "\n".join(
@@ -360,6 +400,14 @@ class CodeSummary:
                     source_code=get_code_by_meta(item.meta)
                 )
                 result.functions[item.name] = summary
+                last_function_block = None
+            elif isinstance(item, tf.DataTypeDeclaration):
+                for subitem in item.items:
+                    summary = DataTypeSummary.from_data_type(
+                        subitem,
+                        source_code=get_code_by_meta(subitem.meta)
+                    )
+                    result.data_types[subitem.name] = summary
                 last_function_block = None
             elif isinstance(item, tf.Method):
                 if last_function_block is not None:
