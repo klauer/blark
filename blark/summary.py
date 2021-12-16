@@ -131,11 +131,11 @@ class DeclarationSummary(Summary):
             return None
 
         location = self.location.upper()
-        if location.startswith("AT %I"):
+        if location.startswith("%I"):
             return "input"
-        if location.startswith("AT %Q"):
+        if location.startswith("%Q"):
             return "output"
-        if location.startswith("AT %M"):
+        if location.startswith("%M"):
             return "memory"
         return None
 
@@ -154,12 +154,15 @@ class DeclarationSummary(Summary):
             spec = item.init
             spec = getattr(spec, "name", spec)
 
-        if isinstance(spec, str):
+        if isinstance(spec, (str, tf.SimpleVariable)):  # TODO
             base_type = str(spec)
         elif hasattr(spec, "type_name"):
             base_type = str(spec.type_name)
         elif hasattr(spec, "type"):
-            base_type = spec.type.type_name
+            if hasattr(spec.type, "type_name"):
+                base_type = spec.type.type_name
+            else:
+                base_type = str(spec.type)
         else:
             raise ValueError(f"TODO: {type(spec)}")
 
@@ -173,7 +176,7 @@ class DeclarationSummary(Summary):
             location = getattr(var, "location", None)
             result[name] = DeclarationSummary(
                 name=str(name),
-                location=str(location) if location else None,
+                location=str(location).replace("AT ", "") if location else None,
                 block=block_header,
                 type=str(spec),
                 base_type=base_type,
