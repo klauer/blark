@@ -1497,12 +1497,13 @@ class FunctionBlock:
 
     @staticmethod
     def from_lark(
+        fb_token: lark.Token,
         abstract: Optional[lark.Token],
         derived_name: lark.Token,
         extends: Extends,
         *args
     ) -> FunctionBlock:
-        *declarations, body = args
+        *declarations, body, _ = args
         return FunctionBlock(
             name=derived_name,
             abstract=abstract is not None,

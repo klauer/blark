@@ -523,13 +523,13 @@ DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 ABSTRACT: "ABSTRACT"i
 extends: "EXTENDS"i DOTTED_IDENTIFIER
 
-function_block_type_declaration: _FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"*
+function_block_type_declaration: FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
 
-_FUNCTION_BLOCK: "FUNCTION_BLOCK"i
-               | "FUNCTIONBLOCK"i
+FUNCTION_BLOCK: "FUNCTION_BLOCK"i
+              | "FUNCTIONBLOCK"i
 
-_END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
-                   | "END_FUNCTIONBLOCK"i
+END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
+                  | "END_FUNCTIONBLOCK"i
 
 ?fb_var_declaration: _io_var_declarations
                    | _other_var_declarations
