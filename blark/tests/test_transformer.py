@@ -45,7 +45,6 @@ def test_check_unhandled_rules(grammar):
         # handled as tree
         "global_var_list",
         "var_body",
-        "function_var_blocks",
 
     }
 

@@ -1561,18 +1561,16 @@ class Function:
     def from_lark(
         name: lark.Token,
         return_type: Optional[lark.Token],
-        declarations_tree: Optional[lark.Tree],
-        body: Optional[FunctionBody]
+        *remainder
     ) -> Function:
-        declarations = typing.cast(
-            List[VariableDeclarationBlock],
-            declarations_tree.children if declarations_tree else []
-        )
+        *declarations, body = remainder
         return Function(
             name=name,
             return_type=return_type,
-            declarations=declarations,
-            body=body,
+            declarations=typing.cast(
+                List[VariableDeclarationBlock], list(declarations)
+            ),
+            body=typing.cast(Optional[FunctionBody], body),
         )
 
     def __str__(self) -> str:
@@ -1822,6 +1820,27 @@ class VariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR", " ", self.config),
+                *(indent(f"{item};") for item in self.items),
+                "END_VAR",
+            )
+        )
+
+
+@dataclass
+@_rule_handler("static_var_declarations", comments=True)
+class StaticDeclarations(VariableDeclarationBlock):
+    block_header: ClassVar[str] = "VAR_STAT"
+    items: List[VariableInitDeclaration]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(*items: VariableInitDeclaration) -> StaticDeclarations:
+        return StaticDeclarations(list(items))
+
+    def __str__(self) -> str:
+        return "\n".join(
+            (
+                "VAR_STAT",
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )

@@ -413,6 +413,8 @@ structured_var_declaration: var1_list ":" structure_type_name
 
 var_declarations: "VAR"i [ var_declaration_config ] var_body "END_VAR"i ";"*
 
+static_var_declarations: "VAR_STAT"i var_body "END_VAR"i ";"*
+
 ?var_declaration_config: CONSTANT | PERSISTENT | RETAIN | NON_RETAIN
 
 located_var_declarations: "VAR"i [ located_var_config ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"*
@@ -491,13 +493,13 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specification ] ";"* [ function_var_blocks ] [ function_body ] "END_FUNCTION"i ";"*
+function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
-function_var_blocks: (_io_var_declarations | function_var_declarations)+
-
-_io_var_declarations: input_declarations
-                    | output_declarations
-                    | input_output_declarations
+?function_var_block: input_declarations
+                   | output_declarations
+                   | input_output_declarations
+                   | static_var_declarations
+                   | function_var_declarations
 
 function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"*
 
@@ -532,13 +534,14 @@ FUNCTION_BLOCK: "FUNCTION_BLOCK"i
 END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
                   | "END_FUNCTIONBLOCK"i
 
-?fb_var_declaration: _io_var_declarations
-                   | _other_var_declarations
-
-_other_var_declarations: external_var_declarations
-                       | var_declarations
-                       | temp_var_decls
-                       | incomplete_located_var_declarations
+?fb_var_declaration: input_declarations
+                   | output_declarations
+                   | input_output_declarations
+                   | external_var_declarations
+                   | var_declarations
+                   | temp_var_decls
+                   | static_var_declarations
+                   | incomplete_located_var_declarations
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
@@ -560,6 +563,7 @@ var_inst_declaration: "VAR_INST"i var_body "END_VAR"i ";"*
 
 ?method_var_declaration: fb_var_declaration
                        | var_inst_declaration
+                       | static_var_declarations
 
 ?method_return_type: _located_var_spec_init
 
@@ -587,10 +591,16 @@ program_declaration: "PROGRAM"i program_type_name [ program_var_declarations ] [
 
 program_var_declarations: program_var_declaration+
 
-?program_var_declaration: _io_var_declarations
-                        | _other_var_declarations
+?program_var_declaration: input_declarations
+                        | output_declarations
+                        | input_output_declarations
+                        | external_var_declarations
+                        | incomplete_located_var_declarations
                         | located_var_declarations
                         | program_access_decls
+                        | static_var_declarations
+                        | temp_var_decls
+                        | var_declarations
 
 program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
 
