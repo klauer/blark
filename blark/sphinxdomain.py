@@ -4,13 +4,13 @@ import dataclasses
 import logging
 import pathlib
 from typing import (Any, ClassVar, Dict, Generator, Iterable, List, Optional,
-                    Tuple, Union)
+                    Tuple, Type, Union)
 
+import docutils.parsers.rst.directives as rst_directives
 import sphinx
 import sphinx.application
 import sphinx.environment
 from docutils import nodes
-from docutils.parsers.rst import directives
 from sphinx import addnodes
 from sphinx.directives import ObjectDescription
 from sphinx.domains import Domain, Index, ObjType
@@ -87,7 +87,7 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     doc_field_types: List[Field] = []
     domain: Optional[str] = None
     objtype: Optional[str] = None
-    indexnode: addnodes.index = None
+    indexnode: addnodes.index = addnodes.index()
 
     # Customizing ObjectDescription:
     has_content: ClassVar[bool] = True
@@ -96,13 +96,13 @@ class BlarkDirective(ObjectDescription[Tuple[str, str]]):
     final_argument_whitespace: ClassVar[bool] = True
     doc_field_types = []
     option_spec: ClassVar[OptionSpec] = {
-        "noblocks": directives.flag,
-        "nolinks": directives.flag,
-        "nosource": directives.flag,
-        "noindex": directives.flag,
-        "noindexentry": directives.flag,
-        "canonical": directives.unchanged,
-        "annotation": directives.unchanged,
+        "noblocks": rst_directives.flag,
+        "nolinks": rst_directives.flag,
+        "nosource": rst_directives.flag,
+        "noindex": rst_directives.flag,
+        "noindexentry": rst_directives.flag,
+        "canonical": rst_directives.unchanged,
+        "annotation": rst_directives.unchanged,
     }
 
 
@@ -212,7 +212,7 @@ class VariableBlockDirective(BlarkDirective):
 
 
 def _build_table_from_lists(
-    table_data: List[List[nodes.Element]],
+    table_data: List[List[nodes.Node]],
     col_widths: List[int],
     *,
     header_rows: int = 1,
@@ -252,13 +252,8 @@ def _build_table_from_lists(
 def _to_link_table(
     parent_name: str, decls: Iterable[summary.DeclarationSummary]
 ) -> nodes.table:
-    def decl_items() -> Generator[Tuple[nodes.paragraph, nodes.Text], None, None]:
+    def decl_items() -> Generator[List[nodes.Node], None, None]:
         for decl in sorted(decls, key=lambda decl: decl.name):
-            if decl.location:
-                location = " ".join(decl.location.split(" ")[1:]).strip()
-            else:
-                location = "?"  # shouldn't technically get here
-
             paragraph = nodes.paragraph()
             paragraph += addnodes.pending_xref(
                 decl.qualified_name,
@@ -267,7 +262,7 @@ def _to_link_table(
                 reftype="declaration",
                 reftarget=decl.qualified_name,
             )
-            yield paragraph, nodes.Text(location)
+            yield [paragraph, nodes.Text(decl.location)]
 
     return _build_table_from_lists(
         table_data=[
@@ -407,6 +402,23 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         if "nosource" not in self.options:
             contentnode += self._get_source()
 
+        if "noindexentry" not in self.options:
+            self._add_index_entries()
+
+    def _add_index_entries(self):
+        self.indexnode["entries"].append(
+            ("single", self.obj.name, self.obj.name, "", None)
+        )
+
+        linkable = summary.get_linkable_declarations(self.obj.declarations.values())
+        for attr in ("input", "output", "memory"):
+            decls = getattr(linkable, attr, [])
+            for decl in decls:
+                self.indexnode["entries"].append(
+                    ("single", f"{decl.name} ({self.obj.name} {attr})",
+                     decl.qualified_name, "", None)
+                )
+
     def get_signature_prefix(self, sig: str) -> List[nodes.Node]:
         return [
             addnodes.desc_sig_keyword(text=self.signature_prefix),
@@ -425,9 +437,6 @@ class FunctionDirective(BlarkDirectiveWithDeclarations):
             bodyrolename="obj",
         ),
     ]
-
-    def needs_arglist(self) -> bool:
-        return True
 
 
 class FunctionBlockDirective(BlarkDirectiveWithDeclarations):
@@ -467,7 +476,7 @@ class BlarkDomain(Domain):
         "declaration": ObjType(l_("declaration"), "declaration"),
     }
 
-    directives: ClassVar[Dict[str, BlarkDirective]] = {
+    directives: ClassVar[Dict[str, Type[BlarkDirective]]] = {
         "function_block": FunctionBlockDirective,
         "function": FunctionDirective,
         "variable_block": VariableBlockDirective,
