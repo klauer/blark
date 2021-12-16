@@ -807,6 +807,14 @@ def test_fb_roundtrip(rule_name, value):
             END_FOR
             """
         )),
+        param("for_statement", tf.multiline_code_block(
+            """
+            FOR iIndex[1] := 0 TO 10
+            DO
+                iValue := iIndex * 2;
+            END_FOR
+            """
+        )),
     ],
 )
 def test_statement_roundtrip(rule_name, value):

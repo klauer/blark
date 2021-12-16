@@ -2485,7 +2485,7 @@ class RepeatStatement(Statement):
 @dataclass
 @_rule_handler("for_statement", comments=True)
 class ForStatement(Statement):
-    control: lark.Token
+    control: SymbolicVariable
     from_: Expression
     to: Expression
     step: Optional[Expression]

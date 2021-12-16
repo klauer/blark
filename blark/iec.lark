@@ -838,7 +838,7 @@ case_list: case_list_element ( "," case_list_element )*
                   | symbolic_variable
 
 // B.3.2.4
-?control_variable: IDENTIFIER
+?control_variable: symbolic_variable
 
 _iteration_statement: for_statement
                     | while_statement
