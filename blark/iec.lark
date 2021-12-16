@@ -522,8 +522,9 @@ DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 
 ABSTRACT: "ABSTRACT"i
 extends: "EXTENDS"i DOTTED_IDENTIFIER
+implements: "IMPLEMENTS"i DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
-function_block_type_declaration: FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
+function_block_type_declaration: FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
 
 FUNCTION_BLOCK: "FUNCTION_BLOCK"i
               | "FUNCTIONBLOCK"i
@@ -953,7 +954,3 @@ IL_OPERATOR_AND: "AND"i | "&"
 !?il_jump_operator: "JMP"i
                   | "JMPC"i
                   | "JMPCN"i
-
-// Missing:
-//   FB IMPLEMENTS (interface_list)
-//   INTERFACE

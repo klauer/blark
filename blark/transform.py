@@ -1468,6 +1468,22 @@ class Extends:
 
 
 @dataclass
+@_rule_handler("implements")
+class Implements:
+    interfaces: List[lark.Token]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(
+        *interfaces: lark.Token,
+    ) -> Implements:
+        return Implements(interfaces=list(interfaces))
+
+    def __str__(self) -> str:
+        return "IMPLEMENTS " + ", ".join(self.interfaces)
+
+
+@dataclass
 @_rule_handler(
     "function_block_body",
     "function_body",
@@ -1491,6 +1507,7 @@ class FunctionBlock:
     name: lark.Token
     abstract: bool
     extends: Optional[Extends]
+    implements: Optional[Implements]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -1500,7 +1517,8 @@ class FunctionBlock:
         fb_token: lark.Token,
         abstract: Optional[lark.Token],
         derived_name: lark.Token,
-        extends: Extends,
+        extends: Optional[Extends],
+        implements: Optional[Implements],
         *args
     ) -> FunctionBlock:
         *declarations, body, _ = args
@@ -1508,16 +1526,20 @@ class FunctionBlock:
             name=derived_name,
             abstract=abstract is not None,
             extends=extends,
+            implements=implements,
             declarations=list(declarations),
             body=body,
         )
 
     def __str__(self) -> str:
         abstract = "ABSTRACT " if self.abstract else ""
+        header = f"FUNCTION_BLOCK {abstract}{self.name}"
+        header = join_if(header, " ", self.implements)
+        header = join_if(header, " ", self.extends)
         return "\n".join(
             line for line in
             (
-                join_if(f"FUNCTION_BLOCK {abstract}{self.name}", " ", self.extends),
+                header,
                 *[str(declaration) for declaration in self.declarations],
                 indent_if(self.body),
                 "END_FUNCTION_BLOCK",
