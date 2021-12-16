@@ -8,6 +8,7 @@ from typing import (Any, ClassVar, Dict, Generator, Iterable, List, Optional,
 
 import sphinx
 import sphinx.application
+import sphinx.environment
 from docutils import nodes
 from docutils.parsers.rst import directives
 from sphinx import addnodes
@@ -32,7 +33,9 @@ DEFAULT_CSS_FILE = STATIC_PATH / "blark_default.css"
 
 @dataclasses.dataclass
 class BlarkSphinxCache:
-    cache: Dict[str, summary.CodeSummary] = dataclasses.field(default_factory=dict)
+    cache: Dict[pathlib.Path, summary.CodeSummary] = dataclasses.field(
+        default_factory=dict
+    )
     _instance_: ClassVar[BlarkSphinxCache]
 
     @staticmethod
@@ -142,10 +145,10 @@ def declaration_to_content(obj: summary.DeclarationSummary):
 
 
 def declarations_to_block(
-    parent_name: str, declarations: Iterable[summary.DeclarationSummary],
+    declarations: Iterable[summary.DeclarationSummary],
     *,
     env: Optional[sphinx.environment.BuildEnvironment] = None,
-):
+) -> Generator[addnodes.desc, None, None]:
     # These nodes translate into the following in html:
     # desc -> dl
     # desc_signature -> dt
@@ -205,7 +208,7 @@ class VariableBlockDirective(BlarkDirective):
         return self.block_header, ""
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
-        contentnode += declarations_to_block(self.parent_name, self.declarations, env=self.env)
+        contentnode += declarations_to_block(self.declarations, env=self.env)
 
 
 def _build_table_from_lists(
@@ -345,51 +348,64 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
     def before_content(self) -> None:
         self.env.ref_context['bk:obj'] = self.obj
 
+    def _get_links(self) -> Generator[addnodes.desc, None, None]:
+        """Get the linkable inputs/outputs as sphinx nodes."""
+        linkable = summary.get_linkable_declarations(
+            self.obj.declarations.values()
+        )
+        for attr in ("input", "output", "memory"):
+            decls = getattr(linkable, attr, [])
+            if decls:
+                block_desc = addnodes.desc(classes=["linkable"])
+                name = {
+                    "input": "Inputs",
+                    "output": "Outputs",
+                    "memory": "Memory",
+                }[attr]
+                sig = addnodes.desc_signature(
+                    classes=[f"linkable_{attr}"],
+                    ids=[f"{self.obj.name}._linkable_{attr}_"],
+                )
+                sig += addnodes.desc_name(text=f"Linkable {name}")
+                block_desc += sig
+
+                block_desc += _to_link_table(self.obj.name, decls)
+                yield block_desc
+
+    def _get_basic_variable_blocks(self) -> Generator[addnodes.desc, None, None]:
+        """Get the usual input/output variable blocks as sphinx nodes."""
+        for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
+            decls = self.obj.declarations_by_block.get(block, {})
+            if not decls:
+                continue
+
+            block_desc = addnodes.desc()
+            block_desc += addnodes.desc_name(
+                text=block, classes=["variable_block", block]
+            )
+            block_contents = addnodes.desc_content()
+            block_contents += declarations_to_block(decls.values(), env=self.env)
+
+            block_desc += block_contents
+            yield block_desc
+
+    def _get_source(self) -> Generator[nodes.container, None, None]:
+        """Get the usual input/output variable blocks as sphinx nodes."""
+        yield nodes.container(
+            "",
+            nodes.literal_block(self.obj.source_code, self.obj.source_code),
+            classes=["plc_source"],
+        )
+
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
         if "nolinks" not in self.options:
-            linkable = summary.get_linkable_declarations(
-                self.obj.declarations.values()
-            )
-            for attr in ("input", "output", "memory"):
-                addnodes.tabular_col_spec()
-                decls = getattr(linkable, attr, [])
-                if decls:
-                    block_desc = addnodes.desc()
-                    name = {
-                        "input": "Inputs",
-                        "output": "Outputs",
-                        "memory": "Memory",
-                    }[attr]
-                    block_desc += addnodes.desc_name(
-                        text=f"Linkable {name}",
-                        classes=[f"linkable_{attr}", "linkable"]
-                    )
-
-                    block_desc += _to_link_table(self.obj.name, decls)
-                    contentnode += block_desc
+            contentnode += self._get_links()
 
         if "noblocks" not in self.options:
-            for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
-                decls = self.obj.declarations_by_block.get(block, {})
-                if not decls:
-                    continue
-
-                block_desc = addnodes.desc()
-                block_desc += addnodes.desc_name(
-                    text=block, classes=["variable_block", block]
-                )
-                block_contents = addnodes.desc_content()
-                block_contents += declarations_to_block(self.obj.name, decls.values(), env=self.env)
-
-                block_desc += block_contents
-                contentnode += block_desc
+            contentnode += self._get_basic_variable_blocks()
 
         if "nosource" not in self.options:
-            contentnode += nodes.container(
-                "",
-                nodes.literal_block(self.obj.source_code, self.obj.source_code),
-                classes=["plc_source"]
-            )
+            contentnode += self._get_source()
 
     def get_signature_prefix(self, sig: str) -> List[nodes.Node]:
         return [

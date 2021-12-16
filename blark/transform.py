@@ -629,7 +629,7 @@ class FieldSelector:
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(dereferenced: Optional[lark.Token], field: lark.Token):
+    def from_lark(dereferenced: Optional[lark.Token], field: SymbolicVariable):
         return FieldSelector(
             field=field,
             dereferenced=dereferenced is not None
