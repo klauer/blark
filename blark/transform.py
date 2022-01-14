@@ -3128,23 +3128,22 @@ TypeDeclarationItem = Union[
 @dataclass
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
-    items: List[TypeDeclarationItem]
+    declaration: Optional[TypeDeclarationItem]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*args: TypeDeclarationItem) -> DataTypeDeclaration:
-        return DataTypeDeclaration(list(args))
+    def from_lark(
+        declaration: Optional[TypeDeclarationItem] = None,
+    ) -> DataTypeDeclaration:
+        return DataTypeDeclaration(declaration)
 
     def __str__(self) -> str:
-        if not self.items:
+        if not self.declaration:
             return "TYPE\nEND_TYPE"
 
-        items = "\n".join(
-            indent(f"{item};") for item in self.items
-        )
         return "\n".join(
             (
-                f"TYPE {items.lstrip()}",
+                "TYPE " + indent(f"{self.declaration};").lstrip(),
                 "END_TYPE",
             )
         )

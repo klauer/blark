@@ -324,7 +324,7 @@ class FunctionBlockSummary(Summary):
 
 @dataclass
 class DataTypeSummary(Summary):
-    """Summary representation of a single function block."""
+    """Summary representation of a single data type."""
     name: str
     source_code: str
     type: str
@@ -402,12 +402,12 @@ class CodeSummary:
                 result.functions[item.name] = summary
                 last_function_block = None
             elif isinstance(item, tf.DataTypeDeclaration):
-                for subitem in item.items:
+                if isinstance(item.declaration, tf.StructureTypeDeclaration):
                     summary = DataTypeSummary.from_data_type(
-                        subitem,
-                        source_code=get_code_by_meta(subitem.meta)
+                        item.declaration,
+                        source_code=get_code_by_meta(item.declaration.meta)
                     )
-                    result.data_types[subitem.name] = summary
+                    result.data_types[item.declaration.name] = summary
                 last_function_block = None
             elif isinstance(item, tf.Method):
                 if last_function_block is not None:

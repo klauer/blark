@@ -238,16 +238,14 @@ REFERENCE_TO: /REFERENCE\s*TO/i
                          | subrange_type_name
                          | enumerated_type_name
 
-data_type_declaration: "TYPE"i _type_declaration* "END_TYPE"i ";"*
+data_type_declaration: "TYPE"i [ _type_declaration ] ";"* "END_TYPE"i ";"*
 
-_type_declaration: array_type_declaration ";"+
-                 | structure_type_declaration ";"*
-                 | string_type_declaration ";"+
-                 | _single_element_type_declaration ";"+
-
-_single_element_type_declaration: simple_type_declaration
-                                | subrange_type_declaration
-                                | enumerated_type_declaration
+_type_declaration: array_type_declaration
+                 | structure_type_declaration
+                 | string_type_declaration
+                 | simple_type_declaration
+                 | subrange_type_declaration
+                 | enumerated_type_declaration
 
 simple_type_declaration: simple_type_name [ extends ] ":" simple_spec_init
 
