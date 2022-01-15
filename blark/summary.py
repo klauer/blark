@@ -325,6 +325,7 @@ class FunctionBlockSummary(Summary):
 @dataclass
 class DataTypeSummary(Summary):
     """Summary representation of a single data type."""
+    # Note: structures only for now.
     name: str
     source_code: str
     type: str

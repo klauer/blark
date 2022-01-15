@@ -990,7 +990,7 @@ def test_incomplete_located_var_decls(rule_name, value):
                 STRUCT
                     xPLC_CnBitsValid : BOOL;
                     xPLC_CnBits : ARRAY [0..20] OF BYTE;
-                END_STRUCT;
+                END_STRUCT
             END_TYPE
             """
         )),
@@ -1027,6 +1027,26 @@ def test_incomplete_located_var_decls(rule_name, value):
         param("data_type_declaration", tf.multiline_code_block(
             """
             TYPE EnumeratedTypeName : REFERENCE TO (IdentifierA, INT#IdentifierB := 1);
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                UNION
+                    intval : INT;
+                    as_bytes : ARRAY [0..2] OF BYTE;
+                END_UNION
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                UNION
+                    intval : INT;
+                    enum : (iValue := 1, iValue2 := 2) INT;
+                END_UNION
             END_TYPE
             """
         )),

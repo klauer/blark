@@ -1053,6 +1053,65 @@ class StructureElementDeclaration:
         return f"{name_and_location} : {self.init};"
 
 
+UnionElementSpecification = Union[
+    ArraySpecification,
+    lark.Token,  # simple_specification
+    SubrangeSpecification,
+    EnumeratedSpecification,
+]
+
+
+@dataclass
+@_rule_handler("union_element_declaration", comments=True)
+class UnionElementDeclaration:
+    name: lark.Token
+    spec: UnionElementSpecification
+    meta: Optional[Meta] = meta_field()
+
+    @property
+    def variables(self) -> List[str]:
+        """API compat"""
+        return [self.name]
+
+    def __str__(self) -> str:
+        return f"{self.name} : {self.spec};"
+
+
+@dataclass
+@_rule_handler("union_type_declaration", comments=True)
+class UnionTypeDeclaration:
+    name: lark.Token
+    declarations: List[UnionElementDeclaration]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(name: lark.Token, *decls: UnionElementDeclaration):
+        return UnionTypeDeclaration(
+            name=name,
+            declarations=list(decls),
+        )
+
+    def __str__(self) -> str:
+        if not self.declarations:
+            decls = None
+        else:
+            decls = indent(
+                "\n".join(
+                    str(decl) for decl in self.declarations
+                )
+            )
+
+        return "\n".join(
+            line for line in (
+                f"{self.name} :",
+                "UNION",
+                decls,
+                "END_UNION",
+            )
+            if line is not None
+        )
+
+
 @dataclass
 @_rule_handler("initialized_structure")
 class InitializedStructure:
@@ -3141,9 +3200,16 @@ class DataTypeDeclaration:
         if not self.declaration:
             return "TYPE\nEND_TYPE"
 
+        decl = indent(self.declaration).lstrip()
+        if not isinstance(
+            self.declaration, (StructureTypeDeclaration, UnionTypeDeclaration)
+        ):
+            # note: END_STRUCT; END_UNION; result in "END_TYPE expected not ;"
+            decl = decl + ";"
+
         return "\n".join(
             (
-                "TYPE " + indent(f"{self.declaration};").lstrip(),
+                f"TYPE {decl}",
                 "END_TYPE",
             )
         )
