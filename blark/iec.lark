@@ -161,7 +161,7 @@ _date_literal: year "-" month "-" day
 date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
 
 // B.1.3
-non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name )
+non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name | DOTTED_IDENTIFIER )
 
 // B.1.3.1
 TYPE_TOD: "TIME_OF_DAY"i
@@ -238,16 +238,15 @@ REFERENCE_TO: /REFERENCE\s*TO/i
                          | subrange_type_name
                          | enumerated_type_name
 
-data_type_declaration: "TYPE"i _type_declaration* "END_TYPE"i ";"*
+data_type_declaration: "TYPE"i [ _type_declaration ] ";"* "END_TYPE"i ";"*
 
-_type_declaration: array_type_declaration ";"+
-                 | structure_type_declaration ";"*
-                 | string_type_declaration ";"+
-                 | _single_element_type_declaration ";"+
-
-_single_element_type_declaration: simple_type_declaration
-                                | subrange_type_declaration
-                                | enumerated_type_declaration
+_type_declaration: array_type_declaration
+                 | structure_type_declaration
+                 | union_type_declaration
+                 | string_type_declaration
+                 | simple_type_declaration
+                 | subrange_type_declaration
+                 | enumerated_type_declaration
 
 simple_type_declaration: simple_type_name [ extends ] ":" simple_spec_init
 
@@ -307,15 +306,17 @@ _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
 
-structure_type_declaration: structure_type_name [ extends ] ":" [ indirection_type ] _structure_declaration
+structure_type_declaration: structure_type_name [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 
 initialized_structure_type_declaration: structure_type_name [ extends ] ":" initialized_structure
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
-_structure_declaration: "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i ";"*
-
 structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init )
+
+union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | subrange_specification | enumerated_specification )
+
+union_type_declaration: structure_type_name ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
@@ -413,6 +414,8 @@ structured_var_declaration: var1_list ":" structure_type_name
 
 var_declarations: "VAR"i [ var_declaration_config ] var_body "END_VAR"i ";"*
 
+static_var_declarations: "VAR_STAT"i var_body "END_VAR"i ";"*
+
 ?var_declaration_config: CONSTANT | PERSISTENT | RETAIN | NON_RETAIN
 
 located_var_declarations: "VAR"i [ located_var_config ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"*
@@ -491,13 +494,13 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name ":" ( elementary_type_name | derived_type_name ) ";"* [ function_var_blocks ] [ function_body ] "END_FUNCTION"i ";"*
+function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
-function_var_blocks: (_io_var_declarations | function_var_declarations)+
-
-_io_var_declarations: input_declarations
-                    | output_declarations
-                    | input_output_declarations
+?function_var_block: input_declarations
+                   | output_declarations
+                   | input_output_declarations
+                   | static_var_declarations
+                   | function_var_declarations
 
 function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"*
 
@@ -522,22 +525,24 @@ DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 
 ABSTRACT: "ABSTRACT"i
 extends: "EXTENDS"i DOTTED_IDENTIFIER
+implements: "IMPLEMENTS"i DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
-function_block_type_declaration: _FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] fb_var_declaration* [ function_block_body ] _END_FUNCTION_BLOCK ";"*
+function_block_type_declaration: FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
 
-_FUNCTION_BLOCK: "FUNCTION_BLOCK"i
-               | "FUNCTIONBLOCK"i
+FUNCTION_BLOCK: "FUNCTION_BLOCK"i
+              | "FUNCTIONBLOCK"i
 
-_END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
-                   | "END_FUNCTIONBLOCK"i
+END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
+                  | "END_FUNCTIONBLOCK"i
 
-?fb_var_declaration: _io_var_declarations
-                   | _other_var_declarations
-
-_other_var_declarations: external_var_declarations
-                       | var_declarations
-                       | temp_var_decls
-                       | incomplete_located_var_declarations
+?fb_var_declaration: input_declarations
+                   | output_declarations
+                   | input_output_declarations
+                   | external_var_declarations
+                   | var_declarations
+                   | temp_var_decls
+                   | static_var_declarations
+                   | incomplete_located_var_declarations
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
@@ -559,6 +564,7 @@ var_inst_declaration: "VAR_INST"i var_body "END_VAR"i ";"*
 
 ?method_var_declaration: fb_var_declaration
                        | var_inst_declaration
+                       | static_var_declarations
 
 ?method_return_type: _located_var_spec_init
 
@@ -586,10 +592,16 @@ program_declaration: "PROGRAM"i program_type_name [ program_var_declarations ] [
 
 program_var_declarations: program_var_declaration+
 
-?program_var_declaration: _io_var_declarations
-                        | _other_var_declarations
+?program_var_declaration: input_declarations
+                        | output_declarations
+                        | input_output_declarations
+                        | external_var_declarations
+                        | incomplete_located_var_declarations
                         | located_var_declarations
                         | program_access_decls
+                        | static_var_declarations
+                        | temp_var_decls
+                        | var_declarations
 
 program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
 
@@ -837,7 +849,7 @@ case_list: case_list_element ( "," case_list_element )*
                   | symbolic_variable
 
 // B.3.2.4
-?control_variable: IDENTIFIER
+?control_variable: symbolic_variable
 
 _iteration_statement: for_statement
                     | while_statement
@@ -953,8 +965,3 @@ IL_OPERATOR_AND: "AND"i | "&"
 !?il_jump_operator: "JMP"i
                   | "JMPC"i
                   | "JMPCN"i
-
-// Missing:
-//   FB IMPLEMENTS (interface_list)
-//   INTERFACE
-//   Merge back in instruction list grammar

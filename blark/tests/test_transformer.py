@@ -1,11 +1,19 @@
 import pathlib
+from typing import Optional
 
 import pytest
 from pytest import param
 
 from .. import transform as tf
 from ..parse import parse_source_code
-from .conftest import get_grammar, stringify_tokens
+from .conftest import get_grammar
+
+# try:
+#     import apischema
+# except ImportError:
+#     # apischema is optional for serialization testing
+#     apischema = None
+
 
 TEST_PATH = pathlib.Path(__file__).parent
 
@@ -37,7 +45,6 @@ def test_check_unhandled_rules(grammar):
         # handled as tree
         "global_var_list",
         "var_body",
-        "function_var_blocks",
 
     }
 
@@ -73,25 +80,21 @@ def test_check_unhandled_rules(grammar):
     [
         param("integer_literal", "-12", tf.Integer(value="-12")),
         param("integer_literal", "12", tf.Integer(value="12")),
-        param("integer_literal", "INT#12", tf.Integer(value="12", type="INT")),
+        param("integer_literal", "INT#12", tf.Integer(value="12", type_name="INT")),
         param("integer_literal", "2#10010", tf.BinaryInteger(value="10010")),
         param("integer_literal", "8#22", tf.OctalInteger(value="22")),
         param("integer_literal", "16#12", tf.HexInteger(value="12")),
-        param("integer_literal", "UDINT#12", tf.Integer(value="12", type="UDINT")),
-        param("integer_literal", "UDINT#2#010", tf.BinaryInteger(value="010", type="UDINT")),  # noqa: E501
-        param("integer_literal", "UDINT#2#1001_0011", tf.BinaryInteger(value="1001_0011", type="UDINT")),  # noqa: E501
-        param("integer_literal", "DINT#16#C0FFEE", tf.HexInteger(value="C0FFEE", type="DINT")),  # noqa: E501
+        param("integer_literal", "UDINT#12", tf.Integer(value="12", type_name="UDINT")),
+        param("integer_literal", "UDINT#2#010", tf.BinaryInteger(value="010", type_name="UDINT")),  # noqa: E501
+        param("integer_literal", "UDINT#2#1001_0011", tf.BinaryInteger(value="1001_0011", type_name="UDINT")),  # noqa: E501
+        param("integer_literal", "DINT#16#C0FFEE", tf.HexInteger(value="C0FFEE", type_name="DINT")),  # noqa: E501
         param("real_literal", "-12.0", tf.Real(value="-12.0")),
         param("real_literal", "12.0", tf.Real(value="12.0")),
         param("real_literal", "12.0e5", tf.Real(value="12.0e5")),
-        param("bit_string_literal", "WORD#1234", tf.BitString(type="WORD", value="1234")),
-        param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type="WORD", value="0101")),  # noqa: E501
-        param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type="WORD", value="777")),  # noqa: E501
-        param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type="word", value="FEEE")),  # noqa: E501
-        param("boolean_literal", "BOOL#1", tf.Boolean(value="1")),
-        param("boolean_literal", "BOOL#0", tf.Boolean(value="0")),
-        param("boolean_literal", "BOOL#TRUE", tf.Boolean(value="TRUE")),
-        param("boolean_literal", "BOOL#FALSE", tf.Boolean(value="FALSE")),
+        param("bit_string_literal", "WORD#1234", tf.BitString(type_name="WORD", value="1234")),
+        param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
+        param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501
+        param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type_name="word", value="FEEE")),  # noqa: E501
         param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
@@ -109,11 +112,8 @@ def test_check_unhandled_rules(grammar):
     ],
 )
 def test_literal(name, value, expected):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    print(f"transformed -> {transformed}")
-    assert stringify_tokens(transformed) == expected
+    transformed = roundtrip_rule(name, value, expected=str(expected))
+    assert transformed == expected
 
 
 @pytest.mark.parametrize(
@@ -160,10 +160,7 @@ def test_literal(name, value, expected):
     ],
 )
 def test_literal_roundtrip(name, value):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    assert str(transformed) == value
+    roundtrip_rule(name, value)
 
 
 @pytest.mark.parametrize(
@@ -180,22 +177,7 @@ def test_literal_roundtrip(name, value):
     ],
 )
 def test_bool_literal_roundtrip(name, value, expected):
-    parsed = get_grammar(start=name).parse(value)
-    print(f"rule {name} value {value!r} into {parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    assert str(transformed) == expected
-
-
-def roundtrip_rule(rule_name: str, value: str):
-    parsed = get_grammar(start=rule_name).parse(value)
-    print(f"rule {rule_name} value {value!r} into:\n\n{parsed}")
-    transformed = tf.GrammarTransformer().transform(parsed)
-    print("\n\nTransformed:")
-    print(repr(transformed))
-    print("\n\nOr:")
-    print(transformed)
-    assert str(transformed) == value
-    return transformed
+    roundtrip_rule(name, value, expected=expected)
 
 
 @pytest.mark.parametrize(
@@ -248,6 +230,7 @@ def roundtrip_rule(rule_name: str, value: str):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
+        param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType"),
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
@@ -505,6 +488,7 @@ def test_var_access_roundtrip(rule_name, value):
                 fbTest1 : FB_Test(1, 2);
                 fbTest2 : FB_Test(A := 1, B := 2);
                 fbTest3 : FB_TestC;
+                i_iFscEB1Ch0AI AT %I* : INT;
             END_VAR
             """
         )),
@@ -520,6 +504,18 @@ def test_global_roundtrip(rule_name, value):
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName IMPLEMENTS I_fbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName IMPLEMENTS I_fbName, I_fbName2
             END_FUNCTION_BLOCK
             """
         )),
@@ -810,6 +806,14 @@ def test_fb_roundtrip(rule_name, value):
             END_FOR
             """
         )),
+        param("for_statement", tf.multiline_code_block(
+            """
+            FOR iIndex[1] := 0 TO 10
+            DO
+                iValue := iIndex * 2;
+            END_FOR
+            """
+        )),
     ],
 )
 def test_statement_roundtrip(rule_name, value):
@@ -827,8 +831,9 @@ def test_statement_roundtrip(rule_name, value):
                 END_VAR
                 FuncName := iValue;
             END_FUNCTION
-            """
-        )),
+            """),
+            id="int_with_input",
+        ),
         param("function_declaration", tf.multiline_code_block(
             """
             FUNCTION FuncName : INT
@@ -846,8 +851,31 @@ def test_statement_roundtrip(rule_name, value):
                 END_VAR
                 FuncName := iValue;
             END_FUNCTION
+            """),
+            id="int_with_input_output",
+          ),
+        param("function_declaration", tf.multiline_code_block(
             """
-        )),
+            FUNCTION FuncName
+                VAR_INPUT
+                    Ptr : POINTER TO UINT;
+                END_VAR
+                Ptr^ := 5;
+            END_FUNCTION
+            """),
+            id="no_return_type",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION FuncName : Tc2_System.T_MaxString
+                VAR_INPUT
+                    Ptr : POINTER TO UINT;
+                END_VAR
+                Ptr^ := 5;
+            END_FUNCTION
+            """),
+            id="dotted_return_type",
+        ),
     ],
 )
 def test_function_roundtrip(rule_name, value):
@@ -882,14 +910,23 @@ def test_program_roundtrip(rule_name, value):
     _ = roundtrip_rule(rule_name, value)
 
 
-def roundtrip_rule_with_comments(rule_name: str, value: str):
+def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     parser = get_grammar(start=rule_name)
     transformed = parse_source_code(value, parser=parser)
     print("\n\nTransformed:")
     print(repr(transformed))
     print("\n\nOr:")
     print(transformed)
-    assert str(transformed) == value
+    if expected is None:
+        expected = value
+    assert str(transformed) == expected
+
+    # if apischema is not None:
+    #     serialized = apischema.serialize(transformed)
+    #     print("serialized", serialized)
+    #     deserialized = apischema.deserialize(type(transformed), serialized)
+    #     print("deserialized", deserialized)
+    #     assert transformed == deserialized
     return transformed
 
 
@@ -909,7 +946,7 @@ def roundtrip_rule_with_comments(rule_name: str, value: str):
     ],
 )
 def test_input_output_comments(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -935,7 +972,7 @@ def test_input_output_comments(rule_name, value):
     ],
 )
 def test_incomplete_located_var_decls(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -953,7 +990,7 @@ def test_incomplete_located_var_decls(rule_name, value):
                 STRUCT
                     xPLC_CnBitsValid : BOOL;
                     xPLC_CnBits : ARRAY [0..20] OF BYTE;
-                END_STRUCT;
+                END_STRUCT
             END_TYPE
             """
         )),
@@ -993,10 +1030,30 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                UNION
+                    intval : INT;
+                    as_bytes : ARRAY [0..2] OF BYTE;
+                END_UNION
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                UNION
+                    intval : INT;
+                    enum : (iValue := 1, iValue2 := 2) INT;
+                END_UNION
+            END_TYPE
+            """
+        )),
     ],
 )
 def test_data_type_declaration(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1041,7 +1098,7 @@ def test_data_type_declaration(rule_name, value):
     ],
 )
 def test_config_roundtrip(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1110,7 +1167,7 @@ def test_config_roundtrip(rule_name, value):
     ]
 )
 def test_instruction_list(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1167,4 +1224,4 @@ def test_instruction_list(rule_name, value):
     ]
 )
 def test_sfc_sequential_function_chart(rule_name, value):
-    roundtrip_rule_with_comments(rule_name, value)
+    roundtrip_rule(rule_name, value)

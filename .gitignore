@@ -1,2 +1,7 @@
 *.py[co]
 *.sw[op]
+/old
+/build
+/dist
+*.egg-info
+.coverage

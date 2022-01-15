@@ -1,11 +1,12 @@
 import pathlib
 import re
-from typing import Generator, List, Tuple
+from typing import Generator, List, Tuple, Union
 
 import lark
 import pytmc
 
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
+AnyPath = Union[str, pathlib.Path]
 
 
 def get_source_code(fn):
@@ -220,3 +221,11 @@ def find_and_clean_comments(
         return comments_and_pragmas, text
 
     return comments_and_pragmas, "\n".join(lines)
+
+
+def remove_comment_characters(text: str) -> str:
+    """Take only the inner contents of a given comment."""
+    text = text.strip()
+    if text.startswith("/"):
+        return text.lstrip("/ ")
+    return text.strip("()").strip("* ")

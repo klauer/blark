@@ -3,5 +3,5 @@ include requirements.txt
 include README.md
 include LICENSE
 include blark/_version.py
-include blark/iec.lark
-include blark/iec.grammar
+include blark/*.lark
+include blark/docs/*.css
