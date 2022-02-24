@@ -16,8 +16,13 @@ import lark
 T = TypeVar("T")
 
 try:
+    # NOTE: apischema is an optional requirement; this should work regardless.
+    import apischema
+
     from .apischema_compat import as_tagged_union
 except ImportError:
+    apischema = None
+
     def as_tagged_union(cls: Type[T]) -> Type[T]:
         """No-operation stand-in for when apischema is not available."""
         return cls
@@ -461,12 +466,12 @@ class Variable(Expression):
     "property_access",
 )
 class MethodAccess(enum.Flag):
-    public = enum.auto()
-    private = enum.auto()
-    abstract = enum.auto()
-    protected = enum.auto()
-    internal = enum.auto()
-    final = enum.auto()
+    public = 0b0000_0001
+    private = 0b0000_0010
+    abstract = 0b0000_0100
+    protected = 0b0000_1000
+    internal = 0b0001_0000
+    final = 0b010_0000
 
     @staticmethod
     def from_lark(token: lark.Token, *tokens: lark.Token) -> MethodAccess:
@@ -1812,7 +1817,7 @@ class FunctionBlock:
 @_rule_handler("function_declaration", comments=True)
 class Function:
     name: lark.Token
-    return_type: Optional[lark.Token]
+    return_type: Optional[SimpleSpecification]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -2207,7 +2212,7 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
 
 
 IncompleteLocatedVariableSpecInit = Union[
-
+    SimpleSpecification,
     TypeInitialization,
     SubrangeTypeInitialization,
     EnumeratedTypeInitialization,
@@ -3645,3 +3650,11 @@ def merge_comments(source: Any, comments: List[lark.Token]):
             obj = getattr(source, field.name, None)
             if obj is not None:
                 merge_comments(obj, comments)
+
+
+if apischema is not None:
+    # Optional apischema deserializers
+
+    @apischema.deserializer
+    def _method_access_deserializer(access: int) -> MethodAccess:
+        return MethodAccess(access)
