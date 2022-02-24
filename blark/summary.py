@@ -3,7 +3,7 @@ from __future__ import annotations
 import textwrap
 import typing
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Generator, Iterable, List, Optional, Union
 
 from . import transform as tf
 
@@ -110,6 +110,7 @@ else:
 class DeclarationSummary(Summary):
     """Summary representation of a single declaration."""
     name: str
+    item: Union[tf.Declaration, tf.GlobalVariableDeclaration]
     parent: Optional[str]
     location: Optional[str]
     block: str
@@ -154,6 +155,7 @@ class DeclarationSummary(Summary):
             location = getattr(var, "location", None)
             result[name] = DeclarationSummary(
                 name=str(name),
+                item=item,
                 location=str(location).replace("AT ", "") if location else None,
                 block=block_header,
                 type=item.init.full_type_name,
@@ -178,6 +180,7 @@ class DeclarationSummary(Summary):
             name = getattr(var, "name", var)
             result[name] = DeclarationSummary(
                 name=str(name),
+                item=item,
                 location=location,
                 block=block_header,
                 type=item.full_type_name,
@@ -206,7 +209,11 @@ class DeclarationSummary(Summary):
 class ActionSummary(Summary):
     """Summary representation of a single action."""
     name: str
+    item: tf.Action
     source_code: str
+
+    def __getitem__(self, key: str):
+        raise KeyError(f"{key}: Actions do not contain declarations")
 
     @classmethod
     def from_action(cls, action: tf.Action, source_code: Optional[str] = None) -> ActionSummary:
@@ -215,6 +222,7 @@ class ActionSummary(Summary):
 
         return ActionSummary(
             name=str(action.name),
+            item=action,
             source_code=source_code,
             **Summary.get_meta_kwargs(action.meta),
         )
@@ -224,9 +232,13 @@ class ActionSummary(Summary):
 class MethodSummary(Summary):
     """Summary representation of a single method."""
     name: str
+    item: tf.Method
     return_type: Optional[str]
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        return self.declarations[key]
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -242,6 +254,7 @@ class MethodSummary(Summary):
 
         summary = MethodSummary(
             name=method.name,
+            item=method,
             return_type=str(method.return_type) if method.return_type else None,
             source_code=source_code,
             **Summary.get_meta_kwargs(method.meta),
@@ -253,12 +266,41 @@ class MethodSummary(Summary):
 
 
 @dataclass
+class PropertySummary(Summary):
+    """Summary representation of a single property."""
+    name: str
+    item: tf.Property
+    source_code: str
+
+    def __getitem__(self, key: str):
+        raise KeyError(f"{key}: Properties do not contain declarations")
+
+    @classmethod
+    def from_property(
+        cls, property: tf.Property, source_code: Optional[str] = None
+    ) -> PropertySummary:
+        if source_code is None:
+            source_code = str(property)
+
+        return PropertySummary(
+            name=str(property.name),
+            item=property,
+            source_code=source_code,
+            **Summary.get_meta_kwargs(property.meta),
+        )
+
+
+@dataclass
 class FunctionSummary(Summary):
     """Summary representation of a single function."""
     name: str
+    item: tf.Function
     return_type: Optional[str]
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        return self.declarations[key]
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -276,6 +318,7 @@ class FunctionSummary(Summary):
 
         summary = FunctionSummary(
             name=func.name,
+            item=func,
             return_type=str(func.return_type) if func.return_type else None,
             source_code=source_code,
             **Summary.get_meta_kwargs(func.meta),
@@ -292,9 +335,18 @@ class FunctionBlockSummary(Summary):
     """Summary representation of a single function block."""
     name: str
     source_code: str
+    item: tf.FunctionBlock
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        if key in self.declarations:
+            return self.declarations[key]
+        for item in self.actions + self.methods:
+            if item.name == key:
+                return item
+        raise KeyError(key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -312,6 +364,7 @@ class FunctionBlockSummary(Summary):
 
         summary = FunctionBlockSummary(
             name=fb.name,
+            item=fb,
             source_code=source_code,
             **Summary.get_meta_kwargs(fb.meta),
         )
@@ -327,9 +380,13 @@ class DataTypeSummary(Summary):
     """Summary representation of a single data type."""
     # Note: structures only for now.
     name: str
+    item: tf.TypeDeclarationItem
     source_code: str
     type: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        return self.declarations[key]
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -346,6 +403,7 @@ class DataTypeSummary(Summary):
 
         summary = DataTypeSummary(
             name=dtype.name,
+            item=dtype,
             source_code=source_code,
             type=type(dtype).__name__,
             **Summary.get_meta_kwargs(dtype.meta),
@@ -364,9 +422,13 @@ class DataTypeSummary(Summary):
 class GlobalVariableSummary(Summary):
     """Summary representation of a VAR_GLOBAL block."""
     name: str
+    item: tf.GlobalVariableDeclarations
     source_code: str
     type: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        return self.declarations[key]
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -383,6 +445,7 @@ class GlobalVariableSummary(Summary):
 
         summary = GlobalVariableSummary(
             name=decls.name or "(unknown)",
+            item=decls,
             source_code=source_code,
             type=type(decls).__name__,
             **Summary.get_meta_kwargs(decls.meta),
@@ -401,6 +464,54 @@ class GlobalVariableSummary(Summary):
 
 
 @dataclass
+class ProgramSummary(Summary):
+    """Summary representation of a single program."""
+    name: str
+    source_code: str
+    item: tf.Program
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+    actions: List[ActionSummary] = field(default_factory=list)
+    methods: List[MethodSummary] = field(default_factory=list)
+    properties: List[PropertySummary] = field(default_factory=list)
+
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        if key in self.declarations:
+            return self.declarations[key]
+        for item in self.actions + self.methods + self.properties:
+            if item.name == key:
+                return item
+        raise KeyError(key)
+
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        result = {}
+        for decl in self.declarations.values():
+            result.setdefault(decl.block, {})[decl.name] = decl
+        return result
+
+    @classmethod
+    def from_program(
+        cls, program: tf.Program, source_code: Optional[str] = None
+    ) -> ProgramSummary:
+        if source_code is None:
+            source_code = str(program)
+
+        summary = ProgramSummary(
+            name=program.name,
+            item=program,
+            source_code=source_code,
+            **Summary.get_meta_kwargs(program.meta),
+        )
+
+        for decl in program.declarations:
+            summary.declarations.update(
+                DeclarationSummary.from_block(decl, parent=program)
+            )
+
+        return summary
+
+
+@dataclass
 class CodeSummary:
     """Summary representation of a set of code - functions, function blocks, etc."""
     functions: Dict[str, FunctionSummary] = field(default_factory=dict)
@@ -408,6 +519,7 @@ class CodeSummary:
         default_factory=dict
     )
     data_types: Dict[str, DataTypeSummary] = field(default_factory=dict)
+    programs: Dict[str, ProgramSummary] = field(default_factory=dict)
     globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
 
     def __str__(self):
@@ -416,15 +528,53 @@ class CodeSummary:
             for name, fb in self.function_blocks.items()
         )
 
-    def append(self, other: CodeSummary):
+    def get_all_items_by_name(self, name: str) -> Generator:
+        """Get any code item (function, data type, global variable, etc.) by name."""
+        for dct in (
+            self.globals,
+            self.programs,
+            self.functions,
+            self.function_blocks,
+            self.data_types,
+        ):
+            # Very inefficient, be warned
+            try:
+                yield dct[name]
+            except KeyError:
+                ...
+
+    def get_item_by_name(self, name: str) -> Optional[Any]:
+        """Get any code item (function, data type, global variable, etc.) by name."""
+        try:
+            return next(self.get_all_items_by_name(name))
+        except StopIteration:
+            return None
+
+    def append(self, other: CodeSummary, namespace: Optional[str] = None):
         """
         In-place add code summary information from another instance.
 
         New entries take precedence over old ones.
         """
+
         self.functions.update(other.functions)
         self.function_blocks.update(other.function_blocks)
         self.data_types.update(other.data_types)
+        self.globals.update(other.globals)
+        self.programs.update(other.programs)
+
+        if namespace:
+            # LCLS_General.GVL_Logger and GVL_Logger are equally valid
+            for name, item in other.functions.items():
+                self.functions[f"{namespace}.{name}"] = item
+            for name, item in other.function_blocks.items():
+                self.function_blocks[f"{namespace}.{name}"] = item
+            for name, item in other.data_types.items():
+                self.data_types[f"{namespace}.{name}"] = item
+            for name, item in other.globals.items():
+                self.globals[f"{namespace}.{name}"] = item
+            # for name, item in other.programs.items():
+            #     self.programs[f"{namespace}.{name}"] = item
 
     @staticmethod
     def from_source(code: tf.SourceCode) -> CodeSummary:
@@ -437,7 +587,7 @@ class CodeSummary:
                 return ""
             return "\n".join(code_by_lines[meta.line:meta.end_line + 1])
 
-        last_function_block = None
+        last_parent = None
         for item in items:
             if isinstance(item, tf.FunctionBlock):
                 summary = FunctionBlockSummary.from_function_block(
@@ -445,14 +595,14 @@ class CodeSummary:
                     source_code=get_code_by_meta(item.meta)
                 )
                 result.function_blocks[item.name] = summary
-                last_function_block = summary
+                last_parent = summary
             elif isinstance(item, tf.Function):
                 summary = FunctionSummary.from_function(
                     item,
                     source_code=get_code_by_meta(item.meta)
                 )
                 result.functions[item.name] = summary
-                last_function_block = None
+                last_parent = None
             elif isinstance(item, tf.DataTypeDeclaration):
                 if isinstance(item.declaration, tf.StructureTypeDeclaration):
                     summary = DataTypeSummary.from_data_type(
@@ -460,19 +610,27 @@ class CodeSummary:
                         source_code=get_code_by_meta(item.declaration.meta)
                     )
                     result.data_types[item.declaration.name] = summary
-                last_function_block = None
+                last_parent = None
             elif isinstance(item, tf.Method):
-                if last_function_block is not None:
-                    last_function_block.methods.append(
+                if last_parent is not None:
+                    last_parent.methods.append(
                         MethodSummary.from_method(
                             item,
                             source_code=get_code_by_meta(item.meta)
                         )
                     )
             elif isinstance(item, tf.Action):
-                if last_function_block is not None:
-                    last_function_block.actions.append(
+                if last_parent is not None:
+                    last_parent.actions.append(
                         ActionSummary.from_action(
+                            item,
+                            source_code=get_code_by_meta(item.meta)
+                        )
+                    )
+            elif isinstance(item, tf.Property):
+                if last_parent is not None and isinstance(last_parent, ProgramSummary):
+                    last_parent.properties.append(
+                        PropertySummary.from_property(
                             item,
                             source_code=get_code_by_meta(item.meta)
                         )
@@ -483,11 +641,19 @@ class CodeSummary:
                     item,
                     source_code=get_code_by_meta(item.meta)
                 )
-                if qualified_only:
-                    ...
-                    # TODO
-                result.globals[item.name] = summary
-                # raise
+
+                for global_var in summary.declarations.values():
+                    if not qualified_only:
+                        result.globals[global_var.name] = summary
+                    result.globals[global_var.qualified_name] = summary
+
+            elif isinstance(item, tf.Program):
+                summary = ProgramSummary.from_program(
+                    item,
+                    source_code=get_code_by_meta(item.meta)
+                )
+                result.programs[item.name] = summary
+                last_parent = summary
 
         return result
 
