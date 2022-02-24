@@ -9,7 +9,7 @@ import typing
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
-                    Tuple, Type, TypeVar, Union)
+                    Set, Tuple, Type, TypeVar, Union)
 
 import lark
 
@@ -2248,6 +2248,7 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
     persistent: bool
     items: List[GlobalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
+    name: Optional[str] = None
 
     @staticmethod
     def from_lark(
@@ -2256,11 +2257,23 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
         *items: GlobalVariableDeclaration
     ) -> GlobalVariableDeclarations:
         return GlobalVariableDeclarations(
+            name=None,  # This isn't in the code; set later
             constant=str(const_or_retain).lower() == "constant",
             retain=str(const_or_retain).lower() == "retain",
             persistent=persistent is not None,
             items=list(items)
         )
+
+    @property
+    def attribute_pragmas(self) -> Set[str]:
+        """Attribute pragmas."""
+        _, pragmas = self.meta.get_comments_and_pragmas()
+        attributes = set()
+        for pragma in pragmas:
+            # TODO: better pragma parsing; it's its own grammar
+            if pragma.startswith("{attribute "):  # }
+                attributes.add(pragma.split(" ")[1].strip(" }'"))
+        return attributes
 
     def __str__(self) -> str:
         options = []
@@ -3277,7 +3290,7 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
         Sorted list of comments and pragmas for annotating the resulting
         transformed grammar.
     """
-    _filename: Optional[str]
+    _filename: Optional[pathlib.Path]
     comments: List[lark.Token]
 
     def __init__(
@@ -3305,9 +3318,13 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
         if isinstance(transformed, SourceCode):
             transformed.raw_source = self._source_code
             transformed.filename = (
-                pathlib.Path(self._filename)
+                self._filename
                 if self._filename is not None else None
             )
+            for item in transformed.items:
+                if isinstance(item, GlobalVariableDeclarations):
+                    item.name = self._filename.stem if self._filename else None
+
         return transformed
 
     @_annotator_method_wrapper

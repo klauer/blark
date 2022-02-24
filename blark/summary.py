@@ -5,6 +5,8 @@ import typing
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, Dict, Iterable, List, Optional, Union
 
+import lark
+
 from . import transform as tf
 
 
@@ -189,6 +191,51 @@ class DeclarationSummary(Summary):
         return result
 
     @classmethod
+    def from_global_variable(
+        cls,
+        item: tf.GlobalVariableDeclaration,
+        parent: Optional[tf.GlobalVariableDeclarations] = None,
+        block_header: str = "VAR_GLOBAL",
+    ) -> Dict[str, DeclarationSummary]:
+        result = {}
+        # OK, a bit lazy for now
+        location = item.spec.location
+
+        if isinstance(item.init, lark.Token):
+            # FB name
+            base_type = str(item.init)
+        elif isinstance(item.init, tf.FunctionBlockInvocation):
+            base_type = str(item.init.name)
+        else:
+            base_type = str(item.init)  # TODO
+            # if hasattr(spec, "type"):
+            #     if hasattr(spec.type, "type_name"):
+            #         base_type = spec.type.type_name
+            #     else:
+            #         base_type = str(spec.type)
+            # else:
+            # raise ValueError(f"TODO: {type(spec)}")
+
+        try:
+            value = item.init.value
+        except AttributeError:
+            value = item.init
+
+        for var in item.spec.variables:
+            name = getattr(var, "name", var)
+            result[name] = DeclarationSummary(
+                name=str(name),
+                location=str(location).replace("AT ", "") if location else None,
+                block=block_header,
+                type=str(item.spec),
+                base_type=base_type,
+                value=value,
+                parent=parent.name if parent is not None else "",
+                **Summary.get_meta_kwargs(item.meta),
+            )
+        return result
+
+    @classmethod
     def from_block(
         cls,
         block: tf.VariableDeclarationBlock,
@@ -361,6 +408,46 @@ class DataTypeSummary(Summary):
 
 
 @dataclass
+class GlobalVariableSummary(Summary):
+    """Summary representation of a VAR_GLOBAL block."""
+    name: str
+    source_code: str
+    type: str
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        return {
+            "VAR_GLOBAL": self.declarations
+        }
+
+    @classmethod
+    def from_globals(
+        cls, decls: tf.GlobalVariableDeclarations, source_code: Optional[str] = None
+    ) -> GlobalVariableSummary:
+        if source_code is None:
+            source_code = str(decls)
+
+        summary = GlobalVariableSummary(
+            name=decls.name or "(unknown)",
+            source_code=source_code,
+            type=type(decls).__name__,
+            **Summary.get_meta_kwargs(decls.meta),
+        )
+
+        for decl in decls.items:
+            summary.declarations.update(
+                **DeclarationSummary.from_global_variable(
+                    decl,
+                    parent=summary,
+                    block_header="VAR_GLOBAL"
+                )
+            )
+
+        return summary
+
+
+@dataclass
 class CodeSummary:
     """Summary representation of a set of code - functions, function blocks, etc."""
     functions: Dict[str, FunctionSummary] = field(default_factory=dict)
@@ -368,12 +455,23 @@ class CodeSummary:
         default_factory=dict
     )
     data_types: Dict[str, DataTypeSummary] = field(default_factory=dict)
+    globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
 
     def __str__(self):
         return "\n".join(
             f"{name}:\n{fb}"
             for name, fb in self.function_blocks.items()
         )
+
+    def append(self, other: CodeSummary):
+        """
+        In-place add code summary information from another instance.
+
+        New entries take precedence over old ones.
+        """
+        self.functions.update(other.functions)
+        self.function_blocks.update(other.function_blocks)
+        self.data_types.update(other.data_types)
 
     @staticmethod
     def from_source(code: tf.SourceCode) -> CodeSummary:
@@ -426,6 +524,18 @@ class CodeSummary:
                             source_code=get_code_by_meta(item.meta)
                         )
                     )
+            elif isinstance(item, tf.GlobalVariableDeclarations):
+                qualified_only = "qualified_only" in item.attribute_pragmas
+                summary = GlobalVariableSummary.from_globals(
+                    item,
+                    source_code=get_code_by_meta(item.meta)
+                )
+                if qualified_only:
+                    ...
+                    # TODO
+                result.globals[item.name] = summary
+                raise
+
         return result
 
 
