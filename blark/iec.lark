@@ -442,7 +442,10 @@ global_var_declarations: "VAR_GLOBAL"i [ global_const_or_retain ] [ PERSISTENT ]
 ?global_var_body_item: var_init_decl
                      | global_var_decl
 
-global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation | function_block_type_name ) ";"+
+global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation ) ";"+
+// Note - function_block_type_name is also valid here, but it is picked up by
+//   an equivalent rule
+//   function_block_type_name
 
 global_var_spec: global_var_list
                | global_var_name (location | incomplete_location)

@@ -668,13 +668,22 @@ class MultiElementVariable(SymbolicVariable):
 @_rule_handler("simple_spec_init")
 class TypeInitialization:
     indirection: Optional[IndirectionType]
-    spec: Optional[lark.Token]
+    spec: lark.Token
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.spec
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
+        return join_if(self.indirection, " ", self.spec)
+
     def __str__(self) -> str:
-        type_ = join_if(self.indirection, " ", self.spec)
-        return join_if(type_, " := ", self.value)
+        return join_if(self.full_type_name, " := ", self.value)
 
 
 class Declaration:
@@ -727,8 +736,18 @@ class StringTypeSpecification:
     length: Optional[lark.Token] = None
     meta: Optional[Meta] = meta_field()
 
-    def __str__(self) -> str:
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.type_name
+
+    @property
+    def full_type_name(self) -> lark.Token:
+        """The full type name."""
         return join_if(self.type_name, "", self.length)
+
+    def __str__(self) -> str:
+        return self.full_type_name
 
 
 @dataclass
@@ -740,6 +759,16 @@ class StringTypeInitialization:
     spec: StringTypeSpecification
     value: Optional[lark.Token]
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.spec.base_type_name
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
+        return self.spec.full_type_name
 
     @staticmethod
     def from_lark(
@@ -792,10 +821,20 @@ class SubrangeSpecification:
     subrange: Optional[Subrange] = None
     meta: Optional[Meta] = meta_field()
 
-    def __str__(self) -> str:
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.type_name
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
         if self.subrange:
             return f"{self.type_name} ({self.subrange})"
         return f"{self.type_name}"
+
+    def __str__(self) -> str:
+        return self.full_type_name
 
 
 @dataclass
@@ -805,6 +844,16 @@ class SubrangeTypeInitialization:
     spec: SubrangeSpecification
     value: Optional[Expression] = None
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.spec.base_type_name
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
+        return self.spec.full_type_name
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -841,9 +890,20 @@ class EnumeratedValue:
 @dataclass
 @_rule_handler("enumerated_specification")
 class EnumeratedSpecification:
+    _implicit_type_default_: ClassVar[str] = "INT"
     type_name: Optional[lark.Token]
     values: Optional[List[EnumeratedValue]] = None
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def base_type_name(self) -> Union[lark.Token, str]:
+        """The full type name."""
+        return self.type_name or self._implicit_type_default_
+
+    @property
+    def full_type_name(self) -> Union[lark.Token, str]:
+        """The full type name."""
+        return self.base_type_name
 
     @staticmethod
     def from_lark(*args):
@@ -867,6 +927,16 @@ class EnumeratedTypeInitialization:
     spec: EnumeratedSpecification
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def base_type_name(self) -> Union[lark.Token, str]:
+        """The base type name."""
+        return self.spec.base_type_name
+
+    @property
+    def full_type_name(self) -> Union[lark.Token, str]:
+        """The full type name."""
+        return self.spec.full_type_name
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -904,9 +974,24 @@ class ArraySpecification:
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.type.type_name
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
+        return str(self)
+
     @staticmethod
     def from_lark(*args):
         *subranges, type = args
+        if isinstance(type, lark.Token):
+            type = DataType(
+                indirection=None,
+                type_name=type,
+            )
         return ArraySpecification(type=type, subranges=subranges)
 
     def __str__(self) -> str:
@@ -964,6 +1049,16 @@ class ArrayTypeInitialization:
     spec: ArraySpecification
     value: Optional[ArrayInitialization]
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.spec.base_type_name
+
+    @property
+    def full_type_name(self) -> lark.Token:
+        """The full type name."""
+        return self.spec.full_type_name
 
     def __str__(self) -> str:
         if self.indirection:
@@ -1118,6 +1213,21 @@ class InitializedStructure:
     name: lark.Token
     init: StructureInitialization
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def value(self) -> str:
+        """The initialization value (call)."""
+        return str(self.init)
+
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.name
+
+    @property
+    def full_type_name(self) -> lark.Token:
+        """The full type name."""
+        return self.name
 
     def __str__(self) -> str:
         return f"{self.name} := {self.init}"
@@ -1309,7 +1419,14 @@ class DeclaredVariable:
 
 class InitDeclaration:
     variables: List[DeclaredVariable]
-    init: Any
+    init: Union[
+        TypeInitialization,
+        SubrangeTypeInitialization,
+        EnumeratedTypeInitialization,
+        ArrayTypeInitialization,
+        InitializedStructure,
+        _GenericInit,  # StringVariableInitDeclaration, EdgeDeclaration
+    ]
     meta: Optional[Meta]
 
     def __str__(self) -> str:
@@ -1342,6 +1459,15 @@ class StructuredVariableInitDeclaration(InitDeclaration):
 
 
 @dataclass
+class _GenericInit:
+    """API compat to give a valid init attribute."""
+    # TODO: can we restructure this to be less confusing?
+    base_type_name: str
+    full_type_name: str
+    value: Optional[str]
+
+
+@dataclass
 @_rule_handler(
     "single_byte_string_var_declaration",
     "double_byte_string_var_declaration",
@@ -1351,6 +1477,7 @@ class StringVariableInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     spec: StringTypeSpecification
     value: Optional[lark.Token]
+    init: _GenericInit
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
@@ -1359,11 +1486,12 @@ class StringVariableInitDeclaration(InitDeclaration):
             variables=variables,
             spec=string_info.spec,
             value=string_info.value,
+            init=_GenericInit(
+                base_type_name=string_info.spec.base_type_name,
+                full_type_name=string_info.spec.full_type_name,
+                value=string_info.value,
+            )
         )
-
-    @property
-    def init(self) -> str:
-        return join_if(self.spec, " := ", self.value)
 
 
 @dataclass
@@ -1374,8 +1502,12 @@ class EdgeDeclaration(InitDeclaration):
     meta: Optional[Meta] = meta_field()
 
     @property
-    def init(self) -> str:
-        return f"BOOL {self.edge}"
+    def init(self) -> _GenericInit:
+        return _GenericInit(
+            base_type_name="BOOL",
+            full_type_name=f"BOOL {self.edge}",
+            value=None,
+        )
 
 
 class FunctionBlockDeclaration:
@@ -1452,13 +1584,28 @@ class OutputParameterAssignment(ParameterAssignment):
 @dataclass
 @_rule_handler("fb_invocation")
 class FunctionBlockInvocation:
-    name: lark.Token
+    name: SymbolicVariable
     parameters: List[ParameterAssignment]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def base_type_name(self) -> lark.Token:
+        """The base type name."""
+        return self.name.name
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name."""
+        return str(self.name)
+
+    @property
+    def value(self) -> str:
+        """The initialization value (call)."""
+        return str(self)
+
     @staticmethod
     def from_lark(
-        name: lark.Token,
+        name: SymbolicVariable,
         *parameters: ParameterAssignment
     ) -> FunctionBlockInvocation:
         return FunctionBlockInvocation(
@@ -1471,22 +1618,27 @@ class FunctionBlockInvocation:
         return f"{self.name}({parameters})"
 
 
+AnyLocation = Union[Location, IncompleteLocation]
+
+
 @dataclass
 @_rule_handler("global_var_spec")
 class GlobalVariableSpec:
     variables: List[lark.Token]
-    location: Optional[Union[Location, IncompleteLocation]]
+    location: Optional[AnyLocation]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
         name_or_names: Union[lark.Token, lark.Tree],
-        location: Optional[Union[Location, IncompleteLocation]] = None
+        location: Optional[AnyLocation] = None
     ) -> GlobalVariableSpec:
         if location is None:
+            # Multiple variables without a location
             name_tree = typing.cast(lark.Tree, name_or_names)
             variables = typing.cast(List[lark.Token], name_tree.children)
         else:
+            # Only one variable allowed with a location
             variables = typing.cast(List[lark.Token], [name_or_names])
         return GlobalVariableSpec(variables=variables, location=location)
 
@@ -1510,12 +1662,28 @@ LocatedVariableSpecInit = Union[
 @_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
     spec: GlobalVariableSpec
-    init: Union[
-        LocatedVariableSpecInit,
-        FunctionBlockInvocation,
-        lark.Token  # FB type name
-    ]
+    init: Union[LocatedVariableSpecInit, FunctionBlockInvocation]
     meta: Optional[Meta] = meta_field()
+
+    @property
+    def variables(self) -> List[lark.Token]:
+        """The variable names contained."""
+        return self.spec.variables
+
+    @property
+    def location(self) -> Optional[AnyLocation]:
+        """The (optional) variable location."""
+        return self.spec.location
+
+    @property
+    def base_type_name(self) -> Union[str, lark.Token]:
+        """The base type name of the variable(s)."""
+        return self.init.base_type_name
+
+    @property
+    def full_type_name(self) -> Union[str, lark.Token]:
+        """The full type name of the variable(s)."""
+        return self.init.full_type_name
 
     def __str__(self) -> str:
         return f"{self.spec} : {self.init}"

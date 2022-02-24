@@ -22,13 +22,15 @@ def pou_filename(request):
 
 def test_parsing(pou_filename):
     try:
-        ((fn, result),) = list(parse(pou_filename))
+        ((_, result),) = list(parse(pou_filename))
     except FileNotFoundError:
         pytest.skip(f"Missing file: {pou_filename}")
     else:
         print("transformed:")
         print(result)
         print("summary:")
+        if isinstance(result, Exception):
+            raise result
         print(summarize(result))
 
 

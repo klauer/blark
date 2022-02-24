@@ -1225,3 +1225,55 @@ def test_instruction_list(rule_name, value):
 )
 def test_sfc_sequential_function_chart(rule_name, value):
     roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "value, init, base_type, full_type",
+    [
+        param("fValue : INT;", tf.TypeInitialization, "INT", "INT"),
+        param("fValue : INT (0..10);", tf.SubrangeTypeInitialization, "INT", "INT (0..10)"),
+        param("fValue : (A, B);", tf.EnumeratedTypeInitialization, "INT", "INT"),
+        param("fValue : (A, B) DINT;", tf.EnumeratedTypeInitialization, "DINT", "DINT"),
+        param(
+            "fValue : ARRAY [1..10] OF INT;",
+            tf.ArrayTypeInitialization,
+            "INT",
+            "ARRAY [1..10] OF INT",
+        ),
+        param(
+            "fValue : FB_Test(1, 2, 3);",
+            tf.InitializedStructure,
+            "FB_Test",
+            "FB_Test",
+            marks=pytest.mark.xfail(reason="Overlap with function block invocation")
+        ),
+        param(
+            "fValue : FB_Test(A := 1, B := 2, C => 3);",
+            tf.FunctionBlockInvocation,
+            "FB_Test",
+            "FB_Test",
+        ),
+
+        # Aliased by TypeInitialization, it has been removed from the grammar:
+        # param("fValue : fbName;", lark.Token, "fbName", "fbName"),
+        # Aliased by TypeInitialization:
+        param(
+            "fValue : STRING[10] := 'abc';",
+            tf.StringTypeSpecification,
+            "STRING",
+            "STRING[10]",
+            marks=pytest.mark.xfail(reason="Overlap with TypeInitialization")
+        ),
+    ]
+)
+def test_global_types(value, init, base_type, full_type):
+    parser = get_grammar(start="global_var_decl")
+    transformed = parse_source_code(value, parser=parser)
+    assert isinstance(transformed, tf.GlobalVariableDeclaration)
+    assert transformed.variables == ["fValue"]
+
+    assert isinstance(transformed.init, init)
+
+    assert transformed.spec.variables
+    assert transformed.base_type_name == base_type
+    assert transformed.full_type_name == full_type

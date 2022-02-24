@@ -5,8 +5,6 @@ import typing
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-import lark
-
 from . import transform as tf
 
 
@@ -112,7 +110,7 @@ else:
 class DeclarationSummary(Summary):
     """Summary representation of a single declaration."""
     name: str
-    parent: str
+    parent: Optional[str]
     location: Optional[str]
     block: str
     base_type: str
@@ -151,30 +149,6 @@ class DeclarationSummary(Summary):
         block_header: str = "unknown",
     ) -> Dict[str, DeclarationSummary]:
         result = {}
-        # OK, a bit lazy for now
-        try:
-            spec = item.init.spec
-        except AttributeError:
-            spec = item.init
-            spec = getattr(spec, "name", spec)
-
-        if isinstance(spec, (str, tf.SimpleVariable)):  # TODO
-            base_type = str(spec)
-        elif hasattr(spec, "type_name"):
-            base_type = str(spec.type_name)
-        elif hasattr(spec, "type"):
-            if hasattr(spec.type, "type_name"):
-                base_type = spec.type.type_name
-            else:
-                base_type = str(spec.type)
-        else:
-            raise ValueError(f"TODO: {type(spec)}")
-
-        try:
-            value = item.init.value
-        except AttributeError:
-            value = item.init
-
         for var in item.variables:
             name = getattr(var, "name", var)
             location = getattr(var, "location", None)
@@ -182,9 +156,9 @@ class DeclarationSummary(Summary):
                 name=str(name),
                 location=str(location).replace("AT ", "") if location else None,
                 block=block_header,
-                type=str(spec),
-                base_type=base_type,
-                value=value,
+                type=item.init.full_type_name,
+                base_type=item.init.base_type_name,
+                value=str(item.init.value),
                 parent=parent.name if parent is not None else "",
                 **Summary.get_meta_kwargs(item.meta),
             )
@@ -198,38 +172,17 @@ class DeclarationSummary(Summary):
         block_header: str = "VAR_GLOBAL",
     ) -> Dict[str, DeclarationSummary]:
         result = {}
-        # OK, a bit lazy for now
-        location = item.spec.location
-
-        if isinstance(item.init, lark.Token):
-            # FB name
-            base_type = str(item.init)
-        elif isinstance(item.init, tf.FunctionBlockInvocation):
-            base_type = str(item.init.name)
-        else:
-            base_type = str(item.init)  # TODO
-            # if hasattr(spec, "type"):
-            #     if hasattr(spec.type, "type_name"):
-            #         base_type = spec.type.type_name
-            #     else:
-            #         base_type = str(spec.type)
-            # else:
-            # raise ValueError(f"TODO: {type(spec)}")
-
-        try:
-            value = item.init.value
-        except AttributeError:
-            value = item.init
+        location = (str(item.spec.location or "").replace("AT ", "")) or None
 
         for var in item.spec.variables:
             name = getattr(var, "name", var)
             result[name] = DeclarationSummary(
                 name=str(name),
-                location=str(location).replace("AT ", "") if location else None,
+                location=location,
                 block=block_header,
-                type=str(item.spec),
-                base_type=base_type,
-                value=value,
+                type=item.full_type_name,
+                base_type=item.base_type_name,
+                value=str(item.init.value),
                 parent=parent.name if parent is not None else "",
                 **Summary.get_meta_kwargs(item.meta),
             )
@@ -534,7 +487,7 @@ class CodeSummary:
                     ...
                     # TODO
                 result.globals[item.name] = summary
-                raise
+                # raise
 
         return result
 
