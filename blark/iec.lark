@@ -62,7 +62,9 @@ integer_literal: [ INTEGER_TYPE_NAME "#" ] any_integer
             | "8#" OCTAL_STRING           -> octal_integer
             | "16#" HEX_STRING            -> hex_integer
             | SIGNED_INTEGER              -> signed_integer
-            | INTEGER                     -> integer
+            | integer
+
+integer: INTEGER
 
 real_literal: [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)\.([0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))?/
             | [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))/
@@ -79,8 +81,8 @@ TRUE_VALUE: "1" | "TRUE"i
 FALSE_VALUE: "0" | "FALSE"i
 
 // B.1.2.2
-?string_literal: SINGLE_BYTE_CHARACTER_STRING
-               | DOUBLE_BYTE_CHARACTER_STRING
+string_literal: SINGLE_BYTE_CHARACTER_STRING
+              | DOUBLE_BYTE_CHARACTER_STRING
 
 ESCAPE_CHARACTER: "$$"
                 | "$L"
@@ -256,9 +258,9 @@ pointer_type: POINTER_TO
 
 simple_spec_init: [ indirection_type ] simple_specification [ ":=" expression ]
 
-?simple_specification: elementary_type_name
-                     | simple_type_name
-                     | DOTTED_IDENTIFIER
+simple_specification: elementary_type_name
+                    | simple_type_name
+                    | DOTTED_IDENTIFIER
 
 subrange_type_declaration: subrange_type_name ":" subrange_spec_init
 
@@ -299,7 +301,7 @@ _array_spec_type_name: STRING_TYPE
 array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
                     | array_initial_element ( "," array_initial_element )*
 
-array_initial_element: ( INTEGER | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
+array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
                      | _array_initial_element
 
 _array_initial_element: constant
@@ -507,9 +509,10 @@ function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specificati
 
 function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"*
 
-function_body: statement_list
-             | instruction_list
-             | sequential_function_chart
+?function_body: statement_list
+              | instruction_list
+              | sequential_function_chart
+
 // TODO?      | ladder_diagram
 // TODO?      | function_block_diagram
 
@@ -802,9 +805,15 @@ _statement: ";"
           | set_statement
           | reset_statement
           | reference_assignment_statement
-          | _subprogram_control_statement
-          | _selection_statement
-          | _iteration_statement
+          | return_statement
+          | fb_invocation_statement
+          | if_statement
+          | case_statement
+          | for_statement
+          | while_statement
+          | repeat_statement
+          | exit_statement
+
 
 // B.3.2.1
 no_op_statement: _variable ";"+
@@ -821,10 +830,10 @@ reference_assignment_statement: _variable "REF="i expression ";"+
 method_statement: symbolic_variable "(" ")" ";"+
 
 // B.3.2.2
-return_statement: "RETURN"i ";"*
+return_statement.1: "RETURN"i ";"*
+// return_statement: priority > 0 so that it doesn't clash with no_op_statement
 
-_subprogram_control_statement: return_statement
-                             | fb_invocation ";"+
+fb_invocation_statement: fb_invocation ";"+
 
 fb_invocation: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
@@ -833,9 +842,6 @@ param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_pa
                 | expression
 
 // B.3.2.3
-_selection_statement: if_statement
-                    | case_statement
-
 if_statement: "IF"i expression "THEN"i [ statement_list ] ( else_if_clause )* [ else_clause ] "END_IF"i ";"*
 else_if_clause: "ELSIF"i expression "THEN"i [ statement_list ]
 else_clause: "ELSE"i [ statement_list ]
@@ -854,11 +860,6 @@ case_list: case_list_element ( "," case_list_element )*
 // B.3.2.4
 ?control_variable: symbolic_variable
 
-_iteration_statement: for_statement
-                    | while_statement
-                    | repeat_statement
-                    | exit_statement
-
 for_statement: "FOR"i control_variable ":=" _for_list "DO"i statement_list "END_FOR"i ";"*
 
 _for_list: expression "TO"i expression [ "BY"i expression ]
@@ -867,7 +868,7 @@ while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
 
 repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"*
 
-exit_statement: "EXIT"i ";"*
+exit_statement.1: "EXIT"i ";"*
 
 // Instruction list section
 _EOL: /\s*[\n\r]+\s*/

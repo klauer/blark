@@ -8,14 +8,35 @@ from .. import transform as tf
 from ..parse import parse_source_code
 from .conftest import get_grammar
 
-# try:
-#     import apischema
-# except ImportError:
-#     # apischema is optional for serialization testing
-#     apischema = None
+try:
+    import apischema
+except ImportError:
+    # apischema is optional for serialization testing
+    apischema = None
 
 
 TEST_PATH = pathlib.Path(__file__).parent
+
+
+def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
+    parser = get_grammar(start=rule_name)
+    transformed = parse_source_code(value, parser=parser)
+    print("\n\nTransformed:")
+    print(repr(transformed))
+    print("\n\nOr:")
+    print(transformed)
+    if expected is None:
+        expected = value
+    assert str(transformed) == expected
+
+    if apischema is not None:
+        serialized = apischema.serialize(transformed)
+        print("serialized", serialized)
+        deserialized = apischema.deserialize(type(transformed), serialized)
+        print("deserialized", deserialized)
+        assert str(transformed) == str(deserialized)
+        # assert transformed == deserialized
+    return transformed
 
 
 def test_check_unhandled_rules(grammar):
@@ -907,27 +928,7 @@ def test_function_roundtrip(rule_name, value):
     ],
 )
 def test_program_roundtrip(rule_name, value):
-    _ = roundtrip_rule(rule_name, value)
-
-
-def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
-    parser = get_grammar(start=rule_name)
-    transformed = parse_source_code(value, parser=parser)
-    print("\n\nTransformed:")
-    print(repr(transformed))
-    print("\n\nOr:")
-    print(transformed)
-    if expected is None:
-        expected = value
-    assert str(transformed) == expected
-
-    # if apischema is not None:
-    #     serialized = apischema.serialize(transformed)
-    #     print("serialized", serialized)
-    #     deserialized = apischema.deserialize(type(transformed), serialized)
-    #     print("deserialized", deserialized)
-    #     assert transformed == deserialized
-    return transformed
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
