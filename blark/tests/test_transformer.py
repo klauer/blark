@@ -840,6 +840,17 @@ def test_statement_roundtrip(rule_name, value):
         ),
         param("function_declaration", tf.multiline_code_block(
             """
+            FUNCTION FuncName : POINTER TO INT
+                VAR
+                    iValue : INT := 0;
+                END_VAR
+                FuncName := ADR(iValue);
+            END_FUNCTION
+            """),
+            id="int_with_pointer_retval",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
             FUNCTION FuncName : INT
                 VAR_INPUT
                     iValue : INT := 0;

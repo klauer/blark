@@ -173,7 +173,7 @@ TYPE_DATETIME: "DATE_AND_TIME"i
 ?elementary_type_name: NUMERIC_TYPE_NAME
                      | DATE_TYPE_NAME
                      | BIT_STRING_TYPE_NAME
-                     | STRING_TYPE           // was: STRING_VAR_TYPE (TODO)
+                     | STRING_TYPE
 
 STRING_TYPE: ( STRING | WSTRING ) WS* [ STRING_SPEC_LENGTH ]
 
@@ -493,7 +493,9 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
 
-function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
+indirect_simple_specification: [ indirection_type ] simple_specification
+
+function_declaration: "FUNCTION"i derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
 ?function_var_block: input_declarations
                    | output_declarations
@@ -504,9 +506,6 @@ function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specificati
 function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 ?function_body: statement_list
-
-// TODO?      | ladder_diagram
-// TODO?      | function_block_diagram
 
 function_var_decl: var1_init_decl
                  | array_var_init_decl

@@ -1004,6 +1004,17 @@ class SimpleSpecification:
 
 
 @dataclass
+@_rule_handler("indirect_simple_specification")
+class IndirectSimpleSpecification:
+    indirection: Optional[IndirectionType]
+    type: lark.Token
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return join_if(self.indirection, " ", self.type)
+
+
+@dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
     type: DataType
@@ -1824,7 +1835,7 @@ class FunctionBlock:
 @_rule_handler("function_declaration", comments=True)
 class Function:
     name: lark.Token
-    return_type: Optional[SimpleSpecification]
+    return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -1832,7 +1843,7 @@ class Function:
     @staticmethod
     def from_lark(
         name: lark.Token,
-        return_type: Optional[SimpleSpecification],
+        return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]],
         *remainder
     ) -> Function:
         *declarations, body = remainder
