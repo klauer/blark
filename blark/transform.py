@@ -1871,23 +1871,6 @@ class Program:
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
 
-    @staticmethod
-    def from_lark(
-        name: lark.Token,
-        declarations_tree: Optional[lark.Tree],
-        body: Optional[FunctionBody]
-    ) -> Program:
-        declarations = typing.cast(
-            List[VariableDeclarationBlock],
-            declarations_tree.children
-            if declarations_tree else []
-        )
-        return Program(
-            name=name,
-            declarations=declarations,
-            body=body,
-        )
-
     def __str__(self) -> str:
         return "\n".join(
             s for s in (
@@ -3301,132 +3284,6 @@ FunctionBlockBody = Union[
 FunctionBody = FunctionBlockBody  # Identical, currently
 
 
-@dataclass
-@_rule_handler("config_access_declarations", comments=True)
-class ConfigAccessDeclarations(VariableDeclarationBlock):
-    block_header: ClassVar[str] = "VAR_ACCESS"
-    items: List[ConfigAccessDeclaration]
-    meta: Optional[Meta] = meta_field()
-
-    @staticmethod
-    def from_lark(*items: ConfigAccessDeclaration) -> ConfigAccessDeclarations:
-        return ConfigAccessDeclarations(list(items))
-
-    def __str__(self) -> str:
-        return "\n".join(
-            (
-                "VAR_ACCESS",
-                *(indent(f"{item};") for item in self.items),
-                "END_VAR",
-            )
-        )
-
-
-@dataclass
-@_rule_handler("config_access_declaration", comments=True)
-class ConfigAccessDeclaration:
-    name: lark.Token
-    path: ConfigAccessPath
-    type: DataType
-    direction: Optional[lark.Token]
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
-        return join_if(
-            f"{self.name} : {self.path} : {self.type}",
-            " ",
-            self.direction
-        )
-
-
-@dataclass
-@_rule_handler("direct_access_path")
-class DirectAccessPath:
-    resource_name: Optional[lark.Token]
-    variable: DirectVariable
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        return join_if(self.resource_name, ".", self.variable)
-
-
-@dataclass
-@_rule_handler("access_path")
-class SymbolicAccessPath:
-    # NOTE: these attributes are ambiguous; consider just making into a
-    # "DOTTED_IDENTIFIER".
-    resource_name: Optional[lark.Token]
-    program_name: Optional[lark.Token]
-    function_block_names: List[lark.Token]
-    variable: SymbolicVariable
-    meta: Optional[Meta] = meta_field()
-
-    @staticmethod
-    def from_lark(
-        resource_name: Optional[lark.Token],
-        program_name: Optional[lark.Token],
-        *remainder,
-    ) -> SymbolicAccessPath:
-        *fb_names, variable = remainder
-        return SymbolicAccessPath(
-            resource_name=resource_name,
-            program_name=program_name,
-            function_block_names=typing.cast(List[lark.Token], fb_names),
-            variable=typing.cast(SymbolicVariable, variable),
-        )
-
-    def __str__(self):
-        return ".".join(
-            str(part) for part in [
-                self.resource_name,
-                self.program_name,
-                *self.function_block_names,
-                self.variable
-            ]
-            if part is not None
-        )
-
-
-ConfigAccessPath = Union[DirectAccessPath, SymbolicAccessPath]
-
-
-@dataclass
-@_rule_handler("task_initialization")
-class TaskInitialization:
-    single: Optional[TaskDataSource]
-    interval: Optional[TaskDataSource]
-    priority: lark.Token
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        parts = " ".join(
-            part for part in (
-                f"SINGLE := {self.single}," if self.single else None,
-                f"INTERVAL := {self.interval}," if self.interval else None,
-                f"PRIORITY := {self.priority}"
-            )
-            if part is not None
-        )
-        return f"({parts})"
-
-
-@dataclass
-@_rule_handler("task_configuration", comments=True)
-class TaskConfiguration:
-    name: lark.Token
-    init: TaskInitialization
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        return f"TASK {self.name} {self.init}"
-
-
-TaskDataSource = Union[
-    Literal,
-    Variable,
-]
-
-
 TypeDeclarationItem = Union[
     ArrayTypeDeclaration,
     StructureTypeDeclaration,
@@ -3611,6 +3468,10 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
     @_annotator_method_wrapper
     def false(self, value: lark.Token):
         return Boolean(value=value)
+
+    @_annotator_method_wrapper
+    def program_var_declarations(self, *declarations: VariableDeclarationBlock):
+        return list(declarations)
 
     def __default__(self, data, children, meta):
         """

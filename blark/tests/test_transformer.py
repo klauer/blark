@@ -69,24 +69,7 @@ def test_check_unhandled_rules(grammar):
 
     }
 
-    todo_rules = {
-        # program configuration
-        "prog_cnxn",
-        "prog_conf_element",
-        "prog_conf_elements",
-        "program_configuration",
-        "program_var_declarations",
-        "fb_task",
-
-        # tasks
-        "configuration_declaration",
-        "instance_specific_init",
-        "instance_specific_initializations",
-
-        # resources
-        "resource_declaration",
-        "single_resource_declaration",
-    }
+    todo_rules = set()
 
     aliased = {
         "boolean_literal",
@@ -1054,51 +1037,6 @@ def test_incomplete_located_var_decls(rule_name, value):
     ],
 )
 def test_data_type_declaration(rule_name, value):
-    roundtrip_rule(rule_name, value)
-
-
-@pytest.mark.parametrize(
-    "rule_name, value",
-    [
-        param("access_path", "resource.%IX1.1"),
-        param("access_path", "resource.prog.func1.func2.Variable"),
-        param("access_path", "resource.func2.Variable"),
-        param(
-            "config_access_declaration",
-            "AccessName : resource.%IX1.1 : TypeName READ_ONLY"
-        ),
-        param(
-            "config_access_declaration",
-            "AccessName : resource.%IX1.1 : TypeName"
-        ),
-        param(
-            "config_access_declaration",
-            "AccessName : resource.Variable : TypeName READ_WRITE"
-        ),
-        param("config_access_declarations", tf.multiline_code_block(
-            """
-            (* This is an access block *)
-            VAR_ACCESS
-                (* Access 1 *)
-                AccessName1 : resource.Variable : TypeName READ_WRITE;
-                (* Access 2 *)
-                AccessName2 : resource.Variable : TypeName READ_ONLY;
-                (* Access 3 *)
-                AccessName3 : resource.Variable : TypeName;
-                (* Access 4 *)
-                AccessName4 : resource.%IX1.1 : TypeName;
-            END_VAR
-            """
-        )),
-        param("task_initialization", "(SINGLE := 1, INTERVAL := 2, PRIORITY := 3)"),
-        param("task_initialization", "(INTERVAL := 2, PRIORITY := 3)"),
-        param("task_initialization", "(SINGLE := 1, PRIORITY := 3)"),
-        param("task_initialization", "(PRIORITY := 3)"),
-        param("task_initialization", "(SINGLE := abc.def, PRIORITY := 3)"),
-        param("task_configuration", "TASK taskname (PRIORITY := 3)"),
-    ],
-)
-def test_config_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)
 
 

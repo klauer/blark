@@ -27,7 +27,6 @@ _library_element_declaration: data_type_declaration
                             | function_block_method_declaration
                             | function_block_property_declaration
                             | program_declaration
-                            | configuration_declaration
                             | global_var_declarations
                             | action
 
@@ -585,9 +584,9 @@ function_block_property_declaration: "PROPERTY"i [ property_access ] DOTTED_IDEN
 // B.1.5.3
 ?program_type_name: IDENTIFIER
 
-program_declaration: "PROGRAM"i program_type_name [ program_var_declarations ] [ function_block_body ] "END_PROGRAM"i ";"*
+program_declaration: "PROGRAM"i program_type_name program_var_declarations [ function_block_body ] "END_PROGRAM"i ";"*
 
-program_var_declarations: program_var_declaration+
+program_var_declarations: [ program_var_declaration+ ]
 
 ?program_var_declaration: input_declarations
                         | output_declarations
@@ -601,6 +600,11 @@ program_var_declarations: program_var_declaration+
                         | var_declarations
 
 program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
+
+!?access_direction: "READ_WRITE"i
+                  | "READ_ONLY"i
+
+?access_name: IDENTIFIER
 
 program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name [ access_direction ]
 
@@ -659,67 +663,6 @@ action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
 entry_action: "ENTRY_ACTION"i [ function_block_body ] "END_ACTION"i ";"*
 
 exit_action: "EXIT_ACTION"i [ function_block_body ] "END_ACTION"i ";"*
-
-// B.1.7
-?access_name: IDENTIFIER
-?configuration_name: IDENTIFIER
-?program_name: IDENTIFIER
-?resource_name: IDENTIFIER
-?resource_type_name: IDENTIFIER
-?task_name: IDENTIFIER
-
-configuration_declaration: "CONFIGURATION"i configuration_name [ global_var_declarations ] ( single_resource_declaration | resource_declaration+ ) [ config_access_declarations ] [ instance_specific_initializations ] "END_CONFIGURATION"i ";"*
-
-resource_declaration: "RESOURCE"i resource_name "ON"i resource_type_name [ global_var_declarations ] single_resource_declaration "END_RESOURCE"i ";"*
-
-single_resource_declaration: ( task_configuration ";"+ )* ( program_configuration ";"+ )+
-
-config_access_declarations: "VAR_ACCESS"i ( config_access_declaration ";"+ )* "END_VAR"i ";"*
-
-config_access_declaration: access_name ":" access_path ":" non_generic_type_name [ access_direction ]
-
-access_path: [ resource_name "." ] direct_variable                                        -> direct_access_path
-           | [ resource_name "." ] [ program_name "." ] ( fb_name "." )* symbolic_variable
-
-global_var_reference: [ resource_name "." ] global_var_name [ "." structure_element_name ]
-
-!?access_direction: "READ_WRITE"i
-                  | "READ_ONLY"i
-
-task_configuration: "TASK"i task_name task_initialization
-
-task_initialization: "(" [ "SINGLE"i ":=" task_init_data_source "," ] [ "INTERVAL"i ":=" task_init_data_source "," ] "PRIORITY"i ":=" task_priority ")"
-
-?task_priority: INTEGER
-
-// program_output_reference: program_name "." symbolic_variable
-?task_init_data_source: constant
-                      | _variable  // global_var_reference or program_output_reference
-
-?retain: "RETAIN"i
-       | "NON_RETAIN"i
-
-program_configuration: "PROGRAM"i [ retain ] program_name [ "WITH"i task_name ] ":" program_type_name [ "(" prog_conf_elements ")" ]
-
-prog_conf_elements: prog_conf_element ( "," prog_conf_element )*
-
-prog_conf_element: fb_task
-                 | prog_cnxn
-
-fb_task: fb_name "WITH"i task_name
-
-prog_cnxn: symbolic_variable ":=" prog_data_source
-         | symbolic_variable "=>" data_sink
-
-?prog_data_source: constant
-                 | enumerated_value
-                 | _variable
-
-?data_sink: _variable
-
-instance_specific_initializations: "VAR_CONFIG"i ( instance_specific_init ";"+ )* "END_VAR"i ";"*
-
-instance_specific_init: resource_name "." program_name "." ( fb_name "." )* ( ( variable_name [ location ] ":" _located_var_spec_init ) | ( fb_name ":" function_block_type_name ":=" structure_initialization ) )
 
 // B.2.1, B.3.1
 LOGICAL_OR: "OR"i
