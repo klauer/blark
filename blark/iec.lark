@@ -429,6 +429,10 @@ external_declaration: global_var_name ":" ( simple_specification | subrange_spec
 ?global_var_name: IDENTIFIER
 PERSISTENT: "PERSISTENT"i
 
+?action_name: DOTTED_IDENTIFIER
+
+action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
+
 global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_item* "END_VAR"i ";"*
 
 ?global_var_body_item: var_init_decl
@@ -500,8 +504,6 @@ function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specificati
 function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 ?function_body: statement_list
-              | instruction_list
-              | sequential_function_chart
 
 // TODO?      | ladder_diagram
 // TODO?      | function_block_diagram
@@ -542,9 +544,7 @@ END_FUNCTION_BLOCK: "END_FUNCTION_BLOCK"i
 
 temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
-?function_block_body: sequential_function_chart
-                    | statement_list
-                    | instruction_list
+?function_block_body: statement_list
 
 // TODO: really only a couple of these
 METHOD_ACCESS: "ABSTRACT"i
@@ -612,57 +612,6 @@ program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name
 ?step_name: IDENTIFIER
 INITIAL_STEP: "INITIAL_STEP"i
 STEP: "STEP"i
-
-sequential_function_chart: sfc_network+
-
-sfc_network: sfc_initial_step ( sfc_step | sfc_transition | action | entry_action | exit_action )*
-sfc_initial_step: INITIAL_STEP step_name ":" [ sfc_step_body ] ";"* "END_STEP"i ";"*
-sfc_step: STEP step_name ":" [ sfc_step_body ] ";"* "END_STEP"i ";"*
-
-?sfc_step_body: sequential_function_chart
-              | statement_list
-              | action_association
-
-action_association: action_name "(" [ action_qualifier ] ( "," indicator_name )* ")"
-
-?action_name: DOTTED_IDENTIFIER
-
-action_qualifier: NON_TIMED_QUALIFIER
-                | TIMED_QUALIFIER "," action_time
-
-NON_TIMED_QUALIFIER: "N"
-                   | "R"
-                   | "S"
-                   | "P"
-                   | "P0"
-                   | "P1"
-TIMED_QUALIFIER: "L"
-               | "D"
-               | "SD"
-               | "DS"
-               | "SL"
-
-?action_time: duration
-            | variable_name
-
-?indicator_name: variable_name
-
-sfc_transition: "TRANSITION"i [ _transition_name ] [ transition_priority ] "FROM"i sfc_transition_steps "TO"i sfc_transition_steps transition_condition "END_TRANSITION"i ";"*
-
-?transition_priority: "(" "PRIORITY"i ":=" INTEGER ")"
-
-_transition_name: [ LOGICAL_NOT ] DOTTED_IDENTIFIER
-
-sfc_transition_steps: step_name
-                    | "(" step_name ( "," step_name )* ")"
-
-?transition_condition: ":=" ( expression ";"* )
-
-action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
-
-entry_action: "ENTRY_ACTION"i [ function_block_body ] "END_ACTION"i ";"*
-
-exit_action: "EXIT_ACTION"i [ function_block_body ] "END_ACTION"i ";"*
 
 // B.2.1, B.3.1
 LOGICAL_OR: "OR"i
@@ -806,103 +755,3 @@ while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
 repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"*
 
 exit_statement.1: "EXIT"i ";"*
-
-// Instruction list section
-_EOL: /\s*[\n\r]+\s*/
-
-?il_label: IDENTIFIER
-?function_name: DOTTED_IDENTIFIER
-
-instruction_list: il_instruction+
-
-il_instruction: [ il_label ":" ] [ il_single_operation ] _EOL
-
-?il_single_operation: il_simple_operation
-                    | il_expression
-                    | il_jump_operation
-                    | il_fb_call
-                    | il_formal_function_call
-                    | il_return_operator
-
-il_simple_operation: il_simple_operator /\s+/ il_operand?
-                   | function_name /\s+/ _il_operand_list?
-
-il_expression: il_expr_operator "(" [ il_operand ] [ _EOL il_simple_instruction+ ] ")"
-
-il_jump_operation: il_jump_operator il_label
-
-il_fb_call: il_call_operator fb_name [ _il_fb_call_args ]
-
-_il_fb_call_args: "(" _EOL [ _il_param_list ] ")"
-                | "(" [ _il_operand_list ] ")"
-
-il_formal_function_call: function_name "(" _EOL [ _il_param_list ] ")"
-
-?il_operand: constant
-           | _variable
-           | enumerated_value
-
-_il_operand_list: il_operand ( "," il_operand )*
-
-?il_simple_instruction: il_simple_operation _EOL
-                      | il_expression _EOL
-                      | il_formal_function_call _EOL
-
-_il_param_list: ( il_any_param_assignment "," _EOL )* il_any_param_assignment _EOL
-
-?il_any_param_assignment: il_param_operand_assignment
-                        | il_param_instruction_assignment
-                        | il_param_out_assignment
-
-il_param_operand_assignment: variable_name ":=" il_operand
-
-il_param_instruction_assignment: variable_name ":=" "(" _EOL il_simple_instruction+ ")"
-
-il_param_out_assignment: [ IL_OPERATOR_NOT ] variable_name "=>" _variable
-
-// B.2.2
-IL_OPERATOR_NOT: "NOT"i
-IL_OPERATOR_ANDN: "ANDN"i | "&N"i
-IL_OPERATOR_AND: "AND"i | "&"
-
-!?il_simple_operator: "LD"i | "LDN"i
-                    | "ST"i | "STN"i
-                    | "NOT"i
-                    | "S"i | "S1"i
-                    | "R"i | "R1"i
-                    | "CLK"i
-                    | "CU"i | "CD"i
-                    | "PV"i
-                    | "IN"i
-                    | "PT"i
-                    | il_expr_operator
-
-!?il_expr_operator: IL_OPERATOR_ANDN
-                  | IL_OPERATOR_AND
-                  | "OR"i
-                  | "XOR"i
-                  | "ORN"i
-                  | "XORN"i
-                  | "ADD"i
-                  | "SUB"i
-                  | "MUL"i
-                  | "DIV"i
-                  | "MOD"i
-                  | "GT"i
-                  | "GE"i
-                  | "EQ"i
-                  | "LT"i
-                  | "LE"i
-                  | "NE"i
-
-!?il_call_operator: "CAL"i
-                  | "CALC"i
-                  | "CALCN"i
-
-!il_return_operator: "RET"i
-                   | "RETC"i
-                   | "RETCN"i
-
-!?il_jump_operator: "JMP"i
-                  | "JMPC"i
-                  | "JMPCN"i
