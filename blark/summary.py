@@ -601,7 +601,8 @@ class CodeSummary:
         """Given a qualified name, find its Declaration."""
         parts = collections.deque(name.split("."))
         if len(parts) <= 1:
-            return None
+            item = self.get_item_by_name(name)
+            return [item] if item is not None else None
 
         variable_name = parts.pop()
         parent = None
