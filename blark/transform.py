@@ -93,7 +93,7 @@ def _get_default_instantiator(cls: Type[T]):
 
 
 def _rule_handler(
-    *rules: Union[str, List[str]],
+    *rules: str,
     comments: bool = False
 ) -> Callable[[Type[T]], Type[T]]:
     """Decorator - the wrapped class will handle the provided rules."""
@@ -590,7 +590,7 @@ class DirectVariable(Variable):
 @_rule_handler("location")
 class Location(DirectVariable):
     @staticmethod
-    def from_lark(var: DirectVariable):
+    def from_lark(var: DirectVariable) -> Location:
         return Location(
             location_prefix=var.location_prefix,
             location=var.location,
@@ -675,11 +675,6 @@ class MultiElementVariable(Variable):
         variable_name: SymbolicVariable,
         *subscript_or_field: Union[SubscriptList, FieldSelector]
     ) -> MultiElementVariable:
-        if not subscript_or_field:
-            return SymbolicVariable(
-                name=variable_name,
-                dereferenced=False
-            )
         return MultiElementVariable(
             name=variable_name,
             elements=list(subscript_or_field),
@@ -771,7 +766,7 @@ class StringTypeSpecification:
         return self.type_name
 
     @property
-    def full_type_name(self) -> lark.Token:
+    def full_type_name(self) -> str:
         """The full type name."""
         return join_if(self.type_name, "", self.length)
 
@@ -1097,7 +1092,7 @@ class ArrayTypeInitialization:
         return self.spec.base_type_name
 
     @property
-    def full_type_name(self) -> lark.Token:
+    def full_type_name(self) -> str:
         """The full type name."""
         return self.spec.full_type_name
 
@@ -1136,7 +1131,7 @@ class StructureTypeDeclaration:
     @staticmethod
     def from_lark(
         name: lark.Token,
-        extends: Optional[lark.Token],
+        extends: Optional[Extends],
         indirection: Optional[IndirectionType],
         *declarations: StructureElementDeclaration,
     ):
@@ -1459,16 +1454,32 @@ class DeclaredVariable:
         return join_if(self.variable, " ", self.location)
 
 
+@dataclass
+class _GenericInit:
+    """API compat to give a valid init attribute."""
+    # TODO: can we restructure this to be less confusing?
+    base_type_name: str
+    full_type_name: str
+    repr: str
+    value: Optional[str]
+
+    def __str__(self) -> str:
+        return str(self.repr)
+
+
+InitDeclarationType = Union[
+    TypeInitialization,
+    SubrangeTypeInitialization,
+    EnumeratedTypeInitialization,
+    ArrayTypeInitialization,
+    InitializedStructure,
+    _GenericInit,  # StringVariableInitDeclaration, EdgeDeclaration
+]
+
+
 class InitDeclaration:
     variables: List[DeclaredVariable]
-    init: Union[
-        TypeInitialization,
-        SubrangeTypeInitialization,
-        EnumeratedTypeInitialization,
-        ArrayTypeInitialization,
-        InitializedStructure,
-        _GenericInit,  # StringVariableInitDeclaration, EdgeDeclaration
-    ]
+    init: InitDeclarationType
     meta: Optional[Meta]
 
     def __str__(self) -> str:
@@ -1498,19 +1509,6 @@ class StructuredVariableInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     init: InitializedStructure
     meta: Optional[Meta] = meta_field()
-
-
-@dataclass
-class _GenericInit:
-    """API compat to give a valid init attribute."""
-    # TODO: can we restructure this to be less confusing?
-    base_type_name: str
-    full_type_name: str
-    repr: str
-    value: Optional[str]
-
-    def __str__(self) -> str:
-        return str(self.repr)
 
 
 @dataclass
@@ -1548,19 +1546,18 @@ class EdgeDeclaration(InitDeclaration):
     edge: lark.Token
     meta: Optional[Meta] = meta_field()
 
-    def __str__(self):
-        variables = ", ".join(str(variable) for variable in self.variables)
-        return f"{variables} : {self.init.full_type_name}"
-
-    @property
-    def init(self) -> _GenericInit:
+    def __post_init__(self):
         full_type_name = f"BOOL {self.edge}"
-        return _GenericInit(
+        self.init = _GenericInit(
             base_type_name="BOOL",
             full_type_name=full_type_name,
             value=None,
             repr=full_type_name,
         )
+
+    def __str__(self):
+        variables = ", ".join(str(variable) for variable in self.variables)
+        return f"{variables} : {self.init.full_type_name}"
 
 
 @as_tagged_union
@@ -1835,7 +1832,7 @@ class Function:
     @staticmethod
     def from_lark(
         name: lark.Token,
-        return_type: Optional[lark.Token],
+        return_type: Optional[SimpleSpecification],
         *remainder
     ) -> Function:
         *declarations, body = remainder
@@ -2420,6 +2417,9 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
     @property
     def attribute_pragmas(self) -> Set[str]:
         """Attribute pragmas."""
+        if self.meta is None:
+            return set()
+
         _, pragmas = self.meta.get_comments_and_pragmas()
         attributes = set()
         for pragma in pragmas:
@@ -2572,23 +2572,6 @@ class CaseStatement(Statement):
     cases: List[CaseElement]
     else_clause: Optional[ElseClause]
     meta: Optional[Meta] = meta_field()
-
-    @staticmethod
-    def from_lark(
-        expr: Expression,
-        *args: Union[CaseStatement, ElseClause]
-    ) -> CaseStatement:
-        else_clause = None
-        if args and isinstance(args[-1], ElseClause) or args[-1] is None:
-            else_clause = typing.cast(ElseClause, args[-1])
-            cases = typing.cast(Tuple[StatementList, ...], args[:-1])
-        else:
-            cases = typing.cast(Tuple[StatementList, ...], args)
-        return CaseStatement(
-            expression=expr,
-            cases=list(cases),
-            else_clause=else_clause,
-        )
 
     def __str__(self) -> str:
         return "\n".join(
@@ -2984,6 +2967,10 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
     @_annotator_method_wrapper
     def program_var_declarations(self, *declarations: VariableDeclarationBlock):
         return list(declarations)
+
+    @_annotator_method_wrapper
+    def case_elements(self, *cases: CaseStatement):
+        return list(cases)
 
     def __default__(self, data, children, meta):
         """

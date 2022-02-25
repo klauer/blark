@@ -732,7 +732,9 @@ if_statement: "IF"i expression "THEN"i [ statement_list ] ( else_if_clause )* [ 
 else_if_clause: "ELSIF"i expression "THEN"i [ statement_list ]
 else_clause: "ELSE"i [ statement_list ]
 
-case_statement: "CASE"i expression "OF"i case_element+ [ else_clause ] "END_CASE"i ";"*
+case_statement: "CASE"i expression "OF"i case_elements [ else_clause ] "END_CASE"i ";"*
+
+case_elements: case_element+
 
 case_element: case_list ":" [ statement_list ]
 
