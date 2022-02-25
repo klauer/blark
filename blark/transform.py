@@ -182,6 +182,43 @@ def meta_field():
     return dataclasses.field(default=None, repr=False, compare=False)
 
 
+class _FlagHelper:
+    @classmethod
+    def from_lark(cls, token: lark.Token, *tokens: lark.Token):
+        result = cls[token.lower()]
+        for token in tokens:
+            result |= cls[token.lower()]
+        return result
+
+    def __str__(self):
+        return " ".join(
+            option.name.upper()
+            for option in type(self)
+            if option in self
+        )
+
+
+@_rule_handler("variable_attributes")
+class VariableAttributes(_FlagHelper, enum.Flag):
+    constant = 0b0000_0001
+    retain = 0b0000_0010
+    non_retain = 0b0000_0100
+    persistent = 0b0000_1000
+
+
+@_rule_handler(
+    "method_access",
+    "property_access",
+)
+class MethodAccess(_FlagHelper, enum.Flag):
+    public = 0b0000_0001
+    private = 0b0000_0010
+    abstract = 0b0000_0100
+    protected = 0b0000_1000
+    internal = 0b0001_0000
+    final = 0b010_0000
+
+
 @dataclass
 @as_tagged_union
 class Expression:
@@ -459,33 +496,6 @@ class String(Literal):
 @as_tagged_union
 class Variable(Expression):
     ...
-
-
-@_rule_handler(
-    "method_access",
-    "property_access",
-)
-class MethodAccess(enum.Flag):
-    public = 0b0000_0001
-    private = 0b0000_0010
-    abstract = 0b0000_0100
-    protected = 0b0000_1000
-    internal = 0b0001_0000
-    final = 0b010_0000
-
-    @staticmethod
-    def from_lark(token: lark.Token, *tokens: lark.Token) -> MethodAccess:
-        result = MethodAccess[token.lower()]
-        for token in tokens:
-            result |= MethodAccess[token.lower()]
-        return result
-
-    def __str__(self):
-        return " ".join(
-            option.name.upper()
-            for option in MethodAccess
-            if option in self
-        )
 
 
 @_rule_handler(
@@ -2074,19 +2084,21 @@ class VariableDeclarationBlock:
 @_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR"
-    config: Optional[lark.Token]
+    attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(config: Optional[lark.Token], tree: lark.Tree) -> VariableDeclarations:
+    def from_lark(
+        attrs: Optional[VariableAttributes], tree: lark.Tree
+    ) -> VariableDeclarations:
         items = typing.cast(List[VariableInitDeclaration], tree.children)
-        return VariableDeclarations(config=config, items=items)
+        return VariableDeclarations(attrs=attrs, items=items)
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if("VAR", " ", self.config),
+                join_if("VAR", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2097,17 +2109,20 @@ class VariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("static_var_declarations", comments=True)
 class StaticDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_STAT"
+    attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*items: VariableInitDeclaration) -> StaticDeclarations:
-        return StaticDeclarations(list(items))
+    def from_lark(
+        attrs: Optional[VariableAttributes], *items: VariableInitDeclaration
+    ) -> StaticDeclarations:
+        return StaticDeclarations(attrs, list(items))
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                "VAR_STAT",
+                join_if("VAR_STAT", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2141,13 +2156,17 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_INST"
+    attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(items: lark.Tree) -> MethodInstanceVariableDeclarations:
+    def from_lark(
+        attrs: Optional[VariableAttributes], items: lark.Tree
+    ) -> MethodInstanceVariableDeclarations:
         return MethodInstanceVariableDeclarations(
-            typing.cast(
+            attrs=attrs,
+            items=typing.cast(
                 List[VariableInitDeclaration],
                 items.children
             )
@@ -2180,31 +2199,24 @@ class LocatedVariableDeclaration:
 @_rule_handler("located_var_declarations", comments=True)
 class LocatedVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR"
-    config: Optional[lark.Token]
-    persistent: bool
+    attrs: Optional[VariableAttributes]
     items: List[LocatedVariableDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        config: Optional[lark.Token],
-        persistent: Optional[lark.Token],
+        attrs: Optional[VariableAttributes],
         *items: LocatedVariableDeclaration,
     ) -> LocatedVariableDeclarations:
         return LocatedVariableDeclarations(
-            config=config,
-            persistent=persistent is not None,
+            attrs=attrs,
             items=list(items),
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if(
-                    join_if("VAR", " ", self.config),
-                    " ",
-                    self.persistent and "PERSISTENT" or None
-                ),
+                join_if("VAR", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2239,24 +2251,24 @@ class IncompleteLocatedVariableDeclaration:
 @_rule_handler("incomplete_located_var_declarations", comments=True)
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR"
-    retain: bool
+    attrs: Optional[VariableAttributes]
     items: List[IncompleteLocatedVariableDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        retain: Optional[lark.Token],
+        attrs: Optional[VariableAttributes],
         *items: IncompleteLocatedVariableDeclaration,
     ) -> IncompleteLocatedVariableDeclarations:
         return IncompleteLocatedVariableDeclarations(
-            retain=retain is not None,
+            attrs=attrs,
             items=list(items),
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if("VAR", " ", "RETAIN" if self.retain else None),
+                join_if("VAR", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2284,24 +2296,24 @@ class ExternalVariableDeclaration:
 @_rule_handler("external_var_declarations", comments=True)
 class ExternalVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_EXTERNAL"
-    constant: bool
+    attrs: Optional[VariableAttributes]
     items: List[ExternalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        constant: Optional[lark.Token],
+        attrs: Optional[VariableAttributes],
         *items: ExternalVariableDeclaration,
     ) -> ExternalVariableDeclarations:
         return ExternalVariableDeclarations(
-            constant=constant is not None,
+            attrs=attrs,
             items=list(items),
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if("VAR_EXTERNAL", " ", self.constant and "CONSTANT" or None),
+                join_if("VAR_EXTERNAL", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2312,18 +2324,20 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 @_rule_handler("input_declarations", comments=True)
 class InputDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_INPUT"
-    retain: Optional[lark.Token]
+    attrs: Optional[VariableAttributes]
     items: List[InputDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(retain: Optional[lark.Token], *items: InputDeclaration) -> InputDeclarations:
-        return InputDeclarations(retain, list(items) if items else [])
+    def from_lark(
+        attrs: Optional[VariableAttributes], *items: InputDeclaration
+    ) -> InputDeclarations:
+        return InputDeclarations(attrs, list(items) if items else [])
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if("VAR_INPUT", " ", self.retain),
+                join_if("VAR_INPUT", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2334,20 +2348,22 @@ class InputDeclarations(VariableDeclarationBlock):
 @_rule_handler("output_declarations", comments=True)
 class OutputDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_OUTPUT"
-    retain: Optional[lark.Token]
+    attrs: Optional[VariableAttributes]
     items: List[OutputDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(retain: Optional[lark.Token], items: lark.Tree) -> OutputDeclarations:
+    def from_lark(
+        attrs: Optional[VariableAttributes], items: lark.Tree
+    ) -> OutputDeclarations:
         return OutputDeclarations(
-            retain, typing.cast(List[OutputDeclaration], items.children)
+            attrs, typing.cast(List[OutputDeclaration], items.children)
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                join_if("VAR_OUTPUT", " ", self.retain),
+                join_if("VAR_OUTPUT", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2358,19 +2374,23 @@ class OutputDeclarations(VariableDeclarationBlock):
 @_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_IN_OUT"
+    attrs: Optional[VariableAttributes]
     items: List[InputOutputDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(items: lark.Tree) -> InputOutputDeclarations:
+    def from_lark(
+        attrs: Optional[VariableAttributes], items: lark.Tree
+    ) -> InputOutputDeclarations:
         return InputOutputDeclarations(
+            attrs,
             typing.cast(List[InputOutputDeclaration], items.children)
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                "VAR_IN_OUT",
+                join_if("VAR_IN_OUT", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2398,25 +2418,25 @@ class AccessDeclaration:
 @_rule_handler("function_var_declarations", comments=True)
 class FunctionVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR"
-    constant: bool
+    attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        constant: Optional[lark.Token],
+        attrs: Optional[VariableAttributes],
         body: lark.Tree,
     ) -> FunctionVariableDeclarations:
         items = typing.cast(List[VariableInitDeclaration], body.children)
         return FunctionVariableDeclarations(
-            constant=constant is not None,
+            attrs=attrs,
             items=items,
         )
 
     def __str__(self) -> str:
         return "\n".join(
             (
-                ("VAR CONSTANT" if self.constant else "VAR"),
+                join_if("VAR", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -2448,24 +2468,19 @@ class AccessDeclarations(VariableDeclarationBlock):
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_GLOBAL"
-    constant: bool
-    retain: bool
-    persistent: bool
+    attrs: Optional[VariableAttributes]
     items: List[GlobalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
     name: Optional[str] = None
 
     @staticmethod
     def from_lark(
-        const_or_retain: Optional[lark.Token],
-        persistent: Optional[lark.Token],
+        attrs: Optional[VariableAttributes],
         *items: GlobalVariableDeclaration
     ) -> GlobalVariableDeclarations:
         return GlobalVariableDeclarations(
             name=None,  # This isn't in the code; set later
-            constant=str(const_or_retain).lower() == "constant",
-            retain=str(const_or_retain).lower() == "retain",
-            persistent=persistent is not None,
+            attrs=attrs,
             items=list(items)
         )
 
@@ -2481,16 +2496,9 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
         return attributes
 
     def __str__(self) -> str:
-        options = []
-        if self.constant:
-            options.append("CONSTANT")
-        if self.retain:
-            options.append("RETAIN")
-        if self.persistent:
-            options.append("PERSISTENT")
         return "\n".join(
             (
-                join_if("VAR_GLOBAL", " ", " ".join(options) if options else None),
+                join_if("VAR_GLOBAL", " ", self.attrs),
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
@@ -3658,3 +3666,7 @@ if apischema is not None:
     @apischema.deserializer
     def _method_access_deserializer(access: int) -> MethodAccess:
         return MethodAccess(access)
+
+    @apischema.deserializer
+    def _var_attrs_deserializer(attrs: int) -> VariableAttributes:
+        return VariableAttributes(attrs)

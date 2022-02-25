@@ -361,22 +361,23 @@ field_selector: [ DEREFERENCED ] "." ( variable_name | INTEGER )
 multi_element_variable: variable_name ( subscript_list | field_selector )+
 
 // B.1.4.3
-RETAIN: "RETAIN"i
-NON_RETAIN: "NON_RETAIN"i
-
 R_EDGE: "R_EDGE"i
 F_EDGE: "F_EDGE"i
 
 ?fb_name: IDENTIFIER
 
-?retain: RETAIN
-       | NON_RETAIN
+VAR_ATTRIB: "RETAIN"i
+          | "NON_RETAIN"i
+          | "PERSISTENT"i
+          | "CONSTANT"i
 
-input_declarations: "VAR_INPUT"i [ retain ] _var_input_body "END_VAR"i ";"*
+variable_attributes: VAR_ATTRIB+
 
-output_declarations: "VAR_OUTPUT"i [ retain ] var_body "END_VAR"i ";"*
+input_declarations: "VAR_INPUT"i [ variable_attributes ] _var_input_body "END_VAR"i ";"*
 
-input_output_declarations: "VAR_IN_OUT"i var_body "END_VAR"i ";"*
+output_declarations: "VAR_OUTPUT"i [ variable_attributes ] var_body "END_VAR"i ";"*
+
+input_output_declarations: "VAR_IN_OUT"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 _var_input_body: ( _var_input_body_item ";"+ )*
 
@@ -414,32 +415,22 @@ array_var_declaration: var1_list ":" array_specification
 
 structured_var_declaration: var1_list ":" structure_type_name
 
-var_declarations: "VAR"i [ var_declaration_config ] var_body "END_VAR"i ";"*
+var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
-static_var_declarations: "VAR_STAT"i var_body "END_VAR"i ";"*
+static_var_declarations: "VAR_STAT"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
-?var_declaration_config: CONSTANT | PERSISTENT | RETAIN | NON_RETAIN
-
-located_var_declarations: "VAR"i [ located_var_config ] [ PERSISTENT ] located_var_decl* "END_VAR"i ";"*
-
-?located_var_config: RETAIN
-                   | NON_RETAIN
-                   | CONSTANT
+located_var_declarations: "VAR"i [ variable_attributes ] located_var_decl* "END_VAR"i ";"*
 
 located_var_decl: [ variable_name ] location ":" _located_var_spec_init ";"+
 
-external_var_declarations: "VAR_EXTERNAL"i [ CONSTANT ] external_declaration* "END_VAR"i ";"*
+external_var_declarations: "VAR_EXTERNAL"i [ variable_attributes ] external_declaration* "END_VAR"i ";"*
 
 external_declaration: global_var_name ":" ( simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | function_block_type_name ) ";"+
 
 ?global_var_name: IDENTIFIER
-CONSTANT: "CONSTANT"i
 PERSISTENT: "PERSISTENT"i
 
-global_var_declarations: "VAR_GLOBAL"i [ global_const_or_retain ] [ PERSISTENT ] global_var_body_item* "END_VAR"i ";"*
-
-?global_const_or_retain: CONSTANT
-                       | RETAIN
+global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_item* "END_VAR"i ";"*
 
 ?global_var_body_item: var_init_decl
                      | global_var_decl
@@ -478,7 +469,7 @@ double_byte_string_var_declaration: var1_list ":" double_byte_string_spec
 
 !double_byte_string_spec: "WSTRING"i [ STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
-incomplete_located_var_declarations: "VAR"i [ retain ] incomplete_located_var_decl* "END_VAR"i ";"*
+incomplete_located_var_declarations: "VAR"i [ variable_attributes ] incomplete_located_var_decl* "END_VAR"i ";"*
 
 incomplete_located_var_decl: variable_name incomplete_location ":" var_spec ";"+
 
@@ -507,7 +498,7 @@ function_declaration: "FUNCTION"i derived_function_name [ ":" simple_specificati
                    | static_var_declarations
                    | function_var_declarations
 
-function_var_declarations: "VAR"i [ CONSTANT ] var_body "END_VAR"i ";"*
+function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 ?function_body: statement_list
               | instruction_list
@@ -566,7 +557,7 @@ METHOD_ACCESS: "ABSTRACT"i
 
 method_access: METHOD_ACCESS+
 
-var_inst_declaration: "VAR_INST"i var_body "END_VAR"i ";"*
+var_inst_declaration: "VAR_INST"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 ?method_var_declaration: fb_var_declaration
                        | var_inst_declaration
@@ -704,6 +695,9 @@ task_initialization: "(" [ "SINGLE"i ":=" task_init_data_source "," ] [ "INTERVA
 // program_output_reference: program_name "." symbolic_variable
 ?task_init_data_source: constant
                       | _variable  // global_var_reference or program_output_reference
+
+?retain: "RETAIN"i
+       | "NON_RETAIN"i
 
 program_configuration: "PROGRAM"i [ retain ] program_name [ "WITH"i task_name ] ":" program_type_name [ "(" prog_conf_elements ")" ]
 
