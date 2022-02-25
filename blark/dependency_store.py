@@ -3,7 +3,6 @@ TwinCAT project dependency handling.
 """
 from __future__ import annotations
 
-import collections
 import dataclasses
 import distutils.version
 import functools
@@ -20,7 +19,7 @@ from . import parse
 from . import transform as tf
 from . import util
 from .config import BLARK_TWINCAT_ROOT
-from .summary import CodeSummary, DeclarationSummary
+from .summary import CodeSummary
 
 AnyPath = Union[str, pathlib.Path]
 
@@ -99,7 +98,7 @@ class DependencyStoreLibrary:
             project_fn = path / self.project
             if project_fn.exists():
                 logger.debug(
-                    "Found latest %s (%s) in %s",
+                    "Found latest %s %s in %s",
                     self.name, version, project_fn
                 )
                 return project_fn
@@ -113,7 +112,7 @@ class DependencyStoreLibrary:
         if not self.versioned:
             return root / self.path / self.project
         if version == "*":
-            return self.get_latest_version_path(root) / self.project
+            return self.get_latest_version_path(root)
 
         return root / self.path / version / self.project
 
@@ -194,14 +193,22 @@ class DependencyStore:
         try:
             info: DependencyStoreLibrary = self.config.libraries[name]
         except KeyError:
+            logger.warning("Unable to find library %s in dependency store", name)
             return []
 
         try:
             filename = info.get_project_filename(self.root, version=version)
         except FileNotFoundError:
+            logger.warning("Unable to find library project %s version %s", name, version)
             return []
 
         if not filename.exists():
+            logger.warning(
+                "Library project %s version %s file %s does not exist",
+                name,
+                version,
+                filename,
+            )
             return []
 
         return list(PlcProjectMetadata.from_project_filename(str(filename.resolve())))
@@ -214,7 +221,8 @@ class DependencyStore:
             resolution: pytmc.parser.Resolution
             try:
                 info = ResolvedDependency(**resolution.resolution)
-            except (KeyError, ValueError):
+            except (KeyError, ValueError) as ex:
+                logger.warning("Failed to get dependency: %s", ex)
                 continue
 
             for proj in self.get_dependency(info.name, info.version):
@@ -238,131 +246,30 @@ def get_dependency_store() -> DependencyStore:
 
 
 @dataclass
-class PlcSymbolMetadata:
-    context: list
-    name: str
-    type: str
-
-
-@dataclass
 class PlcProjectMetadata:
     """This is a per-PLC project metadata container."""
-    # context: FullLoadContext
     name: str
     filename: pathlib.Path
     include_dependencies: bool
-    include_symbols: bool
-    namespace: Dict[str, tf.SourceCode]
     code: List[tf.SourceCode]
     summary: CodeSummary
-    symbols: Dict[str, PlcSymbolMetadata]
-    record_to_symbol: Dict[str, str]
-    loaded_files: Dict[str, str]
+    tmc_symbols: Dict[str, pytmc.parser.Symbol]
+    loaded_files: Dict[pathlib.Path, str]
     dependencies: Dict[str, ResolvedDependency]
-    tmc: Optional[pytmc.parser.TcModuleClass]
-
-    def find_declaration_from_symbol(
-        self, name: str
-    ) -> Optional[list, DeclarationSummary]:
-        """Given a symbol name, find its Declaration."""
-        parts = collections.deque(name.split("."))
-        if len(parts) <= 1:
-            return
-
-        variable_name = parts.pop()
-        parent = None
-        path = []
-        while parts:
-            part = parts.popleft()
-            if "[" in part:  # ]
-                part = part.split("[")[0]  # ]
-
-            try:
-                if parent is None:
-                    parent = self.summary.get_item_by_name(part)
-                else:
-                    part_type = parent[part].type
-                    parent = self.summary.get_item_by_name(part_type)
-            except KeyError:
-                return
-
-            path.append(parent)
-
-        if parent is None:
-            return
-
-        try:
-            return path, parent.declarations[variable_name]
-        except KeyError:
-            # Likely ``EXTENDS``, which is not yet supported
-            ...
-
-    def get_symbol_context(
-        self,
-        type_name: str,
-        symbol_name: str,
-    ):  # -> FullLoadContext:
-        """Get context information for a given pytmc Symbol."""
-        context = []
-        try:
-            type_context = (
-                self.summary.data_types[type_name].name,
-                self.summary.data_types[type_name].meta.line
-            )
-        except KeyError:
-            ...
-        else:
-            context.append(type_context)
-
-        # try:
-        #     code, first_symbol, *_ = symbol_name.split(".")
-        #     first_context = self.code[code].declarations[first_symbol].context
-        # except Exception:
-        #     ...
-        # else:
-        #     context.extend(first_context)
-
-        # decl = self.find_declaration_from_symbol(symbol_name)
-        # if decl is not None:
-        #     context.extend(decl.context)
-
-        return context  # tuple(remove_redundant_context(context))
-
-    def get_symbol_metadata(
-        self,
-        symbol: pytmc.parser.Symbol,
-        require_records: bool = True
-    ) -> Generator[PlcSymbolMetadata, None, None]:
-        """Get symbol metadata given a pytmc Symbol."""
-        symbol_type_name = symbol.data_type.qualified_type_name
-        context = self.get_symbol_context(symbol_type_name, symbol.name)
-        if context:
-            yield PlcSymbolMetadata(
-                context=context,
-                name=symbol.name,
-                type=symbol_type_name,
-            )
+    plc: Optional[pytmc.parser.Plc]
 
     @classmethod
     def from_pytmc(
         cls,
         plc: pytmc.parser.Plc,
         include_dependencies: bool = True,
-        include_symbols: bool = True,
         loaded_files: Optional[Dict[pathlib.Path, str]] = None,
     ) -> Optional[PlcProjectMetadata]:
         """Create a PlcProjectMetadata instance from a pytmc-parsed one."""
-        tmc = plc.tmc
-        if tmc is None and include_symbols:
-            logger.debug("%s: No TMC file for symbols; skipping...", plc.name)
-            return
-
         filename = plc.filename.resolve()
         loaded_files = dict(loaded_files or {})
         deps = {}
         code = []
-        symbols = {}
-        namespace = {}
         combined_summary = CodeSummary()
 
         loaded_files[filename] = util.get_file_sha256(filename)
@@ -374,7 +281,7 @@ class PlcProjectMetadata:
                 deps.update(proj.dependencies)
                 loaded_files.update(proj.loaded_files)
                 deps[resolution.name] = resolution
-                combined_summary.append(proj.summary, namespace=resolution.name)
+                combined_summary.append(proj.summary, namespace=proj.plc.name)
 
         for code_path, code_obj in parse.parse_plc(plc, transform=True):
             if isinstance(code_obj, Exception):
@@ -382,50 +289,26 @@ class PlcProjectMetadata:
                 continue
             code.append(code_obj)
             loaded_files[code_path] = util.get_file_sha256(code_path)
-            combined_summary.append(CodeSummary.from_source(code_obj))
+            combined_summary.append(CodeSummary.from_source(code_obj, filename=code_path))
 
-        md = cls(
+        tmc = plc.tmc
+        return cls(
             name=plc.name,
             filename=filename,
             include_dependencies=include_dependencies,
-            include_symbols=include_symbols,
-            # context=(LoadContext(filename, 0), ),
             code=code,
-            symbols=symbols,
-            record_to_symbol={},
             dependencies=deps,
             loaded_files=loaded_files,
             summary=combined_summary,
-            tmc=tmc,
-            namespace=namespace,
-            # nc=nc,
+            plc=plc,
+            tmc_symbols=list(tmc.find(pytmc.parser.Symbol, recurse=False)) if tmc else None,
         )
-
-        if not include_symbols:
-            return md
-
-        all_symbols = list(tmc.find(pytmc.parser.Symbol, recurse=False))
-
-        def by_name(symbol):
-            return symbol.name
-
-        for symbol in sorted(all_symbols, key=by_name):
-            for symbol_md in md.get_symbol_metadata(symbol):
-                symbols[symbol_md.name] = symbol_md
-
-        logger.debug(
-            "%s: Found %d symbols (%d generated metadata)",
-            plc.name, len(all_symbols), len(symbols)
-        )
-
-        return md
 
     @classmethod
     def from_project_filename(
         cls,
         project: AnyPath,
         include_dependencies: bool = True,
-        include_symbols: bool = True,
         plc_whitelist: Optional[List[str]] = None,
         loaded_files: Optional[Dict[str, str]] = None,
     ) -> Generator[PlcProjectMetadata, None, None]:
@@ -434,7 +317,7 @@ class PlcProjectMetadata:
         solution_path, projects = util.get_tsprojects_from_filename(project)
         logger.debug("Solution path %s projects %s", solution_path, projects)
         for tsproj_project in projects:
-            logger.warning("Found tsproj %s", tsproj_project.name)
+            logger.debug("Found tsproj %s", tsproj_project.name)
             try:
                 parsed_tsproj = pytmc.parser.parse(tsproj_project)
             except Exception:
@@ -449,7 +332,6 @@ class PlcProjectMetadata:
                 plc_md = cls.from_pytmc(
                     plc,
                     include_dependencies=include_dependencies,
-                    include_symbols=include_symbols,
                     loaded_files=loaded_files,
                 )
                 if plc_md is not None:
@@ -457,6 +339,8 @@ class PlcProjectMetadata:
 
 
 if __name__ == "__main__":
+    logging.basicConfig()
+    logger.setLevel("DEBUG")
     projects = list(
         PlcProjectMetadata.from_project_filename(
             "/Users/klauer/Repos/btps-prototype/btps-prototype.sln"

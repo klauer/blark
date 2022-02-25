@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import collections
+import pathlib
 import textwrap
 import typing
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any, Dict, Generator, Iterable, List, Optional, Union
+from typing import Any, Dict, Generator, Iterable, List, Optional, Tuple, Union
 
 from . import transform as tf
 
@@ -77,6 +79,7 @@ class Summary:
     """Base class for summary objects."""
     comments: List[str]
     pragmas: List[str]
+    filename: Optional[pathlib.Path]
     meta: Optional[tf.Meta] = field(repr=False)
 
     def __str__(self) -> str:
@@ -148,6 +151,7 @@ class DeclarationSummary(Summary):
             Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
         ] = None,
         block_header: str = "unknown",
+        filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         for var in item.variables:
@@ -162,6 +166,7 @@ class DeclarationSummary(Summary):
                 base_type=item.init.base_type_name,
                 value=str(item.init.value),
                 parent=parent.name if parent is not None else "",
+                filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
             )
         return result
@@ -172,6 +177,7 @@ class DeclarationSummary(Summary):
         item: tf.GlobalVariableDeclaration,
         parent: Optional[tf.GlobalVariableDeclarations] = None,
         block_header: str = "VAR_GLOBAL",
+        filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         location = (str(item.spec.location or "").replace("AT ", "")) or None
@@ -187,6 +193,7 @@ class DeclarationSummary(Summary):
                 base_type=item.base_type_name,
                 value=str(item.init.value),
                 parent=parent.name if parent is not None else "",
+                filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
             )
         return result
@@ -196,11 +203,13 @@ class DeclarationSummary(Summary):
         cls,
         block: tf.VariableDeclarationBlock,
         parent: Union[tf.Function, tf.Method, tf.FunctionBlock],
+        filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
         for decl in block.items:
             result.update(
-                cls.from_declaration(decl, parent=parent, block_header=block.block_header)
+                cls.from_declaration(decl, parent=parent, block_header=block.block_header,
+                                     filename=filename)
             )
         return result
 
@@ -216,7 +225,12 @@ class ActionSummary(Summary):
         raise KeyError(f"{key}: Actions do not contain declarations")
 
     @classmethod
-    def from_action(cls, action: tf.Action, source_code: Optional[str] = None) -> ActionSummary:
+    def from_action(
+        cls,
+        action: tf.Action,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
+    ) -> ActionSummary:
         if source_code is None:
             source_code = str(action)
 
@@ -224,6 +238,7 @@ class ActionSummary(Summary):
             name=str(action.name),
             item=action,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(action.meta),
         )
 
@@ -248,7 +263,12 @@ class MethodSummary(Summary):
         return result
 
     @classmethod
-    def from_method(cls, method: tf.Method, source_code: Optional[str] = None) -> MethodSummary:
+    def from_method(
+        cls,
+        method: tf.Method,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
+    ) -> MethodSummary:
         if source_code is None:
             source_code = str(method)
 
@@ -257,10 +277,13 @@ class MethodSummary(Summary):
             item=method,
             return_type=str(method.return_type) if method.return_type else None,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(method.meta),
         )
         for decl in method.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl, parent=method))
+            summary.declarations.update(
+                DeclarationSummary.from_block(decl, parent=method, filename=filename)
+            )
 
         return summary
 
@@ -277,7 +300,10 @@ class PropertySummary(Summary):
 
     @classmethod
     def from_property(
-        cls, property: tf.Property, source_code: Optional[str] = None
+        cls,
+        property: tf.Property,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> PropertySummary:
         if source_code is None:
             source_code = str(property)
@@ -286,6 +312,7 @@ class PropertySummary(Summary):
             name=str(property.name),
             item=property,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(property.meta),
         )
 
@@ -311,7 +338,10 @@ class FunctionSummary(Summary):
 
     @classmethod
     def from_function(
-        cls, func: tf.Function, source_code: Optional[str] = None
+        cls,
+        func: tf.Function,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> FunctionSummary:
         if source_code is None:
             source_code = str(func)
@@ -321,11 +351,14 @@ class FunctionSummary(Summary):
             item=func,
             return_type=str(func.return_type) if func.return_type else None,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(func.meta),
         )
 
         for decl in func.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl, parent=func))
+            summary.declarations.update(
+                DeclarationSummary.from_block(decl, parent=func, filename=filename)
+            )
 
         return summary
 
@@ -357,7 +390,10 @@ class FunctionBlockSummary(Summary):
 
     @classmethod
     def from_function_block(
-        cls, fb: tf.FunctionBlock, source_code: Optional[str] = None
+        cls,
+        fb: tf.FunctionBlock,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> FunctionBlockSummary:
         if source_code is None:
             source_code = str(fb)
@@ -366,11 +402,14 @@ class FunctionBlockSummary(Summary):
             name=fb.name,
             item=fb,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(fb.meta),
         )
 
         for decl in fb.declarations:
-            summary.declarations.update(DeclarationSummary.from_block(decl, parent=fb))
+            summary.declarations.update(
+                DeclarationSummary.from_block(decl, parent=fb, filename=filename)
+            )
 
         return summary
 
@@ -396,7 +435,10 @@ class DataTypeSummary(Summary):
 
     @classmethod
     def from_data_type(
-        cls, dtype: tf.TypeDeclarationItem, source_code: Optional[str] = None
+        cls,
+        dtype: tf.TypeDeclarationItem,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> DataTypeSummary:
         if source_code is None:
             source_code = str(dtype)
@@ -406,13 +448,19 @@ class DataTypeSummary(Summary):
             item=dtype,
             source_code=source_code,
             type=type(dtype).__name__,
+            filename=filename,
             **Summary.get_meta_kwargs(dtype.meta),
         )
 
         if isinstance(dtype, tf.StructureTypeDeclaration):
             for decl in dtype.declarations:
                 summary.declarations.update(
-                    DeclarationSummary.from_declaration(decl, parent=dtype, block_header="STRUCT")
+                    DeclarationSummary.from_declaration(
+                        decl,
+                        parent=dtype,
+                        block_header="STRUCT",
+                        filename=filename,
+                    )
                 )
 
         return summary
@@ -425,6 +473,7 @@ class GlobalVariableSummary(Summary):
     item: tf.GlobalVariableDeclarations
     source_code: str
     type: str
+    qualified_only: bool = False
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -438,7 +487,10 @@ class GlobalVariableSummary(Summary):
 
     @classmethod
     def from_globals(
-        cls, decls: tf.GlobalVariableDeclarations, source_code: Optional[str] = None
+        cls,
+        decls: tf.GlobalVariableDeclarations,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> GlobalVariableSummary:
         if source_code is None:
             source_code = str(decls)
@@ -448,6 +500,8 @@ class GlobalVariableSummary(Summary):
             item=decls,
             source_code=source_code,
             type=type(decls).__name__,
+            filename=filename,
+            qualified_only="qualified_only" in decls.attribute_pragmas,
             **Summary.get_meta_kwargs(decls.meta),
         )
 
@@ -456,7 +510,8 @@ class GlobalVariableSummary(Summary):
                 **DeclarationSummary.from_global_variable(
                     decl,
                     parent=summary,
-                    block_header="VAR_GLOBAL"
+                    block_header="VAR_GLOBAL",
+                    filename=filename,
                 )
             )
 
@@ -491,7 +546,10 @@ class ProgramSummary(Summary):
 
     @classmethod
     def from_program(
-        cls, program: tf.Program, source_code: Optional[str] = None
+        cls,
+        program: tf.Program,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
     ) -> ProgramSummary:
         if source_code is None:
             source_code = str(program)
@@ -500,15 +558,21 @@ class ProgramSummary(Summary):
             name=program.name,
             item=program,
             source_code=source_code,
+            filename=filename,
             **Summary.get_meta_kwargs(program.meta),
         )
 
         for decl in program.declarations:
             summary.declarations.update(
-                DeclarationSummary.from_block(decl, parent=program)
+                DeclarationSummary.from_block(decl, parent=program, filename=filename)
             )
 
         return summary
+
+
+def path_to_file_and_line(path: List[Summary]) -> List[Tuple[pathlib.Path, int]]:
+    """Get symbol metadata given a pytmc Symbol."""
+    return [(part.filename, part.item.meta.line) for part in path]
 
 
 @dataclass
@@ -527,6 +591,47 @@ class CodeSummary:
             f"{name}:\n{fb}"
             for name, fb in self.function_blocks.items()
         )
+
+    def find(self, name: str) -> Optional[Summary]:
+        """Find a declaration or other item by its qualified name."""
+        path = self.find_path(name)
+        return path[-1] if path else None
+
+    def find_path(self, name: str) -> Optional[List[Summary]]:
+        """Given a qualified name, find its Declaration."""
+        parts = collections.deque(name.split("."))
+        if len(parts) <= 1:
+            return None
+
+        variable_name = parts.pop()
+        parent = None
+        path = []
+        while parts:
+            part = parts.popleft()
+            if "[" in part:  # ]
+                part = part.split("[")[0]  # ]
+
+            try:
+                if parent is None:
+                    parent = self.get_item_by_name(part)
+                else:
+                    part_type = parent[part].type
+                    parent = self.get_item_by_name(part_type)
+            except KeyError:
+                return
+
+            path.append(parent)
+
+        if parent is None:
+            return
+
+        try:
+            path.append(parent.declarations[variable_name])
+        except KeyError:
+            # Likely ``EXTENDS``, which is not yet supported
+            return None
+
+        return path
 
     def get_all_items_by_name(self, name: str) -> Generator:
         """Get any code item (function, data type, global variable, etc.) by name."""
@@ -577,7 +682,9 @@ class CodeSummary:
             #     self.programs[f"{namespace}.{name}"] = item
 
     @staticmethod
-    def from_source(code: tf.SourceCode) -> CodeSummary:
+    def from_source(
+        code: tf.SourceCode, filename: Optional[pathlib.Path] = None
+    ) -> CodeSummary:
         result = CodeSummary()
         code_by_lines = [""] + code.raw_source.splitlines()
         items = code.items
@@ -592,14 +699,16 @@ class CodeSummary:
             if isinstance(item, tf.FunctionBlock):
                 summary = FunctionBlockSummary.from_function_block(
                     item,
-                    source_code=get_code_by_meta(item.meta)
+                    source_code=get_code_by_meta(item.meta),
+                    filename=filename,
                 )
                 result.function_blocks[item.name] = summary
                 last_parent = summary
             elif isinstance(item, tf.Function):
                 summary = FunctionSummary.from_function(
                     item,
-                    source_code=get_code_by_meta(item.meta)
+                    source_code=get_code_by_meta(item.meta),
+                    filename=filename,
                 )
                 result.functions[item.name] = summary
                 last_parent = None
@@ -607,7 +716,8 @@ class CodeSummary:
                 if isinstance(item.declaration, tf.StructureTypeDeclaration):
                     summary = DataTypeSummary.from_data_type(
                         item.declaration,
-                        source_code=get_code_by_meta(item.declaration.meta)
+                        source_code=get_code_by_meta(item.declaration.meta),
+                        filename=filename,
                     )
                     result.data_types[item.declaration.name] = summary
                 last_parent = None
@@ -616,7 +726,8 @@ class CodeSummary:
                     last_parent.methods.append(
                         MethodSummary.from_method(
                             item,
-                            source_code=get_code_by_meta(item.meta)
+                            source_code=get_code_by_meta(item.meta),
+                            filename=filename,
                         )
                     )
             elif isinstance(item, tf.Action):
@@ -624,7 +735,8 @@ class CodeSummary:
                     last_parent.actions.append(
                         ActionSummary.from_action(
                             item,
-                            source_code=get_code_by_meta(item.meta)
+                            source_code=get_code_by_meta(item.meta),
+                            filename=filename,
                         )
                     )
             elif isinstance(item, tf.Property):
@@ -632,25 +744,27 @@ class CodeSummary:
                     last_parent.properties.append(
                         PropertySummary.from_property(
                             item,
-                            source_code=get_code_by_meta(item.meta)
+                            source_code=get_code_by_meta(item.meta),
+                            filename=filename,
                         )
                     )
             elif isinstance(item, tf.GlobalVariableDeclarations):
-                qualified_only = "qualified_only" in item.attribute_pragmas
                 summary = GlobalVariableSummary.from_globals(
                     item,
-                    source_code=get_code_by_meta(item.meta)
+                    source_code=get_code_by_meta(item.meta),
+                    filename=filename,
                 )
-
-                for global_var in summary.declarations.values():
-                    if not qualified_only:
-                        result.globals[global_var.name] = summary
-                    result.globals[global_var.qualified_name] = summary
+                result.globals[item.name] = summary
+                # for global_var in summary.declarations.values():
+                #     if not qualified_only:
+                #         result.globals[global_var.name] = summary
+                #     result.globals[global_var.qualified_name] = summary
 
             elif isinstance(item, tf.Program):
                 summary = ProgramSummary.from_program(
                     item,
-                    source_code=get_code_by_meta(item.meta)
+                    source_code=get_code_by_meta(item.meta),
+                    filename=filename,
                 )
                 result.programs[item.name] = summary
                 last_parent = summary
