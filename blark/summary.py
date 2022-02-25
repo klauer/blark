@@ -369,6 +369,8 @@ class FunctionBlockSummary(Summary):
     name: str
     source_code: str
     item: tf.FunctionBlock
+    extends: Optional[str]
+    squashed: bool
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -403,6 +405,8 @@ class FunctionBlockSummary(Summary):
             item=fb,
             source_code=source_code,
             filename=filename,
+            extends=fb.extends.name if fb.extends else None,
+            squashed=False,
             **Summary.get_meta_kwargs(fb.meta),
         )
 
@@ -413,6 +417,39 @@ class FunctionBlockSummary(Summary):
 
         return summary
 
+    def squash_base_extends(
+        self, function_blocks: Dict[str, FunctionBlockSummary]
+    ) -> FunctionBlockSummary:
+        """Squash the "EXTENDS" function block into this one."""
+        if self.extends is None:
+            return self
+
+        extends_from = function_blocks.get(self.extends, None)
+        if extends_from is None:
+            return self
+
+        if extends_from.extends:
+            extends_from = extends_from.squash_base_extends(function_blocks)
+
+        declarations = dict(extends_from.declarations)
+        declarations.update(self.declarations)
+        actions = list(extends_from.actions) + self.actions
+        methods = list(extends_from.methods) + self.methods
+        return FunctionBlockSummary(
+            name=self.name,
+            comments=extends_from.comments + self.comments,
+            pragmas=extends_from.pragmas + self.pragmas,
+            meta=self.meta,
+            filename=self.filename,
+            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            item=self.item,
+            extends=self.extends,
+            declarations=declarations,
+            actions=actions,
+            methods=methods,
+            squashed=True,
+        )
+
 
 @dataclass
 class DataTypeSummary(Summary):
@@ -422,6 +459,8 @@ class DataTypeSummary(Summary):
     item: tf.TypeDeclarationItem
     source_code: str
     type: str
+    extends: Optional[str]
+    squashed: bool = False
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -443,12 +482,19 @@ class DataTypeSummary(Summary):
         if source_code is None:
             source_code = str(dtype)
 
-        summary = DataTypeSummary(
+        if isinstance(dtype, tf.StructureTypeDeclaration):
+            extends = dtype.extends.name if dtype.extends else None
+        else:
+            extends = None
+
+        summary = cls(
             name=dtype.name,
             item=dtype,
+            extends=extends,
             source_code=source_code,
             type=type(dtype).__name__,
             filename=filename,
+            squashed=False,
             **Summary.get_meta_kwargs(dtype.meta),
         )
 
@@ -464,6 +510,37 @@ class DataTypeSummary(Summary):
                 )
 
         return summary
+
+    def squash_base_extends(
+        self, data_types: Dict[str, DataTypeSummary]
+    ) -> DataTypeSummary:
+        """Squash the "EXTENDS" function block into this one."""
+        if self.extends is None:
+            return self
+
+        extends_from = data_types.get(self.extends, None)
+        if extends_from is None:
+            return self
+
+        if extends_from.extends:
+            extends_from = extends_from.squash_base_extends(data_types)
+
+        declarations = dict(extends_from.declarations)
+        declarations.update(self.declarations)
+        raise
+        return DataTypeSummary(
+            name=self.name,
+            type=self.type,
+            comments=extends_from.comments + self.comments,
+            pragmas=extends_from.pragmas + self.pragmas,
+            meta=self.meta,
+            filename=self.filename,
+            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            item=self.item,
+            extends=self.extends,
+            declarations=declarations,
+            squashed=True,
+        )
 
 
 @dataclass
@@ -616,21 +693,21 @@ class CodeSummary:
                 if parent is None:
                     parent = self.get_item_by_name(part)
                 else:
-                    part_type = parent[part].type
+                    part_obj = parent[part]
+                    path.append(part_obj)
+                    part_type = str(part_obj.base_type)
                     parent = self.get_item_by_name(part_type)
             except KeyError:
                 return
-
-            path.append(parent)
 
         if parent is None:
             return
 
         try:
-            path.append(parent.declarations[variable_name])
+            path.append(parent[variable_name])
         except KeyError:
-            # Likely ``EXTENDS``, which is not yet supported
-            return None
+            # Is it better to give a partial path or no path at all?
+            ...
 
         return path
 
@@ -769,6 +846,18 @@ class CodeSummary:
                 )
                 result.programs[item.name] = summary
                 last_parent = summary
+
+        for name, item in list(result.function_blocks.items()):
+            if item.extends and not item.squashed:
+                result.function_blocks[name] = item.squash_base_extends(
+                    result.function_blocks
+                )
+
+        for name, item in list(result.data_types.items()):
+            if item.extends and not item.squashed:
+                result.data_types[name] = item.squash_base_extends(
+                    result.data_types
+                )
 
         return result
 

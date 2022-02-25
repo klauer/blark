@@ -211,10 +211,17 @@ class DependencyStore:
             )
             return []
 
-        return list(PlcProjectMetadata.from_project_filename(str(filename.resolve())))
+        return list(
+            PlcProjectMetadata.from_project_filename(
+                str(filename.resolve()),
+                # TODO: one level only for now to avoid circular deps
+                include_dependencies=False,
+            )
+        )
 
     def get_dependencies(
-        self, plc: pytmc.parser.Plc,
+        self,
+        plc: pytmc.parser.Plc,
     ) -> Generator[Tuple[ResolvedDependency, PlcProjectMetadata], None, None]:
         """Get dependency projects from a PLC."""
         for resolution in plc.root.find(pytmc.parser.Resolution):
@@ -263,11 +270,10 @@ class PlcProjectMetadata:
         cls,
         plc: pytmc.parser.Plc,
         include_dependencies: bool = True,
-        loaded_files: Optional[Dict[pathlib.Path, str]] = None,
     ) -> Optional[PlcProjectMetadata]:
         """Create a PlcProjectMetadata instance from a pytmc-parsed one."""
         filename = plc.filename.resolve()
-        loaded_files = dict(loaded_files or {})
+        loaded_files = {}
         deps = {}
         code = []
         combined_summary = CodeSummary()
@@ -310,10 +316,8 @@ class PlcProjectMetadata:
         project: AnyPath,
         include_dependencies: bool = True,
         plc_whitelist: Optional[List[str]] = None,
-        loaded_files: Optional[Dict[str, str]] = None,
     ) -> Generator[PlcProjectMetadata, None, None]:
         """Given a project/solution filename, get all PlcProjectMetadata."""
-        loaded_files = dict(loaded_files or {})
         solution_path, projects = util.get_tsprojects_from_filename(project)
         logger.debug("Solution path %s projects %s", solution_path, projects)
         for tsproj_project in projects:
@@ -328,22 +332,26 @@ class PlcProjectMetadata:
                 if plc_whitelist and plc_name not in plc_whitelist:
                     continue
 
-                logger.debug("Found plc project %s", plc_name)
+                logger.debug("Found PLC project %s", plc_name)
                 plc_md = cls.from_pytmc(
                     plc,
                     include_dependencies=include_dependencies,
-                    loaded_files=loaded_files,
                 )
                 if plc_md is not None:
                     yield plc_md
 
 
-if __name__ == "__main__":
-    logging.basicConfig()
-    logger.setLevel("DEBUG")
-    projects = list(
-        PlcProjectMetadata.from_project_filename(
-            "/Users/klauer/Repos/btps-prototype/btps-prototype.sln"
+def load_projects(
+    *projects: AnyPath,
+    include_dependencies: bool = True,
+    plc_whitelist: Optional[List[str]] = None,
+) -> List[PlcProjectMetadata]:
+    """Load the given projects by filename."""
+    result = []
+    for project in projects:
+        mds = PlcProjectMetadata.from_project_filename(
+            project, include_dependencies=include_dependencies,
+            plc_whitelist=plc_whitelist,
         )
-    )
-    proj, = projects
+        result.extend(mds)
+    return result
