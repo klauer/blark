@@ -6,7 +6,7 @@ import argparse
 import pathlib
 import sys
 import traceback
-from typing import Any, Generator, Optional, Tuple, Union
+from typing import Generator, Optional, Tuple, Union
 
 import lark
 import pytmc
@@ -57,6 +57,9 @@ DEFAULT_PREPROCESSORS = []
 _DEFAULT_PREPROCESSORS = object()
 
 
+ParseResult = Union[Exception, tf.SourceCode, lark.Tree]
+
+
 def parse_source_code(
     source_code: str,
     *,
@@ -65,7 +68,7 @@ def parse_source_code(
     preprocessors=_DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
-):
+) -> Union[tf.SourceCode, lark.Tree]:
     """
     Parse source code and return the transformed result.
 
@@ -139,49 +142,57 @@ def parse_single_file(fn, *, transform: bool = True):
     return parse_source_code(source_code, fn=fn, transform=transform)
 
 
+def parse_plc(
+    plc: pytmc.parser.Plc,
+    *,
+    verbose: int = 0,
+    transform: bool = True
+) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+    """Parse a single PLC instance from pytmc."""
+    source_items = (
+        item
+        for item in (
+            list(plc.dut_by_name.values())
+            + list(plc.gvl_by_name.values())
+            + list(plc.pou_by_name.values())
+        )
+        if hasattr(item, "get_source_code")
+    )
+    for source_item in source_items:
+        source_code = source_item.get_source_code()
+        if not source_code:
+            continue
+
+        try:
+            yield source_item.filename, parse_source_code(
+                source_code,
+                fn=source_item.filename,
+                verbose=verbose,
+                transform=transform,
+            )
+        except Exception as ex:
+            tb = traceback.format_exc()
+            ex.traceback = tb
+            yield source_item.filename, ex
+
+
 def parse_project(
     tsproj_project: AnyFile,
     *,
     verbose: int = 0,
     transform: bool = True
-) -> Generator[Tuple[pathlib.Path, Any], None, None]:
+) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """Parse an entire tsproj project file."""
-    proj_path = pathlib.Path(tsproj_project)
-    proj_root = proj_path.parent.resolve().absolute()  # noqa: F841 TODO
-
+    proj_path = pathlib.Path(tsproj_project).resolve()
     if proj_path.suffix.lower() not in (".tsproj",):
         raise ValueError("Expected a .tsproj file")
 
     project = pytmc.parser.parse(proj_path)
-    results = {}
-    success = True
-    for i, plc in enumerate(project.plcs, 1):
-        source_items = (
-            list(plc.dut_by_name.items())
-            + list(plc.gvl_by_name.items())
-            + list(plc.pou_by_name.items())
-        )
-        for name, source_item in source_items:
-            if not hasattr(source_item, "get_source_code"):
-                continue
-
-            source_code = source_item.get_source_code()
-            if not source_code:
-                continue
-
-            try:
-                yield source_item.filename, parse_source_code(
-                    source_code, fn=source_item.filename, verbose=verbose
-                )
-            except Exception as ex:
-                tb = traceback.format_exc()
-                ex.traceback = tb
-                yield source_item.filename, ex
-
-    return success, results
+    for plc in project.plcs:
+        yield from parse_plc(plc, verbose=verbose, transform=transform)
 
 
-def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, Any], None, None]:
+def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """

@@ -1,9 +1,11 @@
+import hashlib
 import pathlib
 import re
 from typing import Generator, List, Tuple, Union
 
 import lark
 import pytmc
+import pytmc.parser
 
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
 AnyPath = Union[str, pathlib.Path]
@@ -229,3 +231,33 @@ def remove_comment_characters(text: str) -> str:
     if text.startswith("/"):
         return text.lstrip("/ ")
     return text.strip("()").strip("* ")
+
+
+def get_tsprojects_from_filename(
+    filename: AnyPath,
+) -> Tuple[pathlib.Path, List[pathlib.Path]]:
+    """
+    From a TwinCAT solution (.sln) or .tsproj, return all tsproj projects.
+
+    Returns
+    -------
+    root : pathlib.Path
+        Project root directory (where the solution or provided tsproj is
+        located).
+
+    projects : list of pathlib.Path
+        List of tsproj projects paths.
+    """
+    abs_path = pathlib.Path(filename).resolve()
+    if abs_path.suffix == '.tsproj':
+        return abs_path.parent, [abs_path]
+    if abs_path.suffix == '.sln':
+        return abs_path.parent, pytmc.parser.projects_from_solution(abs_path)
+
+    raise RuntimeError(f'Expected a .tsproj/.sln file; got {abs_path.suffix!r}')
+
+
+def get_file_sha256(filename: AnyPath) -> str:
+    """Hash a file's contents with the SHA-256 algorithm."""
+    with open(filename, "rb") as fp:
+        return hashlib.sha256(fp.read()).hexdigest()

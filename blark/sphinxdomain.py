@@ -46,14 +46,9 @@ class BlarkSphinxCache:
 
     def find_by_name(self, name: str):
         for item in self.cache.values():
-            for container in (
-                item.function_blocks,
-                item.functions,
-                item.data_types,
-            ):
-                obj = container.get(name, None)
-                if obj is not None:
-                    return obj
+            obj = item.find(name)
+            if obj is not None:
+                return obj
 
         raise KeyError(f"{name!r} not found")
 
@@ -128,7 +123,7 @@ def declaration_to_signature(
 
 def declaration_to_content(obj: summary.DeclarationSummary):
     if obj.value:
-        default = nodes.paragraph(text="Default:")
+        default = nodes.paragraph(text="Default: ")
         default += addnodes.literal_strong(text=str(obj.value))
         yield default
 
@@ -197,7 +192,11 @@ class VariableBlockDirective(BlarkDirective):
         self, sig: str, signode: addnodes.desc_signature
     ) -> Tuple[str, str]:
         self.block_header = sig.upper()
-        func = self.env.ref_context["bk:function"]
+        func = self.env.ref_context.get("bk:function", None)
+        if func is None:
+            self.declarations = None
+            return "", ""
+
         self.parent_name = func.name
         self.declarations = list(func.declarations_by_block[self.block_header].values())
         signode += addnodes.desc_name(
@@ -207,6 +206,9 @@ class VariableBlockDirective(BlarkDirective):
         return self.block_header, ""
 
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
+        if not self.env.ref_context.get("bk:function", None):
+            return
+
         contentnode += declarations_to_block(self.declarations, env=self.env)
 
 
@@ -273,6 +275,19 @@ def _to_link_table(
     )
 
 
+class MissingDeclaration:
+    name: str
+    declarations: dict
+    declarations_by_block: dict
+    source_code: str
+
+    def __init__(self, name: str):
+        self.declarations = {}
+        self.declarations_by_block = {}
+        self.name = name
+        self.source_code = f"(Missing item: {name})"
+
+
 class BlarkDirectiveWithDeclarations(BlarkDirective):
     obj: Union[summary.FunctionSummary, summary.FunctionBlockSummary]
     doc_field_types = [
@@ -299,6 +314,7 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         try:
             self.obj = BlarkSphinxCache.instance().find_by_name(sig)
         except KeyError:
+            self.obj = MissingDeclaration(sig)
             logger.error(
                 "Could not find object: %r (signatures unsupported)", sig
             )
@@ -368,7 +384,11 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
 
     def _get_basic_variable_blocks(self) -> Generator[addnodes.desc, None, None]:
         """Get the usual input/output variable blocks as sphinx nodes."""
-        for block in ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT"):
+        blocks = ("VAR_INPUT", "VAR_IN_OUT", "VAR_OUTPUT", "VAR_GLOBAL")
+        if isinstance(self.obj, summary.ProgramSummary):
+            blocks += ("VAR", )
+
+        for block in blocks:
             decls = self.obj.declarations_by_block.get(block, {})
             if not decls:
                 continue
@@ -448,6 +468,16 @@ class TypeDirective(BlarkDirectiveWithDeclarations):
     signature_prefix: ClassVar[str] = "TYPE"
 
 
+class ProgramDirective(BlarkDirectiveWithDeclarations):
+    obj: summary.ProgramSummary
+    signature_prefix: ClassVar[str] = "PROGRAM"
+
+
+class GvlDirective(BlarkDirectiveWithDeclarations):
+    obj: summary.GlobalVariableSummary
+    signature_prefix: ClassVar[str] = "GVL"
+
+
 class BlarkXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         refnode["bk:scope"] = list(env.ref_context.get("bk:scope", []))
@@ -471,40 +501,48 @@ class BlarkDomain(Domain):
     name = "bk"
     label = "Blark"
     object_types: ClassVar[Dict[str, ObjType]] = {
-        "function_block": ObjType(l_("functionblock"), l_("function_block"), l_("fb")),
-        "function": ObjType(l_("function"), l_("func")),
-        "type": ObjType(l_("type"), "type"),
-        "module": ObjType(l_("module"), "mod"),
-        "variable_block": ObjType(l_("variable_block"), "var"),
-        "source_code": ObjType(l_("source_code"), "plc_source"),
         "declaration": ObjType(l_("declaration"), "declaration"),
+        "function": ObjType(l_("function"), l_("func")),
+        "function_block": ObjType(l_("functionblock"), l_("function_block"), l_("fb")),
+        "gvl": ObjType(l_("gvl"), "global_variable_list"),
+        "module": ObjType(l_("module"), "mod"),
+        "program": ObjType(l_("program"), ),
+        "source_code": ObjType(l_("source_code"), "plc_source"),
+        "type": ObjType(l_("type"), "type"),
+        "variable_block": ObjType(l_("variable_block"), "var"),
     }
 
     directives: ClassVar[Dict[str, Type[BlarkDirective]]] = {
-        "function_block": FunctionBlockDirective,
-        "function": FunctionDirective,
-        "variable_block": VariableBlockDirective,
         "declaration": DeclarationDirective,
+        "function": FunctionDirective,
+        "function_block": FunctionBlockDirective,
+        "gvl": GvlDirective,
+        "program": ProgramDirective,
         "type": TypeDirective,
+        "variable_block": VariableBlockDirective,
     }
 
     roles: Dict[str, BlarkXRefRole] = {
-        "function_block": BlarkXRefRole(fix_parens=False),
-        "function": BlarkXRefRole(fix_parens=False),
-        "fb": BlarkXRefRole(fix_parens=False),
-        "type": BlarkXRefRole(),
-        "mod": BlarkXRefRole(),
         "declaration": BlarkXRefRole(),
+        "fb": BlarkXRefRole(fix_parens=False),
+        "function": BlarkXRefRole(fix_parens=False),
+        "function_block": BlarkXRefRole(fix_parens=False),
+        "gvl": BlarkXRefRole(fix_parens=False),
+        "mod": BlarkXRefRole(),
+        "program": BlarkXRefRole(fix_parens=False),
+        "type": BlarkXRefRole(),
     }
 
     initial_data: ClassVar[str, Dict[str, Any]] = {
-        "module": {},
-        "type": {},
-        "function": {},
-        "declaration": {},
-        "function_block": {},
-        "method": {},
         "action": {},
+        "declaration": {},
+        "function": {},
+        "function_block": {},
+        "gvl": {},
+        "method": {},
+        "module": {},
+        "program": {},
+        "type": {},
     }
     indices: List[Index] = [
         # BlarkModuleIndex,

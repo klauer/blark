@@ -1,4 +1,5 @@
 import pathlib
+import sys
 from typing import Optional
 
 import pytest
@@ -8,14 +9,39 @@ from .. import transform as tf
 from ..parse import parse_source_code
 from .conftest import get_grammar
 
-# try:
-#     import apischema
-# except ImportError:
-#     # apischema is optional for serialization testing
-#     apischema = None
+try:
+    import apischema
+except ImportError:
+    # apischema is optional for serialization testing
+    apischema = None
 
+
+# TODO: apischema serialization is recursing infinitely on 3.9 and 3.10;
+# need to dig into details and report it (first test that fails is ARRAY-related)
+APISCHEMA_SKIP = sys.version_info[:2] >= (3, 9)
 
 TEST_PATH = pathlib.Path(__file__).parent
+
+
+def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
+    parser = get_grammar(start=rule_name)
+    transformed = parse_source_code(value, parser=parser)
+    print("\n\nTransformed:")
+    print(repr(transformed))
+    print("\n\nOr:")
+    print(transformed)
+    if expected is None:
+        expected = value
+    assert str(transformed) == expected
+
+    if apischema is not None and not APISCHEMA_SKIP:
+        serialized = apischema.serialize(transformed)
+        print("serialized", serialized)
+        deserialized = apischema.deserialize(type(transformed), serialized)
+        print("deserialized", deserialized)
+        assert str(transformed) == str(deserialized)
+        # assert transformed == deserialized
+    return transformed
 
 
 def test_check_unhandled_rules(grammar):
@@ -48,24 +74,7 @@ def test_check_unhandled_rules(grammar):
 
     }
 
-    todo_rules = {
-        # program configuration
-        "prog_cnxn",
-        "prog_conf_element",
-        "prog_conf_elements",
-        "program_configuration",
-        "program_var_declarations",
-        "fb_task",
-
-        # tasks
-        "configuration_declaration",
-        "instance_specific_init",
-        "instance_specific_initializations",
-
-        # resources
-        "resource_declaration",
-        "single_resource_declaration",
-    }
+    todo_rules = set()
 
     aliased = {
         "boolean_literal",
@@ -836,6 +845,17 @@ def test_statement_roundtrip(rule_name, value):
         ),
         param("function_declaration", tf.multiline_code_block(
             """
+            FUNCTION FuncName : POINTER TO INT
+                VAR
+                    iValue : INT := 0;
+                END_VAR
+                FuncName := ADR(iValue);
+            END_FUNCTION
+            """),
+            id="int_with_pointer_retval",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
             FUNCTION FuncName : INT
                 VAR_INPUT
                     iValue : INT := 0;
@@ -907,27 +927,7 @@ def test_function_roundtrip(rule_name, value):
     ],
 )
 def test_program_roundtrip(rule_name, value):
-    _ = roundtrip_rule(rule_name, value)
-
-
-def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
-    parser = get_grammar(start=rule_name)
-    transformed = parse_source_code(value, parser=parser)
-    print("\n\nTransformed:")
-    print(repr(transformed))
-    print("\n\nOr:")
-    print(transformed)
-    if expected is None:
-        expected = value
-    assert str(transformed) == expected
-
-    # if apischema is not None:
-    #     serialized = apischema.serialize(transformed)
-    #     print("serialized", serialized)
-    #     deserialized = apischema.deserialize(type(transformed), serialized)
-    #     print("deserialized", deserialized)
-    #     assert transformed == deserialized
-    return transformed
+    roundtrip_rule(rule_name, value)
 
 
 @pytest.mark.parametrize(
@@ -1057,171 +1057,52 @@ def test_data_type_declaration(rule_name, value):
 
 
 @pytest.mark.parametrize(
-    "rule_name, value",
+    "value, init, base_type, full_type",
     [
-        param("access_path", "resource.%IX1.1"),
-        param("access_path", "resource.prog.func1.func2.Variable"),
-        param("access_path", "resource.func2.Variable"),
+        param("fValue : INT;", tf.TypeInitialization, "INT", "INT"),
+        param("fValue : INT (0..10);", tf.SubrangeTypeInitialization, "INT", "INT (0..10)"),
+        param("fValue : (A, B);", tf.EnumeratedTypeInitialization, "INT", "INT"),
+        param("fValue : (A, B) DINT;", tf.EnumeratedTypeInitialization, "DINT", "DINT"),
         param(
-            "config_access_declaration",
-            "AccessName : resource.%IX1.1 : TypeName READ_ONLY"
+            "fValue : ARRAY [1..10] OF INT;",
+            tf.ArrayTypeInitialization,
+            "INT",
+            "ARRAY [1..10] OF INT",
         ),
         param(
-            "config_access_declaration",
-            "AccessName : resource.%IX1.1 : TypeName"
+            "fValue : FB_Test(1, 2, 3);",
+            tf.InitializedStructure,
+            "FB_Test",
+            "FB_Test",
+            marks=pytest.mark.xfail(reason="Overlap with function block invocation")
         ),
         param(
-            "config_access_declaration",
-            "AccessName : resource.Variable : TypeName READ_WRITE"
+            "fValue : FB_Test(A := 1, B := 2, C => 3);",
+            tf.FunctionBlockInvocation,
+            "FB_Test",
+            "FB_Test",
         ),
-        param("config_access_declarations", tf.multiline_code_block(
-            """
-            (* This is an access block *)
-            VAR_ACCESS
-                (* Access 1 *)
-                AccessName1 : resource.Variable : TypeName READ_WRITE;
-                (* Access 2 *)
-                AccessName2 : resource.Variable : TypeName READ_ONLY;
-                (* Access 3 *)
-                AccessName3 : resource.Variable : TypeName;
-                (* Access 4 *)
-                AccessName4 : resource.%IX1.1 : TypeName;
-            END_VAR
-            """
-        )),
-        param("task_initialization", "(SINGLE := 1, INTERVAL := 2, PRIORITY := 3)"),
-        param("task_initialization", "(INTERVAL := 2, PRIORITY := 3)"),
-        param("task_initialization", "(SINGLE := 1, PRIORITY := 3)"),
-        param("task_initialization", "(PRIORITY := 3)"),
-        param("task_initialization", "(SINGLE := abc.def, PRIORITY := 3)"),
-        param("task_configuration", "TASK taskname (PRIORITY := 3)"),
-    ],
-)
-def test_config_roundtrip(rule_name, value):
-    roundtrip_rule(rule_name, value)
 
-
-@pytest.mark.parametrize(
-    "rule_name, value",
-    [
-        param("function_declaration", tf.multiline_code_block(
-            """
-            FUNCTION ILTest : INT
-                LD Speed
-                GT 2000
-                JMPCN VOLTS_OK
-                LD Volts
-                VOLTS_OK: LD 1
-                ST %QX75
-            END_FUNCTION
-            """
-        )),
-        param("function_declaration", tf.multiline_code_block(
-            """
-            FUNCTION ILTest : INT
-                LD LoadVar
-                ST toninstance.IN
-                CAL fb(1, 2, 3)
-                CAL toninstance(
-                    PT := t1,
-                    ET => tOut2
-                )
-                LD toninst1.Q
-                JMPC labelname
-                ST otherton.IN
-                labelname: LD iVar2
-                SUB 100
-            END_FUNCTION
-            """
-        )),
-        # I don't understand IL well enough, but this is apparently valid
-        # grammar
-        param("function_declaration", tf.multiline_code_block(
-            """
-            FUNCTION ILTest : INT
-                ADD(iOperand
-                    LD test
-                    ST test1
-                )
-                ADD(iOperand)
-                end: RET
-            END_FUNCTION
-            """
-        )),
-        param("function_declaration", tf.multiline_code_block(
-            """
-            // Comments 0
-            FUNCTION ILTest : INT
-                // Comments 1
-                ADD(iOperand
-                    LD test
-                    ST test1
-                )
-                // Comments 2
-                ADD(iOperand)
-                // Comments 3
-                end: RET
-            END_FUNCTION
-            """
-        )),
+        # Aliased by TypeInitialization, it has been removed from the grammar:
+        # param("fValue : fbName;", lark.Token, "fbName", "fbName"),
+        # Aliased by TypeInitialization:
+        param(
+            "fValue : STRING[10] := 'abc';",
+            tf.StringTypeSpecification,
+            "STRING",
+            "STRING[10]",
+            marks=pytest.mark.xfail(reason="Overlap with TypeInitialization")
+        ),
     ]
 )
-def test_instruction_list(rule_name, value):
-    roundtrip_rule(rule_name, value)
+def test_global_types(value, init, base_type, full_type):
+    parser = get_grammar(start="global_var_decl")
+    transformed = parse_source_code(value, parser=parser)
+    assert isinstance(transformed, tf.GlobalVariableDeclaration)
+    assert transformed.variables == ["fValue"]
 
+    assert isinstance(transformed.init, init)
 
-@pytest.mark.parametrize(
-    "rule_name, value",
-    [
-        param("action_qualifier", "N"),
-        param("action_qualifier", "D, Variable"),
-        param("action_qualifier", "D, TIME#1D"),
-        param("action_association", "ActionName()"),
-        param("action_association", "ActionName(N)"),
-        param("action_association", "ActionName(D, TIME#1D)"),
-        param("action_association", "ActionName(D, TIME#1D, IndicatorName)"),
-        param("action_association", "ActionName(D, TIME#1D, Name1, Name2^)"),
-        param("sfc_initial_step", tf.multiline_code_block(
-            """
-            INITIAL_STEP StepName :
-            END_STEP
-            """
-        )),
-        param("sfc_step", tf.multiline_code_block(
-            """
-            STEP StepName :
-            END_STEP
-            """
-        )),
-        param("sfc_step", tf.multiline_code_block(
-            """
-            STEP StepName :
-                iValue := iValue + 1;
-            END_STEP
-            """
-        )),
-        param("sfc_step", tf.multiline_code_block(
-            """
-            STEP StepName :
-                ActionName(D, TIME#1D, Name1, Name2^)
-            END_STEP
-            """
-        )),
-        param("sfc_transition", tf.multiline_code_block(
-            """
-            TRANSITION TransitionName
-            FROM StepName1 TO StepName2 := 1
-            END_TRANSITION
-            """
-        )),
-        param("sfc_transition", tf.multiline_code_block(
-            """
-            TRANSITION TransitionName
-            FROM (StepName1, StepName2) TO StepName3 := 1
-            END_TRANSITION
-            """
-        )),
-    ]
-)
-def test_sfc_sequential_function_chart(rule_name, value):
-    roundtrip_rule(rule_name, value)
+    assert transformed.spec.variables
+    assert transformed.base_type_name == base_type
+    assert transformed.full_type_name == full_type
