@@ -1007,7 +1007,7 @@ class SimpleSpecification:
 @_rule_handler("indirect_simple_specification")
 class IndirectSimpleSpecification:
     indirection: Optional[IndirectionType]
-    type: lark.Token
+    type: SimpleSpecification
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
