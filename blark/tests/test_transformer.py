@@ -79,6 +79,7 @@ def test_check_unhandled_rules(grammar):
     aliased = {
         "boolean_literal",
         "fb_decl",
+        "fb_access",
     }
 
     assert set(unhandled_rules) == handled_separately | todo_rules | aliased
