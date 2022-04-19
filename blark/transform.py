@@ -1787,7 +1787,7 @@ class Implements:
 @_rule_handler("function_block_type_declaration", comments=True)
 class FunctionBlock:
     name: lark.Token
-    abstract: bool
+    access: Optional[AccessSpecifier]
     extends: Optional[Extends]
     implements: Optional[Implements]
     declarations: List[VariableDeclarationBlock]
@@ -1797,7 +1797,7 @@ class FunctionBlock:
     @staticmethod
     def from_lark(
         fb_token: lark.Token,
-        abstract: Optional[lark.Token],
+        access: Optional[AccessSpecifier],
         derived_name: lark.Token,
         extends: Optional[Extends],
         implements: Optional[Implements],
@@ -1806,7 +1806,7 @@ class FunctionBlock:
         *declarations, body, _ = args
         return FunctionBlock(
             name=derived_name,
-            abstract=abstract is not None,
+            access=access is not None,
             extends=extends,
             implements=implements,
             declarations=list(declarations),
