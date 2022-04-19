@@ -1806,7 +1806,7 @@ class FunctionBlock:
         *declarations, body, _ = args
         return FunctionBlock(
             name=derived_name,
-            access=access is not None,
+            access=access,
             extends=extends,
             implements=implements,
             declarations=list(declarations),
@@ -1814,8 +1814,8 @@ class FunctionBlock:
         )
 
     def __str__(self) -> str:
-        abstract = "ABSTRACT " if self.abstract else ""
-        header = f"FUNCTION_BLOCK {abstract}{self.name}"
+        access_and_name = join_if(self.access, " ", self.name)
+        header = f"FUNCTION_BLOCK {access_and_name}"
         header = join_if(header, " ", self.implements)
         header = join_if(header, " ", self.extends)
         return "\n".join(
