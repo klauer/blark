@@ -605,6 +605,8 @@ LOGICAL_OR: "OR"i
 LOGICAL_XOR: "XOR"i
 LOGICAL_AND: "AND"i
 LOGICAL_NOT: "NOT"i
+LOGICAL_AND_THEN: "AND_THEN"i
+LOGICAL_OR_ELSE: "OR_ELSE"i
 MODULO: "MOD"i
 EQUALS: "="
 EQUALS_NOT: "<>"
@@ -623,7 +625,11 @@ ASSIGNMENT: ":="
 
 expression: assignment_expression ( ASSIGNMENT assignment_expression )*
 
-assignment_expression: xor_expression ( LOGICAL_OR xor_expression )*
+assignment_expression: or_else_expression ( LOGICAL_OR_ELSE or_else_expression )*
+
+or_else_expression: and_then_expression ( LOGICAL_AND_THEN and_then_expression )*
+
+and_then_expression: xor_expression ( LOGICAL_OR xor_expression )*
 
 xor_expression: and_expression ( LOGICAL_XOR and_expression )*
 

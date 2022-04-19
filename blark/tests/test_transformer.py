@@ -71,7 +71,6 @@ def test_check_unhandled_rules(grammar):
         # handled as tree
         "global_var_list",
         "var_body",
-
     }
 
     todo_rules = set()
@@ -781,6 +780,20 @@ def test_fb_roundtrip(rule_name, value):
                     ELSE
                     END_IF
                 END_IF
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF 1 AND_THEN 1 THEN
+                y();
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF 0 OR_ELSE 1 THEN
+                y();
             END_IF
             """
         )),
