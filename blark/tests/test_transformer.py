@@ -536,6 +536,36 @@ def test_global_roundtrip(rule_name, value):
         )),
         param("function_block_type_declaration", tf.multiline_code_block(
             """
+            FUNCTION_BLOCK PRIVATE fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK PUBLIC fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK INTERNAL fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK PROTECTED fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK FINAL fbName EXTENDS OtherFbName
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
             FUNCTION_BLOCK fbName
             VAR_INPUT
                 bExecute : BOOL;
