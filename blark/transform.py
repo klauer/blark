@@ -2808,13 +2808,15 @@ TypeDeclarationItem = Union[
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
     declaration: Optional[TypeDeclarationItem]
+    access: Optional[AccessSpecifier]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
+        access: Optional[AccessSpecifier],
         declaration: Optional[TypeDeclarationItem] = None,
     ) -> DataTypeDeclaration:
-        return DataTypeDeclaration(declaration)
+        return DataTypeDeclaration(access=access, declaration=declaration)
 
     def __str__(self) -> str:
         if not self.declaration:
@@ -2826,6 +2828,8 @@ class DataTypeDeclaration:
         ):
             # note: END_STRUCT; END_UNION; result in "END_TYPE expected not ;"
             decl = decl + ";"
+
+        decl = join_if(self.access, " ", decl)
 
         return "\n".join(
             (

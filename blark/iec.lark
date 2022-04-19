@@ -239,7 +239,7 @@ REFERENCE_TO: /REFERENCE\s*TO/i
                          | subrange_type_name
                          | enumerated_type_name
 
-data_type_declaration: "TYPE"i [ _type_declaration ] ";"* "END_TYPE"i ";"*
+data_type_declaration: "TYPE"i [ access_specifier ] [ _type_declaration ] ";"* "END_TYPE"i ";"*
 
 _type_declaration: array_type_declaration
                  | structure_type_declaration

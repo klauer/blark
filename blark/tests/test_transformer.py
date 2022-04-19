@@ -1103,6 +1103,12 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE INTERNAL EnumTypeName : (ENUM_VAL_1 := 0, ENUM_VAL_2);
+            END_TYPE
+            """
+        )),
     ],
 )
 def test_data_type_declaration(rule_name, value):
