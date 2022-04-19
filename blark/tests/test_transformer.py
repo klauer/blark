@@ -1098,7 +1098,7 @@ def test_incomplete_located_var_decls(rule_name, value):
             TYPE TypeName :
                 UNION
                     pt_value : POINTER TO INT;
-                    as_bytes : ARRAY [0..2] OF BYTE;
+                    pt_SomethingElse : POINTER TO class_SomethingCool;
                 END_UNION
             END_TYPE
             """
