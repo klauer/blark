@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from ..parse import parse, summarize
+from ..parse import parse, parse_source_code, summarize
 from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -14,17 +14,41 @@ additional_pous = TEST_PATH / "additional_pous.txt"
 if additional_pous.exists():
     pous += open(additional_pous, "rt").read().splitlines()
 
+sources = list(str(path) for path in TEST_PATH.glob("**/*.st"))
+
 
 @pytest.fixture(params=pous)
 def pou_filename(request):
     return request.param
 
 
-def test_parsing(pou_filename):
+@pytest.fixture(params=sources)
+def source_filename(request):
+    return request.param
+
+
+def test_parsing_tcpous(pou_filename):
     try:
         ((_, result),) = list(parse(pou_filename))
     except FileNotFoundError:
         pytest.skip(f"Missing file: {pou_filename}")
+    else:
+        print("transformed:")
+        print(result)
+        print("summary:")
+        if isinstance(result, Exception):
+            raise result
+        print(summarize(result))
+
+
+def test_parsing_source(source_filename):
+    """Test plain source 61131 files."""
+    try:
+        with open(source_filename, "r", encoding="utf-8") as src:
+            content = src.read()
+        result = parse_source_code(content)
+    except FileNotFoundError:
+        pytest.skip(f"Missing file: {source_filename}")
     else:
         print("transformed:")
         print(result)

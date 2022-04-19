@@ -520,11 +520,18 @@ DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 ?function_block_type_name: standard_function_block_name
                          | derived_function_block_name
 
-ABSTRACT: "ABSTRACT"i
+
+ACCESS_SPECIFIER: "ABSTRACT"i
+                | "PUBLIC"i
+                | "PRIVATE"i
+                | "PROTECTED"i
+                | "INTERNAL"i
+                | "FINAL"i
+access_specifier: ACCESS_SPECIFIER+
 extends: "EXTENDS"i DOTTED_IDENTIFIER
 implements: "IMPLEMENTS"i DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
-function_block_type_declaration: FUNCTION_BLOCK [ ABSTRACT ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
+function_block_type_declaration: FUNCTION_BLOCK [ access_specifier ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
 
 FUNCTION_BLOCK: "FUNCTION_BLOCK"i
               | "FUNCTIONBLOCK"i
@@ -545,16 +552,6 @@ temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
 
 ?function_block_body: statement_list
 
-// TODO: really only a couple of these
-METHOD_ACCESS: "ABSTRACT"i
-             | "PUBLIC"i
-             | "PRIVATE"i
-             | "PROTECTED"i
-             | "INTERNAL"i
-             | "FINAL"i
-
-method_access: METHOD_ACCESS+
-
 var_inst_declaration: "VAR_INST"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 ?method_var_declaration: fb_var_declaration
@@ -563,22 +560,13 @@ var_inst_declaration: "VAR_INST"i [ variable_attributes ] var_body "END_VAR"i ";
 
 ?method_return_type: _located_var_spec_init
 
-function_block_method_declaration: "METHOD"i [ method_access ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] "END_METHOD"i ";"*
-
-PROPERTY_ACCESS: "ABSTRACT"i
-               | "PUBLIC"i
-               | "PRIVATE"i
-               | "PROTECTED"i
-               | "INTERNAL"i
-               | "FINAL"i
-
-property_access: PROPERTY_ACCESS+
+function_block_method_declaration: "METHOD"i [ access_specifier ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] "END_METHOD"i ";"*
 
 ?property_var_declaration: fb_var_declaration
 
 ?property_return_type: _located_var_spec_init
 
-function_block_property_declaration: "PROPERTY"i [ property_access ] DOTTED_IDENTIFIER [ ":" property_return_type ] ";"* property_var_declaration* [ function_block_body ] "END_PROPERTY"i ";"*
+function_block_property_declaration: "PROPERTY"i [ access_specifier ] DOTTED_IDENTIFIER [ ":" property_return_type ] ";"* property_var_declaration* [ function_block_body ] "END_PROPERTY"i ";"*
 
 // B.1.5.3
 ?program_type_name: IDENTIFIER
