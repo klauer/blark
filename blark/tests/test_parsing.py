@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from ..parse import parse, summarize, parse_source_code
+from ..parse import parse, parse_source_code, summarize
 from .conftest import get_grammar
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -16,9 +16,11 @@ if additional_pous.exists():
 
 sources = list(str(path) for path in TEST_PATH.glob("**/*.st"))
 
+
 @pytest.fixture(params=pous)
 def pou_filename(request):
     return request.param
+
 
 @pytest.fixture(params=sources)
 def source_filename(request):
@@ -37,6 +39,7 @@ def test_parsing_tcpous(pou_filename):
         if isinstance(result, Exception):
             raise result
         print(summarize(result))
+
 
 def test_parsing_source(source_filename):
     """Test plain source 61131 files."""
