@@ -278,9 +278,9 @@ _type_declaration: array_type_declaration
 
 simple_type_declaration: simple_type_name [ extends ] ":" simple_spec_init
 
-indirection_type: POINTER_TO
+indirection_type: POINTER_TO+
                 | REFERENCE_TO
-pointer_type: POINTER_TO
+pointer_type: POINTER_TO+
 
 simple_spec_init: [ indirection_type ] simple_specification [ ":=" expression ]
 
