@@ -207,10 +207,9 @@ class VariableAttributes(_FlagHelper, enum.Flag):
 
 
 @_rule_handler(
-    "method_access",
-    "property_access",
+    "access_specifier",
 )
-class MethodAccess(_FlagHelper, enum.Flag):
+class AccessSpecifier(_FlagHelper, enum.Flag):
     public = 0b0000_0001
     private = 0b0000_0010
     abstract = 0b0000_0100
@@ -1913,7 +1912,7 @@ class Action:
 @dataclass
 @_rule_handler("function_block_method_declaration", comments=True)
 class Method:
-    access: Optional[MethodAccess]
+    access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
@@ -1922,7 +1921,7 @@ class Method:
 
     @staticmethod
     def from_lark(
-        access: Optional[MethodAccess],
+        access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[LocatedVariableSpecInit],
         *args
@@ -1954,7 +1953,7 @@ class Method:
 @dataclass
 @_rule_handler("function_block_property_declaration", comments=True)
 class Property:
-    access: Optional[MethodAccess]
+    access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
     declarations: List[VariableDeclarationBlock]
@@ -1963,7 +1962,7 @@ class Property:
 
     @staticmethod
     def from_lark(
-        access: Optional[MethodAccess],
+        access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[LocatedVariableSpecInit],
         *args
@@ -3035,8 +3034,8 @@ if apischema is not None:
     # Optional apischema deserializers
 
     @apischema.deserializer
-    def _method_access_deserializer(access: int) -> MethodAccess:
-        return MethodAccess(access)
+    def _method_access_deserializer(access: int) -> AccessSpecifier:
+        return AccessSpecifier(access)
 
     @apischema.deserializer
     def _var_attrs_deserializer(attrs: int) -> VariableAttributes:
