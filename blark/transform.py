@@ -1367,6 +1367,8 @@ class UnaryOperation(Expression):
     "expression",
     "add_expression",
     "and_expression",
+    "and_then_expression",
+    "or_else_expression",
     "assignment_expression",
     "xor_expression",
     "comparison_expression",
