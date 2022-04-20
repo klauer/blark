@@ -1093,6 +1093,16 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                UNION
+                    pt_value : POINTER TO INT;
+                    pt_SomethingElse : POINTER TO class_SomethingCool;
+                END_UNION
+            END_TYPE
+            """
+        )),
     ],
 )
 def test_data_type_declaration(rule_name, value):

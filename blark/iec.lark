@@ -315,7 +315,7 @@ initialized_structure: structure_type_name ":=" structure_initialization
 
 structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init )
 
-union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | subrange_specification | enumerated_specification )
+union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
 union_type_declaration: structure_type_name ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 

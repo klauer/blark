@@ -1200,6 +1200,7 @@ UnionElementSpecification = Union[
     SimpleSpecification,
     SubrangeSpecification,
     EnumeratedSpecification,
+    IndirectSimpleSpecification,
 ]
 
 
