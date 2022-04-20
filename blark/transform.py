@@ -1182,6 +1182,7 @@ class StructureElementDeclaration:
         SubrangeTypeInitialization,
         EnumeratedTypeInitialization,
         InitializedStructure,
+        FunctionCall,
     ]
     meta: Optional[Meta] = meta_field()
 
