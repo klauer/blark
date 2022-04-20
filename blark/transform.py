@@ -1836,6 +1836,7 @@ class FunctionBlock:
 @dataclass
 @_rule_handler("function_declaration", comments=True)
 class Function:
+    access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]]
     declarations: List[VariableDeclarationBlock]
@@ -1844,6 +1845,7 @@ class Function:
 
     @staticmethod
     def from_lark(
+        access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]],
         *remainder
@@ -1851,6 +1853,7 @@ class Function:
         *declarations, body = remainder
         return Function(
             name=name,
+            access=access,
             return_type=return_type,
             declarations=typing.cast(
                 List[VariableDeclarationBlock], list(declarations)
@@ -1859,7 +1862,8 @@ class Function:
         )
 
     def __str__(self) -> str:
-        function = f"FUNCTION {self.name}"
+        access_and_name = join_if(self.access, " ", self.name)
+        function = f"FUNCTION {access_and_name}"
         return_type = f": {self.return_type}" if self.return_type else None
         return "\n".join(
             line for line in

@@ -888,6 +888,17 @@ def test_statement_roundtrip(rule_name, value):
         ),
         param("function_declaration", tf.multiline_code_block(
             """
+            FUNCTION INTERNAL FuncName : INT
+                VAR_INPUT
+                    iValue : INT := 0;
+                END_VAR
+                FuncName := iValue;
+            END_FUNCTION
+            """),
+            id="int_with_input",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
             FUNCTION FuncName : POINTER TO INT
                 VAR
                     iValue : INT := 0;

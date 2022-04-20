@@ -495,7 +495,7 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 
 indirect_simple_specification: [ indirection_type ] simple_specification
 
-function_declaration: "FUNCTION"i derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
+function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
 ?function_var_block: input_declarations
                    | output_declarations
