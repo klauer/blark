@@ -239,7 +239,7 @@ REFERENCE_TO: /REFERENCE\s*TO/i
                          | subrange_type_name
                          | enumerated_type_name
 
-data_type_declaration: "TYPE"i [ _type_declaration ] ";"* "END_TYPE"i ";"*
+data_type_declaration: "TYPE"i [ access_specifier ] [ _type_declaration ] ";"* "END_TYPE"i ";"*
 
 _type_declaration: array_type_declaration
                  | structure_type_declaration
@@ -313,7 +313,7 @@ initialized_structure_type_declaration: structure_type_name [ extends ] ":" init
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
-structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init )
+structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init | function_call )
 
 union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
@@ -404,7 +404,7 @@ structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
 fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
-       | fb_decl_name_list ":" fb_invocation                                              -> fb_invocation_decl
+       | fb_decl_name_list ":" function_call                                              -> fb_invocation_decl
 
 fb_decl_name_list: fb_name ( "," fb_name )*
 
@@ -438,7 +438,7 @@ global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_i
 ?global_var_body_item: var_init_decl
                      | global_var_decl
 
-global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation ) ";"+
+global_var_decl: global_var_spec ":" ( _located_var_spec_init | function_call ) ";"+
 // Note - function_block_type_name is also valid here, but it is picked up by
 //   an equivalent rule
 //   function_block_type_name
@@ -495,7 +495,7 @@ string_type_specification: STRING [ STRING_SPEC_LENGTH ]
 
 indirect_simple_specification: [ indirection_type ] simple_specification
 
-function_declaration: "FUNCTION"i derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
+function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
 ?function_var_block: input_declarations
                    | output_declarations
@@ -668,7 +668,6 @@ UNARY_OPERATOR: LOGICAL_NOT
 
 function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
-// see also: fb_invocation
 ?primary_expression: "(" expression ")"      -> parenthesized_expression
                    | function_call
                    | _variable
@@ -685,7 +684,7 @@ _statement: ";"
           | reset_statement
           | reference_assignment_statement
           | return_statement
-          | fb_invocation_statement
+          | function_call_statement
           | if_statement
           | case_statement
           | for_statement
@@ -712,9 +711,7 @@ method_statement: symbolic_variable "(" ")" ";"+
 return_statement.1: "RETURN"i ";"*
 // return_statement: priority > 0 so that it doesn't clash with no_op_statement
 
-fb_invocation_statement: fb_invocation ";"+
-
-fb_invocation: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
+function_call_statement: function_call ";"+
 
 param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
                 | variable_name ":=" [ expression ]

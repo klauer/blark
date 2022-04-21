@@ -888,6 +888,17 @@ def test_statement_roundtrip(rule_name, value):
         ),
         param("function_declaration", tf.multiline_code_block(
             """
+            FUNCTION INTERNAL FuncName : INT
+                VAR_INPUT
+                    iValue : INT := 0;
+                END_VAR
+                FuncName := iValue;
+            END_FUNCTION
+            """),
+            id="int_with_input",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
             FUNCTION FuncName : POINTER TO INT
                 VAR
                     iValue : INT := 0;
@@ -1103,6 +1114,22 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE TypeName :
+                STRUCT
+                    object : class_InitializeWithFBInit(input := one);
+                    interval : INT;
+                END_STRUCT
+            END_TYPE
+            """
+        )),
+        param("data_type_declaration", tf.multiline_code_block(
+            """
+            TYPE INTERNAL EnumTypeName : (ENUM_VAL_1 := 0, ENUM_VAL_2);
+            END_TYPE
+            """
+        )),
     ],
 )
 def test_data_type_declaration(rule_name, value):
@@ -1131,7 +1158,7 @@ def test_data_type_declaration(rule_name, value):
         ),
         param(
             "fValue : FB_Test(A := 1, B := 2, C => 3);",
-            tf.FunctionBlockInvocation,
+            tf.FunctionCall,
             "FB_Test",
             "FB_Test",
         ),

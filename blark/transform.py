@@ -1182,6 +1182,7 @@ class StructureElementDeclaration:
         SubrangeTypeInitialization,
         EnumeratedTypeInitialization,
         InitializedStructure,
+        FunctionCall,
     ]
     meta: Optional[Meta] = meta_field()
 
@@ -1430,6 +1431,32 @@ class FunctionCall(Expression):
     parameters: List[ParameterAssignment]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def base_type_name(self) -> str:
+        """
+        The base type name.
+
+        This is used as part of the summary mechanism. The "type" is that
+        of the underlying function block or function.
+        """
+        if isinstance(self.name, SimpleVariable):
+            return str(self.name.name)
+        return str(self.name)
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name, including any dereferencing or subscripts."""
+        return str(self.name)
+
+    @property
+    def value(self) -> str:
+        """
+        The initialization value (the function call itself).
+
+        This is used as part of the summary tool.
+        """
+        return str(self)
+
     @staticmethod
     def from_lark(
         name: SymbolicVariable,
@@ -1596,7 +1623,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 @_rule_handler("fb_invocation_decl", comments=True)
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
-    init: FunctionBlockInvocation
+    init: FunctionCall
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
@@ -1652,43 +1679,6 @@ class OutputParameterAssignment(ParameterAssignment):
         return prefix + join_if(self.name, " => ", self.value)
 
 
-@dataclass
-@_rule_handler("fb_invocation")
-class FunctionBlockInvocation:
-    name: SymbolicVariable
-    parameters: List[ParameterAssignment]
-    meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.name.name
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return str(self.name)
-
-    @property
-    def value(self) -> str:
-        """The initialization value (call)."""
-        return str(self)
-
-    @staticmethod
-    def from_lark(
-        name: SymbolicVariable,
-        *parameters: ParameterAssignment,
-    ) -> FunctionBlockInvocation:
-        return FunctionBlockInvocation(
-            name=name,
-            parameters=list(parameters)
-        )
-
-    def __str__(self) -> str:
-        parameters = ", ".join(str(param) for param in self.parameters)
-        return f"{self.name}({parameters})"
-
-
 AnyLocation = Union[Location, IncompleteLocation]
 
 
@@ -1733,7 +1723,7 @@ LocatedVariableSpecInit = Union[
 @_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
     spec: GlobalVariableSpec
-    init: Union[LocatedVariableSpecInit, FunctionBlockInvocation]
+    init: Union[LocatedVariableSpecInit, FunctionCall]
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -1836,6 +1826,7 @@ class FunctionBlock:
 @dataclass
 @_rule_handler("function_declaration", comments=True)
 class Function:
+    access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]]
     declarations: List[VariableDeclarationBlock]
@@ -1844,6 +1835,7 @@ class Function:
 
     @staticmethod
     def from_lark(
+        access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]],
         *remainder
@@ -1851,6 +1843,7 @@ class Function:
         *declarations, body = remainder
         return Function(
             name=name,
+            access=access,
             return_type=return_type,
             declarations=typing.cast(
                 List[VariableDeclarationBlock], list(declarations)
@@ -1859,7 +1852,8 @@ class Function:
         )
 
     def __str__(self) -> str:
-        function = f"FUNCTION {self.name}"
+        access_and_name = join_if(self.access, " ", self.name)
+        function = f"FUNCTION {access_and_name}"
         return_type = f": {self.return_type}" if self.return_type else None
         return "\n".join(
             line for line in
@@ -2456,13 +2450,13 @@ class Statement:
     ...
 
 
-@_rule_handler("fb_invocation_statement", comments=True)
-class FunctionBlockInvocationStatement(Statement, FunctionBlockInvocation):
+@_rule_handler("function_call_statement", comments=True)
+class FunctionCallStatement(Statement, FunctionCall):
     @staticmethod
     def from_lark(
-        invocation: FunctionBlockInvocation,
-    ) -> FunctionBlockInvocationStatement:
-        return FunctionBlockInvocationStatement(
+        invocation: FunctionCall,
+    ) -> FunctionCallStatement:
+        return FunctionCallStatement(
             name=invocation.name,
             parameters=invocation.parameters,
             meta=invocation.meta,
@@ -2774,16 +2768,7 @@ class StatementList:
         )
 
     def __str__(self) -> str:
-        def stringify_statement(statement: Union[Statement, FunctionBlockInvocation]) -> str:
-            # TODO: this is a bit of a bug; who has the responsibility to
-            # append a semicolon?
-            if not isinstance(statement, Statement):
-                return f"{statement};"
-            return str(statement)
-
-        return "\n".join(
-            stringify_statement(statement) for statement in self.statements
-        )
+        return "\n".join(str(statement) for statement in self.statements)
 
 
 FunctionBlockBody = Union[
@@ -2808,13 +2793,15 @@ TypeDeclarationItem = Union[
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
     declaration: Optional[TypeDeclarationItem]
+    access: Optional[AccessSpecifier]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
+        access: Optional[AccessSpecifier],
         declaration: Optional[TypeDeclarationItem] = None,
     ) -> DataTypeDeclaration:
-        return DataTypeDeclaration(declaration)
+        return DataTypeDeclaration(access=access, declaration=declaration)
 
     def __str__(self) -> str:
         if not self.declaration:
@@ -2826,6 +2813,8 @@ class DataTypeDeclaration:
         ):
             # note: END_STRUCT; END_UNION; result in "END_TYPE expected not ;"
             decl = decl + ";"
+
+        decl = join_if(self.access, " ", decl)
 
         return "\n".join(
             (
