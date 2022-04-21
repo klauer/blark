@@ -404,7 +404,7 @@ structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
 fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
-       | fb_decl_name_list ":" fb_invocation                                              -> fb_invocation_decl
+       | fb_decl_name_list ":" function_call                                              -> fb_invocation_decl
 
 fb_decl_name_list: fb_name ( "," fb_name )*
 
@@ -438,7 +438,7 @@ global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_i
 ?global_var_body_item: var_init_decl
                      | global_var_decl
 
-global_var_decl: global_var_spec ":" ( _located_var_spec_init | fb_invocation ) ";"+
+global_var_decl: global_var_spec ":" ( _located_var_spec_init | function_call ) ";"+
 // Note - function_block_type_name is also valid here, but it is picked up by
 //   an equivalent rule
 //   function_block_type_name
@@ -668,7 +668,6 @@ UNARY_OPERATOR: LOGICAL_NOT
 
 function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
 
-// see also: fb_invocation
 ?primary_expression: "(" expression ")"      -> parenthesized_expression
                    | function_call
                    | _variable
@@ -685,7 +684,7 @@ _statement: ";"
           | reset_statement
           | reference_assignment_statement
           | return_statement
-          | fb_invocation_statement
+          | function_call_statement
           | if_statement
           | case_statement
           | for_statement
@@ -712,9 +711,7 @@ method_statement: symbolic_variable "(" ")" ";"+
 return_statement.1: "RETURN"i ";"*
 // return_statement: priority > 0 so that it doesn't clash with no_op_statement
 
-fb_invocation_statement: fb_invocation ";"+
-
-fb_invocation: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")"
+function_call_statement: function_call ";"+
 
 param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
                 | variable_name ":=" [ expression ]

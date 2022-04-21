@@ -1158,7 +1158,7 @@ def test_data_type_declaration(rule_name, value):
         ),
         param(
             "fValue : FB_Test(A := 1, B := 2, C => 3);",
-            tf.FunctionBlockInvocation,
+            tf.FunctionCall,
             "FB_Test",
             "FB_Test",
         ),

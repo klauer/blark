@@ -1431,6 +1431,32 @@ class FunctionCall(Expression):
     parameters: List[ParameterAssignment]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def base_type_name(self) -> str:
+        """
+        The base type name.
+
+        This is used as part of the summary mechanism. The "type" is that
+        of the underlying function block or function.
+        """
+        if isinstance(self.name, SimpleVariable):
+            return str(self.name.name)
+        return str(self.name)
+
+    @property
+    def full_type_name(self) -> str:
+        """The full type name, including any dereferencing or subscripts."""
+        return str(self.name)
+
+    @property
+    def value(self) -> str:
+        """
+        The initialization value (the function call itself).
+
+        This is used as part of the summary tool.
+        """
+        return str(self)
+
     @staticmethod
     def from_lark(
         name: SymbolicVariable,
@@ -1597,7 +1623,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 @_rule_handler("fb_invocation_decl", comments=True)
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
-    init: FunctionBlockInvocation
+    init: FunctionCall
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
@@ -1653,43 +1679,6 @@ class OutputParameterAssignment(ParameterAssignment):
         return prefix + join_if(self.name, " => ", self.value)
 
 
-@dataclass
-@_rule_handler("fb_invocation")
-class FunctionBlockInvocation:
-    name: SymbolicVariable
-    parameters: List[ParameterAssignment]
-    meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.name.name
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return str(self.name)
-
-    @property
-    def value(self) -> str:
-        """The initialization value (call)."""
-        return str(self)
-
-    @staticmethod
-    def from_lark(
-        name: SymbolicVariable,
-        *parameters: ParameterAssignment,
-    ) -> FunctionBlockInvocation:
-        return FunctionBlockInvocation(
-            name=name,
-            parameters=list(parameters)
-        )
-
-    def __str__(self) -> str:
-        parameters = ", ".join(str(param) for param in self.parameters)
-        return f"{self.name}({parameters})"
-
-
 AnyLocation = Union[Location, IncompleteLocation]
 
 
@@ -1734,7 +1723,7 @@ LocatedVariableSpecInit = Union[
 @_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
     spec: GlobalVariableSpec
-    init: Union[LocatedVariableSpecInit, FunctionBlockInvocation]
+    init: Union[LocatedVariableSpecInit, FunctionCall]
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -2461,13 +2450,13 @@ class Statement:
     ...
 
 
-@_rule_handler("fb_invocation_statement", comments=True)
-class FunctionBlockInvocationStatement(Statement, FunctionBlockInvocation):
+@_rule_handler("function_call_statement", comments=True)
+class FunctionCallStatement(Statement, FunctionCall):
     @staticmethod
     def from_lark(
-        invocation: FunctionBlockInvocation,
-    ) -> FunctionBlockInvocationStatement:
-        return FunctionBlockInvocationStatement(
+        invocation: FunctionCall,
+    ) -> FunctionCallStatement:
+        return FunctionCallStatement(
             name=invocation.name,
             parameters=invocation.parameters,
             meta=invocation.meta,
@@ -2779,16 +2768,7 @@ class StatementList:
         )
 
     def __str__(self) -> str:
-        def stringify_statement(statement: Union[Statement, FunctionBlockInvocation]) -> str:
-            # TODO: this is a bit of a bug; who has the responsibility to
-            # append a semicolon?
-            if not isinstance(statement, Statement):
-                return f"{statement};"
-            return str(statement)
-
-        return "\n".join(
-            stringify_statement(statement) for statement in self.statements
-        )
+        return "\n".join(str(statement) for statement in self.statements)
 
 
 FunctionBlockBody = Union[
