@@ -416,6 +416,54 @@ class Duration(Literal):
 
 
 @dataclass
+@_rule_handler("lduration")
+class Lduration(Literal):
+    """Long duration literal value."""
+
+    days: Optional[lark.Token] = None
+    hours: Optional[lark.Token] = None
+    minutes: Optional[lark.Token] = None
+    seconds: Optional[lark.Token] = None
+    milliseconds: Optional[lark.Token] = None
+    microseconds: Optional[lark.Token] = None
+    nanoseconds: Optional[lark.Token] = None
+    negative: bool = False
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(minus: Optional[lark.Token], interval: lark.Tree) -> Lduration:
+        kwargs = typing.cast(
+            Dict[str, lark.Token],
+            {
+                tree.data: tree.children[0]
+                for tree in interval.iter_subtrees()
+            }
+        )
+        return Lduration(**kwargs, negative=minus is not None, meta=None)
+
+    @property
+    def value(self) -> str:
+        """The long duration value."""
+        prefix = "-" if self.negative else ""
+        return prefix + "".join(
+            f"{value}{suffix}"
+            for value, suffix in (
+                (self.days, "D"),
+                (self.hours, "H"),
+                (self.minutes, "M"),
+                (self.seconds, "S"),
+                (self.milliseconds, "MS"),
+                (self.microseconds, "US"),
+                (self.nanoseconds, "NS"),
+            )
+            if value is not None
+        )
+
+    def __str__(self):
+        return f"LTIME#{self.value}"
+
+
+@dataclass
 @_rule_handler("time_of_day")
 class TimeOfDay(Literal):
     """Time of day literal value."""
@@ -431,6 +479,24 @@ class TimeOfDay(Literal):
 
     def __str__(self):
         return f"TIME_OF_DAY#{self.value}"
+
+
+@dataclass
+@_rule_handler("ltime_of_day")
+class LtimeOfDay(Literal):
+    """Long time of day literal value."""
+    hour: lark.Token
+    minute: lark.Token
+    second: lark.Token
+    meta: Optional[Meta] = meta_field()
+
+    @property
+    def value(self) -> str:
+        """The long time of day value."""
+        return f"{self.hour}:{self.minute}:{self.second}"
+
+    def __str__(self):
+        return f"LTIME_OF_DAY#{self.value}"
 
 
 @dataclass
@@ -450,6 +516,25 @@ class Date(Literal):
 
     def __str__(self):
         return f"DATE#{self.value}"
+
+
+@dataclass
+@_rule_handler("ldate")
+class Ldate(Literal):
+    """Long date literal value."""
+
+    year: lark.Token
+    month: lark.Token
+    day: lark.Token
+    meta: Optional[Meta] = meta_field()
+
+    @property
+    def value(self) -> str:
+        """The long time of day value."""
+        return f"{self.year}-{self.month}-{self.day}"
+
+    def __str__(self):
+        return f"LDATE#{self.value}"
 
 
 @dataclass
@@ -482,6 +567,38 @@ class DateTime(Literal):
 
     def __str__(self):
         return f"DT#{self.value}"
+
+
+@dataclass
+@_rule_handler("ldate_and_time")
+class LdateTime(Literal):
+    """Long date and time literal value."""
+
+    ldate: Ldate
+    ltime: LtimeOfDay
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(
+        year: lark.Token,
+        month: lark.Token,
+        day: lark.Token,
+        hour: lark.Token,
+        minute: lark.Token,
+        second: lark.Token,
+    ) -> LdateTime:
+        return LdateTime(
+            ldate=Ldate(year=year, month=month, day=day),
+            ltime=LtimeOfDay(hour=hour, minute=minute, second=second),
+        )
+
+    @property
+    def value(self) -> str:
+        """The time of day value."""
+        return f"{self.ldate.value}-{self.ltime.value}"
+
+    def __str__(self):
+        return f"LDT#{self.value}"
 
 
 @dataclass
