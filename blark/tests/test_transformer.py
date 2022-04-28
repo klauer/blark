@@ -63,6 +63,8 @@ def test_check_unhandled_rules(grammar):
         "hours",
         "seconds",
         "milliseconds",
+        "microseconds",
+        "nanoseconds",
         "minutes",
 
         # handled as aliases
@@ -117,6 +119,20 @@ def test_check_unhandled_rules(grammar):
         param("duration", "T#1D1H1M1S1MS", tf.Duration(days="1", hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
         param("duration", "TIME#1H1M1S1MS", tf.Duration(hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
         param("time_of_day", "TIME_OF_DAY#1:1:1.2", tf.TimeOfDay(hour="1", minute="1", second="1.2")),  # noqa: E501
+        param("lduration", "LTIME#-1D", tf.Lduration(days="1", negative=True)),
+        param("lduration", "LTIME#1D", tf.Lduration(days="1")),
+        param("lduration", "LTIME#10S", tf.Lduration(seconds="10")),
+        param("lduration", "LTIME#1H", tf.Lduration(hours="1")),
+        param("lduration", "LTIME#1M", tf.Lduration(minutes="1")),
+        param("lduration", "LTIME#10MS", tf.Lduration(milliseconds="10")),
+        param("lduration", "LTIME#1.1D", tf.Lduration(days="1.1")),
+        param("lduration", "LTIME#10.1S", tf.Lduration(seconds="10.1")),
+        param("lduration", "LTIME#1.1H", tf.Lduration(hours="1.1")),
+        param("lduration", "LTIME#1.1M", tf.Lduration(minutes="1.1")),
+        param("lduration", "LTIME#10.1MS", tf.Lduration(milliseconds="10.1")),
+        param("lduration", "LT#1D1H1M1S1MS", tf.Lduration(days="1", hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
+        param("lduration", "LTIME#1H1M1S1MS", tf.Lduration(hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
+        param("ltime_of_day", "LTIME_OF_DAY#1:1:1.2", tf.LtimeOfDay(hour="1", minute="1", second="1.2")),  # noqa: E501
     ],
 )
 def test_literal(name, value, expected):
@@ -159,6 +175,8 @@ def test_literal(name, value, expected):
         param("time_of_day", "TIME_OF_DAY#1:1:1.2"),
         param("date", "DATE#1970-1-1"),
         param("date_and_time", "DT#1970-1-1-1:2:30.3"),
+        param("ldate", "LDATE#1970-1-1"),
+        param("ldate_and_time", "LDT#1970-1-1-1:2:30.300123456"),
         param("single_byte_string_spec", "STRING[1]"),
         param("single_byte_string_spec", "STRING(1)"),
         param("single_byte_string_spec", "STRING(1) := 'abc'"),
