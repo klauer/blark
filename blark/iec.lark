@@ -464,7 +464,12 @@ PERSISTENT: "PERSISTENT"i
 
 action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
 
-global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_item* "END_VAR"i ";"*
+global_var_declarations: "VAR_GLOBAL"i [ global_variable_attributes ] global_var_body_item* "END_VAR"i ";"*
+
+GLOBAL_VAR_ATTRIB: VAR_ATTRIB
+                 | "INTERNAL"
+
+global_variable_attributes: GLOBAL_VAR_ATTRIB+
 
 ?global_var_body_item: var_init_decl
                      | global_var_decl
