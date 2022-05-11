@@ -253,6 +253,7 @@ GENERIC_TYPE_NAME: "ANY"
 ?enumerated_type_name: IDENTIFIER
 ?array_type_name: IDENTIFIER
 ?structure_type_name: IDENTIFIER
+                    | DOTTED_IDENTIFIER
 ?structure_element_name: IDENTIFIER
 ?string_type_name: IDENTIFIER
 
