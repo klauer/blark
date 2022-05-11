@@ -495,6 +495,12 @@ def test_var_access_roundtrip(rule_name, value):
         )),
         param("global_var_declarations", tf.multiline_code_block(
             """
+            VAR_GLOBAL INTERNAL
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
             VAR_GLOBAL CONSTANT
             END_VAR
             """
