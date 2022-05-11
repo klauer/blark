@@ -614,30 +614,43 @@ class Variable(Expression):
     ...
 
 
+@dataclass
 @_rule_handler(
     "indirection_type",
     "pointer_type",
 )
-class IndirectionType(Enum):
+class IndirectionType(Literal):
     """Indirect access through a pointer or reference."""
-    none = enum.auto()
-    pointer = enum.auto()
-    reference = enum.auto()
+    pointer_depth: int
+    reference: bool
+    meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(token: Optional[lark.Token]) -> IndirectionType:
-        return {
-            "NONE": IndirectionType.none,
-            "POINTER TO": IndirectionType.pointer,
-            "REFERENCE TO": IndirectionType.reference,
-        }[str(token).upper()]
+        pointer_depth = 0
+        reference = False
+        if token is not None:
+            pointer_depth = token.count("POINTER TO")
+            reference = token.startswith("REFERENCE TO")
+        return IndirectionType(
+            pointer_depth=pointer_depth,
+            reference=reference
+        )
+
+    @property
+    def value(self) -> str:
+        pointer_str = None
+        if self.pointer_depth > 0:
+            pointer_str = " ".join(["POINTER TO"] * self.pointer_depth)
+        indirection_str = join_if(
+            "REFERENCE TO" if self.reference else None,
+            " ",
+            pointer_str,
+        )
+        return indirection_str
 
     def __str__(self):
-        return {
-            IndirectionType.none: "",
-            IndirectionType.pointer: "POINTER TO",
-            IndirectionType.reference: "REFERENCE TO",
-        }[self]
+        return self.value
 
 
 @_rule_handler("incomplete_location")
