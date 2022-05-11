@@ -175,6 +175,7 @@ def test_literal(name, value, expected):
         param("time_of_day", "TIME_OF_DAY#1:1:1.2"),
         param("date", "DATE#1970-1-1"),
         param("date_and_time", "DT#1970-1-1-1:2:30.3"),
+        param("date_and_time", "DT#1970-1-1-0:0:0"),
         param("ldate", "LDATE#1970-1-1"),
         param("ldate_and_time", "LDT#1970-1-1-1:2:30.300123456"),
         param("single_byte_string_spec", "STRING[1]"),

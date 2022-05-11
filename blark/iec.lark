@@ -166,7 +166,8 @@ ltime_of_day: ("LTIME_OF_DAY"i | "LTOD"i) "#" _daytime
 
 ?day_hour: INTEGER
 ?day_minute: INTEGER
-?day_second: FIXED_POINT
+?day_second: INTEGER
+           | FIXED_POINT
 
 date: ( "DATE"i | "D"i | "d"i ) "#" _date_literal
 ldate: "LDATE"i "#" _date_literal
