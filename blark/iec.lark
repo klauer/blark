@@ -324,6 +324,7 @@ array_spec_init: [ indirection_type ] array_specification [ ":=" array_initializ
 array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_spec_type_name
 
 _array_spec_type_name: STRING_TYPE
+                     | function_call
                      | non_generic_type_name
 
 array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
