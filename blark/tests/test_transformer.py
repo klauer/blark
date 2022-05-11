@@ -807,6 +807,20 @@ def test_fb_roundtrip(rule_name, value):
         )),
         param("if_statement", tf.multiline_code_block(
             """
+            IF callable() THEN
+                y();
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF a() AND b(in := 5) <> 0 AND c(in1 := expr, in2 := 'test') THEN
+                y();
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
             IF 1 AND_THEN 1 THEN
                 y();
             END_IF

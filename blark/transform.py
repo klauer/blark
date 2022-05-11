@@ -1598,7 +1598,9 @@ class FunctionCall(Expression):
         )
 
     def __str__(self) -> str:
-        parameters = ", ".join(str(param) for param in self.parameters)
+        parameters = ""
+        if self.parameters != [None]:
+            parameters = ", ".join(str(param) for param in self.parameters)
         return f"{self.name}({parameters})"
 
 
