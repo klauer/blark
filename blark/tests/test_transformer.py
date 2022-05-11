@@ -1002,6 +1002,16 @@ def test_statement_roundtrip(rule_name, value):
         ),
         param("function_declaration", tf.multiline_code_block(
             """
+            FUNCTION FuncName : BOOL
+                VAR
+                    _c_epoch : dot.dateTime_t := (dateTime := DT#1970-1-1-0:0:0, uSec := 0);
+                END_VAR
+            END_FUNCTION
+            """),
+            id="default_with_datetime",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
             FUNCTION FuncName : Tc2_System.T_MaxString
                 VAR_INPUT
                     Ptr : POINTER TO UINT;
