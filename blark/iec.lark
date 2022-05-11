@@ -529,6 +529,7 @@ function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ "
                    | output_declarations
                    | input_output_declarations
                    | static_var_declarations
+                   | external_var_declarations
                    | function_var_declarations
 
 function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
