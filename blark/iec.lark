@@ -29,6 +29,7 @@ _library_element_declaration: data_type_declaration
                             | program_declaration
                             | global_var_declarations
                             | action
+                            | ";"
 
 // B.1.1
 IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
