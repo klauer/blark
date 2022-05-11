@@ -626,12 +626,12 @@ class IndirectionType(Literal):
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(token: Optional[lark.Token]) -> IndirectionType:
+    def from_lark(*tokens: Tuple[lark.Token]) -> IndirectionType:
         pointer_depth = 0
         reference = False
-        if token is not None:
-            pointer_depth = token.count("POINTER TO")
-            reference = token.startswith("REFERENCE TO")
+        if len(tokens) > 0:
+            pointer_depth = tokens.count("POINTER TO")
+            reference = "REFERENCE TO" in tokens
         return IndirectionType(
             pointer_depth=pointer_depth,
             reference=reference
