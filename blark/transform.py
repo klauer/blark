@@ -619,18 +619,19 @@ class Variable(Expression):
     "indirection_type",
     "pointer_type",
 )
-class IndirectionType(Literal):
+class IndirectionType:
     """Indirect access through a pointer or reference."""
     pointer_depth: int
     reference: bool
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*tokens: Tuple[lark.Token]) -> IndirectionType:
+    def from_lark(*tokens: lark.Token) -> IndirectionType:
         pointer_depth = 0
         reference = False
+        upper_tokens = list(map(lambda s: str(s).upper(), tokens))
         if len(tokens) > 0:
-            pointer_depth = tokens.count("POINTER TO")
+            pointer_depth = upper_tokens.count("POINTER TO")
             reference = "REFERENCE TO" in tokens
         return IndirectionType(
             pointer_depth=pointer_depth,
@@ -639,15 +640,10 @@ class IndirectionType(Literal):
 
     @property
     def value(self) -> str:
-        pointer_str = None
-        if self.pointer_depth > 0:
-            pointer_str = " ".join(["POINTER TO"] * self.pointer_depth)
-        indirection_str = join_if(
-            "REFERENCE TO" if self.reference else None,
-            " ",
-            pointer_str,
+        return " ".join(
+            ["REFERENCE TO"] * self.reference +
+            ["POINTER TO"] * self.pointer_depth
         )
-        return indirection_str
 
     def __str__(self):
         return self.value
