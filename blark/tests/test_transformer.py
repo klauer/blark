@@ -845,6 +845,16 @@ def test_fb_roundtrip(rule_name, value):
             END_CASE
             """
         )),
+        param("case_statement", tf.multiline_code_block(
+            """
+            CASE expr OF
+            TRUE:
+                abc();
+            FALSE:
+                def();
+            END_CASE
+            """
+        )),
         param("while_statement", tf.multiline_code_block(
             """
             WHILE expr
