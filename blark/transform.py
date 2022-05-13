@@ -632,7 +632,7 @@ class IndirectionType:
         upper_tokens = list(map(lambda s: str(s).upper(), tokens))
         if len(tokens) > 0:
             pointer_depth = upper_tokens.count("POINTER TO")
-            reference = "REFERENCE TO" in tokens
+            reference = "REFERENCE TO" in upper_tokens
         return IndirectionType(
             pointer_depth=pointer_depth,
             reference=reference
