@@ -760,6 +760,8 @@ case_list: case_list_element ( "," case_list_element )*
 
 ?case_list_element: subrange
                   | integer_literal
+                  | bit_string_literal
+                  | boolean_literal
                   | enumerated_value
                   | symbolic_variable
 

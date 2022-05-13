@@ -2667,7 +2667,14 @@ class IfStatement(Statement):
         )
 
 
-CaseMatch = Union[Subrange, Integer, EnumeratedValue, SymbolicVariable]
+CaseMatch = Union[
+    Subrange,
+    Integer,
+    EnumeratedValue,
+    SymbolicVariable,
+    BitString,
+    Boolean,
+]
 
 
 @dataclass
