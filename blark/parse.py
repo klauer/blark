@@ -137,11 +137,13 @@ def parse_source_code(
 
 
 def parse_single_file(
-    fn: AnyPath, *, transform: bool = True
+    fn: AnyPath, *,
+    transform: bool = True,
+    verbose: int = 0,
 ) -> Union[tf.SourceCode, lark.Tree]:
     """Parse a single source code file."""
     source_code = util.get_source_code(fn)
-    return parse_source_code(source_code, fn=fn, transform=transform)
+    return parse_source_code(source_code, fn=fn, transform=transform, verbose=verbose)
 
 
 def parse_plc(
@@ -194,7 +196,10 @@ def parse_project(
         yield from parse_plc(plc, verbose=verbose, transform=transform)
 
 
-def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+def parse(
+    path: AnyPath, *,
+    verbose: int = 0
+) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
@@ -210,9 +215,9 @@ def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, No
     for fn in filenames:
         try:
             if fn.suffix.lower() in util.TWINCAT_PROJECT_FILE_EXTENSIONS:
-                yield from parse_project(fn)
+                yield from parse_project(fn, verbose=verbose)
             else:
-                yield fn, parse_single_file(fn)
+                yield fn, parse_single_file(fn, verbose=verbose)
         except Exception as ex:
             tb = traceback.format_exc()
             ex.traceback = tb
@@ -296,9 +301,8 @@ def main(
                 )
             elif verbose > 1:
                 print(result.traceback)
-        else:
-            if summary:
-                print(summarize(result_by_filename[fn]))
+        elif summary:
+            print(summarize(result_by_filename[fn]))
 
     if not result_by_filename:
         return {}
