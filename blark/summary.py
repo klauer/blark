@@ -42,7 +42,9 @@ def text_outline(item: Any) -> Optional[str]:
         return None
 
     if is_dataclass(item):
-        result = []
+        result = [
+            f"<{item.__class__.__name__}>"
+        ]
         for fld in fields(item):
             if fld.name in ("meta", ):
                 continue
