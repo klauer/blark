@@ -13,6 +13,8 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
+from .util import AnyPath
+
 T = TypeVar("T")
 
 try:
@@ -3036,7 +3038,7 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
     def __init__(
         self,
         comments: Optional[List[lark.Token]] = None,
-        fn: Optional[str] = None,
+        fn: Optional[AnyPath] = None,
         source_code: Optional[str] = None,
     ):
         super().__init__()

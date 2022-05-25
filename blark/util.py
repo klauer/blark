@@ -1,7 +1,7 @@
 import hashlib
 import pathlib
 import re
-from typing import Generator, List, Tuple, Union
+from typing import Any, Dict, Generator, List, Tuple, Union
 
 import lark
 import pytmc
@@ -10,13 +10,64 @@ import pytmc.parser
 RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
 AnyPath = Union[str, pathlib.Path]
 
+TWINCAT_PROJECT_FILE_EXTENSIONS = {".tsproj"}
+TWINCAT_SOURCE_EXTENSIONS = {
+    ".tcdut",  # data unit type
+    # ".tcgtlo",  # global text list object
+    ".tcgvl",  # global variable list
+    # ".tcipo",  # image pool
+    ".tcpou",  # program organization unit
+    # ".tcrmo",  # recipe manager
+    # ".tctlo",  # text list object
+    # ".tctto",  # task object
+    # ".tcvis",  # visualization
+    # ".tcvmo",  # visualization manager object
+    # ".tmc",  # module class - description of project
+    # ".tpy",  # tmc-like inter-vendor format
+    # ".xti",  # independent project file
+}
 
-def get_source_code(fn):
+
+def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:
+    """
+    Get source code from the given file.
+
+    Supports TwinCAT source files (in XML format) or plain text files.
+
+    Parameters
+    ----------
+    fn : str or pathlib.Path
+        The path to the source code file.
+
+    encoding : str, optional, keyword-only
+        The encoding to use when opening the file.  Defaults to utf-8.
+
+    Returns
+    -------
+    str
+        The source code.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``fn`` does not point to a valid file.
+
+    ValueError
+        If a TwinCAT file is specified but no source code is associated with
+        it.
+    """
     fn = pathlib.Path(fn)
-    root = pytmc.parser.parse(str(fn))
+
+    if fn.suffix.lower() not in TWINCAT_SOURCE_EXTENSIONS:
+        with open(fn, "rt", encoding=encoding) as fp:
+            return fp.read()
+
+    root = pytmc.parser.parse(fn)
+
     for item in root.find(pytmc.parser.TwincatItem):
-        if hasattr(item, "get_source_code"):
-            return item.get_source_code()
+        get_source = getattr(item, "get_source_code", None)
+        if get_source is not None:
+            return get_source()
 
     raise ValueError(
         "Unable to find pytmc TwincatItem with source code "
@@ -39,7 +90,7 @@ def indent_inner(text: str, prefix: str) -> str:
     )
 
 
-def python_debug_session(namespace, message):
+def python_debug_session(namespace: Dict[str, Any], message: str):
     """
     Enter an interactive debug session with pdb or IPython, if available.
     """

@@ -15,9 +15,9 @@ import blark
 
 from . import summary
 from . import transform as tf
+from . import util
 from .transform import GrammarTransformer
-from .util import (AnyPath, find_and_clean_comments, get_source_code,
-                   python_debug_session)
+from .util import AnyPath
 
 DESCRIPTION = __doc__
 AnyFile = Union[str, pathlib.Path]
@@ -101,7 +101,7 @@ def parse_source_code(
     for preprocessor in preprocessors:
         processed_source = preprocessor(processed_source)
 
-    comments, processed_source = find_and_clean_comments(processed_source)
+    comments, processed_source = util.find_and_clean_comments(processed_source)
     if parser is None:
         parser = get_parser()
 
@@ -136,9 +136,11 @@ def parse_source_code(
     return tree
 
 
-def parse_single_file(fn, *, transform: bool = True):
+def parse_single_file(
+    fn: AnyPath, *, transform: bool = True
+) -> Union[tf.SourceCode, lark.Tree]:
     """Parse a single source code file."""
-    source_code = get_source_code(fn)
+    source_code = util.get_source_code(fn)
     return parse_source_code(source_code, fn=fn, transform=transform)
 
 
@@ -203,12 +205,11 @@ def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, No
     elif path.suffix.lower() in (".sln",):
         filenames = pytmc.parser.projects_from_solution(path)
     else:
-        # elif path.suffix.lower() in (".tcpou", ".tcgvl", ".tcdut"):
         filenames = [path]
 
     for fn in filenames:
         try:
-            if fn.suffix.lower() in (".tsproj", ):
+            if fn.suffix.lower() in util.TWINCAT_PROJECT_FILE_EXTENSIONS:
                 yield from parse_project(fn)
             else:
                 yield fn, parse_single_file(fn)
@@ -286,7 +287,7 @@ def main(
         if isinstance(result, Exception):
             failures.append((fn, result))
             if interactive:
-                python_debug_session(
+                util.python_debug_session(
                     namespace={"fn": fn, "result": result},
                     message=(
                         f"Failed to parse {fn}. {type(result).__name__}: {result}\n"
@@ -304,16 +305,16 @@ def main(
 
     if interactive:
         if len(result_by_filename) > 1:
-            python_debug_session(
+            util.python_debug_session(
                 namespace={"fn": filename, "results": result_by_filename},
                 message=(
-                    "Parsed all files successfully: {list(result_by_filename)}\n"
-                    "Access all results by filename in the variable ``results``"
+                    f"Parsed all files successfully: {list(result_by_filename)}\n"
+                    f"Access all results by filename in the variable ``results``"
                 )
             )
         else:
             ((filename, result),) = list(result_by_filename.items())
-            python_debug_session(
+            util.python_debug_session(
                 namespace={"fn": filename, "result": result},
                 message=(
                     f"Parsed single file successfully: {filename}.\n"
