@@ -1597,6 +1597,9 @@ class FunctionCall(Expression):
         name: SymbolicVariable,
         *parameters: ParameterAssignment,
     ) -> FunctionCall:
+        # Condition parameters (which may be `None`) to represent empty tuple
+        if parameters == (None, ):
+            parameters = []
         return FunctionCall(
             name=name,
             parameters=list(parameters)
@@ -1604,7 +1607,7 @@ class FunctionCall(Expression):
 
     def __str__(self) -> str:
         parameters = ""
-        if self.parameters != [None]:
+        if self.parameters != []:
             parameters = ", ".join(str(param) for param in self.parameters)
         return f"{self.name}({parameters})"
 
