@@ -64,7 +64,7 @@ def parse_source_code(
     source_code: str,
     *,
     verbose: int = 0,
-    fn: str = "unknown",
+    fn: AnyPath = "unknown",
     preprocessors=_DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
@@ -80,7 +80,7 @@ def parse_source_code(
     verbose : int, optional
         Verbosity level for output.
 
-    fn : str, optional
+    fn : pathlib.Path or str, optional
         The filename associated with the source code.
 
     preprocessors : list, optional
@@ -267,6 +267,7 @@ def build_arg_parser(argparser=None):
 
 
 def summarize(code: tf.SourceCode) -> summary.CodeSummary:
+    """Get a code summary instance from a SourceCode item."""
     return summary.CodeSummary.from_source(code)
 
 
@@ -285,7 +286,7 @@ def main(
     print_filenames = sys.stdout if verbose > 0 else None
     filename = pathlib.Path(filename)
 
-    for fn, result in parse(filename):
+    for fn, result in parse(filename, verbose=verbose):
         if print_filenames:
             print(f"* Loading {fn}")
         result_by_filename[fn] = result

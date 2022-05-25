@@ -666,10 +666,35 @@ class CodeSummary:
     globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
 
     def __str__(self):
-        return "\n".join(
-            f"{name}:\n{fb}"
-            for name, fb in self.function_blocks.items()
-        )
+        attr_to_header = {
+            "functions": "Functions",
+            "function_blocks": "Function Blocks",
+            "data_types": "Data Types",
+            "programs": "Programs",
+            "globals": "Global Variable Declarations",
+        }
+        summary_text = []
+        for attr, header in attr_to_header.items():
+            name_to_obj = getattr(self, attr)
+            if name_to_obj:
+                summary_text.extend(
+                    [
+                        header,
+                        "-" * len(header),
+                    ]
+                )
+
+                for name, obj in name_to_obj.items():
+                    obj_info = "\n".join(
+                        (
+                            name,
+                            "=" * len(name),
+                            str(obj)
+                        )
+                    )
+                    summary_text.append(textwrap.indent(obj_info, " " * 4))
+
+        return "\n".join(summary_text)
 
     def find(self, name: str) -> Optional[Summary]:
         """Find a declaration or other item by its qualified name."""
