@@ -1606,9 +1606,7 @@ class FunctionCall(Expression):
         )
 
     def __str__(self) -> str:
-        parameters = ""
-        if self.parameters != []:
-            parameters = ", ".join(str(param) for param in self.parameters)
+        parameters = ", ".join(str(param) for param in self.parameters)
         return f"{self.name}({parameters})"
 
 
