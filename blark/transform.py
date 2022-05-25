@@ -206,6 +206,15 @@ class VariableAttributes(_FlagHelper, enum.Flag):
     persistent = 0b0000_1000
 
 
+@_rule_handler("global_variable_attributes")
+class GlobalVariableAttributes(_FlagHelper, enum.Flag):
+    constant = 0b0000_0001
+    retain = 0b0000_0010
+    non_retain = 0b0000_0100
+    persistent = 0b0000_1000
+    internal = 0b0001_0000
+
+
 @_rule_handler(
     "access_specifier",
 )
@@ -469,13 +478,13 @@ class TimeOfDay(Literal):
     """Time of day literal value."""
     hour: lark.Token
     minute: lark.Token
-    second: lark.Token
+    second: Optional[lark.Token] = None
     meta: Optional[Meta] = meta_field()
 
     @property
     def value(self) -> str:
         """The time of day value."""
-        return f"{self.hour}:{self.minute}:{self.second}"
+        return join_if(f"{self.hour}:{self.minute}", ":", self.second)
 
     def __str__(self):
         return f"TIME_OF_DAY#{self.value}"
@@ -1588,6 +1597,9 @@ class FunctionCall(Expression):
         name: SymbolicVariable,
         *parameters: ParameterAssignment,
     ) -> FunctionCall:
+        # Condition parameters (which may be `None`) to represent empty tuple
+        if parameters == (None, ):
+            parameters = []
         return FunctionCall(
             name=name,
             parameters=list(parameters)
@@ -3165,3 +3177,7 @@ if apischema is not None:
     @apischema.deserializer
     def _var_attrs_deserializer(attrs: int) -> VariableAttributes:
         return VariableAttributes(attrs)
+
+    @apischema.deserializer
+    def _global_var_attrs_deserializer(attrs: int) -> GlobalVariableAttributes:
+        return GlobalVariableAttributes(attrs)

@@ -175,6 +175,8 @@ def test_literal(name, value, expected):
         param("time_of_day", "TIME_OF_DAY#1:1:1.2"),
         param("date", "DATE#1970-1-1"),
         param("date_and_time", "DT#1970-1-1-1:2:30.3"),
+        param("date_and_time", "DT#1970-1-1-0:0:0"),
+        param("date_and_time", "DT#1970-1-1-0:0"),
         param("ldate", "LDATE#1970-1-1"),
         param("ldate_and_time", "LDT#1970-1-1-1:2:30.300123456"),
         param("single_byte_string_spec", "STRING[1]"),
@@ -259,6 +261,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType"),
+        param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)"),  # noqa: E501
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
@@ -488,6 +491,12 @@ def test_var_access_roundtrip(rule_name, value):
         param("global_var_declarations", tf.multiline_code_block(
             """
             VAR_GLOBAL
+            END_VAR
+            """
+        )),
+        param("global_var_declarations", tf.multiline_code_block(
+            """
+            VAR_GLOBAL INTERNAL
             END_VAR
             """
         )),
@@ -805,6 +814,20 @@ def test_fb_roundtrip(rule_name, value):
         )),
         param("if_statement", tf.multiline_code_block(
             """
+            IF callable() THEN
+                y();
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
+            IF a() AND b(in := 5) <> 0 AND c(in1 := expr, in2 := 'test') THEN
+                y();
+            END_IF
+            """
+        )),
+        param("if_statement", tf.multiline_code_block(
+            """
             IF 1 AND_THEN 1 THEN
                 y();
             END_IF
@@ -977,6 +1000,16 @@ def test_statement_roundtrip(rule_name, value):
             END_FUNCTION
             """),
             id="no_return_type",
+        ),
+        param("function_declaration", tf.multiline_code_block(
+            """
+            FUNCTION FuncName : BOOL
+                VAR
+                    _c_epoch : dot.dateTime_t := (dateTime := DT#1970-1-1-0:0:0, uSec := 0);
+                END_VAR
+            END_FUNCTION
+            """),
+            id="default_with_datetime",
         ),
         param("function_declaration", tf.multiline_code_block(
             """

@@ -29,6 +29,7 @@ _library_element_declaration: data_type_declaration
                             | program_declaration
                             | global_var_declarations
                             | action
+                            | ";"
 
 // B.1.1
 IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
@@ -159,14 +160,15 @@ nanoseconds: FIXED_POINT "ns"i
            | INTEGER "ns"i
 
 // B.1.2.3.2
-_daytime: day_hour ":" day_minute ":" day_second
+_daytime: day_hour ":" day_minute [ ":" day_second ]
 
 time_of_day: ("TIME_OF_DAY"i | "TOD"i) "#" _daytime
 ltime_of_day: ("LTIME_OF_DAY"i | "LTOD"i) "#" _daytime
 
 ?day_hour: INTEGER
 ?day_minute: INTEGER
-?day_second: FIXED_POINT
+?day_second: INTEGER
+           | FIXED_POINT
 
 date: ( "DATE"i | "D"i | "d"i ) "#" _date_literal
 ldate: "LDATE"i "#" _date_literal
@@ -251,8 +253,11 @@ GENERIC_TYPE_NAME: "ANY"
 ?enumerated_type_name: IDENTIFIER
 ?array_type_name: IDENTIFIER
 ?structure_type_name: IDENTIFIER
+                    | DOTTED_IDENTIFIER
 ?structure_element_name: IDENTIFIER
 ?string_type_name: IDENTIFIER
+
+?structure_type_name_declaration: IDENTIFIER
 
 POINTER_TO: /POINTER\s*TO/i
 REFERENCE_TO: /REFERENCE\s*TO/i
@@ -323,6 +328,7 @@ array_spec_init: [ indirection_type ] array_specification [ ":=" array_initializ
 array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_spec_type_name
 
 _array_spec_type_name: STRING_TYPE
+                     | function_call
                      | non_generic_type_name
 
 array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
@@ -335,9 +341,9 @@ _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
 
-structure_type_declaration: structure_type_name [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
+structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 
-initialized_structure_type_declaration: structure_type_name [ extends ] ":" initialized_structure
+initialized_structure_type_declaration: structure_type_name_declaration [ extends ] ":" initialized_structure
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
@@ -345,7 +351,7 @@ structure_element_declaration: structure_element_name [ incomplete_location ] ":
 
 union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
-union_type_declaration: structure_type_name ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
@@ -461,7 +467,12 @@ PERSISTENT: "PERSISTENT"i
 
 action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
 
-global_var_declarations: "VAR_GLOBAL"i [ variable_attributes ] global_var_body_item* "END_VAR"i ";"*
+global_var_declarations: "VAR_GLOBAL"i [ global_variable_attributes ] global_var_body_item* "END_VAR"i ";"*
+
+GLOBAL_VAR_ATTRIB: VAR_ATTRIB
+                 | "INTERNAL"
+
+global_variable_attributes: GLOBAL_VAR_ATTRIB+
 
 ?global_var_body_item: var_init_decl
                      | global_var_decl
@@ -529,6 +540,7 @@ function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ "
                    | output_declarations
                    | input_output_declarations
                    | static_var_declarations
+                   | external_var_declarations
                    | function_var_declarations
 
 function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
