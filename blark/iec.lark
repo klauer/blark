@@ -257,6 +257,8 @@ GENERIC_TYPE_NAME: "ANY"
 ?structure_element_name: IDENTIFIER
 ?string_type_name: IDENTIFIER
 
+?structure_type_name_declaration: IDENTIFIER
+
 POINTER_TO: /POINTER\s*TO/i
 REFERENCE_TO: /REFERENCE\s*TO/i
 
@@ -339,9 +341,9 @@ _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
 
-structure_type_declaration: structure_type_name [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
+structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 
-initialized_structure_type_declaration: structure_type_name [ extends ] ":" initialized_structure
+initialized_structure_type_declaration: structure_type_name_declaration [ extends ] ":" initialized_structure
 
 initialized_structure: structure_type_name ":=" structure_initialization
 
@@ -349,7 +351,7 @@ structure_element_declaration: structure_element_name [ incomplete_location ] ":
 
 union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
-union_type_declaration: structure_type_name ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
