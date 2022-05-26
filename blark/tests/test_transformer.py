@@ -535,8 +535,61 @@ def test_var_access_roundtrip(rule_name, value):
         )),
     ],
 )
-def test_global_roundtrip(rule_name, value):
-    roundtrip_rule(rule_name, value)
+def test_global_roundtrip(rule_name: str, value: str):
+    gvl = roundtrip_rule(rule_name, value)
+
+    print(gvl.attribute_pragmas)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value, pragmas",
+    [
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            [],
+            id="no_attrs",
+        ),
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                {attribute abc}
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            ["abc"],
+            id="one_attr",
+        ),
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                // Line one
+                {attribute abc}
+                // Line two
+                {attribute def}
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            ["abc", "def"],
+            id="two_attrs",
+        ),
+    ],
+)
+def test_global_attr_pragmas(rule_name: str, value: str, pragmas: List[str]):
+    gvl = roundtrip_rule(rule_name, value)
+    assert gvl.attribute_pragmas == pragmas
 
 
 @pytest.mark.parametrize(

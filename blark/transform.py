@@ -9,7 +9,7 @@ import typing
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
-                    Set, Tuple, Type, TypeVar, Union)
+                    Tuple, Type, TypeVar, Union)
 
 import lark
 
@@ -177,6 +177,18 @@ class Meta:
             by_type[comment.type].append(comment)
 
         return comments, pragmas
+
+    @property
+    def attribute_pragmas(self) -> List[str]:
+        """Get {attribute ...} pragmas associated with this code block."""
+
+        _, pragmas = self.get_comments_and_pragmas()
+        attributes = []
+        for pragma in pragmas:
+            # TODO: better pragma parsing; it's its own grammar
+            if pragma.startswith("{attribute "):  # }
+                attributes.append(pragma.split(" ")[1].strip(" }'"))
+        return attributes
 
 
 def meta_field():
@@ -2136,6 +2148,12 @@ class VariableDeclarationBlock:
     items: List[Any]
     meta: Optional[Meta]
 
+    @property
+    def attribute_pragmas(self) -> List[str]:
+        """Attribute pragmas associated with the variable declaration block."""
+        # TODO: deprecate
+        return getattr(self.meta, "attribute_pragmas", [])
+
 
 @dataclass
 @_rule_handler("var_declarations", comments=True)
@@ -2540,20 +2558,6 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
             attrs=attrs,
             items=list(items)
         )
-
-    @property
-    def attribute_pragmas(self) -> Set[str]:
-        """Attribute pragmas."""
-        if self.meta is None:
-            return set()
-
-        _, pragmas = self.meta.get_comments_and_pragmas()
-        attributes = set()
-        for pragma in pragmas:
-            # TODO: better pragma parsing; it's its own grammar
-            if pragma.startswith("{attribute "):  # }
-                attributes.add(pragma.split(" ")[1].strip(" }'"))
-        return attributes
 
     def __str__(self) -> str:
         return "\n".join(
