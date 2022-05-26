@@ -81,7 +81,7 @@ def _add_comments_to_return_value(func):
         )
 
     if getattr(func, "_comment_wrapped", None):
-        return func
+        return func  # pragma: no cover
 
     wrapped._comment_wrapped = True
     return wrapped
@@ -153,7 +153,7 @@ class Meta:
             start_pos=getattr(lark_meta, "start_pos", None),
         )
 
-    def get_comments_and_pragmas(self):
+    def get_comments_and_pragmas(self) -> Tuple[List[lark.Token], List[lark.Token]]:
         """
         Split the contained comments into comments/pragmas.
 

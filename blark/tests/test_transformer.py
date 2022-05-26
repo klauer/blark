@@ -1,6 +1,6 @@
 import pathlib
 import sys
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 from pytest import param
@@ -1292,3 +1292,80 @@ def test_global_types(value, init, base_type, full_type):
     assert transformed.spec.variables
     assert transformed.base_type_name == base_type
     assert transformed.full_type_name == full_type
+
+
+@pytest.mark.parametrize(
+    "code, comments, pragmas",
+    [
+        param(
+            """
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            [],
+            [],
+            id="no_comments",
+        ),
+        param(
+            """
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["(* Comment *)"],
+            [],
+            id="multiline_comment",
+        ),
+        param(
+            """
+            // Comment
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment"],
+            [],
+            id="single_line_comment",
+        ),
+        param(
+            """
+            // Comment
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            [],
+            id="both_comments",
+        ),
+        param(
+            """
+            // Comment
+            (* Comment *)
+            {pragma}
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            ["{pragma}"],
+            id="both_comments_and_pragma1",
+        ),
+        param(
+            """
+            // Comment
+            {pragma}
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            ["{pragma}"],
+            id="both_comments_and_pragma2",
+        ),
+    ]
+)
+def test_meta(code: str, comments: List[str], pragmas: List[str]):
+    transformed = parse_source_code(code)
+    meta = transformed.items[0].meta
+    found_comments, found_pragmas = meta.get_comments_and_pragmas()
+    assert [str(comment) for comment in found_comments] == comments
+    assert [str(pragma) for pragma in found_pragmas] == pragmas
