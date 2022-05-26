@@ -876,9 +876,49 @@ def test_type_name_roundtrip(rule_name, value):
             END_PROPERTY
             """
         )),
+        param("fb_decl", tf.multiline_code_block(
+            """
+            fb1, fb2 : TypeName
+            """
+        )),
+        param("fb_decl", tf.multiline_code_block(
+            """
+            fb1, fb2 : TypeName := (1, 2)
+            """
+        )),
     ],
 )
 def test_fb_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param(
+            "action",
+            tf.multiline_code_block(
+                """
+                ACTION actActionName:
+                END_ACTION
+                """
+            ),
+            id="empty_action",
+        ),
+        param(
+            "action",
+            tf.multiline_code_block(
+                """
+                ACTION actActionName:
+                    iValue := iValue + 1;
+                END_ACTION
+                """
+            ),
+            id="simple_action",
+        ),
+    ],
+)
+def test_action_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)
 
 
@@ -1267,6 +1307,18 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param(
+            "data_type_declaration",
+            tf.multiline_code_block(
+                """
+            TYPE TypeName :
+                UNION
+                END_UNION
+            END_TYPE
+            """
+            ),
+            id="empty_union",   # TODO: this may not be grammatical
+        ),
         param("data_type_declaration", tf.multiline_code_block(
             """
             TYPE TypeName :
