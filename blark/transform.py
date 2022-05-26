@@ -1487,13 +1487,8 @@ class UnaryOperation(Expression):
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*args):
-        if len(args) == 1:
-            constant, = args
-            return constant
-
-        operator, expr = args
-        if not operator:
+    def from_lark(operator: Optional[lark.Token], expr: Expression):
+        if operator is None:
             return expr
         return UnaryOperation(
             op=operator,
