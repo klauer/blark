@@ -492,6 +492,35 @@ def test_var_access_roundtrip(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param(
+            "static_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_STAT
+                    iValue : INT := 1;
+                END_VAR
+                """
+            ),
+        ),
+        param(
+            "static_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_STAT CONSTANT
+                    iValue : INT := 1;
+                END_VAR
+                """
+            ),
+        ),
+    ],
+)
+def test_var_stat_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
         param("global_var_declarations", tf.multiline_code_block(
             """
             VAR_GLOBAL

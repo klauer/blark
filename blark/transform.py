@@ -2190,8 +2190,10 @@ class StaticDeclarations(VariableDeclarationBlock):
 
     @staticmethod
     def from_lark(
-        attrs: Optional[VariableAttributes], *items: VariableInitDeclaration
+        attrs: Optional[VariableAttributes],
+        tree: lark.Tree,
     ) -> StaticDeclarations:
+        items = typing.cast(List[VariableInitDeclaration], tree.children)
         return StaticDeclarations(attrs, list(items))
 
     def __str__(self) -> str:
