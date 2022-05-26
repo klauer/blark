@@ -1,2 +1,2 @@
-lark
+lark>1.0
 pytmc

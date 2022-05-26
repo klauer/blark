@@ -944,10 +944,7 @@ class StringTypeInitialization:
 
         value: Optional[lark.Token]
         if len(value_parts):
-            if len(value_parts) == 1:  # lark 0.12.0
-                value, = value_parts
-            else:  # lark 1.0
-                _, value = value_parts
+            _, value = value_parts
         else:
             value = None
         return StringTypeInitialization(spec=spec, value=value)
