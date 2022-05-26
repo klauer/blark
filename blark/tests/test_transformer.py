@@ -538,6 +538,21 @@ def test_global_roundtrip(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param("non_generic_type_name", "POINTER TO FBName"),
+        param("non_generic_type_name", "POINTER TO POINTER TO FBName"),
+        param("non_generic_type_name", "FBName"),
+        param("non_generic_type_name", "POINTER TO Package.FBName"),
+        param("non_generic_type_name", "POINTER TO POINTER TO Package.FBName"),
+        param("non_generic_type_name", "Package.FBName"),
+    ],
+)
+def test_type_name_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
