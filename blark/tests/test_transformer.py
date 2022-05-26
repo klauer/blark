@@ -254,6 +254,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("simple_type_declaration", "TypeName : POINTER TO POINTER TO INT"),
         param("simple_type_declaration", "TypeName : REFERENCE TO POINTER TO INT"),
         param("simple_type_declaration", "TypeName EXTENDS a.b : POINTER TO INT"),
+        param("subrange_specification", "TypeName"),  # aliased and not usually hit
         param("subrange_type_declaration", "TypeName : INT (1..2)"),
         param("subrange_type_declaration", "TypeName : INT (*) := 1"),
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
