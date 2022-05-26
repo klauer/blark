@@ -636,6 +636,11 @@ class IndirectionType:
     reference: bool
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def is_indirect(self) -> bool:
+        """True if this denotes a pointer (of any depth) or a reference."""
+        return self.reference or (self.pointer_depth > 0)
+
     @staticmethod
     def from_lark(*tokens: lark.Token) -> IndirectionType:
         pointer_depth = 0
@@ -1124,7 +1129,7 @@ class DataType:
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
-        if self.indirection and self.indirection != IndirectionType.none:
+        if self.indirection and self.indirection.is_indirect:
             return f"{self.indirection} {self.type_name}"
         return f"{self.type_name}"
 
