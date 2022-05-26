@@ -1468,18 +1468,6 @@ class StructureElementInitialization:
 
 
 @dataclass
-@_rule_handler("initialized_structure_type_declaration", comments=True)
-class InitializedStructureTypeDeclaration:
-    name: lark.Token
-    extends: Optional[lark.Token]
-    init: StructureInitialization
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
-        return f"{self.name} : {self.init}"
-
-
-@dataclass
 @_rule_handler("unary_expression")
 class UnaryOperation(Expression):
     op: lark.Token
