@@ -15,9 +15,9 @@ import blark
 
 from . import summary
 from . import transform as tf
+from . import util
 from .transform import GrammarTransformer
-from .util import (AnyPath, find_and_clean_comments, get_source_code,
-                   python_debug_session)
+from .util import AnyPath
 
 DESCRIPTION = __doc__
 AnyFile = Union[str, pathlib.Path]
@@ -64,7 +64,7 @@ def parse_source_code(
     source_code: str,
     *,
     verbose: int = 0,
-    fn: str = "unknown",
+    fn: AnyPath = "unknown",
     preprocessors=_DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
@@ -80,7 +80,7 @@ def parse_source_code(
     verbose : int, optional
         Verbosity level for output.
 
-    fn : str, optional
+    fn : pathlib.Path or str, optional
         The filename associated with the source code.
 
     preprocessors : list, optional
@@ -101,7 +101,7 @@ def parse_source_code(
     for preprocessor in preprocessors:
         processed_source = preprocessor(processed_source)
 
-    comments, processed_source = find_and_clean_comments(processed_source)
+    comments, processed_source = util.find_and_clean_comments(processed_source)
     if parser is None:
         parser = get_parser()
 
@@ -136,10 +136,14 @@ def parse_source_code(
     return tree
 
 
-def parse_single_file(fn, *, transform: bool = True):
+def parse_single_file(
+    fn: AnyPath, *,
+    transform: bool = True,
+    verbose: int = 0,
+) -> Union[tf.SourceCode, lark.Tree]:
     """Parse a single source code file."""
-    source_code = get_source_code(fn)
-    return parse_source_code(source_code, fn=fn, transform=transform)
+    source_code = util.get_source_code(fn)
+    return parse_source_code(source_code, fn=fn, transform=transform, verbose=verbose)
 
 
 def parse_plc(
@@ -192,7 +196,10 @@ def parse_project(
         yield from parse_plc(plc, verbose=verbose, transform=transform)
 
 
-def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+def parse(
+    path: AnyPath, *,
+    verbose: int = 0
+) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
@@ -203,15 +210,14 @@ def parse(path: AnyPath) -> Generator[Tuple[pathlib.Path, ParseResult], None, No
     elif path.suffix.lower() in (".sln",):
         filenames = pytmc.parser.projects_from_solution(path)
     else:
-        # elif path.suffix.lower() in (".tcpou", ".tcgvl", ".tcdut"):
         filenames = [path]
 
     for fn in filenames:
         try:
-            if fn.suffix.lower() in (".tsproj", ):
-                yield from parse_project(fn)
+            if fn.suffix.lower() in util.TWINCAT_PROJECT_FILE_EXTENSIONS:
+                yield from parse_project(fn, verbose=verbose)
             else:
-                yield fn, parse_single_file(fn)
+                yield fn, parse_single_file(fn, verbose=verbose)
         except Exception as ex:
             tb = traceback.format_exc()
             ex.traceback = tb
@@ -261,6 +267,7 @@ def build_arg_parser(argparser=None):
 
 
 def summarize(code: tf.SourceCode) -> summary.CodeSummary:
+    """Get a code summary instance from a SourceCode item."""
     return summary.CodeSummary.from_source(code)
 
 
@@ -279,14 +286,14 @@ def main(
     print_filenames = sys.stdout if verbose > 0 else None
     filename = pathlib.Path(filename)
 
-    for fn, result in parse(filename):
+    for fn, result in parse(filename, verbose=verbose):
         if print_filenames:
             print(f"* Loading {fn}")
         result_by_filename[fn] = result
         if isinstance(result, Exception):
             failures.append((fn, result))
             if interactive:
-                python_debug_session(
+                util.python_debug_session(
                     namespace={"fn": fn, "result": result},
                     message=(
                         f"Failed to parse {fn}. {type(result).__name__}: {result}\n"
@@ -295,25 +302,24 @@ def main(
                 )
             elif verbose > 1:
                 print(result.traceback)
-        else:
-            if summary:
-                print(summarize(result_by_filename[fn]))
+        elif summary:
+            print(summarize(result_by_filename[fn]))
 
     if not result_by_filename:
         return {}
 
     if interactive:
         if len(result_by_filename) > 1:
-            python_debug_session(
+            util.python_debug_session(
                 namespace={"fn": filename, "results": result_by_filename},
                 message=(
-                    "Parsed all files successfully: {list(result_by_filename)}\n"
-                    "Access all results by filename in the variable ``results``"
+                    f"Parsed all files successfully: {list(result_by_filename)}\n"
+                    f"Access all results by filename in the variable ``results``"
                 )
             )
         else:
             ((filename, result),) = list(result_by_filename.items())
-            python_debug_session(
+            util.python_debug_session(
                 namespace={"fn": filename, "result": result},
                 message=(
                     f"Parsed single file successfully: {filename}.\n"

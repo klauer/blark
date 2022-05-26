@@ -2,7 +2,7 @@ import textwrap
 
 import pytest
 
-from ..parse import find_and_clean_comments
+from ..util import find_and_clean_comments
 
 
 @pytest.mark.parametrize(
