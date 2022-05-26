@@ -941,12 +941,7 @@ class StringTypeInitialization:
     ) -> StringTypeInitialization:
         string_type, length, *value_parts = args
         spec = StringTypeSpecification(string_type, length)
-
-        value: Optional[lark.Token]
-        if len(value_parts):
-            _, value = value_parts
-        else:
-            value = None
+        _, value = value_parts or [None, None]
         return StringTypeInitialization(spec=spec, value=value)
 
     def __str__(self) -> str:
