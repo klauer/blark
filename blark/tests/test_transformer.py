@@ -1227,6 +1227,22 @@ def test_data_type_declaration(rule_name, value):
 
 
 @pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("structure_element_initialization", "1"),
+        param("structure_element_initialization", "name := 1"),
+        param("structure_element_initialization", "name := 1 + 2"),
+        param("structure_element_initialization", "name := GVL.Constant"),
+        param("structure_element_initialization", "name := [1, 2, 3]"),
+        # hmm - aliased by array_initialization?
+        # param("structure_element_initialization", "name := (a:=1, b:=2, c:=3)"),
+    ],
+)
+def test_miscellaneous(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
     "value, init, base_type, full_type",
     [
         param("fValue : INT;", tf.TypeInitialization, "INT", "INT"),
