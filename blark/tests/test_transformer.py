@@ -1,6 +1,7 @@
+import dataclasses
+import json
 import pathlib
-import sys
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import pytest
 from pytest import param
@@ -15,15 +16,52 @@ except ImportError:
     # apischema is optional for serialization testing
     apischema = None
 
-
-# TODO: apischema serialization is recursing infinitely on 3.9 and 3.10;
-# need to dig into details and report it (first test that fails is ARRAY-related)
-APISCHEMA_SKIP = sys.version_info[:2] >= (3, 9)
-
+APISCHEMA_SKIP = apischema is None
 TEST_PATH = pathlib.Path(__file__).parent
 
 
+def roundtrip_serialization(obj: Any):
+    """
+    Round-trip a dataclass object with the serialization library.
+
+    Requires apischema and APISCHEMA_SKIP to be False.
+
+    Checks:
+    * ``obj`` can be serialized to JSON
+    * Serialized JSON can be deserialized back into an equivalent ``obj``
+    * Deserialized object has the same source code representation
+    """
+    if obj is None or apischema is None or APISCHEMA_SKIP:
+        return
+
+    try:
+        serialized = apischema.serialize(obj)
+    except Exception:
+        print(json.dumps(dataclasses.asdict(obj), indent=2))
+        raise
+
+    print(f"Serialized {type(obj)} to:")
+    print(json.dumps(serialized, indent=2))
+    deserialized = apischema.deserialize(type(obj), serialized)
+
+    print(f"Deserialized {type(obj)} back to:")
+    print(repr(deserialized))
+    print("Or:")
+    print(deserialized)
+
+    assert str(obj) == str(deserialized), \
+        "Deserialized object does not produce identical source code"
+
+
 def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
+    """
+    Round-trip a blark grammar rule for testing purposes.
+
+    1. Parse and transform the source code in ``value`` into dataclasses
+    2. Ensure that the dataclass source code representation is identical
+       to the input
+    3. Run serialization/deserialization checks (if enabled)
+    """
     parser = get_grammar(start=rule_name)
     transformed = parse_source_code(value, parser=parser)
     print("\n\nTransformed:")
@@ -32,15 +70,10 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     print(transformed)
     if expected is None:
         expected = value
-    assert str(transformed) == expected
+    assert str(transformed) == expected, \
+        "Transformed object does not produce identical source code"
 
-    if apischema is not None and not APISCHEMA_SKIP:
-        serialized = apischema.serialize(transformed)
-        print("serialized", serialized)
-        deserialized = apischema.deserialize(type(transformed), serialized)
-        print("deserialized", deserialized)
-        assert str(transformed) == str(deserialized)
-        # assert transformed == deserialized
+    roundtrip_serialization(transformed)
     return transformed
 
 
