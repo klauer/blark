@@ -1159,7 +1159,7 @@ class IndirectSimpleSpecification:
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type: DataType
+    type: Union[DataType, FunctionCall]
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
@@ -1177,10 +1177,12 @@ class ArraySpecification:
     def from_lark(*args):
         *subranges, type = args
         if isinstance(type, lark.Token):
+            # STRING_TYPE
             type = DataType(
                 indirection=None,
                 type_name=type,
             )
+
         return ArraySpecification(type=type, subranges=subranges)
 
     def __str__(self) -> str:
