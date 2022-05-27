@@ -214,7 +214,7 @@ class _FlagHelper:
 
 
 @_rule_handler("variable_attributes")
-class VariableAttributes(_FlagHelper, enum.Flag):
+class VariableAttributes(_FlagHelper, enum.IntFlag):
     constant = 0b0000_0001
     retain = 0b0000_0010
     non_retain = 0b0000_0100
@@ -222,7 +222,7 @@ class VariableAttributes(_FlagHelper, enum.Flag):
 
 
 @_rule_handler("global_variable_attributes")
-class GlobalVariableAttributes(_FlagHelper, enum.Flag):
+class GlobalVariableAttributes(_FlagHelper, enum.IntFlag):
     constant = 0b0000_0001
     retain = 0b0000_0010
     non_retain = 0b0000_0100
@@ -233,7 +233,7 @@ class GlobalVariableAttributes(_FlagHelper, enum.Flag):
 @_rule_handler(
     "access_specifier",
 )
-class AccessSpecifier(_FlagHelper, enum.Flag):
+class AccessSpecifier(_FlagHelper, enum.IntFlag):
     public = 0b0000_0001
     private = 0b0000_0010
     abstract = 0b0000_0100
@@ -2550,14 +2550,14 @@ class AccessDeclarations(VariableDeclarationBlock):
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_GLOBAL"
-    attrs: Optional[VariableAttributes]
+    attrs: Optional[GlobalVariableAttributes]
     items: List[GlobalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
     name: Optional[str] = None
 
     @staticmethod
     def from_lark(
-        attrs: Optional[VariableAttributes],
+        attrs: Optional[GlobalVariableAttributes],
         *items: GlobalVariableDeclaration
     ) -> GlobalVariableDeclarations:
         return GlobalVariableDeclarations(
