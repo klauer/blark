@@ -1,6 +1,6 @@
 import pathlib
 import sys
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 from pytest import param
@@ -101,6 +101,7 @@ def test_check_unhandled_rules(grammar):
         param("real_literal", "-12.0", tf.Real(value="-12.0")),
         param("real_literal", "12.0", tf.Real(value="12.0")),
         param("real_literal", "12.0e5", tf.Real(value="12.0e5")),
+        param("bit_string_literal", "1234", tf.BitString(type_name=None, value="1234")),
         param("bit_string_literal", "WORD#1234", tf.BitString(type_name="WORD", value="1234")),
         param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
         param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501
@@ -228,6 +229,9 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("multi_element_variable", "a^.b[1, 2]"),
         param("multi_element_variable", "a[1, 2, 3, 4]^.b[1, 2]"),
         param("multi_element_variable", "Abc123[1]^._defGhi"),
+        param("expression", "-1"),
+        param("expression", "+1"),
+        param("expression", "1"),
         param("expression", "1 + 1"),
         param("expression", "1 / 2"),
         param("expression", "3 * 4"),
@@ -251,6 +255,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("simple_type_declaration", "TypeName : POINTER TO POINTER TO INT"),
         param("simple_type_declaration", "TypeName : REFERENCE TO POINTER TO INT"),
         param("simple_type_declaration", "TypeName EXTENDS a.b : POINTER TO INT"),
+        param("subrange_specification", "TypeName"),  # aliased and not usually hit
         param("subrange_type_declaration", "TypeName : INT (1..2)"),
         param("subrange_type_declaration", "TypeName : INT (*) := 1"),
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
@@ -488,6 +493,35 @@ def test_var_access_roundtrip(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param(
+            "static_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_STAT
+                    iValue : INT := 1;
+                END_VAR
+                """
+            ),
+        ),
+        param(
+            "static_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_STAT CONSTANT
+                    iValue : INT := 1;
+                END_VAR
+                """
+            ),
+        ),
+    ],
+)
+def test_var_stat_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
         param("global_var_declarations", tf.multiline_code_block(
             """
             VAR_GLOBAL
@@ -531,8 +565,61 @@ def test_var_access_roundtrip(rule_name, value):
         )),
     ],
 )
-def test_global_roundtrip(rule_name, value):
-    roundtrip_rule(rule_name, value)
+def test_global_roundtrip(rule_name: str, value: str):
+    gvl = roundtrip_rule(rule_name, value)
+
+    print(gvl.attribute_pragmas)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value, pragmas",
+    [
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            [],
+            id="no_attrs",
+        ),
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                {attribute abc}
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            ["abc"],
+            id="one_attr",
+        ),
+        param(
+            "global_var_declarations",
+            tf.multiline_code_block(
+                """
+                // Line one
+                {attribute abc}
+                // Line two
+                {attribute def}
+                VAR_GLOBAL CONSTANT PERSISTENT
+                    iValue : INT := 5;
+                END_VAR
+                """,
+            ),
+            ["abc", "def"],
+            id="two_attrs",
+        ),
+    ],
+)
+def test_global_attr_pragmas(rule_name: str, value: str, pragmas: List[str]):
+    gvl = roundtrip_rule(rule_name, value)
+    assert gvl.attribute_pragmas == pragmas
 
 
 @pytest.mark.parametrize(
@@ -790,9 +877,49 @@ def test_type_name_roundtrip(rule_name, value):
             END_PROPERTY
             """
         )),
+        param("fb_decl", tf.multiline_code_block(
+            """
+            fb1, fb2 : TypeName
+            """
+        )),
+        param("fb_decl", tf.multiline_code_block(
+            """
+            fb1, fb2 : TypeName := (1, 2)
+            """
+        )),
     ],
 )
 def test_fb_roundtrip(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param(
+            "action",
+            tf.multiline_code_block(
+                """
+                ACTION actActionName:
+                END_ACTION
+                """
+            ),
+            id="empty_action",
+        ),
+        param(
+            "action",
+            tf.multiline_code_block(
+                """
+                ACTION actActionName:
+                    iValue := iValue + 1;
+                END_ACTION
+                """
+            ),
+            id="simple_action",
+        ),
+    ],
+)
+def test_action_roundtrip(rule_name, value):
     roundtrip_rule(rule_name, value)
 
 
@@ -1181,6 +1308,18 @@ def test_incomplete_located_var_decls(rule_name, value):
             END_TYPE
             """
         )),
+        param(
+            "data_type_declaration",
+            tf.multiline_code_block(
+                """
+            TYPE TypeName :
+                UNION
+                END_UNION
+            END_TYPE
+            """
+            ),
+            id="empty_union",   # TODO: this may not be grammatical
+        ),
         param("data_type_declaration", tf.multiline_code_block(
             """
             TYPE TypeName :
@@ -1220,6 +1359,22 @@ def test_incomplete_located_var_decls(rule_name, value):
     ],
 )
 def test_data_type_declaration(rule_name, value):
+    roundtrip_rule(rule_name, value)
+
+
+@pytest.mark.parametrize(
+    "rule_name, value",
+    [
+        param("structure_element_initialization", "1"),
+        param("structure_element_initialization", "name := 1"),
+        param("structure_element_initialization", "name := 1 + 2"),
+        param("structure_element_initialization", "name := GVL.Constant"),
+        param("structure_element_initialization", "name := [1, 2, 3]"),
+        # hmm - aliased by array_initialization?
+        # param("structure_element_initialization", "name := (a:=1, b:=2, c:=3)"),
+    ],
+)
+def test_miscellaneous(rule_name, value):
     roundtrip_rule(rule_name, value)
 
 
@@ -1273,3 +1428,80 @@ def test_global_types(value, init, base_type, full_type):
     assert transformed.spec.variables
     assert transformed.base_type_name == base_type
     assert transformed.full_type_name == full_type
+
+
+@pytest.mark.parametrize(
+    "code, comments, pragmas",
+    [
+        param(
+            """
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            [],
+            [],
+            id="no_comments",
+        ),
+        param(
+            """
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["(* Comment *)"],
+            [],
+            id="multiline_comment",
+        ),
+        param(
+            """
+            // Comment
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment"],
+            [],
+            id="single_line_comment",
+        ),
+        param(
+            """
+            // Comment
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            [],
+            id="both_comments",
+        ),
+        param(
+            """
+            // Comment
+            (* Comment *)
+            {pragma}
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            ["{pragma}"],
+            id="both_comments_and_pragma1",
+        ),
+        param(
+            """
+            // Comment
+            {pragma}
+            (* Comment *)
+            FUNCTION_BLOCK test
+            END_FUNCTION_BLOCK
+            """,
+            ["// Comment", "(* Comment *)"],
+            ["{pragma}"],
+            id="both_comments_and_pragma2",
+        ),
+    ]
+)
+def test_meta(code: str, comments: List[str], pragmas: List[str]):
+    transformed = parse_source_code(code)
+    meta = transformed.items[0].meta
+    found_comments, found_pragmas = meta.get_comments_and_pragmas()
+    assert [str(comment) for comment in found_comments] == comments
+    assert [str(pragma) for pragma in found_pragmas] == pragmas

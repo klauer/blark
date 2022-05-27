@@ -343,8 +343,6 @@ _array_initial_element: constant
 
 structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 
-initialized_structure_type_declaration: structure_type_name_declaration [ extends ] ":" initialized_structure
-
 initialized_structure: structure_type_name ":=" structure_initialization
 
 structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init | function_call )

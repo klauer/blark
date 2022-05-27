@@ -9,7 +9,7 @@ import typing
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
-                    Set, Tuple, Type, TypeVar, Union)
+                    Tuple, Type, TypeVar, Union)
 
 import lark
 
@@ -81,7 +81,7 @@ def _add_comments_to_return_value(func):
         )
 
     if getattr(func, "_comment_wrapped", None):
-        return func
+        return func  # pragma: no cover
 
     wrapped._comment_wrapped = True
     return wrapped
@@ -106,7 +106,9 @@ def _rule_handler(
         for rule in rules:
             handler = _rule_to_class.get(rule, None)
             if handler is not None:
-                raise ValueError(f"Handler already specified for: {rule} ({handler})")
+                raise ValueError(
+                    f"Handler already specified for: {rule} ({handler})"
+                )  # pragma: no cover
 
             _rule_to_class[rule] = cls
             _class_handlers[rule] = cls.from_lark
@@ -153,7 +155,7 @@ class Meta:
             start_pos=getattr(lark_meta, "start_pos", None),
         )
 
-    def get_comments_and_pragmas(self):
+    def get_comments_and_pragmas(self) -> Tuple[List[lark.Token], List[lark.Token]]:
         """
         Split the contained comments into comments/pragmas.
 
@@ -177,6 +179,18 @@ class Meta:
             by_type[comment.type].append(comment)
 
         return comments, pragmas
+
+    @property
+    def attribute_pragmas(self) -> List[str]:
+        """Get {attribute ...} pragmas associated with this code block."""
+
+        _, pragmas = self.get_comments_and_pragmas()
+        attributes = []
+        for pragma in pragmas:
+            # TODO: better pragma parsing; it's its own grammar
+            if pragma.startswith("{attribute "):  # }
+                attributes.append(pragma.split(" ")[1].strip(" }'"))
+        return attributes
 
 
 def meta_field():
@@ -941,15 +955,7 @@ class StringTypeInitialization:
     ) -> StringTypeInitialization:
         string_type, length, *value_parts = args
         spec = StringTypeSpecification(string_type, length)
-
-        value: Optional[lark.Token]
-        if len(value_parts):
-            if len(value_parts) == 1:  # lark 0.12.0
-                value, = value_parts
-            else:  # lark 1.0
-                _, value = value_parts
-        else:
-            value = None
+        _, value = value_parts or [None, None]
         return StringTypeInitialization(spec=spec, value=value)
 
     def __str__(self) -> str:
@@ -1468,18 +1474,6 @@ class StructureElementInitialization:
 
 
 @dataclass
-@_rule_handler("initialized_structure_type_declaration", comments=True)
-class InitializedStructureTypeDeclaration:
-    name: lark.Token
-    extends: Optional[lark.Token]
-    init: StructureInitialization
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
-        return f"{self.name} : {self.init}"
-
-
-@dataclass
 @_rule_handler("unary_expression")
 class UnaryOperation(Expression):
     op: lark.Token
@@ -1487,13 +1481,8 @@ class UnaryOperation(Expression):
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*args):
-        if len(args) == 1:
-            constant, = args
-            return constant
-
-        operator, expr = args
-        if not operator:
+    def from_lark(operator: Optional[lark.Token], expr: Expression):
+        if operator is None:
             return expr
         return UnaryOperation(
             op=operator,
@@ -2161,6 +2150,12 @@ class VariableDeclarationBlock:
     items: List[Any]
     meta: Optional[Meta]
 
+    @property
+    def attribute_pragmas(self) -> List[str]:
+        """Attribute pragmas associated with the variable declaration block."""
+        # TODO: deprecate
+        return getattr(self.meta, "attribute_pragmas", [])
+
 
 @dataclass
 @_rule_handler("var_declarations", comments=True)
@@ -2197,8 +2192,10 @@ class StaticDeclarations(VariableDeclarationBlock):
 
     @staticmethod
     def from_lark(
-        attrs: Optional[VariableAttributes], *items: VariableInitDeclaration
+        attrs: Optional[VariableAttributes],
+        tree: lark.Tree,
     ) -> StaticDeclarations:
+        items = typing.cast(List[VariableInitDeclaration], tree.children)
         return StaticDeclarations(attrs, list(items))
 
     def __str__(self) -> str:
@@ -2565,20 +2562,6 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
             attrs=attrs,
             items=list(items)
         )
-
-    @property
-    def attribute_pragmas(self) -> Set[str]:
-        """Attribute pragmas."""
-        if self.meta is None:
-            return set()
-
-        _, pragmas = self.meta.get_comments_and_pragmas()
-        attributes = set()
-        for pragma in pragmas:
-            # TODO: better pragma parsing; it's its own grammar
-            if pragma.startswith("{attribute "):  # }
-                attributes.add(pragma.split(" ")[1].strip(" }'"))
-        return attributes
 
     def __str__(self) -> str:
         return "\n".join(
