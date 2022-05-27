@@ -40,7 +40,6 @@ jobs:
         fail_ci_if_error: true
         files: ./coverage.xml
         name: codecov-umbrella
-        path_to_write_report: ./coverage/codecov_report.txt
         verbose: true
 
     - name: Upload test artifacts
@@ -48,5 +47,4 @@ jobs:
       with:
         name: Artifacts
         path: |
-          ./coverage/*.txt
-          ./coverage.xml
+          ./coverage*
