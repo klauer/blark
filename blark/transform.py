@@ -251,13 +251,6 @@ class Expression:
 @as_tagged_union
 class Literal(Expression):
     """Literal value."""
-    value: Any  # Type specified in subclass
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-
-Constant = Literal  # an alias for now
 
 
 @dataclass
@@ -631,6 +624,9 @@ class String(Literal):
     """String literal value."""
     value: lark.Token
     meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 @as_tagged_union
@@ -1193,7 +1189,7 @@ class ArraySpecification:
 
 
 ArrayInitialElementType = Union[
-    Constant,
+    Literal,
     "StructureInitialization",
     EnumeratedValue,
 ]
@@ -1203,27 +1199,33 @@ ArrayInitialElementType = Union[
 @_rule_handler("array_initial_element")
 class ArrayInitialElement:
     element: ArrayInitialElementType
+    count: Optional[Union[EnumeratedValue, Integer]] = None
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
-        return f"{self.element}"
-
-
-@dataclass
-@_rule_handler("array_initial_element_count")
-class ArrayInitialElementCount:
-    count: Union[EnumeratedValue, Integer]
-    element: ArrayInitialElementType
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
+        if self.count is None:
+            return f"{self.element}"
         return f"{self.count}({self.element})"
+
+
+@_rule_handler("array_initial_element_count")
+class _ArrayInitialElementCount:
+    @staticmethod
+    def from_lark(
+        count: Union[EnumeratedValue, Integer],
+        element: ArrayInitialElementType
+    ) -> ArrayInitialElement:
+        return ArrayInitialElement(
+            element=element,
+            count=count,
+        )
 
 
 @dataclass
 @_rule_handler("array_initialization")
 class ArrayInitialization:
-    elements: List[Union[ArrayInitialElement, ArrayInitialElementCount]]
+    elements: List[ArrayInitialElement]
+    count: Optional[Union[EnumeratedValue, Integer]] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
@@ -3154,6 +3156,22 @@ def merge_comments(source: Any, comments: List[lark.Token]):
             obj = getattr(source, field.name, None)
             if obj is not None:
                 merge_comments(obj, comments)
+
+
+Constant = Union[
+    Duration,
+    Lduration,
+    TimeOfDay,
+    Date,
+    DateTime,
+    Ldate,
+    LdateTime,
+    Real,
+    Integer,
+    String,
+    BitString,
+    Boolean,
+]
 
 
 if apischema is not None:
