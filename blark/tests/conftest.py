@@ -32,7 +32,7 @@ def grammar():
     return get_grammar()
 
 
-def roundtrip_serialization(obj):
+def roundtrip_serialization(obj, require_same_source: bool = True):
     """
     Round-trip a dataclass object with the serialization library.
 
@@ -61,7 +61,8 @@ def roundtrip_serialization(obj):
     print("Or:")
     print(deserialized)
 
-    assert str(obj) == str(deserialized), \
-        "Deserialized object does not produce identical source code"
+    if require_same_source:
+        assert str(obj) == str(deserialized), \
+            "Deserialized object does not produce identical source code"
 
     return serialized, deserialized

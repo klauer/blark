@@ -41,7 +41,7 @@ def test_parsing_tcpous(pou_filename: str):
             raise result
         print(summarize(result))
 
-        conftest.roundtrip_serialization(result)
+        conftest.roundtrip_serialization(result, require_same_source=False)
 
 
 def test_parsing_source(source_filename: str):
@@ -59,7 +59,7 @@ def test_parsing_source(source_filename: str):
         if isinstance(result, Exception):
             raise result
         print(summarize(result))
-        conftest.roundtrip_serialization(result)
+        conftest.roundtrip_serialization(result, require_same_source=False)
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)

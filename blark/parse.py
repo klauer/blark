@@ -330,7 +330,11 @@ def main(
             print(summarize(result_by_filename[fn]))
 
         if use_json:
-            serialized = apischema.serialize(result_by_filename[fn])
+            serialized = apischema.serialize(
+                result_by_filename[fn],
+                exclude_defaults=True,
+                no_copy=True,
+            )
             print(json.dumps(serialized, indent=2))
 
     if not result_by_filename:
