@@ -3,7 +3,7 @@ import pathlib
 import pytest
 
 from ..parse import parse, parse_source_code, summarize
-from .conftest import get_grammar
+from . import conftest
 
 TEST_PATH = pathlib.Path(__file__).parent
 
@@ -27,7 +27,8 @@ def source_filename(request):
     return request.param
 
 
-def test_parsing_tcpous(pou_filename):
+def test_parsing_tcpous(pou_filename: str):
+    """Test parsing TwinCAT TcPOU files."""
     try:
         ((_, result),) = list(parse(pou_filename))
     except FileNotFoundError:
@@ -40,8 +41,10 @@ def test_parsing_tcpous(pou_filename):
             raise result
         print(summarize(result))
 
+        conftest.roundtrip_serialization(result)
 
-def test_parsing_source(source_filename):
+
+def test_parsing_source(source_filename: str):
     """Test plain source 61131 files."""
     try:
         with open(source_filename, "r", encoding="utf-8") as src:
@@ -56,6 +59,7 @@ def test_parsing_source(source_filename):
         if isinstance(result, Exception):
             raise result
         print(summarize(result))
+        conftest.roundtrip_serialization(result)
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
@@ -100,5 +104,5 @@ must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
     ],
 )
 def test_rule_smoke(grammar, name, value):
-    result = get_grammar(start=name).parse(value)
+    result = conftest.get_grammar(start=name).parse(value)
     print(f"rule {name} value {value!r} into {result}")

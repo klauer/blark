@@ -1,56 +1,14 @@
-import dataclasses
-import json
 import pathlib
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import pytest
 from pytest import param
 
 from .. import transform as tf
 from ..parse import parse_source_code
-from .conftest import get_grammar
+from . import conftest
 
-try:
-    import apischema
-except ImportError:
-    # apischema is optional for serialization testing
-    apischema = None
-
-APISCHEMA_SKIP = apischema is None
 TEST_PATH = pathlib.Path(__file__).parent
-
-
-def roundtrip_serialization(obj: Any):
-    """
-    Round-trip a dataclass object with the serialization library.
-
-    Requires apischema and APISCHEMA_SKIP to be False.
-
-    Checks:
-    * ``obj`` can be serialized to JSON
-    * Serialized JSON can be deserialized back into an equivalent ``obj``
-    * Deserialized object has the same source code representation
-    """
-    if obj is None or apischema is None or APISCHEMA_SKIP:
-        return
-
-    try:
-        serialized = apischema.serialize(obj)
-    except Exception:
-        print(json.dumps(dataclasses.asdict(obj), indent=2))
-        raise
-
-    print(f"Serialized {type(obj)} to:")
-    print(json.dumps(serialized, indent=2))
-    deserialized = apischema.deserialize(type(obj), serialized)
-
-    print(f"Deserialized {type(obj)} back to:")
-    print(repr(deserialized))
-    print("Or:")
-    print(deserialized)
-
-    assert str(obj) == str(deserialized), \
-        "Deserialized object does not produce identical source code"
 
 
 def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
@@ -62,7 +20,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
        to the input
     3. Run serialization/deserialization checks (if enabled)
     """
-    parser = get_grammar(start=rule_name)
+    parser = conftest.get_grammar(start=rule_name)
     transformed = parse_source_code(value, parser=parser)
     print("\n\nTransformed:")
     print(repr(transformed))
@@ -73,7 +31,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     assert str(transformed) == expected, \
         "Transformed object does not produce identical source code"
 
-    roundtrip_serialization(transformed)
+    conftest.roundtrip_serialization(transformed)
     return transformed
 
 
@@ -1451,7 +1409,7 @@ def test_miscellaneous(rule_name, value):
     ]
 )
 def test_global_types(value, init, base_type, full_type):
-    parser = get_grammar(start="global_var_decl")
+    parser = conftest.get_grammar(start="global_var_decl")
     transformed = parse_source_code(value, parser=parser)
     assert isinstance(transformed, tf.GlobalVariableDeclaration)
     assert transformed.variables == ["fValue"]
