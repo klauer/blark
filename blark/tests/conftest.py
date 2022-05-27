@@ -1,6 +1,7 @@
 import dataclasses
 import functools
 import json
+import os
 import pathlib
 
 import pytest
@@ -16,6 +17,14 @@ except ImportError:
     apischema = None
 
 APISCHEMA_SKIP = apischema is None
+
+twincat_pou_filenames = list(str(path) for path in TEST_PATH.glob("**/*.TcPOU"))
+additional_pous = TEST_PATH / "additional_pous.txt"
+
+if additional_pous.exists():
+    twincat_pou_filenames += open(additional_pous, "rt").read().splitlines()
+
+structured_text_filenames = list(str(path) for path in TEST_PATH.glob("**/*.st"))
 
 
 @functools.lru_cache(maxsize=100)
@@ -77,3 +86,17 @@ def check_serialization(
             "Deserialized object does not produce identical source code"
 
     return serialized, deserialized
+
+
+@pytest.fixture(params=twincat_pou_filenames)
+def twincat_pou_filename(request):
+    if not os.path.exists(request.param):
+        pytest.skip(f"File missing: {request.param}")
+    return request.param
+
+
+@pytest.fixture(params=structured_text_filenames)
+def source_filename(request):
+    if not os.path.exists(request.param):
+        pytest.skip(f"File missing: {request.param}")
+    return request.param

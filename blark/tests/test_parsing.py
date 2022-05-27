@@ -8,58 +8,32 @@ from . import conftest
 TEST_PATH = pathlib.Path(__file__).parent
 
 
-pous = list(str(path) for path in TEST_PATH.glob("**/*.TcPOU"))
-additional_pous = TEST_PATH / "additional_pous.txt"
-
-if additional_pous.exists():
-    pous += open(additional_pous, "rt").read().splitlines()
-
-sources = list(str(path) for path in TEST_PATH.glob("**/*.st"))
-
-
-@pytest.fixture(params=pous)
-def pou_filename(request):
-    return request.param
-
-
-@pytest.fixture(params=sources)
-def source_filename(request):
-    return request.param
-
-
-def test_parsing_tcpous(pou_filename: str):
+def test_parsing_tcpous(twincat_pou_filename: str):
     """Test parsing TwinCAT TcPOU files."""
-    try:
-        ((_, result),) = list(parse(pou_filename))
-    except FileNotFoundError:
-        pytest.skip(f"Missing file: {pou_filename}")
-    else:
-        print("transformed:")
-        print(result)
-        print("summary:")
-        if isinstance(result, Exception):
-            raise result
-        print(summarize(result))
+    ((_, result),) = list(parse(twincat_pou_filename))
+    print("transformed:")
+    print(result)
+    print("summary:")
+    if isinstance(result, Exception):
+        raise result
+    print(summarize(result))
 
-        conftest.check_serialization(result, deserialize=False)
+    conftest.check_serialization(result, deserialize=False)
 
 
 def test_parsing_source(source_filename: str):
     """Test plain source 61131 files."""
-    try:
-        with open(source_filename, "r", encoding="utf-8") as src:
-            content = src.read()
-        result = parse_source_code(content)
-    except FileNotFoundError:
-        pytest.skip(f"Missing file: {source_filename}")
-    else:
-        print("transformed:")
-        print(result)
-        print("summary:")
-        if isinstance(result, Exception):
-            raise result
-        print(summarize(result))
-        conftest.check_serialization(result, deserialize=False)
+    with open(source_filename, "r", encoding="utf-8") as src:
+        content = src.read()
+
+    result = parse_source_code(content)
+    print("transformed:")
+    print(result)
+    print("summary:")
+    if isinstance(result, Exception):
+        raise result
+    print(summarize(result))
+    conftest.check_serialization(result, deserialize=False)
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
