@@ -35,7 +35,6 @@ _class_handlers = {}
 _comment_consumers = []
 
 INDENT = "    "  # TODO: make it configurable
-StringOrToken = Union[str, lark.Token]
 
 
 def multiline_code_block(block: str) -> str:
