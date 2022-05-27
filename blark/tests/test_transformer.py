@@ -101,6 +101,7 @@ def test_check_unhandled_rules(grammar):
         param("real_literal", "-12.0", tf.Real(value="-12.0")),
         param("real_literal", "12.0", tf.Real(value="12.0")),
         param("real_literal", "12.0e5", tf.Real(value="12.0e5")),
+        param("bit_string_literal", "1234", tf.BitString(type_name=None, value="1234")),
         param("bit_string_literal", "WORD#1234", tf.BitString(type_name="WORD", value="1234")),
         param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
         param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501

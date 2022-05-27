@@ -106,7 +106,9 @@ def _rule_handler(
         for rule in rules:
             handler = _rule_to_class.get(rule, None)
             if handler is not None:
-                raise ValueError(f"Handler already specified for: {rule} ({handler})")
+                raise ValueError(
+                    f"Handler already specified for: {rule} ({handler})"
+                )  # pragma: no cover
 
             _rule_to_class[rule] = cls
             _class_handlers[rule] = cls.from_lark
