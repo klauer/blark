@@ -31,7 +31,9 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     assert str(transformed) == expected, \
         "Transformed object does not produce identical source code"
 
-    conftest.roundtrip_serialization(transformed)
+    conftest.check_serialization(
+        transformed, deserialize=True, require_same_source=True
+    )
     return transformed
 
 

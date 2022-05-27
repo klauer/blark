@@ -32,7 +32,9 @@ def grammar():
     return get_grammar()
 
 
-def roundtrip_serialization(obj, require_same_source: bool = True):
+def check_serialization(
+    obj, deserialize: bool = True, require_same_source: bool = True
+):
     """
     Round-trip a dataclass object with the serialization library.
 
@@ -47,14 +49,23 @@ def roundtrip_serialization(obj, require_same_source: bool = True):
         return
 
     try:
-        serialized = apischema.serialize(obj)
+        serialized = apischema.serialize(
+            obj,
+            exclude_defaults=True,
+            no_copy=True,
+        )
     except Exception:
         print(json.dumps(dataclasses.asdict(obj), indent=2))
         raise
 
     print(f"Serialized {type(obj)} to:")
     print(json.dumps(serialized, indent=2))
-    deserialized = apischema.deserialize(type(obj), serialized)
+    print()
+
+    if not deserialize:
+        return serialized, None
+
+    deserialized = apischema.deserialize(type(obj), serialized, no_copy=True)
 
     print(f"Deserialized {type(obj)} back to:")
     print(repr(deserialized))
