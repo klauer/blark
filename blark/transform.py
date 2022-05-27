@@ -1190,13 +1190,6 @@ class ArraySpecification:
         return f"ARRAY [{subranges}] OF {self.type}"
 
 
-ArrayInitialElementType = Union[
-    Literal,
-    "StructureInitialization",
-    EnumeratedValue,
-]
-
-
 @dataclass
 @_rule_handler("array_initial_element")
 class ArrayInitialElement:
@@ -3173,6 +3166,13 @@ Constant = Union[
     String,
     BitString,
     Boolean,
+]
+
+
+ArrayInitialElementType = Union[
+    Constant,
+    StructureInitialization,
+    EnumeratedValue,
 ]
 
 
