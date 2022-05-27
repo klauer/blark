@@ -3,6 +3,7 @@
 files in conjunction with pytmc.
 """
 import argparse
+import json
 import pathlib
 import sys
 import traceback
@@ -18,6 +19,12 @@ from . import transform as tf
 from . import util
 from .transform import GrammarTransformer
 from .util import AnyPath
+
+try:
+    import apischema
+except ImportError:
+    apischema = None
+
 
 DESCRIPTION = __doc__
 AnyFile = Union[str, pathlib.Path]
@@ -263,6 +270,13 @@ def build_arg_parser(argparser=None):
         help="Summarize code inputs and outputs"
     )
 
+    argparser.add_argument(
+        "--json",
+        dest="use_json",
+        action="store_true",
+        help="Output JSON representation only"
+    )
+
     return argparser
 
 
@@ -277,6 +291,7 @@ def main(
     debug: bool = False,
     interactive: bool = False,
     summary: bool = False,
+    use_json: bool = False,
 ):
     """
     Parse the given source code/project.
@@ -285,6 +300,15 @@ def main(
     failures = []
     print_filenames = sys.stdout if verbose > 0 else None
     filename = pathlib.Path(filename)
+
+    if use_json:
+        print_filenames = False
+
+        if apischema is None:
+            raise RuntimeError(
+                "Optional dependency apischema is required to output a JSON "
+                "representation of source code."
+            )
 
     for fn, result in parse(filename, verbose=verbose):
         if print_filenames:
@@ -304,6 +328,10 @@ def main(
                 print(result.traceback)
         elif summary:
             print(summarize(result_by_filename[fn]))
+
+        if use_json:
+            serialized = apischema.serialize(result_by_filename[fn])
+            print(json.dumps(serialized, indent=2))
 
     if not result_by_filename:
         return {}
