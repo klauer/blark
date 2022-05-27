@@ -1,5 +1,4 @@
 import pathlib
-import sys
 from typing import List, Optional
 
 import pytest
@@ -7,24 +6,21 @@ from pytest import param
 
 from .. import transform as tf
 from ..parse import parse_source_code
-from .conftest import get_grammar
-
-try:
-    import apischema
-except ImportError:
-    # apischema is optional for serialization testing
-    apischema = None
-
-
-# TODO: apischema serialization is recursing infinitely on 3.9 and 3.10;
-# need to dig into details and report it (first test that fails is ARRAY-related)
-APISCHEMA_SKIP = sys.version_info[:2] >= (3, 9)
+from . import conftest
 
 TEST_PATH = pathlib.Path(__file__).parent
 
 
 def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
-    parser = get_grammar(start=rule_name)
+    """
+    Round-trip a blark grammar rule for testing purposes.
+
+    1. Parse and transform the source code in ``value`` into dataclasses
+    2. Ensure that the dataclass source code representation is identical
+       to the input
+    3. Run serialization/deserialization checks (if enabled)
+    """
+    parser = conftest.get_grammar(start=rule_name)
     transformed = parse_source_code(value, parser=parser)
     print("\n\nTransformed:")
     print(repr(transformed))
@@ -32,15 +28,12 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     print(transformed)
     if expected is None:
         expected = value
-    assert str(transformed) == expected
+    assert str(transformed) == expected, \
+        "Transformed object does not produce identical source code"
 
-    if apischema is not None and not APISCHEMA_SKIP:
-        serialized = apischema.serialize(transformed)
-        print("serialized", serialized)
-        deserialized = apischema.deserialize(type(transformed), serialized)
-        print("deserialized", deserialized)
-        assert str(transformed) == str(deserialized)
-        # assert transformed == deserialized
+    conftest.check_serialization(
+        transformed, deserialize=True, require_same_source=True
+    )
     return transformed
 
 
@@ -1418,7 +1411,7 @@ def test_miscellaneous(rule_name, value):
     ]
 )
 def test_global_types(value, init, base_type, full_type):
-    parser = get_grammar(start="global_var_decl")
+    parser = conftest.get_grammar(start="global_var_decl")
     transformed = parse_source_code(value, parser=parser)
     assert isinstance(transformed, tf.GlobalVariableDeclaration)
     assert transformed.variables == ["fValue"]

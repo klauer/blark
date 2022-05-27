@@ -1,2 +1,5 @@
+# Optional dependency for JSON (de)serialization
+apischema
+# For running the test suite:
 pytest
 pytest-cov

@@ -35,7 +35,6 @@ _class_handlers = {}
 _comment_consumers = []
 
 INDENT = "    "  # TODO: make it configurable
-StringOrToken = Union[str, lark.Token]
 
 
 def multiline_code_block(block: str) -> str:
@@ -215,7 +214,7 @@ class _FlagHelper:
 
 
 @_rule_handler("variable_attributes")
-class VariableAttributes(_FlagHelper, enum.Flag):
+class VariableAttributes(_FlagHelper, enum.IntFlag):
     constant = 0b0000_0001
     retain = 0b0000_0010
     non_retain = 0b0000_0100
@@ -223,7 +222,7 @@ class VariableAttributes(_FlagHelper, enum.Flag):
 
 
 @_rule_handler("global_variable_attributes")
-class GlobalVariableAttributes(_FlagHelper, enum.Flag):
+class GlobalVariableAttributes(_FlagHelper, enum.IntFlag):
     constant = 0b0000_0001
     retain = 0b0000_0010
     non_retain = 0b0000_0100
@@ -234,7 +233,7 @@ class GlobalVariableAttributes(_FlagHelper, enum.Flag):
 @_rule_handler(
     "access_specifier",
 )
-class AccessSpecifier(_FlagHelper, enum.Flag):
+class AccessSpecifier(_FlagHelper, enum.IntFlag):
     public = 0b0000_0001
     private = 0b0000_0010
     abstract = 0b0000_0100
@@ -252,13 +251,6 @@ class Expression:
 @as_tagged_union
 class Literal(Expression):
     """Literal value."""
-    value: Any  # Type specified in subclass
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-
-Constant = Literal  # an alias for now
 
 
 @dataclass
@@ -632,6 +624,9 @@ class String(Literal):
     """String literal value."""
     value: lark.Token
     meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 @as_tagged_union
@@ -1164,7 +1159,7 @@ class IndirectSimpleSpecification:
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type: DataType
+    type: Union[DataType, FunctionCall]
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
@@ -1182,10 +1177,12 @@ class ArraySpecification:
     def from_lark(*args):
         *subranges, type = args
         if isinstance(type, lark.Token):
+            # STRING_TYPE
             type = DataType(
                 indirection=None,
                 type_name=type,
             )
+
         return ArraySpecification(type=type, subranges=subranges)
 
     def __str__(self) -> str:
@@ -1193,38 +1190,37 @@ class ArraySpecification:
         return f"ARRAY [{subranges}] OF {self.type}"
 
 
-ArrayInitialElementType = Union[
-    Constant,
-    "StructureInitialization",
-    EnumeratedValue,
-]
-
-
 @dataclass
 @_rule_handler("array_initial_element")
 class ArrayInitialElement:
     element: ArrayInitialElementType
+    count: Optional[Union[EnumeratedValue, Integer]] = None
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
-        return f"{self.element}"
-
-
-@dataclass
-@_rule_handler("array_initial_element_count")
-class ArrayInitialElementCount:
-    count: Union[EnumeratedValue, Integer]
-    element: ArrayInitialElementType
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
+        if self.count is None:
+            return f"{self.element}"
         return f"{self.count}({self.element})"
+
+
+@_rule_handler("array_initial_element_count")
+class _ArrayInitialElementCount:
+    @staticmethod
+    def from_lark(
+        count: Union[EnumeratedValue, Integer],
+        element: ArrayInitialElementType
+    ) -> ArrayInitialElement:
+        return ArrayInitialElement(
+            element=element,
+            count=count,
+        )
 
 
 @dataclass
 @_rule_handler("array_initialization")
 class ArrayInitialization:
-    elements: List[Union[ArrayInitialElement, ArrayInitialElementCount]]
+    elements: List[ArrayInitialElement]
+    count: Optional[Union[EnumeratedValue, Integer]] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
@@ -2547,14 +2543,14 @@ class AccessDeclarations(VariableDeclarationBlock):
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
     block_header: ClassVar[str] = "VAR_GLOBAL"
-    attrs: Optional[VariableAttributes]
+    attrs: Optional[GlobalVariableAttributes]
     items: List[GlobalVariableDeclaration]
     meta: Optional[Meta] = meta_field()
     name: Optional[str] = None
 
     @staticmethod
     def from_lark(
-        attrs: Optional[VariableAttributes],
+        attrs: Optional[GlobalVariableAttributes],
         *items: GlobalVariableDeclaration
     ) -> GlobalVariableDeclarations:
         return GlobalVariableDeclarations(
@@ -3155,6 +3151,29 @@ def merge_comments(source: Any, comments: List[lark.Token]):
             obj = getattr(source, field.name, None)
             if obj is not None:
                 merge_comments(obj, comments)
+
+
+Constant = Union[
+    Duration,
+    Lduration,
+    TimeOfDay,
+    Date,
+    DateTime,
+    Ldate,
+    LdateTime,
+    Real,
+    Integer,
+    String,
+    BitString,
+    Boolean,
+]
+
+
+ArrayInitialElementType = Union[
+    Constant,
+    StructureInitialization,
+    EnumeratedValue,
+]
 
 
 if apischema is not None:
