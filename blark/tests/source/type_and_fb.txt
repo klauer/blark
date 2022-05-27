@@ -14,4 +14,3 @@ FUNCTION_BLOCK Testblock
         cabinet := green;
     END_IF
 END_FUNCTION_BLOCK
-
