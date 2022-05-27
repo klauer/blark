@@ -58,12 +58,6 @@ def test_parsing_source(source_filename):
         print(summarize(result))
 
 
-def pytest_html_results_table_row(report, cells):
-    # pytest results using pytest-html; show only failures for now:
-    if report.passed:
-        del cells[:]
-
-
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
 
 
