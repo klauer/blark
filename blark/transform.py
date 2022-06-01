@@ -166,8 +166,8 @@ class Meta:
         if not self.comments:
             return [], []
 
-        pragmas = []
-        comments = []
+        pragmas: List[lark.Token] = []
+        comments: List[lark.Token] = []
         by_type = {
             "SINGLE_LINE_COMMENT": comments,
             "MULTI_LINE_COMMENT": comments,
@@ -504,7 +504,7 @@ class LtimeOfDay(Literal):
     """Long time of day literal value."""
     hour: lark.Token
     minute: lark.Token
-    second: lark.Token
+    second: Optional[lark.Token] = None
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -523,7 +523,7 @@ class Date(Literal):
 
     year: lark.Token
     month: lark.Token
-    day: lark.Token
+    day: Optional[lark.Token]
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -570,7 +570,7 @@ class DateTime(Literal):
         day: lark.Token,
         hour: lark.Token,
         minute: lark.Token,
-        second: lark.Token,
+        second: Optional[lark.Token],
     ) -> DateTime:
         return DateTime(
             date=Date(year=year, month=month, day=day),
@@ -602,7 +602,7 @@ class LdateTime(Literal):
         day: lark.Token,
         hour: lark.Token,
         minute: lark.Token,
-        second: lark.Token,
+        second: Optional[lark.Token],
     ) -> LdateTime:
         return LdateTime(
             ldate=Ldate(year=year, month=month, day=day),
@@ -718,7 +718,7 @@ class DirectVariable(Variable):
     @staticmethod
     def from_lark(
         location_prefix: lark.Token,
-        size_prefix: Optional[VariableSizePrefix],
+        size_prefix: Optional[lark.Token],
         location: lark.Token,
         *bits: lark.Token,
     ):
@@ -797,12 +797,12 @@ class SubscriptList:
 @dataclass
 @_rule_handler("field_selector")
 class FieldSelector:
-    field: SymbolicVariable
+    field: SimpleVariable
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(dereferenced: Optional[lark.Token], field: SymbolicVariable):
+    def from_lark(dereferenced: Optional[lark.Token], field: SimpleVariable):
         return FieldSelector(
             field=field,
             dereferenced=dereferenced is not None
@@ -815,14 +815,14 @@ class FieldSelector:
 @dataclass
 @_rule_handler("multi_element_variable")
 class MultiElementVariable(Variable):
-    name: SymbolicVariable
+    name: SimpleVariable
     dereferenced: bool
     elements: List[Union[SubscriptList, FieldSelector]]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(
-        variable_name: SymbolicVariable,
+        variable_name: SimpleVariable,
         *subscript_or_field: Union[SubscriptList, FieldSelector]
     ) -> MultiElementVariable:
         return MultiElementVariable(
@@ -946,9 +946,10 @@ class StringTypeInitialization:
 
     @staticmethod
     def from_lark(
-        *args: lark.Token,
+        string_type: lark.Token,
+        length: Optional[lark.Token],
+        *value_parts: Optional[lark.Token],
     ) -> StringTypeInitialization:
-        string_type, length, *value_parts = args
         spec = StringTypeSpecification(string_type, length)
         _, value = value_parts or [None, None]
         return StringTypeInitialization(spec=spec, value=value)
@@ -1164,9 +1165,11 @@ class ArraySpecification:
     meta: Optional[Meta] = meta_field()
 
     @property
-    def base_type_name(self) -> lark.Token:
+    def base_type_name(self) -> Union[str, lark.Token]:
         """The base type name."""
-        return self.type.type_name
+        if isinstance(self.type, DataType):
+            return self.type.type_name
+        return str(self.type.name)
 
     @property
     def full_type_name(self) -> str:
@@ -1241,7 +1244,7 @@ class ArrayTypeInitialization:
     meta: Optional[Meta] = meta_field()
 
     @property
-    def base_type_name(self) -> lark.Token:
+    def base_type_name(self) -> Union[str, lark.Token]:
         """The base type name."""
         return self.spec.base_type_name
 
@@ -1587,14 +1590,18 @@ class FunctionCall(Expression):
     @staticmethod
     def from_lark(
         name: SymbolicVariable,
-        *parameters: ParameterAssignment,
+        first_parameter: Optional[ParameterAssignment] = None,
+        *remaining_parameters: ParameterAssignment,
     ) -> FunctionCall:
         # Condition parameters (which may be `None`) to represent empty tuple
-        if parameters == (None, ):
+        if first_parameter is None:
             parameters = []
+        else:
+            parameters = [first_parameter] + list(remaining_parameters)
+
         return FunctionCall(
             name=name,
-            parameters=list(parameters)
+            parameters=parameters,
         )
 
     def __str__(self) -> str:
@@ -1606,7 +1613,7 @@ class FunctionCall(Expression):
 @_rule_handler("var1")
 class DeclaredVariable:
     # Alternate name: VariableWithLocation? MaybeLocatedVariable?
-    variable: SymbolicVariable
+    variable: SimpleVariable
     location: Optional[Union[IncompleteLocation, Location]]
     meta: Optional[Meta] = meta_field()
 
@@ -2637,7 +2644,7 @@ class IfStatement(Statement):
     def from_lark(
         if_expr: Expression,
         then: Optional[StatementList],
-        *args: Union[ElseIfClause, ElseClause]
+        *args: Optional[Union[ElseIfClause, ElseClause]]
     ) -> IfStatement:
         else_clause: Optional[ElseClause] = None
         if args and isinstance(args[-1], ElseClause) or args[-1] is None:
