@@ -1,7 +1,11 @@
 # Run available tests for all push and pull-request actions.
 name: pytest
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
 
 jobs:
   build:
