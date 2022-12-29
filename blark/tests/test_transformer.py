@@ -769,6 +769,16 @@ def test_type_name_roundtrip(rule_name, value):
             END_FUNCTION_BLOCK
             """
         )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                Method();
+                IF 1 THEN
+                    CONTINUE;
+                END_IF
+            END_FUNCTION_BLOCK
+            """
+        )),
         param("function_block_method_declaration", tf.multiline_code_block(
             """
             METHOD PRIVATE MethodName : RETURNTYPE

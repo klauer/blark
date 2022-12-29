@@ -2800,6 +2800,15 @@ class ExitStatement(Statement):
 
 
 @dataclass
+@_rule_handler("continue_statement", comments=True)
+class ContinueStatement(Statement):
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self):
+        return "CONTINUE;"
+
+
+@dataclass
 @_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
     meta: Optional[Meta] = meta_field()
