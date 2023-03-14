@@ -3,26 +3,31 @@ name: pytest
 
 on:
   push:
-    branches:
-      - master
-  pull_request: {}
+  pull_request:
+  release:
+    types:
+      - published
 
 jobs:
-  build:
+  pytest:
+    name: Python ${{ matrix.python-version }} testing
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
     env:
       PYTHON: ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        check-latest: true
 
     - name: Install dependencies
       run: |
@@ -36,7 +41,7 @@ jobs:
         pytest -v --cov=blark/ --cov-report=xml:coverage.xml
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         directory: ./coverage/reports/
         env_vars: PYTHON
@@ -48,6 +53,6 @@ jobs:
     - name: Upload test artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ github.sha }}_${{ matrix.os }}-${{ matrix.python-version }}_artifacts
+        name: coverage-${{ github.sha }}_${{ matrix.os }}-${{ matrix.python-version }}
         path: |
           ./coverage*

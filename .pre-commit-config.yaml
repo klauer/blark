@@ -1,8 +1,17 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+exclude: |
+  (?x)^(
+    blark/tests/POUs/.*|
+    blark/tests/source/.*|
+    blark/_version.py|
+    versioneer.py
+  )$
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.4.0
     hooks:
     -   id: no-commit-to-branch
     -   id: trailing-whitespace
@@ -16,12 +25,12 @@ repos:
     -   id: check-yaml
         exclude: '^(conda-recipe/meta.yaml)$'
 
--   repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.9.2
+-   repo: https://github.com/pycqa/flake8.git
+    rev: 6.0.0
     hooks:
     -   id: flake8
 
 -   repo: https://github.com/timothycrosley/isort
-    rev: 5.9.2
+    rev: 5.12.0
     hooks:
     -   id: isort
