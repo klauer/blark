@@ -53,6 +53,6 @@ jobs:
     - name: Upload test artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ github.sha }}_${{ matrix.os }}-${{ matrix.python-version }}_artifacts
+        name: coverage-${{ github.sha }}_${{ matrix.os }}-${{ matrix.python-version }}
         path: |
           ./coverage*
