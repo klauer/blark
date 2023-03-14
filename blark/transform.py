@@ -697,6 +697,9 @@ class VariableLocationPrefix(str, Enum):
     output = "Q"
     memory = "M"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class VariableSizePrefix(str, Enum):
     bit = "X"
@@ -704,6 +707,9 @@ class VariableSizePrefix(str, Enum):
     word_16 = "W"
     dword_32 = "D"
     lword_64 = "L"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
