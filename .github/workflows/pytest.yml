@@ -40,7 +40,7 @@ jobs:
         pytest -v --cov=blark/ --cov-report=xml:coverage.xml
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         directory: ./coverage/reports/
         env_vars: PYTHON
