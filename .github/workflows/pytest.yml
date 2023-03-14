@@ -9,7 +9,8 @@ on:
       - published
 
 jobs:
-  build:
+  pytest:
+    name: Python ${{ matrix.python-version }} testing
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
