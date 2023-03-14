@@ -1508,3 +1508,18 @@ def test_meta(code: str, comments: List[str], pragmas: List[str]):
     found_comments, found_pragmas = meta.get_comments_and_pragmas()
     assert [str(comment) for comment in found_comments] == comments
     assert [str(pragma) for pragma in found_pragmas] == pragmas
+
+
+@pytest.mark.parametrize(
+    "statement, cls",
+    [
+        ("CONTINUE;", tf.ContinueStatement),
+        ("EXIT;", tf.ExitStatement),
+        ("RETURN;", tf.ReturnStatement),
+    ]
+)
+def test_statement_priority(statement: str, cls: type):
+    transformed = roundtrip_rule("statement_list", statement)
+    assert isinstance(transformed, tf.StatementList)
+    transformed_statement, = transformed.statements
+    assert isinstance(transformed_statement, cls)
