@@ -1,7 +1,9 @@
+import dataclasses
+import enum
 import hashlib
 import pathlib
 import re
-from typing import Any, Dict, Generator, List, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import lark
 import pytmc
@@ -26,6 +28,54 @@ TWINCAT_SOURCE_EXTENSIONS = {
     # ".tpy",  # tmc-like inter-vendor format
     # ".xti",  # independent project file
 }
+
+
+class SourceType(enum.Enum):
+    action = enum.auto()
+    function = enum.auto()
+    function_block = enum.auto()
+    method = enum.auto()
+    program = enum.auto()
+    property = enum.auto()
+    var_global = enum.auto()
+    struct = enum.auto()
+
+    def __str__(self) -> str:
+        return self.name
+
+    def get_grammar_rule(self) -> str:
+        return {
+            SourceType.action: "action",
+            SourceType.function: "function_declaration",
+            SourceType.function_block: "function_block_type_declaration",
+            SourceType.method: "function_block_method_declaration",
+            SourceType.program: "program_declaration",
+            SourceType.property: "function_block_property_declaration",
+            SourceType.var_global: "global_var_declarations",
+            SourceType.struct: "data_type_declaration",
+        }[self]
+
+    def get_implicit_block_end(self) -> str:
+        return {
+            SourceType.action: "END_ACTION",
+            SourceType.function: "END_FUNCTION",
+            SourceType.function_block: "END_FUNCTION_BLOCK",
+            SourceType.method: "END_METHOD",
+            SourceType.program: "END_PROGRAM",
+            SourceType.property: "END_PROPERTY",
+            SourceType.var_global: "END_VAR",
+            SourceType.struct: "END_STRUCT",
+        }[self]
+
+
+@dataclasses.dataclass
+class BlarkSourceCodeItem:
+    file: Optional[pathlib.Path]
+    line: int
+    type: SourceType
+    code: str
+    implicit_end: Optional[str]
+    grammar_rule: Optional[str]
 
 
 def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:
@@ -120,6 +170,105 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
         pdb.set_trace()
     else:
         embed()
+
+
+def find_pou_type(code: str) -> Optional[SourceType]:
+    types = {source.name for source in SourceType}
+    clean_code = remove_all_comments(code)
+    for line in clean_code.splitlines():
+        parts = line.lstrip().split(None, 1)
+        if parts and parts[0].lower() in types:
+            return SourceType[parts[0].lower()]
+    return None
+
+
+def remove_all_comments(
+    text: str, *, replace_char: str = " "
+) -> str:
+    """
+    Remove all comments and replace them with the provided character.
+    """
+    # TODO review the logic here! it's Friday after 5PM
+    multiline_comments = []
+    in_single_comment = False
+    in_single_quote = False
+    in_double_quote = False
+    pragma_state = []
+    skip = 0
+    NEWLINES = "\n\r"
+    SINGLE_COMMENT = "//"
+    OPEN_COMMENT = "(*"
+    CLOSE_COMMENT = "*)"
+    OPEN_PRAGMA = "{"
+    CLOSE_PRAGMA = "}"
+
+    def get_characters() -> Generator[Tuple[int, int, str, str], None, None]:
+        """Yield line information and characters."""
+        for lineno, line in enumerate(text.splitlines()):
+            colno = 0
+            for colno, (this_ch, next_ch) in enumerate(zip(line, line[1:] + "\n")):
+                yield lineno, colno, this_ch, next_ch
+            yield lineno, colno, "\n", ""
+
+    result = []
+    for lineno, colno, this_ch, next_ch in get_characters():
+        if skip:
+            skip -= 1
+            continue
+
+        if in_single_comment:
+            in_single_comment = this_ch not in NEWLINES
+            continue
+
+        pair = this_ch + next_ch
+        if not in_single_quote and not in_double_quote:
+            if this_ch == OPEN_PRAGMA and not multiline_comments:
+                pragma_state.append((lineno, colno))
+                continue
+            if this_ch == CLOSE_PRAGMA and not multiline_comments:
+                pragma_state.pop(-1)
+                continue
+
+            if pragma_state:
+                continue
+
+            if pair == OPEN_COMMENT:
+                multiline_comments.append((lineno, colno))
+                skip = 1
+                continue
+            if pair == CLOSE_COMMENT:
+                multiline_comments.pop(-1)
+                skip = 1
+                continue
+            if pair == SINGLE_COMMENT:
+                in_single_comment = True
+                continue
+
+        if not multiline_comments and not in_single_comment:
+            if pair == "$'" and in_single_quote:
+                # This is an escape for single quotes
+                skip = 1
+                result.append(pair)
+            elif pair == '$"' and in_double_quote:
+                # This is an escape for double quotes
+                skip = 1
+                result.append(pair)
+            elif this_ch == "'" and not in_double_quote:
+                in_single_quote = not in_single_quote
+                result.append(this_ch)
+            elif this_ch == '"' and not in_single_quote:
+                in_double_quote = not in_double_quote
+                result.append(this_ch)
+            elif pair == SINGLE_COMMENT:
+                in_single_comment = True
+            else:
+                result.append(this_ch)
+
+    if multiline_comments or in_single_quote or in_double_quote:
+        # Syntax error in source? Return the original and let lark fail
+        return text
+
+    return "".join(result)
 
 
 def find_and_clean_comments(
@@ -312,3 +461,56 @@ def get_file_sha256(filename: AnyPath) -> str:
     """Hash a file's contents with the SHA-256 algorithm."""
     with open(filename, "rb") as fp:
         return hashlib.sha256(fp.read()).hexdigest()
+
+
+def fix_case_insensitive_path(path: AnyPath) -> pathlib.Path:
+    """
+    Match a path in a case-insensitive manner.
+
+    Required on Linux to find files in a case-insensitive way. Not required on
+    OSX/Windows, but platform checks are not done here.
+
+    Parameters
+    ----------
+    path : pathlib.Path or str
+        The case-insensitive path
+
+    Returns
+    -------
+    path : pathlib.Path
+        The case-corrected path.
+
+    Raises
+    ------
+    FileNotFoundError
+        When the file can't be found
+    """
+    path = pathlib.Path(path).expanduser().resolve()
+    if path.exists():
+        return path.resolve()
+
+    new_path = pathlib.Path(path.parts[0])
+    for part in path.parts[1:]:
+        if not (new_path / part).exists():
+            all_files = {fn.name.lower(): fn.name for fn in new_path.iterdir()}
+            try:
+                part = all_files[part.lower()]
+            except KeyError:
+                raise FileNotFoundError(
+                    f"Path does not exist:\n" f"{path}\n{new_path}/{part} missing"
+                ) from None
+        new_path = new_path / part
+    return new_path.resolve()
+
+
+def try_paths(paths: List[AnyPath]) -> Optional[pathlib.Path]:
+    for path in paths:
+        try:
+            return fix_case_insensitive_path(path)
+        except FileNotFoundError:
+            pass
+
+    options = "\n".join(str(path) for path in paths)
+    raise FileNotFoundError(
+        f"None of the possible files were found:\n{options}"
+    )
