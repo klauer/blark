@@ -48,7 +48,7 @@ class BlarkStartingRule(enum.Enum):
     action = enum.auto()
 
 
-def new_parser(**kwargs) -> lark.Lark:
+def new_parser(start: Optional[list[str]] = None, **kwargs) -> lark.Lark:
     """
     Get a new parser for TwinCAT flavor IEC61131-3 code.
 
@@ -57,13 +57,16 @@ def new_parser(**kwargs) -> lark.Lark:
     **kwargs :
         See :class:`lark.lark.LarkOptions`.
     """
+    if start is None:
+        start = [rule.name for rule in BlarkStartingRule]
+
     return lark.Lark.open_from_package(
         "blark",
         blark.GRAMMAR_FILENAME.name,
         parser="earley",
         maybe_placeholders=True,
         propagate_positions=True,
-        start=[rule.name for rule in BlarkStartingRule],
+        start=start,
         **kwargs
     )
 
@@ -93,7 +96,7 @@ def parse_source_code(
     preprocessors: list[Preprocessor] = _DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
-    starting_rule: Optional[str] = "iec_source",
+    starting_rule: Optional[str] = None,
     line_map: Optional[dict[int, int]] = None,
 ) -> Union[tf.SourceCode, lark.Tree]:
     """
@@ -131,6 +134,13 @@ def parse_source_code(
     comments, processed_source = util.find_and_clean_comments(processed_source)
     if parser is None:
         parser = get_parser()
+
+    if starting_rule is None:
+        # NOTE: back-compat -> default to 'iec_source' here
+        if "iec_source" in parser.options.start:
+            starting_rule = "iec_source"
+        else:
+            starting_rule = parser.options.start[0]
 
     try:
         tree = parser.parse(processed_source, start=starting_rule)
