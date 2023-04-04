@@ -1,5 +1,6 @@
 import pathlib
 import textwrap
+from typing import Dict
 
 import pytest
 
@@ -199,7 +200,7 @@ def test_line_map(
     source: str,
     file_line: int,
     blark_line: int,
-    line_map: dict[int, int],
+    line_map: Dict[int, int],
 ):
     assert (
         util._build_source_to_file_line_map(file_line, blark_line, source) == line_map

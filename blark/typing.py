@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing
-from typing import Union, overload
+from typing import Dict, Union, overload
 
 if typing.TYPE_CHECKING:
     from .util import BlarkCompositeSourceItem, BlarkSourceItem
@@ -28,4 +28,4 @@ class ContainsBlarkCode(Protocol):
         ...
 
 
-BlarkLineToFileLine = dict[int, int]
+BlarkLineToFileLine = Dict[int, int]
