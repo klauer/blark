@@ -201,8 +201,8 @@ class TcDeclImpl:
 
         if not parts:
             return []
-        if len(parts) == 1:
-            return [parts[0]]
+        # if len(parts) == 1:
+        #     return [parts[0]]
 
         return [
             BlarkCompositeSourceItem(
@@ -439,7 +439,6 @@ class TcPOU(TcSource):
     def to_blark(self) -> list[BlarkInputCode]:
         if self.source_type is None:
             raise RuntimeError("No source type set?")
-            # return []
 
         items = []
 
