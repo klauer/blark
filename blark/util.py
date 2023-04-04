@@ -1,15 +1,18 @@
-import dataclasses
+from __future__ import annotations
+
 import enum
 import hashlib
 import pathlib
 import re
-from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar, Union
 
 import lark
 import pytmc
 import pytmc.parser
 
-RE_LEADING_WHITESPACE = re.compile('^[ \t]+', re.MULTILINE)
+from .typing import BlarkLineToFileLine
+
+RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
 AnyPath = Union[str, pathlib.Path]
 
 TWINCAT_PROJECT_FILE_EXTENSIONS = {".tsproj"}
@@ -37,6 +40,8 @@ class SourceType(enum.Enum):
     method = enum.auto()
     program = enum.auto()
     property = enum.auto()
+    property_get = enum.auto()
+    property_set = enum.auto()
     var_global = enum.auto()
     struct = enum.auto()
 
@@ -51,6 +56,8 @@ class SourceType(enum.Enum):
             SourceType.method: "function_block_method_declaration",
             SourceType.program: "program_declaration",
             SourceType.property: "function_block_property_declaration",
+            SourceType.property_get: "function_block_property_declaration",
+            SourceType.property_set: "function_block_property_declaration",
             SourceType.var_global: "global_var_declarations",
             SourceType.struct: "data_type_declaration",
         }[self]
@@ -63,19 +70,11 @@ class SourceType(enum.Enum):
             SourceType.method: "END_METHOD",
             SourceType.program: "END_PROGRAM",
             SourceType.property: "END_PROPERTY",
+            SourceType.property_get: "",
+            SourceType.property_set: "",
             SourceType.var_global: "END_VAR",
             SourceType.struct: "END_STRUCT",
         }[self]
-
-
-@dataclasses.dataclass
-class BlarkSourceCodeItem:
-    file: Optional[pathlib.Path]
-    line: int
-    type: SourceType
-    code: str
-    implicit_end: Optional[str]
-    grammar_rule: Optional[str]
 
 
 def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:
@@ -148,8 +147,7 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
 
     debug_namespace = dict(pytmc=pytmc, blark=blark)
     debug_namespace.update(
-        **{k: v for k, v in namespace.items()
-           if not k.startswith('__')}
+        **{k: v for k, v in namespace.items() if not k.startswith("__")}
     )
     globals().update(debug_namespace)
 
@@ -167,6 +165,7 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
         from IPython import embed  # noqa
     except ImportError:
         import pdb  # noqa
+
         pdb.set_trace()
     else:
         embed()
@@ -182,9 +181,7 @@ def find_pou_type(code: str) -> Optional[SourceType]:
     return None
 
 
-def remove_all_comments(
-    text: str, *, replace_char: str = " "
-) -> str:
+def remove_all_comments(text: str, *, replace_char: str = " ") -> str:
     """
     Remove all comments and replace them with the provided character.
     """
@@ -313,17 +310,19 @@ def find_and_clean_comments(
         replacement_line[colno + 1] = replace_char
         return "".join(replacement_line)
 
-    def get_token(start_line: int, start_col: int, end_line: int, end_col: int) -> lark.Token:
+    def get_token(
+        start_line: int, start_col: int, end_line: int, end_col: int
+    ) -> lark.Token:
         if start_line != end_line:
             block = "\n".join(
                 (
                     original_lines[start_line][start_col:],
-                    *original_lines[start_line + 1:end_line],
-                    original_lines[end_line][:end_col + 1]
+                    *original_lines[start_line + 1: end_line],
+                    original_lines[end_line][: end_col + 1],
                 )
             )
         else:
-            block = original_lines[start_line][start_col:end_col + 1]
+            block = original_lines[start_line][start_col: end_col + 1]
 
         if block.startswith("//"):
             type_ = "SINGLE_LINE_COMMENT"
@@ -339,7 +338,7 @@ def find_and_clean_comments(
             block = indent_inner(
                 RE_LEADING_WHITESPACE.sub("", block),
                 prefix={
-                    "SINGLE_LINE_COMMENT": "",   # this would be a bug
+                    "SINGLE_LINE_COMMENT": "",  # this would be a bug
                     "MULTI_LINE_COMMENT": "    ",
                     "PRAGMA": "    ",
                 }[type_],
@@ -348,8 +347,10 @@ def find_and_clean_comments(
         return lark.Token(
             type_,
             block,
-            line=start_line + 1, end_line=end_line + 1,
-            column=start_col + 1, end_column=end_col + 1,
+            line=start_line + 1,
+            end_line=end_line + 1,
+            column=start_col + 1,
+            end_column=end_col + 1,
         )
 
     for lineno, colno, this_ch, next_ch in get_characters():
@@ -398,9 +399,7 @@ def find_and_clean_comments(
             if pair == SINGLE_COMMENT:
                 in_single_comment = True
                 comments_and_pragmas.append(
-                    get_token(
-                        lineno, colno, lineno, len(lines[lineno])
-                    )
+                    get_token(lineno, colno, lineno, len(lines[lineno]))
                 )
                 continue
 
@@ -449,12 +448,12 @@ def get_tsprojects_from_filename(
         List of tsproj projects paths.
     """
     abs_path = pathlib.Path(filename).resolve()
-    if abs_path.suffix == '.tsproj':
+    if abs_path.suffix == ".tsproj":
         return abs_path.parent, [abs_path]
-    if abs_path.suffix == '.sln':
+    if abs_path.suffix == ".sln":
         return abs_path.parent, pytmc.parser.projects_from_solution(abs_path)
 
-    raise RuntimeError(f'Expected a .tsproj/.sln file; got {abs_path.suffix!r}')
+    raise RuntimeError(f"Expected a .tsproj/.sln file; got {abs_path.suffix!r}")
 
 
 def get_file_sha256(filename: AnyPath) -> str:
@@ -511,6 +510,53 @@ def try_paths(paths: List[AnyPath]) -> Optional[pathlib.Path]:
             pass
 
     options = "\n".join(str(path) for path in paths)
-    raise FileNotFoundError(
-        f"None of the possible files were found:\n{options}"
-    )
+    raise FileNotFoundError(f"None of the possible files were found:\n{options}")
+
+
+def _build_source_to_file_line_map(
+    file_lineno: int,
+    blark_lineno: int,
+    source: str,
+) -> BlarkLineToFileLine:
+    num_lines = len(source.splitlines())
+    file_lines = range(file_lineno, file_lineno + num_lines)
+    source_lines = range(blark_lineno, blark_lineno + num_lines)
+    return dict(zip(source_lines, file_lines))
+
+
+_T_Lark = TypeVar("_T_Lark", lark.Tree, lark.Token)
+
+
+def rebuild_lark_tree_with_line_map(
+    item: Optional[_T_Lark], code_line_to_file_line: dict[int, int]
+) -> _T_Lark:
+    """Rebuild a given lark tree, adjusting line numbers to match up with the source."""
+    if item is None:
+        return None
+
+    if isinstance(item, lark.Token):
+        if item.line is not None:
+            item.line = code_line_to_file_line.get(item.line, item.line)
+        if item.end_line is not None:
+            item.end_line = code_line_to_file_line.get(item.end_line, item.end_line)
+        return item
+
+    if isinstance(item, lark.Tree):
+        try:
+            meta = item.meta
+        except AttributeError:
+            meta = None
+        else:
+            meta.line = code_line_to_file_line.get(meta.line, meta.line)
+            meta.end_line = code_line_to_file_line.get(meta.end_line, meta.end_line)
+
+        return lark.Tree(
+            item.data,
+            children=[
+                rebuild_lark_tree_with_line_map(child, code_line_to_file_line)
+                for child in item.children
+            ],
+            meta=meta,
+        )
+
+    raise NotImplementedError(f"Type: {item.__class__.__name__}")

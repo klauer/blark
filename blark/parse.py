@@ -2,12 +2,15 @@
 `blark parse` is a command-line utility to parse TwinCAT3 source code
 files in conjunction with pytmc.
 """
+from __future__ import annotations
+
 import argparse
+import enum
 import json
 import pathlib
 import sys
 import traceback
-from typing import Generator, Optional, Tuple, Union
+from typing import Callable, Generator, Optional, Tuple, Union
 
 import lark
 import pytmc
@@ -32,6 +35,19 @@ AnyFile = Union[str, pathlib.Path]
 _PARSER = None
 
 
+class BlarkStartingRule(enum.Enum):
+    iec_source = enum.auto()
+    data_type_declaration = enum.auto()
+    function_declaration = enum.auto()
+    function_block_type_declaration = enum.auto()
+    function_block_method_declaration = enum.auto()
+    function_block_property_declaration = enum.auto()
+    program_declaration = enum.auto()
+    global_var_declarations = enum.auto()
+    statement_list = enum.auto()
+    action = enum.auto()
+
+
 def new_parser(**kwargs) -> lark.Lark:
     """
     Get a new parser for TwinCAT flavor IEC61131-3 code.
@@ -47,6 +63,7 @@ def new_parser(**kwargs) -> lark.Lark:
         parser="earley",
         maybe_placeholders=True,
         propagate_positions=True,
+        start=[rule.name for rule in BlarkStartingRule],
         **kwargs
     )
 
@@ -65,6 +82,7 @@ _DEFAULT_PREPROCESSORS = object()
 
 
 ParseResult = Union[Exception, tf.SourceCode, lark.Tree]
+Preprocessor = Callable[[str], str]
 
 
 def parse_source_code(
@@ -72,9 +90,11 @@ def parse_source_code(
     *,
     verbose: int = 0,
     fn: AnyPath = "unknown",
-    preprocessors=_DEFAULT_PREPROCESSORS,
+    preprocessors: list[Preprocessor] = _DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
+    starting_rule: Optional[str] = "iec_source",
+    line_map: Optional[dict[int, int]] = None,
 ) -> Union[tf.SourceCode, lark.Tree]:
     """
     Parse source code and return the transformed result.
@@ -113,7 +133,7 @@ def parse_source_code(
         parser = get_parser()
 
     try:
-        tree = parser.parse(processed_source)
+        tree = parser.parse(processed_source, start=starting_rule)
     except Exception as ex:
         if verbose > 1:
             print("[Failure] Parse failure")
@@ -123,6 +143,9 @@ def parse_source_code(
             print(f"{type(ex).__name__} {ex}")
             print(f"[Failure] {fn}")
         raise
+
+    if line_map is not None:
+        tree = util.rebuild_lark_tree_with_line_map(tree, line_map)
 
     if verbose > 2:
         print(f"Successfully parsed {fn}:")
