@@ -42,7 +42,7 @@ pip install --upgrade blark
 
 1. Preferably using non-system Python, set up an environment using, e.g., miniconda:
   ```bash
-  $ conda create -n blark-env python=3.7
+  $ conda create -n blark-env -c conda-forge python=3.7 blark
   $ conda activate blark-env
   ```
 2. Install the library (using conda or otherwise, these steps are the same)
