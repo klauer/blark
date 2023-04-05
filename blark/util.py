@@ -10,8 +10,6 @@ import lark
 import pytmc
 import pytmc.parser
 
-from .typing import BlarkLineToFileLine
-
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
 AnyPath = Union[str, pathlib.Path]
 
@@ -179,6 +177,17 @@ def find_pou_type(code: str) -> Optional[SourceType]:
         if parts and parts[0].lower() in types:
             return SourceType[parts[0].lower()]
     return None
+
+
+def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optional[str]]:
+    types = {source.name for source in SourceType}
+    clean_code = remove_all_comments(code)
+    for line in clean_code.splitlines():
+        parts = line.lstrip().split(None, 2)
+        if parts and parts[0].lower() in types:
+            identifier = parts[1] if len(parts) >= 2 else ""
+            return SourceType[parts[0].lower()], identifier
+    return None, None
 
 
 def remove_all_comments(text: str, *, replace_char: str = " ") -> str:
@@ -511,17 +520,6 @@ def try_paths(paths: List[AnyPath]) -> Optional[pathlib.Path]:
 
     options = "\n".join(str(path) for path in paths)
     raise FileNotFoundError(f"None of the possible files were found:\n{options}")
-
-
-def _build_source_to_file_line_map(
-    file_lineno: int,
-    blark_lineno: int,
-    source: str,
-) -> BlarkLineToFileLine:
-    num_lines = len(source.splitlines())
-    file_lines = range(file_lineno, file_lineno + num_lines)
-    source_lines = range(blark_lineno, blark_lineno + num_lines)
-    return dict(zip(source_lines, file_lines))
 
 
 _T_Lark = TypeVar("_T_Lark", lark.Tree, lark.Token)

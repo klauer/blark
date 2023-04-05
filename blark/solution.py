@@ -14,17 +14,9 @@ import lxml
 import lxml.etree
 
 from . import util
-from .input import BlarkCompositeSourceItem, BlarkSourceItem
-from .typing import ContainsBlarkCode
+from .input import BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine
+from .typing import ContainsBlarkCode, Self
 from .util import AnyPath, SourceType
-
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
-
-BlarkInputCode = Union[BlarkCompositeSourceItem, BlarkSourceItem]
-
 
 logger = logging.getLogger(__name__)
 
@@ -141,12 +133,14 @@ def get_child_located_text(
     tag: str,
     namespace: Optional[str] = None,
     namespaces: Optional[dict[str, str]] = None,
+    filename: Optional[pathlib.Path] = None,
 ) -> Optional[LocatedString]:
     namespace = f"{namespace}:" if namespace else ""
     elements = xml.xpath(f"{namespace}{tag}", namespaces=namespaces)
     try:
         return LocatedString(
-            line=elements[0].sourceline,
+            filename=filename,
+            lineno=elements[0].sourceline,
             value=elements[0].text,
         )
     except IndexError:
@@ -155,61 +149,53 @@ def get_child_located_text(
 
 @dataclasses.dataclass
 class LocatedString:
-    line: int
+    filename: Optional[pathlib.Path]
+    lineno: int
     value: str
     column: int = 0
+
+    def to_lines(self) -> list[BlarkSourceLine]:
+        return BlarkSourceLine.from_code(
+            self.value,
+            first_lineno=self.lineno,
+            filename=self.filename,
+        )
 
 
 @dataclasses.dataclass
 class TcDeclImpl:
+    identifier: str
     filename: Optional[pathlib.Path]
     source_type: Optional[SourceType]
     declaration: Optional[LocatedString]
     implementation: Optional[LocatedString]
     metadata: Optional[dict[str, Any]] = None
 
-    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+    def to_blark(self) -> list[BlarkSourceItem]:
         if self.source_type is None:
             return []
 
-        parts = []
+        lines = []
         if self.declaration is not None:
-            parts.append(
-                BlarkSourceItem(
-                    file=self.filename,
-                    type=self.source_type,
-                    implicit_end=None,
-                    grammar_rule=self.source_type.get_grammar_rule(),
-                    code=self.declaration.value,
-                    line=self.declaration.line,
-                )
-            )
+            lines.extend(self.declaration.to_lines())
 
-        if self.implementation is not None and self.implementation.value.strip():
-            # TODO - not ideal - empty statement list throws error
-            if util.remove_all_comments(self.implementation.value).strip():
-                parts.append(
-                    BlarkSourceItem(
-                        file=self.filename,
-                        type=self.source_type,
-                        implicit_end=None,
-                        grammar_rule="statement_list",
-                        code=self.implementation.value,
-                        line=self.implementation.line,
-                    )
-                )
+        if self.implementation is not None:
+            # # TODO - not ideal - empty statement list throws error
+            # # --- only when parsing an empty string with 'statement_list'
+            # grammar rule
+            # if util.remove_all_comments(self.implementation.value).strip():
+            lines.extend(self.implementation.to_lines())
 
-        if not parts:
+        if not lines:
             return []
-        # if len(parts) == 1:
-        #     return [parts[0]]
 
         return [
-            BlarkCompositeSourceItem(
+            BlarkSourceItem(
+                identifier=self.identifier,
                 type=self.source_type,
-                parts=parts,
-                implicit_end=self.source_type.get_implicit_block_end(),
+                lines=lines,
                 grammar_rule=self.source_type.get_grammar_rule(),
+                implicit_end=self.source_type.get_implicit_block_end(),
             )
         ]
 
@@ -232,15 +218,20 @@ class TcDeclImpl:
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
     ) -> Self:
-        declaration = get_child_located_text(xml, "Declaration")
+        declaration = get_child_located_text(xml, "Declaration", filename=filename)
         if declaration is not None:
-            source_type = util.find_pou_type(declaration.value)
+            source_type, identifier = util.find_pou_type_and_identifier(
+                declaration.value
+            )
         else:
-            source_type = None
+            source_type, identifier = None, None
         return cls(
+            identifier=identifier or (filename and filename.stem) or "unknown",
             declaration=declaration,
             # TODO: ST only supported for now
-            implementation=get_child_located_text(xml, "Implementation/ST"),
+            implementation=get_child_located_text(
+                xml, "Implementation/ST", filename=filename
+            ),
             metadata=xml.attrib,
             source_type=source_type,
             filename=filename,
@@ -436,24 +427,36 @@ class TcPOU(TcSource):
     _tag: ClassVar[str] = "POU"
     parts: list[Union[TcAction, TcMethod, TcProperty, TcUnknownXml]]
 
-    def to_blark(self) -> list[BlarkInputCode]:
+    def to_blark(self) -> list[BlarkCompositeSourceItem]:
         if self.source_type is None:
             raise RuntimeError("No source type set?")
 
-        items = []
+        parts = []
 
         if self.decl is not None:
-            items.extend(self.decl.to_blark())
+            identifier = self.decl.identifier
+            parts.extend(self.decl.to_blark())
+        else:
+            identifier = None
 
         for part in self.parts:
             if isinstance(part, ContainsBlarkCode):
-                items.extend(part.to_blark())
+                for item in part.to_blark():
+                    if identifier:
+                        item.identifier = f"{identifier}.{item.identifier}"
+                    parts.append(item)
             elif not isinstance(part, (TcExtraInfo, TcUnknownXml)):
                 raise NotImplementedError(
                     f"TcPOU portion {type(part)} not yet implemented"
                 )
 
-        return items
+        return [
+            BlarkCompositeSourceItem(
+                filename=self.filename,
+                identifier=self.decl.identifier if self.decl is not None else "unknown",
+                parts=parts,
+            )
+        ]
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
         super()._serialize(primary)
@@ -503,11 +506,6 @@ class TcPOU(TcSource):
 
 @dataclasses.dataclass
 class TcSourceChild(TcSource):
-    def to_blark(self) -> list[BlarkInputCode]:
-        if self.decl.declaration is None:
-            return []
-        return self.decl.to_blark()
-
     def _serialize(self, parent: lxml.etree.Element) -> None:
         super()._serialize(parent)
         parent.attrib.update(self.metadata or {})
@@ -535,10 +533,46 @@ class TcSourceChild(TcSource):
 class TcMethod(TcSourceChild):
     _tag: ClassVar[str] = "Method"
 
+    def to_blark(self) -> list[BlarkSourceItem]:
+        if self.decl.declaration is None:
+            return []
+        return self.decl.to_blark()
+
 
 @dataclasses.dataclass
 class TcAction(TcSourceChild):
     _tag: ClassVar[str] = "Action"
+
+    def to_blark(self) -> list[BlarkSourceItem]:
+        if self.decl is None or self.decl.implementation is None:
+            return []
+
+        # Actions have no declaration section; the implementation just has
+        # a statement list
+        lines = self.decl.implementation.to_lines()
+        if lines:
+            try:
+                first_line = lines[0]
+            except IndexError:
+                first_line = BlarkSourceLine(filename=None, lineno=1, code="")
+
+            lines.insert(
+                0,
+                BlarkSourceLine(
+                    filename=first_line.filename,
+                    lineno=first_line.lineno,
+                    code=f"ACTION {self.name} :",
+                ),
+            )
+        return [
+            BlarkSourceItem(
+                identifier=self.name,
+                lines=lines,
+                type=SourceType.action,
+                grammar_rule=SourceType.action.get_grammar_rule(),
+                implicit_end="END_ACTION",
+            )
+        ]
 
 
 @dataclasses.dataclass
@@ -548,29 +582,30 @@ class TcProperty(TcSourceChild):
     get: Optional[TcDeclImpl]
     set: Optional[TcDeclImpl]
 
-    def to_blark(self) -> list[BlarkInputCode]:
+    def to_blark(self) -> list[BlarkSourceItem]:
         # NOTE: ignoring super().to_blark()
         try:
-            base_decl = self.decl.to_blark()[0]
+            base_decl: BlarkSourceItem = self.decl.to_blark()[0]
         except IndexError:
             # The top-level Declaration holds the first line - ``PROPERTY name``
             # If it's not there, we don't have a property to use.
             return []
 
-        items = []
-        for get_set in (self.get, self.set):
+        parts = []
+        for identifier, get_set in (("get", self.get), ("set", self.set)):
             if get_set is not None:
                 (blark_input,) = get_set.to_blark()
-                items.append(
-                    BlarkCompositeSourceItem(
+                parts.append(
+                    BlarkSourceItem(
+                        identifier=f"{base_decl.identifier}.{identifier}",
                         type=SourceType.property,
-                        parts=[base_decl, blark_input],
+                        lines=base_decl.lines + blark_input.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
                     )
                 )
 
-        return items
+        return parts
 
     def _serialize(self, parent: lxml.etree.Element) -> None:
         super()._serialize(parent)

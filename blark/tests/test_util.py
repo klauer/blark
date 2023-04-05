@@ -1,11 +1,9 @@
 import pathlib
 import textwrap
-from typing import Dict
 
 import pytest
 
-from .. import util
-from ..input import BlarkCompositeSourceItem, BlarkSourceItem
+from ..input import BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine
 from ..util import SourceType, find_and_clean_comments
 
 
@@ -187,61 +185,55 @@ expected:
     print("comments=", comments)
 
 
-@pytest.mark.parametrize(
-    "source, file_line, blark_line, line_map",
-    [
-        ("a\nb\nc", 1, 1, {1: 1, 2: 2, 3: 3}),
-        ("a\nb\nc\nd", 10, 1, {1: 10, 2: 11, 3: 12, 4: 13}),
-        ("a\nb\nc", 1, 5, {5: 1, 6: 2, 7: 3}),
-        ("a\nb\nc\nd", 10, 5, {5: 10, 6: 11, 7: 12, 8: 13}),
-    ],
-)
-def test_line_map(
-    source: str,
-    file_line: int,
-    blark_line: int,
-    line_map: Dict[int, int],
-):
-    assert (
-        util._build_source_to_file_line_map(file_line, blark_line, source) == line_map
-    )
+def build_lines(
+    filename: pathlib.Path, code: str, lineno: int
+) -> list[BlarkSourceLine]:
+    return [
+        BlarkSourceLine(filename=filename, lineno=lineno, code=line)
+        for lineno, line in enumerate(code.splitlines(), start=lineno)
+    ]
 
 
 def test_line_map_composite():
-    composite = BlarkCompositeSourceItem(
-        type=SourceType.method,
-        parts=[
-            BlarkSourceItem(
-                file=pathlib.Path("FB_DummyHA.TcPOU"),
-                line=64,
-                type=SourceType.method,
-                code=(
-                    "\n"
-                    "METHOD RequestBP : BOOL\n"
-                    "VAR_INPUT\n"
-                    "\t(*StateID of state requesting beam parameter set*)\n"
-                    "\tnReqID\t: DWORD;\n"
-                    "\t(*Requested beam params*)\n"
-                    "\tstReqBP\t: ST_BeamParams;\n"
-                    "END_VAR\n"
-                ),
-                implicit_end=None,
-                grammar_rule="function_block_method_declaration",
-            ),
-            BlarkSourceItem(
-                file=pathlib.Path("FB_DummyHA.TcPOU"),
-                line=74,
-                type=SourceType.method,
-                code="RequestBP := TRUE;",
-                implicit_end=None,
-                grammar_rule="statement_list",
-            ),
-        ],
-        implicit_end="END_METHOD",
-        grammar_rule="function_block_method_declaration",
+    filename = pathlib.Path("FB_DummyHA.TcPOU")
+    method_lines = build_lines(
+        lineno=64,
+        filename=filename,
+        code=(
+            "\n"
+            "METHOD RequestBP : BOOL\n"
+            "VAR_INPUT\n"
+            "\t(*StateID of state requesting beam parameter set*)\n"
+            "\tnReqID\t: DWORD;\n"
+            "\t(*Requested beam params*)\n"
+            "\tstReqBP\t: ST_BeamParams;\n"
+            "END_VAR\n"
+        ),
     )
 
-    code, line_map = composite.get_code(include_end=True)
+    method_lines.extend(
+        build_lines(
+            filename=filename,
+            lineno=74,
+            code="RequestBP := TRUE;",
+        )
+    )
+
+    composite = BlarkCompositeSourceItem(
+        filename=filename,
+        identifier="FB_DummyHA",
+        parts=[
+            BlarkSourceItem(
+                identifier="FB_DummyHA.RequestBP",
+                type=SourceType.method,
+                lines=method_lines,
+                implicit_end="END_METHOD",
+                grammar_rule="function_block_method_declaration",
+            ),
+        ],
+    )
+
+    code, line_map = composite.get_code_and_line_map(include_end=True)
     print(code)
     expected_code = (
         "\n"
