@@ -76,7 +76,7 @@ iec_source
 ... (clipped) ...
 ```
 
-To interact with the Python data-classes directly, use:
+To interact with the Python dataclasses directly, use:
 
 ```
 $ blark parse --interactive blark/tests/POUs/F_SetStateParams.TcPOU
