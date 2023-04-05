@@ -176,7 +176,8 @@ modified, and in cases entirely rewritten to better support lark grammars and
 transformers.
 
 Special thanks to the blark contributors:
-* @engineerjoe440 
+
+- @engineerjoe440
 
 ## Related, Similar, or Alternative Projects
 
@@ -196,3 +197,4 @@ compiler written in Rust. As stated by the project:
 - [IEC Checker](https://github.com/jubnzv/iec-checker) - Static analysis tool
 for IEC 61131-3 logic. As described by the maintainer:
   > iec-checker has the ability to parse ST source code and dump AST and CFG to JSON format, so you can process it with your language of choice.
+- [TcBlack](https://github.com/Roald87/TcBlack) - Python black-like code formatter for TwinCAT code.
