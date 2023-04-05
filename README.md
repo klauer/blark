@@ -175,6 +175,9 @@ by Flor Narciso et al.  Many aspects of the grammar have been added to,
 modified, and in cases entirely rewritten to better support lark grammars and
 transformers.
 
+Special thanks to the blark contributors:
+* @engineerjoe440 
+
 ## Related, Similar, or Alternative Projects
 
 There are a number of similar, or related projects that are available.
