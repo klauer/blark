@@ -1073,7 +1073,7 @@ def test_action_roundtrip(rule_name, value):
             END_FOR
             """
         )),
-        param("function_call_statement_list", tf.multiline_code_block(
+        param("chained_function_call_statement", tf.multiline_code_block(
             """
             uut.call1().call2().call3.call4().done();
             """

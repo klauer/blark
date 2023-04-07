@@ -722,7 +722,7 @@ _statement: ";"
           | reset_statement
           | reference_assignment_statement
           | return_statement
-          | function_call_statement_list
+          | chained_function_call_statement
           | function_call_statement
           | if_statement
           | case_statement
@@ -753,7 +753,7 @@ return_statement.1: "RETURN"i ";"*
 
 function_call_statement: function_call ";"+
 
-function_call_statement_list: function_call ("." function_call)+ ";"+
+chained_function_call_statement: function_call ("." function_call)+ ";"+
 
 param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
                 | variable_name ":=" [ expression ]

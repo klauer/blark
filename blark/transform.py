@@ -2605,14 +2605,14 @@ class FunctionCallStatement(Statement, FunctionCall):
 
 
 @dataclass
-@_rule_handler("function_call_statement_list", comments=True)
-class FunctionCallStatementList(Statement):
+@_rule_handler("chained_function_call_statement", comments=True)
+class ChainedFunctionCallStatement(Statement):
     invocations: List[FunctionCall]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*invocations: FunctionCall) -> FunctionCallStatementList:
-        return FunctionCallStatementList(
+    def from_lark(*invocations: FunctionCall) -> ChainedFunctionCallStatement:
+        return ChainedFunctionCallStatement(
             invocations=list(invocations)
         )
 
