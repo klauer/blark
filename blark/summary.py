@@ -650,7 +650,7 @@ class ProgramSummary(Summary):
 
 
 def path_to_file_and_line(path: List[Summary]) -> List[Tuple[pathlib.Path, int]]:
-    """Get symbol metadata given a pytmc Symbol."""
+    """Get the file/line number context for the summary items."""
     return [(part.filename, part.item.meta.line) for part in path]
 
 

@@ -7,41 +7,23 @@ import re
 from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar, Union
 
 import lark
-import pytmc
-import pytmc.parser
 
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
 AnyPath = Union[str, pathlib.Path]
-
-TWINCAT_PROJECT_FILE_EXTENSIONS = {".tsproj"}
-TWINCAT_SOURCE_EXTENSIONS = {
-    ".tcdut",  # data unit type
-    # ".tcgtlo",  # global text list object
-    ".tcgvl",  # global variable list
-    # ".tcipo",  # image pool
-    ".tcpou",  # program organization unit
-    # ".tcrmo",  # recipe manager
-    # ".tctlo",  # text list object
-    # ".tctto",  # task object
-    # ".tcvis",  # visualization
-    # ".tcvmo",  # visualization manager object
-    # ".tmc",  # module class - description of project
-    # ".tpy",  # tmc-like inter-vendor format
-    # ".xti",  # independent project file
-}
 
 
 class SourceType(enum.Enum):
     action = enum.auto()
     function = enum.auto()
     function_block = enum.auto()
+    interface = enum.auto()
     method = enum.auto()
     program = enum.auto()
     property = enum.auto()
     property_get = enum.auto()
     property_set = enum.auto()
-    var_global = enum.auto()
     struct = enum.auto()
+    var_global = enum.auto()
 
     def __str__(self) -> str:
         return self.name
@@ -51,13 +33,16 @@ class SourceType(enum.Enum):
             SourceType.action: "action",
             SourceType.function: "function_declaration",
             SourceType.function_block: "function_block_type_declaration",
+            # TODO no grammar rule exists yet for 'INTERFACE'
+            SourceType.interface: "iec_source",
             SourceType.method: "function_block_method_declaration",
             SourceType.program: "program_declaration",
             SourceType.property: "function_block_property_declaration",
             SourceType.property_get: "function_block_property_declaration",
             SourceType.property_set: "function_block_property_declaration",
-            SourceType.var_global: "global_var_declarations",
             SourceType.struct: "data_type_declaration",
+            # NOTE: multiple definitions can be present in GVLs:
+            SourceType.var_global: "iec_source",
         }[self]
 
     def get_implicit_block_end(self) -> str:
@@ -65,13 +50,14 @@ class SourceType(enum.Enum):
             SourceType.action: "END_ACTION",
             SourceType.function: "END_FUNCTION",
             SourceType.function_block: "END_FUNCTION_BLOCK",
+            SourceType.interface: "END_INTERFACE",
             SourceType.method: "END_METHOD",
             SourceType.program: "END_PROGRAM",
             SourceType.property: "END_PROPERTY",
             SourceType.property_get: "",
             SourceType.property_set: "",
-            SourceType.var_global: "END_VAR",
-            SourceType.struct: "END_STRUCT",
+            SourceType.struct: "",
+            SourceType.var_global: "",
         }[self]
 
 
@@ -104,22 +90,13 @@ def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:
         it.
     """
     fn = pathlib.Path(fn)
+    from .input import load_file_by_name
+    result = []
+    for item in load_file_by_name(fn):
+        code, _ = item.get_code_and_line_map()
+        result.append(code)
 
-    if fn.suffix.lower() not in TWINCAT_SOURCE_EXTENSIONS:
-        with open(fn, "rt", encoding=encoding) as fp:
-            return fp.read()
-
-    root = pytmc.parser.parse(fn)
-
-    for item in root.find(pytmc.parser.TwincatItem):
-        get_source = getattr(item, "get_source_code", None)
-        if get_source is not None:
-            return get_source()
-
-    raise ValueError(
-        "Unable to find pytmc TwincatItem with source code "
-        "(i.e., with `get_source_code` as an attribute)"
-    )
+    return "\n\n".join(result)
 
 
 def indent_inner(text: str, prefix: str) -> str:
@@ -143,7 +120,7 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
     """
     import blark  # noqa
 
-    debug_namespace = dict(pytmc=pytmc, blark=blark)
+    debug_namespace = {"blark": blark}
     debug_namespace.update(
         **{k: v for k, v in namespace.items() if not k.startswith("__")}
     )
@@ -167,16 +144,6 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
         pdb.set_trace()
     else:
         embed()
-
-
-def find_pou_type(code: str) -> Optional[SourceType]:
-    types = {source.name for source in SourceType}
-    clean_code = remove_all_comments(code)
-    for line in clean_code.splitlines():
-        parts = line.lstrip().split(None, 1)
-        if parts and parts[0].lower() in types:
-            return SourceType[parts[0].lower()]
-    return None
 
 
 def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optional[str]]:
@@ -441,30 +408,6 @@ def remove_comment_characters(text: str) -> str:
     return text.strip("()").strip("* ")
 
 
-def get_tsprojects_from_filename(
-    filename: AnyPath,
-) -> Tuple[pathlib.Path, List[pathlib.Path]]:
-    """
-    From a TwinCAT solution (.sln) or .tsproj, return all tsproj projects.
-
-    Returns
-    -------
-    root : pathlib.Path
-        Project root directory (where the solution or provided tsproj is
-        located).
-
-    projects : list of pathlib.Path
-        List of tsproj projects paths.
-    """
-    abs_path = pathlib.Path(filename).resolve()
-    if abs_path.suffix == ".tsproj":
-        return abs_path.parent, [abs_path]
-    if abs_path.suffix == ".sln":
-        return abs_path.parent, pytmc.parser.projects_from_solution(abs_path)
-
-    raise RuntimeError(f"Expected a .tsproj/.sln file; got {abs_path.suffix!r}")
-
-
 def get_file_sha256(filename: AnyPath) -> str:
     """Hash a file's contents with the SHA-256 algorithm."""
     with open(filename, "rb") as fp:
@@ -526,12 +469,9 @@ _T_Lark = TypeVar("_T_Lark", lark.Tree, lark.Token)
 
 
 def rebuild_lark_tree_with_line_map(
-    item: Optional[_T_Lark], code_line_to_file_line: dict[int, int]
+    item: _T_Lark, code_line_to_file_line: dict[int, int]
 ) -> _T_Lark:
     """Rebuild a given lark tree, adjusting line numbers to match up with the source."""
-    if item is None:
-        return None
-
     if isinstance(item, lark.Token):
         if item.line is not None:
             item.line = code_line_to_file_line.get(item.line, item.line)
@@ -539,22 +479,25 @@ def rebuild_lark_tree_with_line_map(
             item.end_line = code_line_to_file_line.get(item.end_line, item.end_line)
         return item
 
-    if isinstance(item, lark.Tree):
-        try:
-            meta = item.meta
-        except AttributeError:
-            meta = None
-        else:
+    if not isinstance(item, lark.Tree):
+        raise NotImplementedError(f"Type: {item.__class__.__name__}")
+
+    try:
+        meta = item.meta
+    except AttributeError:
+        meta = None
+    else:
+        if not meta.empty:
             meta.line = code_line_to_file_line.get(meta.line, meta.line)
             meta.end_line = code_line_to_file_line.get(meta.end_line, meta.end_line)
 
-        return lark.Tree(
-            item.data,
-            children=[
-                rebuild_lark_tree_with_line_map(child, code_line_to_file_line)
-                for child in item.children
-            ],
-            meta=meta,
-        )
-
-    raise NotImplementedError(f"Type: {item.__class__.__name__}")
+    return lark.Tree(
+        item.data,
+        children=[
+            None
+            if child is None
+            else rebuild_lark_tree_with_line_map(child, code_line_to_file_line)
+            for child in item.children
+        ],
+        meta=meta,
+    )

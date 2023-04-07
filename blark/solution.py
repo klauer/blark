@@ -1,3 +1,26 @@
+"""
+``blark.solution`` - TwinCAT solution/tsproj/plcproj/source code loading helpers.
+
+
+TwinCAT source file extensions for reference:
+    .tcdut    data unit type
+    .tcgtlo   global text list object
+    .tcgvl    global variable list
+    .tcio     interface
+    .tcipo    image pool
+    .tcpou    program organization unit
+    .tcrmo    recipe manager
+    .tctlo    text list object
+    .tctto    task object
+    .tcvis    visualization
+    .tcvmo    visualization manager object
+    .tmc      module class - description of project
+    .tpy      tmc-like inter-vendor format
+    .xti      independent project file
+    .sln      Visual Studio solution
+    .tsproj   TwinCAT project
+    .plcproj  TwinCAT PLC project
+"""
 from __future__ import annotations
 
 import codecs
@@ -8,13 +31,14 @@ import logging
 import pathlib
 import re
 from collections.abc import Generator
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar, List, Optional, Union
 
 import lxml
 import lxml.etree
 
 from . import util
-from .input import BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine
+from .input import (BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine,
+                    register_file_handler)
 from .typing import ContainsBlarkCode, Self
 from .util import AnyPath, SourceType
 
@@ -54,7 +78,7 @@ def parse_xml_file(fn: AnyPath) -> lxml.etree.Element:
     return tree.getroot()
 
 
-def parse_xml_contents(contents: str) -> lxml.etree.Element:
+def parse_xml_contents(contents: Union[bytes, str]) -> lxml.etree.Element:
     """Parse the given XML contents with lxml.etree."""
     return lxml.etree.fromstring(contents)
 
@@ -171,7 +195,7 @@ class TcDeclImpl:
     implementation: Optional[LocatedString]
     metadata: Optional[dict[str, Any]] = None
 
-    def to_blark(self) -> list[BlarkSourceItem]:
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
             return []
 
@@ -180,10 +204,6 @@ class TcDeclImpl:
             lines.extend(self.declaration.to_lines())
 
         if self.implementation is not None:
-            # # TODO - not ideal - empty statement list throws error
-            # # --- only when parsing an empty string with 'statement_list'
-            # grammar rule
-            # if util.remove_all_comments(self.implementation.value).strip():
             lines.extend(self.implementation.to_lines())
 
         if not lines:
@@ -324,7 +344,7 @@ class TcSource:
     @classmethod
     def from_contents(
         cls: type[Self],
-        contents: str,
+        contents: bytes,
         filename: Optional[pathlib.Path] = None,
     ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
         return cls.from_xml(parse_xml_contents(contents), filename=filename)
@@ -334,7 +354,7 @@ class TcSource:
         cls: type[Self],
         filename: AnyPath,
     ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
-        with open(filename) as fp:
+        with open(filename, "rb") as fp:
             raw_contents = fp.read()
         return cls.from_contents(raw_contents, filename=pathlib.Path(filename))
 
@@ -342,19 +362,38 @@ class TcSource:
 @dataclasses.dataclass
 class TcDUT(TcSource):
     _tag: ClassVar[str] = "DUT"
+    file_extension: ClassVar[str] = ".TcDUT"
     source_type: ClassVar[SourceType] = SourceType.struct
+
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+        if self.decl is not None:
+            return self.decl.to_blark()
+        return []
 
 
 @dataclasses.dataclass
 class TcGVL(TcSource):
     _tag: ClassVar[str] = "GVL"
+    file_extension: ClassVar[str] = ".TcGVL"
     source_type: ClassVar[SourceType] = SourceType.var_global
+
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+        if self.decl is not None:
+            return self.decl.to_blark()
+        return []
 
 
 @dataclasses.dataclass
 class TcIO(TcSource):
     _tag: ClassVar[str] = "Itf"
+    file_extension: ClassVar[str] = ".TcIO"
+
     parts: list[Union[TcMethod, TcProperty, TcUnknownXml]]
+
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+        if self.decl is not None:
+            return self.decl.to_blark()
+        return []
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
         super()._serialize(primary)
@@ -406,7 +445,11 @@ class TcIO(TcSource):
 @dataclasses.dataclass
 class TcTTO(TcSource):
     _tag: ClassVar[str] = "Task"
+    file_extension: ClassVar[str] = ".TcTTO"
     xml: lxml.etree.Element
+
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+        return []
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
         primary.getparent().replace(primary, self.xml)
@@ -425,9 +468,10 @@ class TcTTO(TcSource):
 @dataclasses.dataclass
 class TcPOU(TcSource):
     _tag: ClassVar[str] = "POU"
+    file_extension: ClassVar[str] = ".TcPOU"
     parts: list[Union[TcAction, TcMethod, TcProperty, TcUnknownXml]]
 
-    def to_blark(self) -> list[BlarkCompositeSourceItem]:
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
             raise RuntimeError("No source type set?")
 
@@ -533,7 +577,7 @@ class TcSourceChild(TcSource):
 class TcMethod(TcSourceChild):
     _tag: ClassVar[str] = "Method"
 
-    def to_blark(self) -> list[BlarkSourceItem]:
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl.declaration is None:
             return []
         return self.decl.to_blark()
@@ -543,7 +587,7 @@ class TcMethod(TcSourceChild):
 class TcAction(TcSourceChild):
     _tag: ClassVar[str] = "Action"
 
-    def to_blark(self) -> list[BlarkSourceItem]:
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is None or self.decl.implementation is None:
             return []
 
@@ -582,7 +626,7 @@ class TcProperty(TcSourceChild):
     get: Optional[TcDeclImpl]
     set: Optional[TcDeclImpl]
 
-    def to_blark(self) -> list[BlarkSourceItem]:
+    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         # NOTE: ignoring super().to_blark()
         try:
             base_decl: BlarkSourceItem = self.decl.to_blark()[0]
@@ -667,7 +711,7 @@ class TcUnknownXml:
 
 @dataclasses.dataclass
 class TwincatSourceCodeItem:
-    saved_path: pathlib.PureWindowsPath
+    saved_path: pathlib.PurePath
     local_path: Optional[pathlib.Path]
     subtype: Optional[str]
     link_always: bool
@@ -759,6 +803,13 @@ class TwincatSourceCodeItem:
 
 @dataclasses.dataclass
 class TwincatPlcProject:
+    """
+    A TwinCAT PLC project.
+
+    This typically corresponds to a single ``.plcproj`` file.
+    """
+
+    file_extension: ClassVar[str] = ".plcproj"
     guid: str
     xti_path: Optional[pathlib.Path]
     plcproj_path: Optional[pathlib.Path]
@@ -768,7 +819,7 @@ class TwincatPlcProject:
     @classmethod
     def from_standalone_xml(
         cls: type[Self],
-        xti_xml: Optional[lxml.etree.Element],
+        tsproj_or_xti_xml: Optional[lxml.etree.Element],
         plcproj_xml: lxml.etree.Element,
     ) -> Self:
         namespaces = {"msbuild": plcproj_xml.xpath("namespace-uri()")}
@@ -788,11 +839,23 @@ class TwincatPlcProject:
         ]
         return cls(
             guid=properties.get("ProjectGuid", ""),
-            xti_path=filename_from_xml(xti_xml),
+            xti_path=filename_from_xml(tsproj_or_xti_xml),
             plcproj_path=filename_from_xml(plcproj_xml),
             sources=[source for source in sources if source is not None],
             properties=properties,
         )
+
+    @property
+    def name(self) -> Optional[str]:
+        return self.properties.get("Name", None)
+
+    @classmethod
+    def from_filename(
+        cls: type[Self],
+        filename: pathlib.Path,
+    ) -> Self:
+        plcproj = parse_xml_file(filename)
+        return cls.from_standalone_xml(None, plcproj)
 
     @classmethod
     def from_xti_filename(cls: type[Self], xti_filename: pathlib.Path) -> Self:
@@ -809,22 +872,33 @@ class TwincatPlcProject:
     @classmethod
     def from_project_xml(
         cls: type[Self],
-        plc_project: lxml.etree.Element,
+        xml: lxml.etree.Element,
         root: pathlib.Path,
     ) -> Self:
         # tsproj -> xti -> plcproj
-        file = plc_project.attrib.get("File", None)
-        if file is None:
-            # return cls.from_standalone_xml(plc_project, None)
-            raise NotImplementedError
+        file = xml.attrib.get("File", None)
+        if file is not None:
+            # The PLC project is saved externally in ``xti_filename``.
+            plc_filename = pathlib.Path(file)
+            xti_filename = root / "_Config" / "PLC" / plc_filename
+            return cls.from_xti_filename(xti_filename=xti_filename)
 
-        plc_filename = pathlib.Path(file)
-        xti_filename = root / "_Config" / "PLC" / plc_filename
-        return cls.from_xti_filename(xti_filename=xti_filename)
+        project_file_path = xml.attrib.get("PrjFilePath")
+        if project_file_path is None:
+            raise RuntimeError(
+                f"Unsupported project saving format; neither 'File' nor 'PrjFilePath' "
+                f"is present in the XML attributes of {xml.tag}"
+            )
 
-    # @classmethod
-    # def from_filename(cls: type[Self], filename: pathlib.Path) -> Self:
-    #     return cls.from_standalone_xml(parse_xml_file(filename), filename.parent)
+        # The PLC project settings are partly saved in the tsproj file; the rest
+        # will come from the .plcproj (as part of PlcProjPath).
+        xml_filename = filename_from_xml(xml)
+        plcproj_parent = xml_filename.parent if xml_filename is not None else root
+        plcproj_path = util.fix_case_insensitive_path(
+            plcproj_parent / pathlib.PureWindowsPath(project_file_path)
+        )
+        plcproj = parse_xml_file(plcproj_path)
+        return cls.from_standalone_xml(xml, plcproj)
 
 
 def get_project_guid(element: lxml.etree.Element) -> str:
@@ -847,16 +921,25 @@ def get_project_target_netid(element: lxml.etree.Element) -> str:
 
 @dataclasses.dataclass
 class TwincatTsProject:
+    file_extension: ClassVar[str] = ".tsproj"
     guid: str
     netid: str
-    path: pathlib.Path
+    path: Optional[pathlib.Path]
     plcs: list[TwincatPlcProject]
+
+    @property
+    def plcs_by_name(self) -> dict[str, TwincatPlcProject]:
+        return {
+            plc.name: plc
+            for plc in self.plcs
+            if plc.name is not None
+        }
 
     @classmethod
     def from_filename(cls, filename: pathlib.Path) -> TwincatTsProject:
         tsproj = parse_xml_file(filename)
         plcs = [
-            TwincatPlcProject.from_project_xml(plc_project, filename.parent)
+            TwincatPlcProject.from_project_xml(plc_project, root=filename.parent)
             for plc_project in tsproj.xpath("/TcSmProject/Project/Plc/Project")
         ]
 
@@ -871,30 +954,53 @@ class TwincatTsProject:
 @dataclasses.dataclass
 class Project:
     name: str
-    saved_path: pathlib.PureWindowsPath
+    saved_path: pathlib.PurePath
     local_path: Optional[pathlib.Path]
     guid: str
     solution_guid: str
+    loaded: Optional[TwincatTsProject] = None
 
-    # def find_source_code(
-    #     self, root: pathlib.Path
-    # ) -> Generator[SourceCodeFile, None, None]:
-    #     ...
-    #
-    def load(self):
+    @classmethod
+    def from_filename(cls: type[Self], filename: AnyPath) -> Self:
+        filename = pathlib.Path(filename)
+        if filename.suffix.lower() in (".plcproj",):
+            plc = TwincatPlcProject.from_filename(filename)
+            loaded = TwincatTsProject(
+                guid="",
+                netid="",
+                path=None,
+                plcs=[plc],
+            )
+        else:
+            loaded = TwincatTsProject.from_filename(filename)
+        return cls(
+            name=filename.name,  # TODO
+            solution_guid="",  # TODO
+            saved_path=filename,  # TODO
+            local_path=filename,
+            guid=loaded.guid,
+            loaded=loaded,
+        )
+
+    def load(self) -> TwincatTsProject:
+        if self.loaded is not None:
+            return self.loaded
+
         if self.local_path is None:
             raise FileNotFoundError(
                 f"File from project settings not found: {self.saved_path}"
             )
 
         if self.local_path.suffix.lower() in (".tsproj",):
-            return TwincatTsProject.from_filename(self.local_path)
+            self.loaded = TwincatTsProject.from_filename(self.local_path)
+            return self.loaded
 
         raise NotImplementedError(f"Format not yet supported: {self.local_path.suffix}")
 
 
 @dataclasses.dataclass
 class Solution:
+    file_extension: ClassVar[str] = ".sln"
     root: pathlib.Path
     projects: list[Project]
     filename: Optional[pathlib.Path] = None
@@ -902,6 +1008,18 @@ class Solution:
     @property
     def projects_by_name(self) -> dict[str, Project]:
         return {project.name: project for project in self.projects}
+
+    @classmethod
+    def from_projects(
+        cls: type[Self],
+        root: pathlib.Path,
+        projects: List[pathlib.Path],
+    ) -> Self:
+        return cls(
+            root=root,
+            filename=None,
+            projects=[Project.from_filename(proj) for proj in projects],
+        )
 
     @classmethod
     def from_contents(
@@ -926,3 +1044,68 @@ class Solution:
             root=filename.parent,
             filename=filename,
         )
+
+
+def make_solution_from_files(filename: AnyPath) -> Solution:
+    """
+    From a TwinCAT solution (.sln) or .tsproj, get a Solution instance.
+
+    Returns
+    -------
+    Solution
+    """
+    abs_path = pathlib.Path(filename).resolve()
+    if abs_path.suffix.lower() == ".sln":
+        return Solution.from_filename(abs_path)
+
+    return Solution.from_projects(root=abs_path.parent, projects=[abs_path])
+
+
+def single_file_loader(
+    filename: pathlib.Path,
+) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    source = TcSource.from_filename(filename)
+    if source is None:
+        logger.warning("No source found in file %s (is this in error?)", filename)
+        return []
+    return source.to_blark()
+
+
+def get_blark_input_from_solution(
+    solution: Solution,
+) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    all_source = []
+    for project in solution.projects:
+        project = project.load()
+        for plc in project.plcs:
+            for source in plc.sources:
+                all_source.append(source)
+
+    inputs = []
+    for item in all_source:
+        if item.contents is not None:
+            inputs.extend(item.contents.to_blark())
+    return inputs
+
+
+def project_loader(
+    filename: pathlib.Path,
+) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    solution = Solution.from_projects(filename.parent, [filename])
+    return get_blark_input_from_solution(solution)
+
+
+def solution_loader(
+    filename: pathlib.Path,
+) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    solution = Solution.from_filename(filename)
+    return get_blark_input_from_solution(solution)
+
+
+register_file_handler(TcPOU.file_extension, single_file_loader)
+register_file_handler(TcGVL.file_extension, single_file_loader)
+register_file_handler(TcIO.file_extension, single_file_loader)
+register_file_handler(TcDUT.file_extension, single_file_loader)
+register_file_handler(Solution.file_extension, solution_loader)
+register_file_handler(TwincatTsProject.file_extension, project_loader)
+register_file_handler(TwincatPlcProject.file_extension, project_loader)

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-from typing import Optional, Type, Union
+from typing import Callable, List, Optional, Type, Union
 
 from .typing import Self
-from .util import SourceType
+from .util import SourceType, find_pou_type_and_identifier
 
 
 @dataclasses.dataclass(frozen=True)
@@ -52,7 +52,7 @@ class BlarkSourceItem:
             blark_line: line.lineno
             for blark_line, line in enumerate(self.lines, start=blark_lineno)
         }
-        if self.implicit_end and include_end:
+        if line_map and self.implicit_end and include_end:
             line_map[max(line_map) + 1] = max(line_map.values())
             code = "\n".join((code, self.implicit_end))
         return code, line_map
@@ -61,7 +61,7 @@ class BlarkSourceItem:
 @dataclasses.dataclass
 class BlarkCompositeSourceItem:
     identifier: str
-    filename: pathlib.Path  # primary filename?
+    filename: Optional[pathlib.Path]  # primary filename?
     parts: list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
 
     @property
@@ -97,3 +97,58 @@ class BlarkCompositeSourceItem:
             for line in part.lines
             if line.filename is not None
         }
+
+
+handlers = {}
+
+Handler = Callable[
+    [pathlib.Path], List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+]
+
+
+class UnsupportedFileFormatError(Exception):
+    ...
+
+
+def register_file_handler(extension: str, handler: Handler):
+    handlers[extension.lower()] = handler
+
+
+def load_file_by_name(
+    filename: pathlib.Path,
+) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    try:
+        handler = handlers[filename.suffix.lower()]
+    except KeyError:
+        raise UnsupportedFileFormatError(
+            f"Unable to find a handler for {filename} based on file extension. "
+            f"Supported extensions: {list(handlers)}"
+        ) from None
+    else:
+        return handler(filename)
+
+
+def plain_file_loader(
+    filename: pathlib.Path,
+) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    with open(filename, "rt") as fp:
+        contents = fp.read()
+
+    source_type, identifier = find_pou_type_and_identifier(contents)
+    if source_type is None:
+        return []
+    item = BlarkSourceItem(
+        identifier=identifier,
+        lines=[
+            BlarkSourceLine(filename=filename, lineno=lineno, code=line)
+            for lineno, line in enumerate(contents.splitlines(), 1)
+        ],
+        type=source_type,
+        grammar_rule=source_type.get_grammar_rule(),
+        implicit_end=None,  # <-- assume this is already specified
+    )
+    return [item]
+
+
+register_file_handler(".txt", plain_file_loader)
+register_file_handler(".st", plain_file_loader)

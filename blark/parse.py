@@ -1,6 +1,6 @@
 """
-`blark parse` is a command-line utility to parse TwinCAT3 source code
-files in conjunction with pytmc.
+`blark parse` is a command-line utility to parse TwinCAT3 source code projects
+and files.
 """
 from __future__ import annotations
 
@@ -13,13 +13,13 @@ import traceback
 from typing import Callable, Generator, Optional, Tuple, Union
 
 import lark
-import pytmc
 
 import blark
 
-from . import summary
+from . import solution, summary
 from . import transform as tf
 from . import util
+from .input import BlarkCompositeSourceItem, BlarkSourceItem, load_file_by_name
 from .transform import GrammarTransformer
 from .util import AnyPath
 
@@ -160,7 +160,16 @@ def parse_source_code(
     if verbose > 2:
         print(f"Successfully parsed {fn}:")
         print("-------------------------------")
-        print(source_code)
+
+        if line_map is not None:
+            code_lines = dict(enumerate(source_code.splitlines(), 1))
+            for code_lineno, source_lineno in line_map.items():
+                line = code_lines[code_lineno]
+                print(f"{code_lineno} ({source_lineno}) {line}")
+        else:
+            for lineno, line in enumerate(source_code.splitlines(), 1):
+                print(f"{lineno}: {line}")
+
         print("-------------------------------")
         print(tree.pretty())
         print("-------------------------------")
@@ -186,40 +195,6 @@ def parse_single_file(
     return parse_source_code(source_code, fn=fn, transform=transform, verbose=verbose)
 
 
-def parse_plc(
-    plc: pytmc.parser.Plc,
-    *,
-    verbose: int = 0,
-    transform: bool = True
-) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
-    """Parse a single PLC instance from pytmc."""
-    source_items = (
-        item
-        for item in (
-            list(plc.dut_by_name.values())
-            + list(plc.gvl_by_name.values())
-            + list(plc.pou_by_name.values())
-        )
-        if hasattr(item, "get_source_code")
-    )
-    for source_item in source_items:
-        source_code = source_item.get_source_code()
-        if not source_code:
-            continue
-
-        try:
-            yield source_item.filename, parse_source_code(
-                source_code,
-                fn=source_item.filename,
-                verbose=verbose,
-                transform=transform,
-            )
-        except Exception as ex:
-            tb = traceback.format_exc()
-            ex.traceback = tb
-            yield source_item.filename, ex
-
-
 def parse_project(
     tsproj_project: AnyFile,
     *,
@@ -227,41 +202,56 @@ def parse_project(
     transform: bool = True
 ) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """Parse an entire tsproj project file."""
-    proj_path = pathlib.Path(tsproj_project).resolve()
-    if proj_path.suffix.lower() not in (".tsproj",):
-        raise ValueError("Expected a .tsproj file")
+    sol = solution.make_solution_from_files(tsproj_project)
+    for item in solution.get_blark_input_from_solution(sol):
+        yield from parse_item(item, verbose=verbose, transform=transform)
 
-    project = pytmc.parser.parse(proj_path)
-    for plc in project.plcs:
-        yield from parse_plc(plc, verbose=verbose, transform=transform)
+
+def parse_item(
+    item: Union[BlarkSourceItem, BlarkCompositeSourceItem],
+    *,
+    verbose: int = 0,
+    transform: bool = True,
+) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+    if isinstance(item, BlarkCompositeSourceItem):
+        for part in item.parts:
+            yield from parse_item(part, verbose=verbose)
+        return
+
+    code, line_map = item.get_code_and_line_map()
+
+    # TODO: change the API to yield the sourceitem with the parse result
+    try:
+        filename = list(item.get_filenames())[0]
+    except IndexError:
+        if not item.lines:
+            return
+        filename = None
+
+    yield filename, parse_source_code(
+        code,
+        starting_rule=item.grammar_rule,
+        line_map=line_map,
+        transform=transform,
+    )
 
 
 def parse(
-    path: AnyPath, *,
-    verbose: int = 0
+    path: AnyPath,
+    *,
+    verbose: int = 0,
+    transform: bool = True,
 ) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
-    path = pathlib.Path(path)
-    filenames = []
-    if path.suffix.lower() in (".tsproj",):
-        filenames = [path]
-    elif path.suffix.lower() in (".sln",):
-        filenames = pytmc.parser.projects_from_solution(path)
-    else:
-        filenames = [path]
-
-    for fn in filenames:
-        try:
-            if fn.suffix.lower() in util.TWINCAT_PROJECT_FILE_EXTENSIONS:
-                yield from parse_project(fn, verbose=verbose)
-            else:
-                yield fn, parse_single_file(fn, verbose=verbose)
-        except Exception as ex:
-            tb = traceback.format_exc()
-            ex.traceback = tb
-            yield fn, ex
+    for item in load_file_by_name(path):
+        # try:
+        yield from parse_item(item, verbose=verbose, transform=transform)
+        # except Exception as ex:
+        #     tb = traceback.format_exc()
+        #     ex.traceback = tb
+        #     yield ex
 
 
 def build_arg_parser(argparser=None):
