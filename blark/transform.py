@@ -2605,6 +2605,24 @@ class FunctionCallStatement(Statement, FunctionCall):
 
 
 @dataclass
+@_rule_handler("function_call_statement_list")
+class FunctionCallStatementList(Statement):
+    invocations: List[FunctionCall]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(*invocations: FunctionCall) -> FunctionCallStatementList:
+        print(len(invocations), invocations)
+        return FunctionCallStatementList(
+            invocations=list(invocations)
+        )
+
+    def __str__(self) -> str:
+        invoc = ".".join(str(invocation) for invocation in self.invocations)
+        return f"{invoc};"
+
+
+@dataclass
 @_rule_handler("else_if_clause", comments=True)
 class ElseIfClause:
     if_expression: Expression

@@ -9,4 +9,11 @@ uut.DoSomething(input_1:='foo', input_2:='bar')
    .DoSomethingElse(input_1:=5)
    .Finish();
 
+// Or perhaps something that's a little more tame
+uut.DoSomething(input_1:='foo', input_2:='bar')
+   .DoSomethingElse(input_1:=5).Finish();
+
+// Or something tamer, still
+uut.DoSomething(input_1:='foo', input_2:='bar').DoSomethingElse(input_1:=5).Finish();
+
 END_PROGRAM
