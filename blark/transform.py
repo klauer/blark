@@ -2612,7 +2612,6 @@ class FunctionCallStatementList(Statement):
 
     @staticmethod
     def from_lark(*invocations: FunctionCall) -> FunctionCallStatementList:
-        print(len(invocations), invocations)
         return FunctionCallStatementList(
             invocations=list(invocations)
         )
