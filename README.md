@@ -32,7 +32,7 @@ Requirements
 ------------
 
 * [lark](https://github.com/lark-parser/lark) (for grammar-based parsing)
-* [pytmc](https://github.com/pcdshub/pytmc) (for directly loading TwinCAT projects)
+* [lxml](https://github.com/lxml/lxml) (for parsing TwinCAT projects)
 
 How to use it
 -------------
