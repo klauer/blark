@@ -2605,7 +2605,7 @@ class FunctionCallStatement(Statement, FunctionCall):
 
 
 @dataclass
-@_rule_handler("function_call_statement_list")
+@_rule_handler("function_call_statement_list", comments=True)
 class FunctionCallStatementList(Statement):
     invocations: List[FunctionCall]
     meta: Optional[Meta] = meta_field()
