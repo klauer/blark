@@ -12,30 +12,18 @@ import pathlib
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
-import pytmc
-import pytmc.code
-
 from . import parse
 from . import transform as tf
 from . import util
 from .config import BLARK_TWINCAT_ROOT
-from .solution import TwincatPlcProject, make_solution_from_files
+from .solution import (DependencyVersion, TwincatPlcProject,
+                       make_solution_from_files)
 from .summary import CodeSummary
 
 AnyPath = Union[str, pathlib.Path]
 
 logger = logging.getLogger(__name__)
 _dependency_store = None
-
-
-@dataclass
-class ResolvedDependency:
-    """Resolved dependency version information."""
-
-    name: str
-    vendor: str
-    version: str
-    vendor_short: str
 
 
 @dataclass
@@ -227,18 +215,14 @@ class DependencyStore:
     def get_dependencies(
         self,
         plc: TwincatPlcProject,
-    ) -> Generator[Tuple[ResolvedDependency, PlcProjectMetadata], None, None]:
+    ) -> Generator[Tuple[DependencyVersion, PlcProjectMetadata], None, None]:
         """Get dependency projects from a PLC."""
-        for resolution in plc.root.find(pytmc.parser.Resolution):
-            resolution: pytmc.parser.Resolution
-            try:
-                info = ResolvedDependency(**resolution.resolution)
-            except (KeyError, ValueError) as ex:
-                logger.warning("Failed to get dependency: %s", ex)
+        for _, info in plc.dependencies.items():
+            if info.resolution is None:
                 continue
 
-            for proj in self.get_dependency(info.name, info.version):
-                yield info, proj
+            for proj in self.get_dependency(info.name, info.resolution.version):
+                yield info.resolution, proj
 
     @staticmethod
     def get_instance() -> DependencyStore:
@@ -264,9 +248,8 @@ class PlcProjectMetadata:
     include_dependencies: bool
     code: List[tf.SourceCode]
     summary: CodeSummary
-    # tmc_symbols: Dict[str, pytmc.parser.Symbol]
     loaded_files: Dict[pathlib.Path, str]
-    dependencies: Dict[str, ResolvedDependency]
+    dependencies: Dict[str, DependencyVersion]
     plc: Optional[TwincatPlcProject]
 
     @classmethod
@@ -275,8 +258,10 @@ class PlcProjectMetadata:
         plc: TwincatPlcProject,
         include_dependencies: bool = True,
     ) -> Optional[PlcProjectMetadata]:
-        """Create a PlcProjectMetadata instance from a pytmc-parsed one."""
-        assert plc.plcproj_path is not None
+        """Create a PlcProjectMetadata instance from a ``TwincatPlcProject``."""
+        if plc.plcproj_path is None:
+            raise ValueError(f"The PLC {plc.name!r} must have a location on disk.")
+
         filename = plc.plcproj_path.resolve()
         loaded_files = {}
         deps = {}
@@ -292,21 +277,27 @@ class PlcProjectMetadata:
                 deps.update(proj.dependencies)
                 loaded_files.update(proj.loaded_files)
                 deps[resolution.name] = resolution
-                combined_summary.append(proj.summary, namespace=proj.plc.name)
+                plc_name = proj.plc.name if proj.plc is not None else "unknown"
+                combined_summary.append(proj.summary, namespace=plc_name)
 
-        for code_path, code_obj in parse.parse_plc(plc, transform=True):
-            if isinstance(code_obj, Exception):
-                logger.debug("Failed to load: %s %s", code_path, code_obj)
+        for source in plc.sources:
+            if not source.contents:
                 continue
-            code.append(code_obj)
-            loaded_files[code_path] = util.get_file_sha256(code_path)
-            combined_summary.append(
-                CodeSummary.from_source(code_obj, filename=code_path)
-            )
+
+            for item in source.contents.to_blark():
+                for code_path, code_obj in parse.parse_item(item, transform=True):
+                    if isinstance(code_obj, Exception):
+                        logger.debug("Failed to load: %s %s", code_path, code_obj)
+                        continue
+                    code.append(code_obj)
+                    loaded_files[code_path] = util.get_file_sha256(code_path)
+                    assert isinstance(code_obj, tf.SourceCode)
+                    summary = CodeSummary.from_source(code_obj, filename=code_path)
+                    combined_summary.append(summary)
 
         # tmc = plc.tmc
         return cls(
-            name=plc.name,
+            name=plc.name or "unknown",
             filename=filename,
             include_dependencies=include_dependencies,
             code=code,

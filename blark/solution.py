@@ -802,6 +802,85 @@ class TwincatSourceCodeItem:
 
 
 @dataclasses.dataclass
+class DependencyVersion:
+    name: str
+    version: str
+    vendor: str
+    namespace: str
+
+    @classmethod
+    def from_string(
+        cls: type[Self],
+        text: str,
+        namespace: str,
+    ) -> Self:
+        library_name, version_and_vendor = text.split(",", 1)
+        version, vendor = version_and_vendor.strip().split("(", 1)
+        vendor = vendor.rstrip(")")
+        version = version.strip()
+        return cls(
+            name=library_name,
+            version=version,
+            vendor=vendor,
+            namespace=namespace,
+        )
+
+
+@dataclasses.dataclass
+class DependencyInformation:
+    name: str
+    default: DependencyVersion
+    resolution: Optional[DependencyVersion]
+
+    @classmethod
+    def from_xml(
+        cls: type[Self],
+        references: list[lxml.etree.Element],
+        resolutions: list[lxml.etree.Element],
+        xmlns: Optional[dict[str, str]] = None,
+    ) -> dict[str, Self]:
+        by_name = {}
+        for ref in references:
+            try:
+                name = ref.attrib["Include"]
+                res = ref.xpath("msbuild:DefaultResolution", namespaces=xmlns)[0].text
+                namespace = ref.xpath("msbuild:Namespace", namespaces=xmlns)[0].text
+            except (KeyError, IndexError):
+                logger.warning(
+                    "Incompatible dependency reference? %s", lxml.etree.tostring(ref)
+                )
+                continue
+            by_name[name] = cls(
+                name=name,
+                default=DependencyVersion.from_string(res, namespace=namespace),
+                resolution=None,
+            )
+
+        for ref in resolutions:
+            try:
+                name = ref.attrib["Include"]
+                res = ref.xpath("msbuild:Resolution", namespaces=xmlns)[0].text
+            except (KeyError, IndexError):
+                logger.warning(
+                    "Incompatible dependency reference? %s", lxml.etree.tostring(ref)
+                )
+                continue
+            try:
+                namespace = by_name[name].default.namespace
+            except KeyError:
+                logger.warning(
+                    "Incompatible dependency reference? Resolution without default %s",
+                    ref,
+                )
+                continue
+
+            by_name[name].resolution = DependencyVersion.from_string(
+                res, namespace=namespace
+            )
+        return by_name
+
+
+@dataclasses.dataclass
 class TwincatPlcProject:
     """
     A TwinCAT PLC project.
@@ -814,6 +893,7 @@ class TwincatPlcProject:
     xti_path: Optional[pathlib.Path]
     plcproj_path: Optional[pathlib.Path]
     properties: dict[str, str]
+    dependencies: dict[str, DependencyInformation]
     sources: list[TwincatSourceCodeItem]
 
     @classmethod
@@ -837,12 +917,24 @@ class TwincatPlcProject:
                 namespaces=namespaces,
             )
         ]
+        dependencies = DependencyInformation.from_xml(
+            plcproj_xml.xpath(
+                "/msbuild:Project/msbuild:ItemGroup/msbuild:PlaceholderReference",
+                namespaces=namespaces,
+            ),
+            plcproj_xml.xpath(
+                "/msbuild:Project/msbuild:ItemGroup/msbuild:PlaceholderResolution",
+                namespaces=namespaces,
+            ),
+            xmlns=namespaces,
+        )
         return cls(
             guid=properties.get("ProjectGuid", ""),
             xti_path=filename_from_xml(tsproj_or_xti_xml),
             plcproj_path=filename_from_xml(plcproj_xml),
             sources=[source for source in sources if source is not None],
             properties=properties,
+            dependencies=dependencies,
         )
 
     @property
@@ -929,11 +1021,7 @@ class TwincatTsProject:
 
     @property
     def plcs_by_name(self) -> dict[str, TwincatPlcProject]:
-        return {
-            plc.name: plc
-            for plc in self.plcs
-            if plc.name is not None
-        }
+        return {plc.name: plc for plc in self.plcs if plc.name is not None}
 
     @classmethod
     def from_filename(cls, filename: pathlib.Path) -> TwincatTsProject:

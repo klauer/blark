@@ -228,12 +228,38 @@ def parse_item(
             return
         filename = None
 
-    yield filename, parse_source_code(
+    parsed = parse_source_code(
         code,
         starting_rule=item.grammar_rule,
         line_map=line_map,
         transform=transform,
     )
+
+    if not isinstance(parsed, tf.SourceCode) and transform:
+        print("parsed", parsed)
+        # TODO: remove
+        assert isinstance(
+            parsed,
+            (
+                tf.DataTypeDeclaration,
+                tf.Function,
+                tf.FunctionBlock,
+                tf.Action,
+                tf.Method,
+                tf.Program,
+                tf.Property,
+                # tf.Interface,
+                tf.GlobalVariableDeclarations,
+            ),
+        )
+        parsed = tf.SourceCode(
+            items=[parsed],
+            filename=filename,
+            raw_source=code,
+            line_map=line_map,
+        )
+
+    yield filename, parsed
 
 
 def parse(
