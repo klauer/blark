@@ -439,7 +439,7 @@ structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
 fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
-       | fb_decl_name_list ":" function_call                                              -> fb_invocation_decl
+       | fb_decl_name_list ":" function_call [ ":=" structure_initialization ]            -> fb_invocation_decl
 
 fb_decl_name_list: fb_name ( "," fb_name )*
 
