@@ -1245,7 +1245,7 @@ class ArrayInitialization:
 @_rule_handler("object_initializer_array")
 class ObjectInitializerArray:
     name: SymbolicVariable
-    initializers: List[ArrayInitialElement]
+    initializers: List[StructureInitialization]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
