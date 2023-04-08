@@ -38,15 +38,15 @@ _PARSER = None
 
 class BlarkStartingRule(enum.Enum):
     iec_source = enum.auto()
+    action = enum.auto()
     data_type_declaration = enum.auto()
-    function_declaration = enum.auto()
-    function_block_type_declaration = enum.auto()
     function_block_method_declaration = enum.auto()
     function_block_property_declaration = enum.auto()
-    program_declaration = enum.auto()
+    function_block_type_declaration = enum.auto()
+    function_declaration = enum.auto()
     global_var_declarations = enum.auto()
+    program_declaration = enum.auto()
     statement_list = enum.auto()
-    action = enum.auto()
 
 
 def new_parser(start: Optional[list[str]] = None, **kwargs) -> lark.Lark:

@@ -24,6 +24,7 @@ class SourceType(enum.Enum):
     property_get = enum.auto()
     property_set = enum.auto()
     struct = enum.auto()
+    statement_list = enum.auto()
     var_global = enum.auto()
 
     def __str__(self) -> str:
@@ -41,6 +42,7 @@ class SourceType(enum.Enum):
             SourceType.property: "function_block_property_declaration",
             SourceType.property_get: "function_block_property_declaration",
             SourceType.property_set: "function_block_property_declaration",
+            SourceType.statement_list: "statement_list",
             SourceType.struct: "data_type_declaration",
             # NOTE: multiple definitions can be present in GVLs:
             SourceType.var_global: "iec_source",
@@ -57,6 +59,7 @@ class SourceType(enum.Enum):
             SourceType.property: "END_PROPERTY",
             SourceType.property_get: "",
             SourceType.property_set: "",
+            SourceType.statement_list: "",
             SourceType.struct: "",
             SourceType.var_global: "",
         }[self]

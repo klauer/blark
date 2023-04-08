@@ -46,12 +46,12 @@ def build_arg_parser(argparser=None):
     #     help="Output file format"
     # )
 
-    # argparser.add_argument(
-    #     "--in-place",
-    #     action="store_true",
-    #     help="Write formatted contents back to the file"
-    # )
-    #
+    argparser.add_argument(
+        "--in-place",
+        action="store_true",
+        help="Write formatted contents back to the file"
+    )
+
     return argparser
 
 
@@ -60,6 +60,7 @@ def main(
     verbose: int = 0,
     debug: bool = False,
     interactive: bool = False,
+    in_place: bool = False,
 ):
     result_by_filename = parse_main(
         filename, verbose=verbose, debug=debug, interactive=interactive
@@ -72,14 +73,12 @@ def main(
                 continue
             user = item.user
 
-            print("item is", type(item), "user is", type(user))
             if verbose > 1:
                 res.dump_source()
 
             formatted_code = str(res.transform())
 
             if isinstance(user, SupportsRewrite):
-                print("rewrite!", type(user))
                 # print(user.to_file_contents())
                 user.rewrite_code(res.identifier, formatted_code)
                 # print(user.to_file_contents())
@@ -87,12 +86,16 @@ def main(
             if isinstance(user, SupportsCustomSave):
                 if verbose > 1:
                     print(formatted_code)
-
-                print("custom save!", type(user))
+                if in_place:
+                    user.save_to(filename)
             elif isinstance(user, SupportsWrite):
                 if verbose > 1:
                     print(formatted_code)
-                print("write!", type(user))
+                if in_place:
+                    contents = user.to_file_contents()
+                    mode = "wb" if isinstance(contents, bytes) else "wt"
+                    with open(filename, mode) as fp:
+                        fp.write(contents)
             else:
                 print(res.source_code)
 
