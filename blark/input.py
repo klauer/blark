@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-from typing import Callable, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional, Type, Union
 
 from .typing import Self
-from .util import SourceType, find_pou_type_and_identifier
+from .util import AnyPath, SourceType, find_pou_type_and_identifier
 
 
 @dataclasses.dataclass(frozen=True)
@@ -38,6 +38,7 @@ class BlarkSourceItem:
     type: SourceType
     grammar_rule: Optional[str]
     implicit_end: Optional[str]
+    user: Optional[Any] = None
 
     def get_filenames(self) -> set[pathlib.Path]:
         return {line.filename for line in self.lines if line.filename is not None}
@@ -63,6 +64,7 @@ class BlarkCompositeSourceItem:
     identifier: str
     filename: Optional[pathlib.Path]  # primary filename?
     parts: list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+    user: Optional[Any] = None
 
     @property
     def lines(self) -> list[BlarkSourceLine]:
@@ -115,8 +117,9 @@ def register_file_handler(extension: str, handler: Handler):
 
 
 def load_file_by_name(
-    filename: pathlib.Path,
+    filename: AnyPath,
 ) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    filename = pathlib.Path(filename).expanduser().resolve()
     try:
         handler = handlers[filename.suffix.lower()]
     except KeyError:
@@ -124,8 +127,8 @@ def load_file_by_name(
             f"Unable to find a handler for {filename} based on file extension. "
             f"Supported extensions: {list(handlers)}"
         ) from None
-    else:
-        return handler(filename)
+
+    return handler(filename)
 
 
 def plain_file_loader(

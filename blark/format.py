@@ -3,12 +3,10 @@
 source code files.
 """
 import argparse
-import pathlib
-import sys
-import traceback
 
-from .parse import parse
-from .util import AnyPath, python_debug_session
+from .parse import main as parse_main
+from .typing import SupportsCustomSave, SupportsRewrite, SupportsWrite
+from .util import AnyPath
 
 DESCRIPTION = __doc__
 
@@ -30,10 +28,30 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
+        help="Increase verbosity, up to -vvv",
+    )
+
+    argparser.add_argument(
         "--debug", action="store_true",
         help="On failure, still return the results tree"
     )
 
+    # argparser.add_argument(
+    #     "--output-format",
+    #     type=str,
+    #     help="Output file format"
+    # )
+
+    # argparser.add_argument(
+    #     "--in-place",
+    #     action="store_true",
+    #     help="Write formatted contents back to the file"
+    # )
+    #
     return argparser
 
 
@@ -43,64 +61,31 @@ def main(
     debug: bool = False,
     interactive: bool = False,
 ):
-    result_by_filename = {}
-    failures = []
-    print_filenames = sys.stdout if verbose > 0 else None
-    filename = pathlib.Path(filename)
+    result_by_filename = parse_main(
+        filename, verbose=verbose, debug=debug, interactive=interactive
+    )
 
-    for fn, result in parse(filename):
-        if print_filenames:
-            print(f"* Loading {fn}")
-        result_by_filename[fn] = result
-        if isinstance(result, Exception):
-            failures.append((fn, result))
-            if interactive:
-                python_debug_session(
-                    namespace={"fn": fn, "result": result},
-                    message=(
-                        f"Failed to parse {fn}. {type(result).__name__}: {result}\n"
-                        f"{result.traceback}"
-                    ),
-                )
-            elif verbose > 1:
-                print(result.traceback)
-        else:
-            print(result)
+    for filename, results in result_by_filename.items():
+        for res in results:
+            item = res.item
+            if item is None:
+                continue
+            user = item.user
 
-    if not result_by_filename:
-        return {}
+            if verbose > 1:
+                res.dump_source()
 
-    if interactive:
-        if len(result_by_filename) > 1:
-            python_debug_session(
-                namespace={"fn": filename, "results": result_by_filename},
-                message=(
-                    "Parsed all files successfully: {list(result_by_filename)}\n"
-                    "Access all results by filename in the variable ``results``"
-                )
-            )
-        else:
-            ((filename, result),) = list(result_by_filename.items())
-            python_debug_session(
-                namespace={"fn": filename, "result": result},
-                message=(
-                    f"Parsed single file successfully: {filename}.\n"
-                    f"Access its transformed value in the variable ``result``."
-                )
-            )
+            if isinstance(user, SupportsRewrite):
+                print("rewrite!", type(user))
+                print(user.to_file_contents())
+                user.rewrite_code(str(res.transform()))
+                print(user.to_file_contents())
 
-    if failures:
-        print("Failed to parse some source code files:")
-        for fn, exception in failures:
-            header = f"{fn}"
-            print(header)
-            print("-" * len(header))
-            print(f"({type(exception).__name__}) {exception}")
-            print()
-            # if verbose > 1:
-            traceback.print_exc()
-
-        if not debug:
-            sys.exit(1)
+            if isinstance(user, SupportsCustomSave):
+                print("custom save!", type(user))
+            elif isinstance(user, SupportsWrite):
+                print("write!", type(user))
+            else:
+                print(res.source_code)
 
     return result_by_filename

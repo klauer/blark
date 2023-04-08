@@ -10,15 +10,15 @@ TEST_PATH = pathlib.Path(__file__).parent
 
 def test_parsing_tcpous(twincat_pou_filename: str):
     """Test parsing TwinCAT TcPOU files."""
-    ((_, result),) = list(parse(twincat_pou_filename))
+    (result,) = list(parse(twincat_pou_filename))
+    transformed = result.transform()
     print("transformed:")
-    print(result)
+    print(transformed)
     print("summary:")
-    if isinstance(result, Exception):
-        raise result
-    print(summarize(result))
-
-    conftest.check_serialization(result, deserialize=False)
+    if result.exception:
+        raise result.exception
+    print(summarize(transformed))
+    conftest.check_serialization(transformed, deserialize=False)
 
 
 def test_parsing_source(source_filename: str):
@@ -27,13 +27,14 @@ def test_parsing_source(source_filename: str):
         content = src.read()
 
     result = parse_source_code(content)
+    transformed = result.transform()
     print("transformed:")
-    print(result)
+    print(transformed)
     print("summary:")
-    if isinstance(result, Exception):
-        raise result
-    print(summarize(result))
-    conftest.check_serialization(result, deserialize=False)
+    if result.exception:
+        raise result.exception
+    print(summarize(transformed))
+    conftest.check_serialization(transformed, deserialize=False)
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)

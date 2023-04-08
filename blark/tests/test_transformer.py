@@ -21,7 +21,9 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     3. Run serialization/deserialization checks (if enabled)
     """
     parser = conftest.get_grammar(start=rule_name)
-    transformed = parse_source_code(value, parser=parser)
+    tf_source = parse_source_code(value, parser=parser).transform()
+    transformed = tf_source.items[0]
+
     print("\n\nTransformed:")
     print(repr(transformed))
     print("\n\nOr:")
@@ -1422,7 +1424,8 @@ def test_miscellaneous(rule_name, value):
 )
 def test_global_types(value, init, base_type, full_type):
     parser = conftest.get_grammar(start="global_var_decl")
-    transformed = parse_source_code(value, parser=parser)
+    tf_source = parse_source_code(value, parser=parser).transform()
+    transformed = tf_source.items[0]
     assert isinstance(transformed, tf.GlobalVariableDeclaration)
     assert transformed.variables == ["fValue"]
 
@@ -1503,7 +1506,7 @@ def test_global_types(value, init, base_type, full_type):
     ]
 )
 def test_meta(code: str, comments: List[str], pragmas: List[str]):
-    transformed = parse_source_code(code)
+    transformed = parse_source_code(code).transform()
     meta = transformed.items[0].meta
     found_comments, found_pragmas = meta.get_comments_and_pragmas()
     assert [str(comment) for comment in found_comments] == comments

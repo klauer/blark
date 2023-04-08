@@ -9,8 +9,8 @@ import enum
 import json
 import pathlib
 import sys
-import traceback
-from typing import Callable, Generator, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Generator, Optional, Sequence, Union
 
 import lark
 
@@ -21,6 +21,7 @@ from . import transform as tf
 from . import util
 from .input import BlarkCompositeSourceItem, BlarkSourceItem, load_file_by_name
 from .transform import GrammarTransformer
+from .typing import Preprocessor
 from .util import AnyPath
 
 try:
@@ -67,7 +68,7 @@ def new_parser(start: Optional[list[str]] = None, **kwargs) -> lark.Lark:
         maybe_placeholders=True,
         propagate_positions=True,
         start=start,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -80,12 +81,64 @@ def get_parser() -> lark.Lark:
     return _PARSER
 
 
-DEFAULT_PREPROCESSORS = []
-_DEFAULT_PREPROCESSORS = object()
+DEFAULT_PREPROCESSORS = tuple()
 
 
-ParseResult = Union[Exception, tf.SourceCode, lark.Tree]
-Preprocessor = Callable[[str], str]
+@dataclass
+class ParseResult:
+    source_code: str
+    item: Optional[BlarkSourceItem]
+    processed_source_code: str
+    comments: list[lark.Token]
+    line_map: Optional[dict[int, int]] = None
+    filename: Optional[pathlib.Path] = None
+    exception: Optional[Exception] = None
+    tree: Optional[lark.Tree] = None
+    parent: Optional[BlarkCompositeSourceItem] = None
+    transformed: Optional[tf.SourceCode] = None
+
+    @property
+    def identifier(self) -> Optional[str]:
+        if self.item is None:
+            return None
+        return self.item.identifier
+
+    def transform(self) -> tf.SourceCode:
+        if self.transformed is not None:
+            return self.transformed
+
+        if self.tree is None:
+            raise ValueError(
+                "Source code was not successfully parsed; cannot transform"
+            )
+
+        transformer = GrammarTransformer(
+            comments=self.comments,
+            fn=self.filename,
+            source_code=self.source_code,
+        )
+        transformed = transformer.transform(self.tree)
+
+        if not isinstance(transformed, tf.SourceCode):
+            transformed = tf.SourceCode(
+                items=[transformed],
+                filename=self.filename,
+                raw_source=self.source_code,
+                line_map=self.line_map,
+            )
+
+        self.transformed = transformed
+        return self.transformed
+
+    def dump_source(self, fp=sys.stdout) -> None:
+        if self.line_map is not None:
+            code_lines = dict(enumerate(self.source_code.splitlines(), 1))
+            for code_lineno, source_lineno in self.line_map.items():
+                line = code_lines[code_lineno]
+                print(f"{code_lineno} ({source_lineno}) {line}", file=fp)
+        else:
+            for lineno, line in enumerate(self.source_code.splitlines(), 1):
+                print(f"{lineno}: {line}", file=fp)
 
 
 def parse_source_code(
@@ -93,12 +146,13 @@ def parse_source_code(
     *,
     verbose: int = 0,
     fn: AnyPath = "unknown",
-    preprocessors: list[Preprocessor] = _DEFAULT_PREPROCESSORS,
+    preprocessors: Sequence[Preprocessor] = DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
     transform: bool = True,
     starting_rule: Optional[str] = None,
     line_map: Optional[dict[int, int]] = None,
-) -> Union[tf.SourceCode, lark.Tree]:
+    catch_exceptions: bool = True,
+) -> ParseResult:
     """
     Parse source code and return the transformed result.
 
@@ -108,7 +162,7 @@ def parse_source_code(
         The source code text.
 
     verbose : int, optional
-        Verbosity level for output.
+        Verbosity level for output. (deprecated; unused)
 
     fn : pathlib.Path or str, optional
         The filename associated with the source code.
@@ -124,9 +178,6 @@ def parse_source_code(
         If True, transform the output into blark-defined Python dataclasses.
         Otherwise, return the ``lark.Tree`` instance.
     """
-    if preprocessors is _DEFAULT_PREPROCESSORS:
-        preprocessors = DEFAULT_PREPROCESSORS
-
     processed_source = source_code
     for preprocessor in preprocessors:
         processed_source = preprocessor(processed_source)
@@ -142,85 +193,73 @@ def parse_source_code(
         else:
             starting_rule = parser.options.start[0]
 
+    result = ParseResult(
+        item=None,
+        source_code=source_code,
+        processed_source_code=processed_source,
+        line_map=line_map,
+        comments=comments,
+        filename=pathlib.Path(fn),
+    )
+
     try:
         tree = parser.parse(processed_source, start=starting_rule)
     except Exception as ex:
-        if verbose > 1:
-            print("[Failure] Parse failure")
-            print("-------------------------------")
-            print(source_code)
-            print("-------------------------------")
-            print(f"{type(ex).__name__} {ex}")
-            print(f"[Failure] {fn}")
+        if catch_exceptions:
+            result.exception = ex
+            return result
         raise
 
-    if line_map is not None:
-        tree = util.rebuild_lark_tree_with_line_map(tree, line_map)
-
-    if verbose > 2:
-        print(f"Successfully parsed {fn}:")
-        print("-------------------------------")
-
-        if line_map is not None:
-            code_lines = dict(enumerate(source_code.splitlines(), 1))
-            for code_lineno, source_lineno in line_map.items():
-                line = code_lines[code_lineno]
-                print(f"{code_lineno} ({source_lineno}) {line}")
-        else:
-            for lineno, line in enumerate(source_code.splitlines(), 1):
-                print(f"{lineno}: {line}")
-
-        print("-------------------------------")
-        print(tree.pretty())
-        print("-------------------------------")
-        print(f"[Success] End of {fn}")
+    if result.line_map is None:
+        result.tree = tree
+    else:
+        result.tree = util.rebuild_lark_tree_with_line_map(tree, result.line_map)
 
     if transform:
-        transformer = GrammarTransformer(
-            comments=comments,
-            fn=fn,
-            source_code=source_code,
-        )
-        return transformer.transform(tree)
-    return tree
+        result.transform()
+
+    return result
 
 
 def parse_single_file(
-    fn: AnyPath, *,
+    fn: AnyPath,
+    *,
     transform: bool = True,
-    verbose: int = 0,
-) -> Union[tf.SourceCode, lark.Tree]:
+    **kwargs,
+) -> ParseResult:
     """Parse a single source code file."""
     source_code = util.get_source_code(fn)
-    return parse_source_code(source_code, fn=fn, transform=transform, verbose=verbose)
+    return parse_source_code(source_code, fn=fn, transform=transform, **kwargs)
 
 
 def parse_project(
     tsproj_project: AnyFile,
     *,
-    verbose: int = 0,
-    transform: bool = True
-) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+    transform: bool = True,
+    **kwargs,
+) -> Generator[ParseResult, None, None]:
     """Parse an entire tsproj project file."""
     sol = solution.make_solution_from_files(tsproj_project)
     for item in solution.get_blark_input_from_solution(sol):
-        yield from parse_item(item, verbose=verbose, transform=transform)
+        yield from parse_item(item, transform=transform, **kwargs)
 
 
 def parse_item(
     item: Union[BlarkSourceItem, BlarkCompositeSourceItem],
     *,
-    verbose: int = 0,
     transform: bool = True,
-) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+    **kwargs,
+) -> Generator[ParseResult, None, None]:
     if isinstance(item, BlarkCompositeSourceItem):
         for part in item.parts:
-            yield from parse_item(part, verbose=verbose)
+            for res in parse_item(part, **kwargs):
+                res.filename = res.filename or item.filename
+                res.parent = item
+                yield res
         return
 
     code, line_map = item.get_code_and_line_map()
 
-    # TODO: change the API to yield the sourceitem with the parse result
     try:
         filename = list(item.get_filenames())[0]
     except IndexError:
@@ -228,56 +267,29 @@ def parse_item(
             return
         filename = None
 
-    parsed = parse_source_code(
+    result = parse_source_code(
         code,
         starting_rule=item.grammar_rule,
         line_map=line_map,
         transform=transform,
+        fn=filename or "unknown",
+        **kwargs,
     )
-
-    if not isinstance(parsed, tf.SourceCode) and transform:
-        print("parsed", parsed)
-        # TODO: remove
-        assert isinstance(
-            parsed,
-            (
-                tf.DataTypeDeclaration,
-                tf.Function,
-                tf.FunctionBlock,
-                tf.Action,
-                tf.Method,
-                tf.Program,
-                tf.Property,
-                # tf.Interface,
-                tf.GlobalVariableDeclarations,
-            ),
-        )
-        parsed = tf.SourceCode(
-            items=[parsed],
-            filename=filename,
-            raw_source=code,
-            line_map=line_map,
-        )
-
-    yield filename, parsed
+    result.item = item
+    yield result
 
 
 def parse(
     path: AnyPath,
     *,
-    verbose: int = 0,
     transform: bool = True,
-) -> Generator[Tuple[pathlib.Path, ParseResult], None, None]:
+    **kwargs,
+) -> Generator[ParseResult, None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
     for item in load_file_by_name(path):
-        # try:
-        yield from parse_item(item, verbose=verbose, transform=transform)
-        # except Exception as ex:
-        #     tb = traceback.format_exc()
-        #     ex.traceback = tb
-        #     yield ex
+        yield from parse_item(item, transform=transform, **kwargs)
 
 
 def build_arg_parser(argparser=None):
@@ -305,25 +317,25 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
-        "--debug", action="store_true",
-        help="On failure, still return the results tree"
+        "--debug", action="store_true", help="On failure, still return the results tree"
     )
 
     argparser.add_argument(
-        "-i", "--interactive", action="store_true",
-        help="Enter IPython (or Python) to explore source trees"
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Enter IPython (or Python) to explore source trees",
     )
 
     argparser.add_argument(
-        "-s", "--summary", action="store_true",
-        help="Summarize code inputs and outputs"
+        "-s", "--summary", action="store_true", help="Summarize code inputs and outputs"
     )
 
     argparser.add_argument(
         "--json",
         dest="use_json",
         action="store_true",
-        help="Output JSON representation only"
+        help="Output JSON representation only",
     )
 
     return argparser
@@ -341,12 +353,12 @@ def main(
     interactive: bool = False,
     summary: bool = False,
     use_json: bool = False,
-):
+    catch_exceptions: bool = True,
+) -> dict[str, list[ParseResult]]:
     """
     Parse the given source code/project.
     """
-    result_by_filename = {}
-    failures = []
+    results_by_filename = {}
     print_filenames = sys.stdout if verbose > 0 else None
     filename = pathlib.Path(filename)
 
@@ -359,67 +371,87 @@ def main(
                 "representation of source code."
             )
 
-    for fn, result in parse(filename, verbose=verbose):
-        if print_filenames:
-            print(f"* Loading {fn}")
-        result_by_filename[fn] = result
-        if isinstance(result, Exception):
-            failures.append((fn, result))
-            if interactive:
-                util.python_debug_session(
-                    namespace={"fn": fn, "result": result},
-                    message=(
-                        f"Failed to parse {fn}. {type(result).__name__}: {result}\n"
-                        f"{result.traceback}"
-                    ),
+    try:
+        for index, res in enumerate(
+            parse(filename, catch_exceptions=catch_exceptions),
+            start=1,
+        ):
+            results_by_filename.setdefault(str(filename), []).append(res)
+            if print_filenames:
+                print(f"[{index}] Parsing {res.filename}: {res.identifier}")
+
+            if verbose > 1:
+                res.dump_source()
+
+            if res.exception is not None:
+                tb = getattr(res.exception, "traceback", None)
+                if interactive:
+                    util.python_debug_session(
+                        namespace={"result": res},
+                        message=(
+                            f"Failed to parse {res.filename} {res.identifier}.\n"
+                            f"Exception: {type(res.exception).__name__}: {res.exception}\n"
+                            f"{tb}"
+                        ),
+                    )
+                elif verbose > 1:
+                    print(tb)
+                else:
+                    print(
+                        f"Failed to parse {res.filename} {res.identifier}: "
+                        f"Exception: {type(res.exception).__name__}: {res.exception}"
+                    )
+            elif summary:
+                print(summarize(res.transform()))
+
+            if use_json:
+                assert apischema is not None
+
+                serialized = apischema.serialize(
+                    res.transform(),
+                    exclude_defaults=True,
+                    no_copy=True,
                 )
-            elif verbose > 1:
-                print(result.traceback)
-        elif summary:
-            print(summarize(result_by_filename[fn]))
+                print(json.dumps(serialized, indent=2))
+    except KeyboardInterrupt:
+        print("\nCaught KeyboardInterrupt; stopping parsing.")
 
-        if use_json:
-            serialized = apischema.serialize(
-                result_by_filename[fn],
-                exclude_defaults=True,
-                no_copy=True,
-            )
-            print(json.dumps(serialized, indent=2))
-
-    if not result_by_filename:
+    if not results_by_filename:
         return {}
 
+    results = []
+    for _, items in results_by_filename.items():
+        results.extend(items)
+    failures = [item for item in results if item.exception is not None]
+
     if interactive:
-        if len(result_by_filename) > 1:
-            util.python_debug_session(
-                namespace={"fn": filename, "results": result_by_filename},
-                message=(
-                    f"Parsed all files successfully: {list(result_by_filename)}\n"
-                    f"Access all results by filename in the variable ``results``"
-                )
-            )
-        else:
-            ((filename, result),) = list(result_by_filename.items())
-            util.python_debug_session(
-                namespace={"fn": filename, "result": result},
-                message=(
-                    f"Parsed single file successfully: {filename}.\n"
-                    f"Access its transformed value in the variable ``result``."
-                )
-            )
+        util.python_debug_session(
+            namespace={
+                "results": results,
+                "by_filename": results_by_filename,
+                "failures": failures,
+            },
+            message=(
+                f"Saw {len(results_by_filename)} files with {len(results)} "
+                f"total source code items.\n"
+                f"There were {len(failures)} failures.\n"
+                f"Results by filename are in ``by_filename``.\n"
+                f"All results are also in a list ``results``.\n"
+                f"Any failures are included in ``failures``.\n"
+            ),
+        )
 
     if failures:
         print("Failed to parse some source code files:")
-        for fn, exception in failures:
-            header = f"{fn}"
+        for failure in failures:
+            header = f"{failure.filename}: {failure.identifier}"
             print(header)
             print("-" * len(header))
-            print(f"({type(exception).__name__}) {exception}")
+            print(f"({type(failure.exception).__name__}) {failure.exception}")
             print()
-            # if verbose > 1:
-            traceback.print_exc()
+            # traceback.print_exc()
 
         if not debug:
             sys.exit(1)
 
-    return result_by_filename
+    return results_by_filename

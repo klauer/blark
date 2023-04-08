@@ -4,12 +4,13 @@ import enum
 import hashlib
 import pathlib
 import re
-from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar
 
 import lark
 
+from .typing import AnyPath  # Back-compat
+
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
-AnyPath = Union[str, pathlib.Path]
 
 
 class SourceType(enum.Enum):
@@ -152,8 +153,12 @@ def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optio
     for line in clean_code.splitlines():
         parts = line.lstrip().split(None, 2)
         if parts and parts[0].lower() in types:
-            identifier = parts[1] if len(parts) >= 2 else ""
-            return SourceType[parts[0].lower()], identifier
+            source_type = SourceType[parts[0].lower()]
+            if source_type == SourceType.var_global:
+                identifier = None
+            else:
+                identifier = parts[1] if len(parts) >= 2 else ""
+            return source_type, identifier
     return None, None
 
 

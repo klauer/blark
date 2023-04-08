@@ -216,6 +216,7 @@ class TcDeclImpl:
                 lines=lines,
                 grammar_rule=self.source_type.get_grammar_rule(),
                 implicit_end=self.source_type.get_implicit_block_end(),
+                user=self,
             )
         ]
 
@@ -266,12 +267,16 @@ class TcSource:
     decl: TcDeclImpl
     metadata: dict[str, str]
     filename: Optional[pathlib.Path]
+    parent: Optional[TwincatSourceCodeItem]
 
     @property
     def source_type(self) -> Optional[SourceType]:
         if self.decl is None:
             return None
         return self.decl.source_type
+
+    def to_file_contents(self) -> str:
+        return lxml.etree.tostring(self.to_xml())
 
     def to_xml(self) -> lxml.etree.Element:
         md = dict(self.metadata)
@@ -295,6 +300,7 @@ class TcSource:
         cls: type[Self],
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
+        parent: Optional[TcSource] = None,
     ) -> Optional[Union[TcDUT, TcTTO, TcPOU, TcIO, TcGVL]]:
         try:
             tcplc_object = xml.xpath("/TcPlcObject")[0]
@@ -328,6 +334,7 @@ class TcSource:
             guid=metadata.pop("Id", ""),
             decl=decl,
             metadata=metadata,
+            parent=parent,
             **kwargs,
         )
 
@@ -346,17 +353,19 @@ class TcSource:
         cls: type[Self],
         contents: bytes,
         filename: Optional[pathlib.Path] = None,
+        parent: Optional[TcSource] = None,
     ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
-        return cls.from_xml(parse_xml_contents(contents), filename=filename)
+        return cls.from_xml(parse_xml_contents(contents), filename=filename, parent=parent)
 
     @classmethod
     def from_filename(
         cls: type[Self],
         filename: AnyPath,
+        parent: Optional[TcSource] = None,
     ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
         with open(filename, "rb") as fp:
             raw_contents = fp.read()
-        return cls.from_contents(raw_contents, filename=pathlib.Path(filename))
+        return cls.from_contents(raw_contents, filename=pathlib.Path(filename), parent=parent)
 
 
 @dataclasses.dataclass
@@ -367,7 +376,10 @@ class TcDUT(TcSource):
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is not None:
-            return self.decl.to_blark()
+            res = self.decl.to_blark()
+            for item in res:
+                item.user = self
+            return res
         return []
 
 
@@ -377,9 +389,15 @@ class TcGVL(TcSource):
     file_extension: ClassVar[str] = ".TcGVL"
     source_type: ClassVar[SourceType] = SourceType.var_global
 
+    def rewrite_code(self, contents: str):
+        self.decl.declaration.value = contents
+
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is not None:
-            return self.decl.to_blark()
+            res = self.decl.to_blark()
+            for item in res:
+                item.user = self
+            return res
         return []
 
 
@@ -392,7 +410,10 @@ class TcIO(TcSource):
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is not None:
-            return self.decl.to_blark()
+            res = self.decl.to_blark()
+            for item in res:
+                item.user = self
+            return res
         return []
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
@@ -471,6 +492,23 @@ class TcPOU(TcSource):
     file_extension: ClassVar[str] = ".TcPOU"
     parts: list[Union[TcAction, TcMethod, TcProperty, TcUnknownXml]]
 
+    @classmethod
+    def from_xml(
+        cls: type[Self],
+        xml: lxml.etree.Element,
+        filename: Optional[pathlib.Path] = None,
+        parent: Optional[TcSource] = None,
+    ) -> Optional[TcPOU]:
+        res = super().from_xml(xml, filename, parent)
+        if res is None:
+            return None
+
+        # Sorry, I tacked this parent concept on at the last minute...
+        for part in res.parts:
+            if hasattr(part, "parent"):
+                part.parent = res
+        return res
+
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
             raise RuntimeError("No source type set?")
@@ -488,6 +526,7 @@ class TcPOU(TcSource):
                 for item in part.to_blark():
                     if identifier:
                         item.identifier = f"{identifier}.{item.identifier}"
+                    item.user = part
                     parts.append(item)
             elif not isinstance(part, (TcExtraInfo, TcUnknownXml)):
                 raise NotImplementedError(
@@ -499,6 +538,7 @@ class TcPOU(TcSource):
                 filename=self.filename,
                 identifier=self.decl.identifier if self.decl is not None else "unknown",
                 parts=parts,
+                user=self,
             )
         ]
 
@@ -550,6 +590,8 @@ class TcPOU(TcSource):
 
 @dataclasses.dataclass
 class TcSourceChild(TcSource):
+    parent: Optional[TcSource]
+
     def _serialize(self, parent: lxml.etree.Element) -> None:
         super()._serialize(parent)
         parent.attrib.update(self.metadata or {})
@@ -559,6 +601,7 @@ class TcSourceChild(TcSource):
         cls: type[Self],
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
+        parent: Optional[TcSource] = None,
     ) -> Self:
         metadata = dict(xml.attrib)
         decl = TcDeclImpl.from_xml(xml, filename=filename)
@@ -569,6 +612,7 @@ class TcSourceChild(TcSource):
             guid=metadata.pop("Id", ""),
             decl=decl,
             metadata=metadata,
+            parent=parent,
             **kwargs,
         )
 
@@ -580,7 +624,10 @@ class TcMethod(TcSourceChild):
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl.declaration is None:
             return []
-        return self.decl.to_blark()
+        res = self.decl.to_blark()
+        for item in res:
+            item.user = self
+        return res
 
 
 @dataclasses.dataclass
@@ -615,6 +662,7 @@ class TcAction(TcSourceChild):
                 type=SourceType.action,
                 grammar_rule=SourceType.action.get_grammar_rule(),
                 implicit_end="END_ACTION",
+                user=self,
             )
         ]
 
@@ -646,6 +694,7 @@ class TcProperty(TcSourceChild):
                         lines=base_decl.lines + blark_input.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
+                        user=self,
                     )
                 )
 
@@ -718,6 +767,7 @@ class TwincatSourceCodeItem:
     guid: Optional[str] = None
     raw_contents: Optional[str] = None
     contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
+    parent: Optional[TwincatPlcProject] = None
 
     def to_string(self, delimiter: str = "\r\n") -> str:
         if self.contents is None:
@@ -748,6 +798,7 @@ class TwincatSourceCodeItem:
     def from_compile_xml(
         cls: type[Self],
         xml: lxml.etree.Element,
+        parent: Optional[TwincatPlcProject] = None,
     ) -> Optional[Self]:
         saved_path = pathlib.PureWindowsPath(xml.attrib["Include"])
         try:
@@ -769,7 +820,11 @@ class TwincatSourceCodeItem:
         else:
             with open(local_path) as fp:
                 raw_contents = fp.read()
-            contents = TcSource.from_contents(raw_contents, filename=local_path)
+            contents = TcSource.from_contents(
+                raw_contents,
+                filename=local_path,
+                parent=None,
+            )
 
         namespaces = {"msbuild": xml.xpath("namespace-uri()")}
         subtype = get_child_text(
@@ -790,7 +845,7 @@ class TwincatSourceCodeItem:
             == "true"
         )
 
-        return cls(
+        item = cls(
             contents=contents,
             guid=None,
             link_always=link_always,
@@ -798,7 +853,11 @@ class TwincatSourceCodeItem:
             raw_contents=raw_contents,
             saved_path=saved_path,
             subtype=subtype,
+            parent=parent,
         )
+        if contents is not None:
+            contents.parent = item
+        return item
 
 
 @dataclasses.dataclass
@@ -910,13 +969,6 @@ class TwincatPlcProject:
                 namespaces=namespaces,
             )
         }
-        sources = [
-            TwincatSourceCodeItem.from_compile_xml(xml)
-            for xml in plcproj_xml.xpath(
-                "/msbuild:Project/msbuild:ItemGroup/msbuild:Compile",
-                namespaces=namespaces,
-            )
-        ]
         dependencies = DependencyInformation.from_xml(
             plcproj_xml.xpath(
                 "/msbuild:Project/msbuild:ItemGroup/msbuild:PlaceholderReference",
@@ -928,14 +980,23 @@ class TwincatPlcProject:
             ),
             xmlns=namespaces,
         )
-        return cls(
+        plc_project = cls(
             guid=properties.get("ProjectGuid", ""),
             xti_path=filename_from_xml(tsproj_or_xti_xml),
             plcproj_path=filename_from_xml(plcproj_xml),
-            sources=[source for source in sources if source is not None],
+            sources=[],
             properties=properties,
             dependencies=dependencies,
         )
+        sources = [
+            TwincatSourceCodeItem.from_compile_xml(xml, parent=plc_project)
+            for xml in plcproj_xml.xpath(
+                "/msbuild:Project/msbuild:ItemGroup/msbuild:Compile",
+                namespaces=namespaces,
+            )
+        ]
+        plc_project.sources = [source for source in sources if source is not None]
+        return plc_project
 
     @property
     def name(self) -> Optional[str]:
