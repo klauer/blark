@@ -20,7 +20,6 @@ VAR
         (instanceName := 'seventeen'),
         (instanceName := 'eighteen')
     ];
-    fbSample  : FB_Sample(nInitParam := 1) := (nInput := 2, nMyProperty := 3);
     aSample   : ARRAY[1..2] OF FB_Sample[(nInitParam := 4), (nInitParam := 7)]
                             := [(nInput := 5, nMyProperty := 6), (nInput := 8, nMyProperty := 9)];
 END_VAR

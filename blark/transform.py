@@ -1166,7 +1166,7 @@ class IndirectSimpleSpecification:
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type: Union[DataType, FunctionCall]
+    type: Union[DataType, FunctionCall, ObjectInitializerArray]
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
@@ -1233,12 +1233,34 @@ class ArrayInitialization:
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*elements: ArrayInitialElement):
+    def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
         return ArrayInitialization(list(elements))
 
     def __str__(self) -> str:
         elements = ", ".join(str(element) for element in self.elements)
         return f"[{elements}]"
+
+
+@dataclass
+@_rule_handler("object_initializer_array")
+class ObjectInitializerArray:
+    name: SymbolicVariable
+    initializers: List[ArrayInitialElement]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(
+        function_block_type_name: SymbolicVariable,
+        *initializers: List[StructureInitialization]
+    ) -> ObjectInitializerArray:
+        return ObjectInitializerArray(
+            name=function_block_type_name,
+            initializers=list(initializers)
+        )
+
+    def __str__(self) -> str:
+        initializers = ", ".join([f"({init})" for init in self.initializers])
+        return f"{self.name}[{initializers}]"
 
 
 @dataclass
