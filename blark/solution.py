@@ -193,7 +193,11 @@ class TcDeclImpl:
     source_type: Optional[SourceType]
     declaration: Optional[LocatedString]
     implementation: Optional[LocatedString]
+    parent: Optional[TcSource] = None
     metadata: Optional[dict[str, Any]] = None
+
+    def rewrite_code(self, identifier: str, contents: str):
+        print("rewrite decl", identifier, self.parent)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
@@ -326,9 +330,10 @@ class TcSource:
         metadata = dict(item.attrib)
         metadata["version"] = tcplc_object.attrib.get("Version", "")
         metadata["product_version"] = tcplc_object.attrib.get("ProductVersion", "")
+
         decl = TcDeclImpl.from_xml(item, filename=filename)
         kwargs = cls._get_additional_args_from_xml(item, decl, filename=filename)
-        return cls(
+        source = cls(
             filename=filename or filename_from_xml(xml),
             name=metadata.pop("Name", ""),
             guid=metadata.pop("Id", ""),
@@ -337,6 +342,8 @@ class TcSource:
             parent=parent,
             **kwargs,
         )
+        source.decl.parent = source
+        return source
 
     @classmethod
     def _get_additional_args_from_xml(
@@ -389,7 +396,7 @@ class TcGVL(TcSource):
     file_extension: ClassVar[str] = ".TcGVL"
     source_type: ClassVar[SourceType] = SourceType.var_global
 
-    def rewrite_code(self, contents: str):
+    def rewrite_code(self, identifier: str, contents: str):
         self.decl.declaration.value = contents
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
@@ -491,6 +498,10 @@ class TcPOU(TcSource):
     _tag: ClassVar[str] = "POU"
     file_extension: ClassVar[str] = ".TcPOU"
     parts: list[Union[TcAction, TcMethod, TcProperty, TcUnknownXml]]
+
+    def rewrite_code(self, identifier: str, contents: str):
+        print("rewrite", identifier)
+        # self.decl.declaration.value = contents
 
     @classmethod
     def from_xml(
@@ -606,7 +617,7 @@ class TcSourceChild(TcSource):
         metadata = dict(xml.attrib)
         decl = TcDeclImpl.from_xml(xml, filename=filename)
         kwargs = cls._get_additional_args_from_xml(xml, decl, filename=filename)
-        return cls(
+        source = cls(
             filename=filename or filename_from_xml(xml),
             name=metadata.pop("Name", ""),
             guid=metadata.pop("Id", ""),
@@ -615,6 +626,8 @@ class TcSourceChild(TcSource):
             parent=parent,
             **kwargs,
         )
+        source.decl.parent = source
+        return source
 
 
 @dataclasses.dataclass

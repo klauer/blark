@@ -72,18 +72,26 @@ def main(
                 continue
             user = item.user
 
+            print("item is", type(item), "user is", type(user))
             if verbose > 1:
                 res.dump_source()
 
+            formatted_code = str(res.transform())
+
             if isinstance(user, SupportsRewrite):
                 print("rewrite!", type(user))
-                print(user.to_file_contents())
-                user.rewrite_code(str(res.transform()))
-                print(user.to_file_contents())
+                # print(user.to_file_contents())
+                user.rewrite_code(res.identifier, formatted_code)
+                # print(user.to_file_contents())
 
             if isinstance(user, SupportsCustomSave):
+                if verbose > 1:
+                    print(formatted_code)
+
                 print("custom save!", type(user))
             elif isinstance(user, SupportsWrite):
+                if verbose > 1:
+                    print(formatted_code)
                 print("write!", type(user))
             else:
                 print(res.source_code)

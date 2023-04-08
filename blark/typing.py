@@ -47,7 +47,7 @@ class ContainsBlarkCode(Protocol):
 
 @runtime_checkable
 class SupportsRewrite(Protocol):
-    def rewrite_code(self, contents: str):
+    def rewrite_code(self, identifier: str, contents: str):
         ...
 
 
