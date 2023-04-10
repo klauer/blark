@@ -10,15 +10,15 @@ TEST_PATH = pathlib.Path(__file__).parent
 
 def test_parsing_tcpous(twincat_pou_filename: str):
     """Test parsing TwinCAT TcPOU files."""
-    (result,) = list(parse(twincat_pou_filename))
-    transformed = result.transform()
-    print("transformed:")
-    print(transformed)
-    print("summary:")
-    if result.exception:
-        raise result.exception
-    print(summarize(transformed))
-    conftest.check_serialization(transformed, deserialize=False)
+    for part in parse(twincat_pou_filename):
+        transformed = part.transform()
+        print("transformed:")
+        print(transformed)
+        print("summary:")
+        if part.exception:
+            raise part.exception
+        print(summarize(transformed))
+        conftest.check_serialization(transformed, deserialize=False)
 
 
 def test_parsing_source(source_filename: str):
