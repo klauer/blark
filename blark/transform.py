@@ -1789,11 +1789,13 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
     variables: List[lark.Token]
     init: FunctionCall
+    defaults: Optional[StructureInitialization] = None
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         variables = ", ".join(self.variables)
-        return f"{variables} : {self.init}"
+        name_and_type = f"{variables} : {self.init}"
+        return join_if(name_and_type, " := ", self.defaults)
 
 
 @as_tagged_union
