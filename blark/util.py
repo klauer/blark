@@ -20,6 +20,7 @@ CLOSE_PRAGMA = "}"
 
 
 class SourceType(enum.Enum):
+    general = enum.auto()
     action = enum.auto()
     function = enum.auto()
     function_block = enum.auto()
@@ -41,6 +42,7 @@ class SourceType(enum.Enum):
             SourceType.action: "action",
             SourceType.function: "function_declaration",
             SourceType.function_block: "function_block_type_declaration",
+            SourceType.general: "iec_source",
             # TODO no grammar rule exists yet for 'INTERFACE'
             SourceType.interface: "iec_source",
             SourceType.method: "function_block_method_declaration",
@@ -59,6 +61,7 @@ class SourceType(enum.Enum):
             SourceType.action: "END_ACTION",
             SourceType.function: "END_FUNCTION",
             SourceType.function_block: "END_FUNCTION_BLOCK",
+            SourceType.general: "",
             SourceType.interface: "END_INTERFACE",
             SourceType.method: "END_METHOD",
             SourceType.program: "END_PROGRAM",

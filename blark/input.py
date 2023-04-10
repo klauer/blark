@@ -138,8 +138,15 @@ def plain_file_loader(
         contents = fp.read()
 
     source_type, identifier = find_pou_type_and_identifier(contents)
-    if source_type is None:
-        return []
+    # if source_type is None:
+    #     return []
+    source_type = SourceType.general
+    # We'll pick the first identifier here only. IEC source (as what blark
+    # accepts for iput) it's allowed to have multiple declarations in the same
+    # file.
+    # TODO: If people want to use it like this, we could pre-parse the file for
+    # all identifiers and return a BlarkCompositeSourceItem.
+    # As-is, the focus is now on loading TwinCAT XML files directly.
     item = BlarkSourceItem(
         identifier=identifier,
         lines=[
@@ -148,7 +155,7 @@ def plain_file_loader(
         ],
         type=source_type,
         grammar_rule=source_type.get_grammar_rule(),
-        implicit_end=None,  # <-- assume this is already specified
+        implicit_end=source_type.get_implicit_block_end(),
     )
     return [item]
 
