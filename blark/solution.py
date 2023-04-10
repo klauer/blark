@@ -669,6 +669,10 @@ class TcMethod(TcSourceChild):
 class TcAction(TcSourceChild):
     _tag: ClassVar[str] = "Action"
 
+    def rewrite_code(self, identifier: str, contents: str):
+        # TODO: need to not save the implicit end line
+        self.decl.implementation.value = contents
+
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is None or self.decl.implementation is None:
             return []
@@ -708,6 +712,10 @@ class TcProperty(TcSourceChild):
 
     get: Optional[TcDeclImpl]
     set: Optional[TcDeclImpl]
+
+    def rewrite_code(self, identifier: str, contents: str):
+        # TODO: need to not save the implicit end line
+        raise NotImplementedError()
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         # NOTE: ignoring super().to_blark()
