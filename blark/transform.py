@@ -1587,6 +1587,7 @@ class ParenthesizedExpression(Expression):
 class FunctionCall(Expression):
     name: SymbolicVariable
     parameters: List[ParameterAssignment]
+    dereferenced: bool
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -1621,6 +1622,12 @@ class FunctionCall(Expression):
         first_parameter: Optional[ParameterAssignment] = None,
         *remaining_parameters: ParameterAssignment,
     ) -> FunctionCall:
+        # Remove the Dereference Token if Present in the Remaining Parameters
+        dereferenced = False
+        if remaining_parameters:
+            if str(remaining_parameters[-1]) == "^":
+                dereferenced = True
+                remaining_parameters = remaining_parameters[:-1]
         # Condition parameters (which may be `None`) to represent empty tuple
         if first_parameter is None:
             parameters = []
@@ -1630,11 +1637,15 @@ class FunctionCall(Expression):
         return FunctionCall(
             name=name,
             parameters=parameters,
+            dereferenced=dereferenced
         )
 
     def __str__(self) -> str:
+        dereference = ""
         parameters = ", ".join(str(param) for param in self.parameters)
-        return f"{self.name}({parameters})"
+        if self.dereferenced:
+            dereference = "^"
+        return f"{self.name}({parameters}){dereference}"
 
 
 @dataclass
@@ -2620,6 +2631,7 @@ class FunctionCallStatement(Statement, FunctionCall):
         return FunctionCallStatement(
             name=invocation.name,
             parameters=invocation.parameters,
+            dereferenced=invocation.dereferenced,
             meta=invocation.meta,
         )
 
