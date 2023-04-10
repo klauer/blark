@@ -84,19 +84,19 @@ def main(
                 # print(user.to_file_contents())
 
             if isinstance(user, SupportsCustomSave):
-                if verbose > 1:
-                    print(formatted_code)
                 if in_place:
                     user.save_to(filename)
-            elif isinstance(user, SupportsWrite):
-                if verbose > 1:
+                else:
                     print(formatted_code)
+            elif isinstance(user, SupportsWrite):
                 if in_place:
                     contents = user.to_file_contents()
                     mode = "wb" if isinstance(contents, bytes) else "wt"
                     with open(filename, mode) as fp:
                         fp.write(contents)
+                else:
+                    print(formatted_code)
             else:
-                print(res.source_code)
+                print(formatted_code)
 
     return result_by_filename
