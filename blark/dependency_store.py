@@ -97,11 +97,15 @@ class DependencyStoreLibrary:
             f"No valid versions of {self.name} found in {project_root}"
         )
 
-    def get_project_filename(self, root: pathlib.Path, version: str) -> pathlib.Path:
+    def get_project_filename(
+        self,
+        root: pathlib.Path,
+        version: Optional[str],
+    ) -> pathlib.Path:
         """Get the full project filename, given the root path and version."""
         if not self.versioned:
             return root / self.path / self.project
-        if version == "*":
+        if version == "*" or version is None:
             return self.get_latest_version_path(root)
 
         return root / self.path / version / self.project
@@ -162,6 +166,7 @@ class DependencyStore:
 
     def load_config(self):
         """Load the dependency store configuration file."""
+        logger.debug("Loading dependency store config from %s", self.config_filename)
         try:
             config = self._read_config()
         except FileNotFoundError:
@@ -179,12 +184,20 @@ class DependencyStore:
         )
 
     @functools.lru_cache(maxsize=50)
-    def get_dependency(self, name: str, version: str) -> List[PlcProjectMetadata]:
+    def get_dependency(
+        self,
+        name: str,
+        version: Optional[str],
+    ) -> List[PlcProjectMetadata]:
         """Get a dependency by name and version number."""
         try:
             info: DependencyStoreLibrary = self.config.libraries[name]
         except KeyError:
-            logger.warning("Unable to find library %s in dependency store", name)
+            logger.warning(
+                "Unable to find library %s in dependency store. Known libraries: %s",
+                name,
+                ", ".join(self.config.libraries),
+            )
             return []
 
         try:
@@ -285,14 +298,20 @@ class PlcProjectMetadata:
                 continue
 
             for item in source.contents.to_blark():
-                for code_path, code_obj in parse.parse_item(item, transform=True):
-                    if isinstance(code_obj, Exception):
-                        logger.debug("Failed to load: %s %s", code_path, code_obj)
+                for code_obj in parse.parse_item(item, transform=True):
+                    if code_obj.exception is not None:
+                        logger.debug(
+                            "Failed to load: %s %s", code_obj.filename, code_obj
+                        )
                         continue
+                    assert code_obj.filename is not None
                     code.append(code_obj)
-                    loaded_files[code_path] = util.get_file_sha256(code_path)
-                    assert isinstance(code_obj, tf.SourceCode)
-                    summary = CodeSummary.from_source(code_obj, filename=code_path)
+                    loaded_files[code_obj.filename] = util.get_file_sha256(
+                        code_obj.filename
+                    )
+                    summary = CodeSummary.from_source(
+                        code_obj.transform(), filename=code_obj.filename
+                    )
                     combined_summary.append(summary)
 
         # tmc = plc.tmc

@@ -1,0 +1,3 @@
+[submodule "blark/tests/blark-twincat-root-example"]
+	path = blark/tests/twincat_root
+	url = https://github.com/klauer/blark-twincat-root-example

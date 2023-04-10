@@ -80,6 +80,8 @@ def parse_xml_file(fn: AnyPath) -> lxml.etree.Element:
 
 def parse_xml_contents(contents: Union[bytes, str]) -> lxml.etree.Element:
     """Parse the given XML contents with lxml.etree."""
+    if isinstance(contents, str):
+        contents = contents.encode("utf-8")
     return lxml.etree.fromstring(contents)
 
 
