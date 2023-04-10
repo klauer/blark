@@ -322,7 +322,21 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
-        "--debug", action="store_true", help="On failure, still return the results tree"
+        "--print-source",
+        action="store_true",
+        help="Dump the source code",
+    )
+
+    argparser.add_argument(
+        "--print-tree",
+        action="store_true",
+        help="Dump the source code tree",
+    )
+
+    argparser.add_argument(
+        "--debug",
+        action="store_true",
+        help="On failure, still return the results tree",
     )
 
     argparser.add_argument(
@@ -333,7 +347,10 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
-        "-s", "--summary", action="store_true", help="Summarize code inputs and outputs"
+        "-s",
+        "--summary",
+        action="store_true",
+        help="Summarize code inputs and outputs",
     )
 
     argparser.add_argument(
@@ -358,13 +375,14 @@ def main(
     interactive: bool = False,
     summary: bool = False,
     use_json: bool = False,
+    print_source: bool = False,
+    print_tree: bool = False,
     catch_exceptions: bool = True,
 ) -> dict[str, list[ParseResult]]:
     """
     Parse the given source code/project.
     """
     results_by_filename = {}
-    print_filenames = sys.stdout if verbose > 0 else None
     filename = pathlib.Path(filename)
 
     if use_json:
@@ -376,6 +394,11 @@ def main(
                 "representation of source code."
             )
 
+    print_filenames = bool(verbose > 0)
+    print_source = print_source or verbose > 1
+    print_tree = print_tree or verbose > 1
+    print_tracebacks = verbose > 1
+
     try:
         for index, res in enumerate(
             parse(filename, catch_exceptions=catch_exceptions),
@@ -385,11 +408,20 @@ def main(
             if print_filenames:
                 print(f"[{index}] Parsing {res.filename}: {res.identifier}")
 
-            if verbose > 1:
+            if print_source:
                 res.dump_source()
+
+            if print_tree and res.tree is not None:
+                print(res.tree.pretty())
 
             if res.exception is not None:
                 tb = getattr(res.exception, "traceback", None)
+                if print_tracebacks:
+                    print(tb)
+                print(
+                    f"Failed to parse {res.filename} {res.identifier}: "
+                    f"Exception: {type(res.exception).__name__}: {res.exception}"
+                )
                 if interactive:
                     util.python_debug_session(
                         namespace={"result": res},
@@ -399,14 +431,8 @@ def main(
                             f"{tb}"
                         ),
                     )
-                elif verbose > 1:
-                    print(tb)
-                else:
-                    print(
-                        f"Failed to parse {res.filename} {res.identifier}: "
-                        f"Exception: {type(res.exception).__name__}: {res.exception}"
-                    )
-            elif summary:
+
+            if summary and res.tree is not None:
                 print(summarize(res.transform()))
 
             if use_json:
