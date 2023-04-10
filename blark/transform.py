@@ -13,7 +13,7 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
-from .util import AnyPath
+from .util import AnyPath, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
 
@@ -3061,7 +3061,13 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
         )
     )
 
-    def transform(self, tree):
+    def transform(self, tree: lark.Tree, *, line_map: Optional[dict[int, int]] = None):
+        if line_map is not None:
+            tree = rebuild_lark_tree_with_line_map(
+                tree,
+                code_line_to_file_line=line_map,
+            )
+
         transformed = super().transform(tree)
         if self.comments:
             merge_comments(transformed, self.comments)

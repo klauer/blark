@@ -11,6 +11,12 @@ import lark
 from .typing import AnyPath  # Back-compat
 
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
+NEWLINES = "\n\r"
+SINGLE_COMMENT = "//"
+OPEN_COMMENT = "(*"
+CLOSE_COMMENT = "*)"
+OPEN_PRAGMA = "{"
+CLOSE_PRAGMA = "}"
 
 
 class SourceType(enum.Enum):
@@ -176,12 +182,6 @@ def remove_all_comments(text: str, *, replace_char: str = " ") -> str:
     in_double_quote = False
     pragma_state = []
     skip = 0
-    NEWLINES = "\n\r"
-    SINGLE_COMMENT = "//"
-    OPEN_COMMENT = "(*"
-    CLOSE_COMMENT = "*)"
-    OPEN_PRAGMA = "{"
-    CLOSE_PRAGMA = "}"
 
     def get_characters() -> Generator[Tuple[int, int, str, str], None, None]:
         """Yield line information and characters."""
@@ -253,7 +253,10 @@ def remove_all_comments(text: str, *, replace_char: str = " ") -> str:
 
 
 def find_and_clean_comments(
-    text: str, *, replace_char: str = " "
+    text: str,
+    *,
+    replace_char: str = " ",
+    line_map: Optional[dict[int, int]] = None,
 ) -> Tuple[List[lark.Token], str]:
     """
     Clean nested multiline comments from ``text``.
@@ -270,12 +273,6 @@ def find_and_clean_comments(
     in_double_quote = False
     pragma_state = []
     skip = 0
-    NEWLINES = "\n\r"
-    SINGLE_COMMENT = "//"
-    OPEN_COMMENT = "(*"
-    CLOSE_COMMENT = "*)"
-    OPEN_PRAGMA = "{"
-    CLOSE_PRAGMA = "}"
 
     comments_and_pragmas: List[lark.Token] = []
 
@@ -328,7 +325,7 @@ def find_and_clean_comments(
                 }[type_],
             )
 
-        return lark.Token(
+        token = lark.Token(
             type_,
             block,
             line=start_line + 1,
@@ -336,6 +333,10 @@ def find_and_clean_comments(
             column=start_col + 1,
             end_column=end_col + 1,
         )
+        if line_map is not None:
+            token.line = line_map.get(start_line + 1, start_line + 1)
+            token.end_line = line_map.get(end_line + 1, end_line + 1)
+        return token
 
     for lineno, colno, this_ch, next_ch in get_characters():
         if skip:

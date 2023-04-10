@@ -104,30 +104,8 @@ class ParseResult:
         return self.item.identifier
 
     def transform(self) -> tf.SourceCode:
-        if self.transformed is not None:
-            return self.transformed
-
-        if self.tree is None:
-            raise ValueError(
-                "Source code was not successfully parsed; cannot transform"
-            )
-
-        transformer = GrammarTransformer(
-            comments=self.comments,
-            fn=self.filename,
-            source_code=self.source_code,
-        )
-        transformed = transformer.transform(self.tree)
-
-        if not isinstance(transformed, tf.SourceCode):
-            transformed = tf.SourceCode(
-                items=[transformed],
-                filename=self.filename,
-                raw_source=self.source_code,
-                line_map=self.line_map,
-            )
-
-        self.transformed = transformed
+        if self.transformed is None:
+            self.transformed = transform_parse_result(self)
         return self.transformed
 
     def dump_source(self, fp=sys.stdout) -> None:
@@ -139,6 +117,35 @@ class ParseResult:
         else:
             for lineno, line in enumerate(self.source_code.splitlines(), 1):
                 print(f"{lineno}: {line}", file=fp)
+
+
+def transform_parse_result(parsed: ParseResult) -> tf.SourceCode:
+    if parsed.tree is None:
+        raise ValueError(
+            f"Source code was not successfully parsed; cannot transform. "
+            f"Exception was {type(parsed.exception).__name__}: {parsed.exception}"
+        )
+
+    transformer = GrammarTransformer(
+        comments=parsed.comments,
+        fn=parsed.filename,
+        source_code=parsed.source_code,
+    )
+    transformed = transformer.transform(parsed.tree, line_map=parsed.line_map)
+
+    if isinstance(transformed, tf.SourceCode):
+        return transformed
+
+    # TODO: this is for custom starting points and ignores that 'transformed'
+    # may not be a typical "SourceCodeItem". Goal is just returning a
+    # consistent tf.SourceCode instance
+    return tf.SourceCode(
+        items=[transformed],
+        filename=parsed.filename,
+        raw_source=parsed.source_code,
+        line_map=parsed.line_map,
+        meta=transformed.meta,
+    )
 
 
 def parse_source_code(
@@ -182,7 +189,10 @@ def parse_source_code(
     for preprocessor in preprocessors:
         processed_source = preprocessor(processed_source)
 
-    comments, processed_source = util.find_and_clean_comments(processed_source)
+    comments, processed_source = util.find_and_clean_comments(
+        processed_source,
+        line_map=line_map,
+    )
     if parser is None:
         parser = get_parser()
 
@@ -203,17 +213,12 @@ def parse_source_code(
     )
 
     try:
-        tree = parser.parse(processed_source, start=starting_rule)
+        result.tree = parser.parse(processed_source, start=starting_rule)
     except Exception as ex:
         if catch_exceptions:
             result.exception = ex
             return result
         raise
-
-    if result.line_map is None:
-        result.tree = tree
-    else:
-        result.tree = util.rebuild_lark_tree_with_line_map(tree, result.line_map)
 
     if transform:
         result.transform()
