@@ -214,7 +214,14 @@ def parse_source_code(
 
     try:
         result.tree = parser.parse(processed_source, start=starting_rule)
-    except Exception as ex:
+    except lark.UnexpectedInput as ex:
+        if line_map:
+            ex.line = line_map.get(ex.line, ex.line)
+        if catch_exceptions:
+            result.exception = ex
+            return result
+        raise
+    except lark.LarkError as ex:
         if catch_exceptions:
             result.exception = ex
             return result
