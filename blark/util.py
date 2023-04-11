@@ -163,13 +163,21 @@ def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optio
     types = {source.name for source in SourceType}
     clean_code = remove_all_comments(code)
     for line in clean_code.splitlines():
-        parts = line.lstrip().split(None, 2)
+        parts = line.lstrip().split()
         if parts and parts[0].lower() in types:
             source_type = SourceType[parts[0].lower()]
-            if source_type == SourceType.var_global:
-                identifier = None
-            else:
-                identifier = parts[1] if len(parts) >= 2 else ""
+            identifier = None
+            if source_type != SourceType.var_global:
+                for identifier in parts[1:]:
+                    if identifier.lower() not in {
+                        "abstract",
+                        "public",
+                        "private",
+                        "protected",
+                        "internal",
+                        "final",
+                    }:
+                        break
             return source_type, identifier
     return None, None
 
