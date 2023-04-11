@@ -220,15 +220,20 @@ class TcDeclImpl:
             res.append(decl)
 
         if self.implementation is not None:
-            impl = BlarkSourceItem(
-                identifier=f"{self.identifier}/implementation",
-                type=self.source_type,
-                lines=self.implementation.to_lines(),
-                grammar_rule=SourceType.statement_list.name,
-                implicit_end=SourceType.statement_list.get_implicit_block_end(),
-                user=self.parent or self,
-            )
-            res.append(impl)
+            # TODO: statement_list in the grammar cannot be empty.  We
+            # pre-filter the implementation to ensure that it has some code.
+            # If this affects how you're using blark, feel free to open an issue
+            # and we can resolve it.
+            if util.remove_all_comments(self.implementation.value).strip():
+                impl = BlarkSourceItem(
+                    identifier=f"{self.identifier}/implementation",
+                    type=self.source_type,
+                    lines=self.implementation.to_lines(),
+                    grammar_rule=SourceType.statement_list.name,
+                    implicit_end=SourceType.statement_list.get_implicit_block_end(),
+                    user=self.parent or self,
+                )
+                res.append(impl)
 
         return res
 
@@ -931,8 +936,8 @@ class DependencyVersion:
 @dataclasses.dataclass
 class DependencyInformation:
     name: str
-    default: DependencyVersion
-    resolution: Optional[DependencyVersion]
+    default: Optional[DependencyVersion] = None
+    resolution: Optional[DependencyVersion] = None
 
     @classmethod
     def from_xml(
@@ -970,11 +975,10 @@ class DependencyInformation:
             try:
                 namespace = by_name[name].default.namespace
             except KeyError:
-                logger.warning(
-                    "Incompatible dependency reference? Resolution without default %s",
-                    ref,
-                )
-                continue
+                # Unclear if we can infer the namespace without a default here.
+                # Let's default to just its name.
+                by_name[name] = DependencyInformation(name=name)
+                namespace = name
 
             by_name[name].resolution = DependencyVersion.from_string(
                 res, namespace=namespace
