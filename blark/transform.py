@@ -2996,7 +2996,7 @@ class SourceCode:
     items: List[SourceCodeItem]
     filename: Optional[pathlib.Path] = None
     raw_source: Optional[str] = None
-    line_map: Optional[dict[int, int]] = None
+    line_map: Optional[Dict[int, int]] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
