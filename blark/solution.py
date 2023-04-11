@@ -666,6 +666,7 @@ class TcMethod(TcSourceChild):
             return []
         res = self.decl.to_blark()
         for item in res:
+            # item.identifier = f"{self.name}/{item.identifier}"
             item.user = self
         return res
 
@@ -733,13 +734,16 @@ class TcProperty(TcSourceChild):
 
         parts = []
         for identifier, get_set in (("get", self.get), ("set", self.set)):
-            if get_set is not None:
-                (blark_input,) = get_set.to_blark()
+            if get_set is None:
+                continue
+
+            for part in get_set.to_blark():
                 parts.append(
                     BlarkSourceItem(
-                        identifier=f"{base_decl.identifier}.{identifier}",
+                        # TODO
+                        identifier=f"{base_decl.identifier}.{identifier}/{part.identifier}",
                         type=SourceType.property,
-                        lines=base_decl.lines + blark_input.lines,
+                        lines=base_decl.lines + part.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
                         user=self,
