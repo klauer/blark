@@ -330,9 +330,13 @@ array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_sp
 _array_spec_type: STRING_TYPE
                 | function_call
                 | non_generic_type_name
+                | object_initializer_array
+
+object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
 
 array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
-                    | array_initial_element ( "," array_initial_element )*
+// Removed to allow correct parsing of FB attribute assignment - JS - 20230410
+//                    | array_initial_element ( "," array_initial_element )*
 
 array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
                      | _array_initial_element
@@ -436,7 +440,7 @@ structured_var_init_decl: var1_list ":" initialized_structure
 
 // Function blocks
 fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
-       | fb_decl_name_list ":" function_call                                              -> fb_invocation_decl
+       | fb_decl_name_list ":" function_call [ ":=" structure_initialization ]            -> fb_invocation_decl
 
 fb_decl_name_list: fb_name ( "," fb_name )*
 

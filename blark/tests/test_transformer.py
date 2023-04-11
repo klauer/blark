@@ -354,10 +354,6 @@ def test_expression_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
-            # Identical paths:
-            #   fb_name_decl -> structure_initialization
-            #   array_initialization -> array_initial_element -> structure_initialization
         ),
     ],
 )
@@ -445,6 +441,7 @@ def test_output_roundtrip(rule_name, value):
                 fbTest : FB_Test(1, 2, 3);
                 fbTest : FB_Test(A := 1, B := 2, C => 3);
                 fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
+                fbTest : FB_Test(initializer := 5) := (A := 1, B := 2, C := 3);
                 fbTest : FB_Test := (1, 2, 3);
             END_VAR
             """
