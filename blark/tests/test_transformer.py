@@ -83,6 +83,7 @@ def test_check_unhandled_rules(grammar):
     [
         param("integer_literal", "-12", tf.Integer(value="-12")),
         param("integer_literal", "12", tf.Integer(value="12")),
+        param("integer_literal", "10#12", tf.Integer(value="12")),
         param("integer_literal", "INT#12", tf.Integer(value="12", type_name="INT")),
         param("integer_literal", "2#10010", tf.BinaryInteger(value="10010")),
         param("integer_literal", "8#22", tf.OctalInteger(value="22")),

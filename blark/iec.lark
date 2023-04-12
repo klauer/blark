@@ -64,7 +64,7 @@ integer_literal: [ INTEGER_TYPE_NAME "#" ] any_integer
             | SIGNED_INTEGER              -> signed_integer
             | integer
 
-integer: INTEGER
+integer: [ "10#" ] INTEGER
 
 real_literal: [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)\.([0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))?/
             | [ REAL_TYPE_NAME "#" ] /((\+|\-)?[0-9](_?[0-9])*)((e|E)(\+|\-)?([0-9](_?[0-9])*))/
