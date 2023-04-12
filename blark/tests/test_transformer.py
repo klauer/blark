@@ -1072,7 +1072,17 @@ def test_action_roundtrip(rule_name, value):
         )),
         param("chained_function_call_statement", tf.multiline_code_block(
             """
-            uut.call1().call2().call3.call4().done();
+            uut.call1().call2().call3().call4().done();
+            """
+        )),
+        param("chained_function_call_statement", tf.multiline_code_block(
+            """
+            uut.call1()^.call2().call3()^.call4().done();
+            """
+        )),
+        param("chained_function_call_statement", tf.multiline_code_block(
+            """
+            uut.call1()^.call2(A := 1).call3(B := 2)^.call4().done();
             """
         )),
     ],
