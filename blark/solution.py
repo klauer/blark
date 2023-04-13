@@ -733,15 +733,17 @@ class TcProperty(TcSourceChild):
             return []
 
         parts = []
-        for identifier, get_set in (("get", self.get), ("set", self.set)):
-            if get_set is None:
+        for get_or_set, obj in (("get", self.get), ("set", self.set)):
+            if obj is None:
                 continue
 
-            for part in get_set.to_blark():
+            for part in obj.to_blark():
+                # The parent will add on the FB name
+                _, decl_or_impl = part.identifier.split("/")
+                prop_name, _ = base_decl.identifier.split("/")
                 parts.append(
                     BlarkSourceItem(
-                        # TODO
-                        identifier=f"{base_decl.identifier}.{identifier}/{part.identifier}",
+                        identifier=f"{prop_name}.{get_or_set}/{decl_or_impl}",
                         type=SourceType.property,
                         lines=base_decl.lines + part.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
