@@ -323,6 +323,36 @@ class TcDeclImpl:
         )
 
 
+def get_tcplc_from_xml(
+    xml: lxml.etree.Element,
+) -> Optional[lxml.etree.Element]:
+    try:
+        return xml.xpath("/TcPlcObject")[0]
+    except IndexError:
+        return None
+
+
+def get_code_object_from_xml(
+    xml: lxml.etree.Element,
+) -> tuple[Optional[type[TcSource]], Optional[lxml.etree.Element]]:
+    tcplc_object = get_tcplc_from_xml(xml)
+    if tcplc_object is not None:
+        cls_to_xpath = {
+            TcDUT: TcDUT._tag,
+            TcGVL: TcGVL._tag,
+            TcPOU: TcPOU._tag,
+            TcIO: TcIO._tag,
+            TcTTO: TcTTO._tag,
+        }
+
+        for cls, xpath in cls_to_xpath.items():
+            items = tcplc_object.xpath(xpath)
+            if items:
+                return cls, items[0]
+
+    return None, None
+
+
 @dataclasses.dataclass
 class TcSource:
     _tag: ClassVar[str] = ""  # TODO: set in subclass
@@ -332,6 +362,7 @@ class TcSource:
     metadata: dict[str, str]
     filename: Optional[pathlib.Path]
     parent: Optional[TwincatSourceCodeItem]
+    xml: dataclasses.InitVar[lxml.etree.Element | None] = None
 
     @property
     def source_type(self) -> Optional[SourceType]:
@@ -345,6 +376,12 @@ class TcSource:
         )
 
     def to_file_contents(self) -> str:
+        parent_to_file_contents = getattr(self.parent, "to_file_contents", None)
+        if parent_to_file_contents is not None:
+            # If we have a parent, we can't serialize just part of the file.
+            # Serialize the whole thing.
+            return parent_to_file_contents()
+
         tree = self.to_xml()
         lxml.etree.indent(tree, space=" " * 2)
         return lxml.etree.tostring(tree)
@@ -366,61 +403,38 @@ class TcSource:
         if self.decl is not None:
             self.decl._serialize(primary)
 
-    @classmethod
+    @staticmethod
     def from_xml(
-        cls: type[Self],
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
         parent: Optional[TcSource] = None,
     ) -> Optional[Union[TcDUT, TcTTO, TcPOU, TcIO, TcGVL]]:
-        try:
-            tcplc_object = xml.xpath("/TcPlcObject")[0]
-        except IndexError:
+        tcplc_object = get_tcplc_from_xml(xml)
+        if tcplc_object is None:
             return None
-
-        cls_to_xpath = {
-            TcDUT: TcDUT._tag,
-            TcGVL: TcGVL._tag,
-            TcPOU: TcPOU._tag,
-            TcIO: TcIO._tag,
-            TcTTO: TcTTO._tag,
-        }
-
-        for cls, xpath in cls_to_xpath.items():
-            items = tcplc_object.xpath(xpath)
-            if items:
-                item = items[0]
-                break
-        else:
-            return None
+        source_cls, item = get_code_object_from_xml(xml)
+        if source_cls is None or item is None:
+            raise RuntimeError(
+                f"Unsupported xml type for TcSource: {xml}"
+            )
 
         metadata = dict(item.attrib)
         metadata["version"] = tcplc_object.attrib.get("Version", "")
         metadata["product_version"] = tcplc_object.attrib.get("ProductVersion", "")
 
         decl = TcDeclImpl.from_xml(item, filename=filename)
-        kwargs = cls._get_additional_args_from_xml(item, decl, filename=filename)
-        source = cls(
+
+        source = source_cls(
             filename=filename or filename_from_xml(xml),
             name=metadata.pop("Name", ""),
             guid=metadata.pop("Id", ""),
             decl=decl,
             metadata=metadata,
             parent=parent,
-            **kwargs,
+            xml=xml,
         )
         source.decl.parent = source
         return source
-
-    @classmethod
-    def _get_additional_args_from_xml(
-        cls,
-        xml: lxml.etree.Element,
-        decl: Optional[TcDeclImpl],
-        *,
-        filename: Optional[pathlib.Path] = None,
-    ) -> dict[str, Any]:
-        return {}
 
     @classmethod
     def from_contents(
@@ -481,7 +495,23 @@ class TcIO(TcSource):
     _tag: ClassVar[str] = "Itf"
     file_extension: ClassVar[str] = ".TcIO"
 
-    parts: list[Union[TcMethod, TcProperty, TcUnknownXml]]
+    parts: list[Union[TcMethod, TcProperty, TcUnknownXml]] = dataclasses.field(
+        default_factory=list
+    )
+
+    def __post_init__(self, xml: Optional[lxml.etree.Element]) -> None:
+        if xml is None:
+            return
+        _, item = get_code_object_from_xml(xml)
+        self.parts = [
+            self.create_source_child_from_xml(
+                child,
+                filename=self.filename,
+                parent=self,
+            )
+            for child in item.iterchildren()
+            if child.tag not in ("Declaration", "Implementation")
+        ]
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is not None:
@@ -505,44 +535,25 @@ class TcIO(TcSource):
     def create_source_child_from_xml(
         cls,
         child: lxml.etree.Element,
+        parent: TcSource,
         filename: Optional[pathlib.Path] = None,
-    ) -> Optional[Union[TcAction, TcMethod, TcProperty, TcExtraInfo, TcUnknownXml]]:
-        if child.tag in ("Declaration", "Implementation"):
-            # Already handled
-            return None
+    ) -> Union[TcAction, TcMethod, TcProperty, TcExtraInfo, TcUnknownXml]:
         if child.tag == "Action":
-            return TcAction.from_xml(child, filename=filename)
+            return TcAction.from_xml(child, filename=filename, parent=parent)
         if child.tag == "Method":
-            return TcMethod.from_xml(child, filename=filename)
+            return TcMethod.from_xml(child, filename=filename, parent=parent)
         if child.tag == "Property":
-            return TcProperty.from_xml(child, filename=filename)
+            return TcProperty.from_xml(child, filename=filename, parent=parent)
         if child.tag in ("Folder", "LineIds"):
-            return TcExtraInfo.from_xml(child)
-        return TcUnknownXml(child)
-
-    @classmethod
-    def _get_additional_args_from_xml(
-        cls,
-        xml: lxml.etree.Element,
-        decl: Optional[TcDeclImpl],
-        *,
-        filename: Optional[pathlib.Path] = None,
-    ) -> dict[str, Any]:
-        # Only support ST for now:
-        parts = [
-            cls.create_source_child_from_xml(child, filename=filename)
-            for child in xml.iterchildren()
-        ]
-        return {
-            "parts": [part for part in parts if part is not None],
-        }
+            return TcExtraInfo.from_xml(child, parent=parent)
+        return TcUnknownXml(child, parent=parent)
 
 
 @dataclasses.dataclass
 class TcTTO(TcSource):
     _tag: ClassVar[str] = "Task"
     file_extension: ClassVar[str] = ".TcTTO"
-    xml: lxml.etree.Element
+    xml: Optional[lxml.etree.Element] = None
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         return []
@@ -550,22 +561,29 @@ class TcTTO(TcSource):
     def _serialize(self, primary: lxml.etree.Element) -> None:
         primary.getparent().replace(primary, self.xml)
 
-    @classmethod
-    def _get_additional_args_from_xml(
-        cls,
-        xml: lxml.etree.Element,
-        decl: Optional[TcDeclImpl],
-        *,
-        filename: Optional[pathlib.Path] = None,
-    ) -> dict[str, Any]:
-        return {"xml": xml}
-
 
 @dataclasses.dataclass
 class TcPOU(TcSource):
     _tag: ClassVar[str] = "POU"
     file_extension: ClassVar[str] = ".TcPOU"
-    parts: list[Union[TcAction, TcMethod, TcProperty, TcUnknownXml]]
+    parts: list[
+        Union[TcAction, TcMethod, TcProperty, TcUnknownXml]
+    ] = dataclasses.field(default_factory=list)
+
+    def __post_init__(self, xml: Optional[lxml.etree.Element]) -> None:
+        if xml is None:
+            return
+
+        _, item = get_code_object_from_xml(xml)
+        self.parts = [
+            self.create_source_child_from_xml(
+                child,
+                filename=self.filename,
+                parent=self,
+            )
+            for child in item.iterchildren()
+            if child.tag not in ("Declaration", "Implementation")
+        ]
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
@@ -635,41 +653,23 @@ class TcPOU(TcSource):
     def create_source_child_from_xml(
         cls,
         child: lxml.etree.Element,
+        parent: TcSource,
         filename: Optional[pathlib.Path] = None,
     ) -> Optional[Union[TcAction, TcMethod, TcProperty, TcExtraInfo, TcUnknownXml]]:
-        if child.tag in ("Declaration", "Implementation"):
-            # Already handled
-            return None
         if child.tag == "Action":
-            return TcAction.from_xml(child, filename=filename)
+            return TcAction.from_xml(child, filename=filename, parent=parent)
         if child.tag == "Method":
-            return TcMethod.from_xml(child, filename=filename)
+            return TcMethod.from_xml(child, filename=filename, parent=parent)
         if child.tag == "Property":
-            return TcProperty.from_xml(child, filename=filename)
+            return TcProperty.from_xml(child, filename=filename, parent=parent)
         if child.tag in ("Folder", "LineIds"):
-            return TcExtraInfo.from_xml(child)
-        return TcUnknownXml(child)
-
-    @classmethod
-    def _get_additional_args_from_xml(
-        cls,
-        xml: lxml.etree.Element,
-        decl: Optional[TcDeclImpl],
-        *,
-        filename: Optional[pathlib.Path] = None,
-    ) -> dict[str, Any]:
-        parts = [
-            cls.create_source_child_from_xml(child, filename=filename)
-            for child in xml.iterchildren()
-        ]
-        return {
-            "parts": [part for part in parts if part is not None],
-        }
+            return TcExtraInfo.from_xml(child, parent=parent)
+        return TcUnknownXml(child, parent=parent)
 
 
 @dataclasses.dataclass
 class TcSourceChild(TcSource):
-    parent: Optional[TcSource]
+    parent: Optional[TcSource] = None
 
     def _serialize(self, parent: lxml.etree.Element) -> None:
         super()._serialize(parent)
@@ -684,7 +684,6 @@ class TcSourceChild(TcSource):
     ) -> Self:
         metadata = dict(xml.attrib)
         decl = TcDeclImpl.from_xml(xml, filename=filename)
-        kwargs = cls._get_additional_args_from_xml(xml, decl, filename=filename)
         source = cls(
             filename=filename or filename_from_xml(xml),
             name=metadata.pop("Name", ""),
@@ -692,7 +691,7 @@ class TcSourceChild(TcSource):
             decl=decl,
             metadata=metadata,
             parent=parent,
-            **kwargs,
+            xml=xml,
         )
         source.decl.parent = source
         return source
@@ -763,8 +762,31 @@ class TcAction(TcSourceChild):
 class TcProperty(TcSourceChild):
     _tag: ClassVar[str] = "Property"
 
-    get: Optional[TcDeclImpl]
-    set: Optional[TcDeclImpl]
+    get: Optional[TcDeclImpl] = None
+    set: Optional[TcDeclImpl] = None
+
+    def __post_init__(self, xml: Optional[lxml.etree.Element]) -> None:
+        if xml is None:
+            return
+
+        try:
+            get_section = xml.xpath("Get")[0]
+        except IndexError:
+            get = None
+        else:
+            get = TcDeclImpl.from_xml(get_section, filename=self.filename)
+            get.source_type = SourceType.property_get
+
+        try:
+            set_section = xml.xpath("Set")[0]
+        except IndexError:
+            set = None
+        else:
+            set = TcDeclImpl.from_xml(set_section, filename=self.filename)
+            set.source_type = SourceType.property_set
+
+        self.get = get
+        self.set = set
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
@@ -825,48 +847,26 @@ class TcProperty(TcSourceChild):
             self.set._serialize(set)
             set.attrib.update(self.set.metadata or {})
 
-    @classmethod
-    def _get_additional_args_from_xml(
-        cls,
-        xml: lxml.etree.Element,
-        decl: Optional[TcDeclImpl],
-        *,
-        filename: Optional[pathlib.Path] = None,
-    ) -> dict[str, Any]:
-        try:
-            get_section = xml.xpath("Get")[0]
-        except IndexError:
-            get = None
-        else:
-            get = TcDeclImpl.from_xml(get_section, filename=filename)
-            get.source_type = SourceType.property_get
-
-        try:
-            set_section = xml.xpath("Set")[0]
-        except IndexError:
-            set = None
-        else:
-            set = TcDeclImpl.from_xml(set_section, filename=filename)
-            set.source_type = SourceType.property_set
-        return dict(get=get, set=set)
-
 
 @dataclasses.dataclass
 class TcExtraInfo:
     metadata: dict[str, str]
     xml: lxml.etree.Element
+    parent: TcSource
 
     @classmethod
     def from_xml(
         cls: type[Self],
         xml: lxml.etree.Element,
+        parent: TcSource,
     ) -> Self:
-        return cls(metadata=xml.attrib, xml=xml)
+        return cls(metadata=xml.attrib, xml=xml, parent=parent)
 
 
 @dataclasses.dataclass
 class TcUnknownXml:
     xml: lxml.etree.Element
+    parent: TcSource
 
 
 @dataclasses.dataclass
