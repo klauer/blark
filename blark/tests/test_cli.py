@@ -1,18 +1,43 @@
+from __future__ import annotations
+
 import os
+import shlex
 import sys
 from typing import Any, Dict, List
 
 import pytest
 from pytest import param
 
+from .. import MODULE_PATH, util
 from ..format import main as format_main
 from ..main import main as blark_main
 from ..parse import main as parse_main
 from . import conftest
 
+# Pick a subset of the test files to run with the CLI tools:
 parse_filenames = (
     conftest.twincat_pou_filenames[:5] + conftest.structured_text_filenames[:5]
 )
+
+README_PATH = MODULE_PATH.parent / "README.md"
+
+
+def get_readme_lines() -> list[str]:
+    if not README_PATH.exists():
+        return []
+
+    with open(README_PATH) as fp:
+        lines = fp.read().splitlines()
+
+    return [
+        line.lstrip("$ ")
+        for line in lines if line.lstrip().startswith("$ blark")
+    ]
+
+
+@pytest.fixture(params=get_readme_lines())
+def readme_line(request):
+    return request.param
 
 
 @pytest.fixture(params=parse_filenames)
@@ -119,6 +144,18 @@ def test_blark_main(monkeypatch, input_filename: str, args: List[str]):
     args = [replace_filename(arg) for arg in args]
 
     monkeypatch.setattr(sys, "argv", ["blark", *args])
+    try:
+        blark_main()
+    except SystemExit as ex:
+        assert ex.code == 0
+
+
+def test_readme_examples(monkeypatch, readme_line: str):
+    def debug_session(**kwargs):
+        print("(Should enter debug session here)", list(kwargs))
+
+    monkeypatch.setattr(sys, "argv", shlex.split(readme_line))
+    monkeypatch.setattr(util, "python_debug_session", debug_session)
     try:
         blark_main()
     except SystemExit as ex:
