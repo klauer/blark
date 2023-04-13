@@ -85,6 +85,7 @@ def test_check_unhandled_rules(grammar):
     [
         param("integer_literal", "-12", tf.Integer(value="-12")),
         param("integer_literal", "12", tf.Integer(value="12")),
+        param("integer_literal", "10#12", tf.Integer(value="12")),
         param("integer_literal", "INT#12", tf.Integer(value="12", type_name="INT")),
         param("integer_literal", "2#10010", tf.BinaryInteger(value="10010")),
         param("integer_literal", "8#22", tf.OctalInteger(value="22")),
@@ -356,10 +357,6 @@ def test_expression_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
-            # Identical paths:
-            #   fb_name_decl -> structure_initialization
-            #   array_initialization -> array_initial_element -> structure_initialization
         ),
     ],
 )
@@ -447,6 +444,7 @@ def test_output_roundtrip(rule_name, value):
                 fbTest : FB_Test(1, 2, 3);
                 fbTest : FB_Test(A := 1, B := 2, C => 3);
                 fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
+                fbTest : FB_Test(initializer := 5) := (A := 1, B := 2, C := 3);
                 fbTest : FB_Test := (1, 2, 3);
             END_VAR
             """
@@ -1077,7 +1075,17 @@ def test_action_roundtrip(rule_name, value):
         )),
         param("chained_function_call_statement", tf.multiline_code_block(
             """
-            uut.call1().call2().call3.call4().done();
+            uut.call1().call2().call3().call4().done();
+            """
+        )),
+        param("chained_function_call_statement", tf.multiline_code_block(
+            """
+            uut.call1()^.call2().call3()^.call4().done();
+            """
+        )),
+        param("chained_function_call_statement", tf.multiline_code_block(
+            """
+            uut.call1()^.call2(A := 1).call3(B := 2)^.call4().done();
             """
         )),
     ],
