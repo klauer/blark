@@ -2605,6 +2605,23 @@ class FunctionCallStatement(Statement, FunctionCall):
 
 
 @dataclass
+@_rule_handler("chained_function_call_statement", comments=True)
+class ChainedFunctionCallStatement(Statement):
+    invocations: List[FunctionCall]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(*invocations: FunctionCall) -> ChainedFunctionCallStatement:
+        return ChainedFunctionCallStatement(
+            invocations=list(invocations)
+        )
+
+    def __str__(self) -> str:
+        invoc = ".".join(str(invocation) for invocation in self.invocations)
+        return f"{invoc};"
+
+
+@dataclass
 @_rule_handler("else_if_clause", comments=True)
 class ElseIfClause:
     if_expression: Expression
