@@ -68,6 +68,20 @@ def strip_xml_namespace(tag: str) -> str:
     return lxml.etree.QName(tag).localname
 
 
+def strip_implicit_end_line(code: str, source_type: SourceType) -> str:
+    """Strip off (e.g.) END_FUNCTION_BLOCK the provided code."""
+    implicit_end = source_type.get_implicit_block_end()
+    if not implicit_end or not code:
+        return code
+
+    # Don't think too hard about this; blark appends this consistently.
+    # We shouldn't have to do more than this, I think.
+    lines = list(code.splitlines())
+    if lines[-1] == implicit_end:
+        lines.pop(-1)
+    return "\n".join(lines)
+
+
 def parse_xml_file(fn: AnyPath) -> lxml.etree.Element:
     """Parse a given XML file with lxml.etree.parse."""
     fn = util.fix_case_insensitive_path(fn)
@@ -116,11 +130,6 @@ def projects_from_solution_source(
             guid=group["project_guid"],
             solution_guid=group["solution_guid"],
         )
-
-
-class SourceCodeFile:
-    guid: str
-    path: pathlib.Path
 
 
 def filename_from_xml(xml: Optional[lxml.etree.Element]) -> Optional[pathlib.Path]:
@@ -174,6 +183,31 @@ def get_child_located_text(
 
 
 @dataclasses.dataclass
+class Identifier:
+    parts: List[str]
+    decl_impl: Optional[str]
+
+    def to_string(self) -> str:
+        parts = ".".join(self.parts)
+        if self.decl_impl:
+            return f"{parts}/{self.decl_impl}"
+        return parts
+
+    @classmethod
+    def from_string(cls: type[Self], value: str) -> Self:
+        if "/" in value:
+            identifier, decl_impl = value.split("/")
+            return cls(
+                parts=identifier.split("."),
+                decl_impl=decl_impl,
+            )
+        return cls(
+            parts=value.split("."),
+            decl_impl=None,
+        )
+
+
+@dataclasses.dataclass
 class LocatedString:
     filename: Optional[pathlib.Path]
     lineno: int = 0
@@ -198,11 +232,24 @@ class TcDeclImpl:
     parent: Optional[TcSource] = None
     metadata: Optional[dict[str, Any]] = None
 
-    # def rewrite_code(self, identifier: str, contents: str):
-    #     if self.parent is None:
-    #         raise NotImplementedError("Rewriting decl without parent")
-    #     return self.parent.rewrite_code(identifier, contents)
-    #
+    def rewrite_code(self, identifier: str, contents: str):
+        if self.source_type is not None:
+            contents = strip_implicit_end_line(contents, self.source_type)
+
+        ident = Identifier.from_string(identifier)
+        if ident.decl_impl == "declaration":
+            if self.declaration is None:
+                self.declaration = LocatedString(filename=self.filename)
+            self.declaration.value = contents
+        elif ident.decl_impl == "implementation":
+            if self.implementation is None:
+                self.implementation = LocatedString(filename=self.filename)
+            self.implementation.value = contents
+        else:
+            raise ValueError(
+                f"Unexpected rewrite portion: {identifier} ({ident.decl_impl})"
+            )
+
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
             return []
@@ -293,10 +340,14 @@ class TcSource:
         return self.decl.source_type
 
     def rewrite_code(self, identifier: str, contents: str):
-        raise NotImplementedError()
+        raise NotImplementedError(
+            f"Rewriting code not yet supported for {type(self)}"
+        )
 
     def to_file_contents(self) -> str:
-        return lxml.etree.tostring(self.to_xml())
+        tree = self.to_xml()
+        lxml.etree.indent(tree, space=" " * 2)
+        return lxml.etree.tostring(tree)
 
     def to_xml(self) -> lxml.etree.Element:
         md = dict(self.metadata)
@@ -414,7 +465,7 @@ class TcGVL(TcSource):
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
-        self.decl.declaration.value = contents
+        return self.decl.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is not None:
@@ -518,17 +569,7 @@ class TcPOU(TcSource):
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
-        _, part = identifier.split("/", 1)
-        if part == "declaration":
-            if self.decl.declaration is None:
-                self.decl.declaration = LocatedString(filename=self.filename)
-            self.decl.declaration.value = contents
-        elif part == "implementation":
-            if self.decl.implementation is None:
-                self.decl.implementation = LocatedString(filename=self.filename)
-            self.decl.implementation.value = contents
-        else:
-            raise ValueError(f"Unexpected rewrite portion: {identifier} ({part})")
+        return self.decl.rewrite_code(identifier, contents)
 
     @classmethod
     def from_xml(
@@ -661,6 +702,9 @@ class TcSourceChild(TcSource):
 class TcMethod(TcSourceChild):
     _tag: ClassVar[str] = "Method"
 
+    def rewrite_code(self, identifier: str, contents: str):
+        return self.decl.rewrite_code(identifier, contents)
+
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl.declaration is None:
             return []
@@ -677,7 +721,10 @@ class TcAction(TcSourceChild):
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
-        self.decl.implementation.value = contents
+        # self.decl.implementation.value = contents
+        ident = Identifier.from_string(identifier)
+        ident.decl_impl = "implementation"
+        return self.decl.rewrite_code(ident.to_string(), contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.decl is None or self.decl.implementation is None:
@@ -721,7 +768,13 @@ class TcProperty(TcSourceChild):
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
-        raise NotImplementedError()
+        ident = Identifier.from_string(identifier)
+        get_or_set: Optional[TcDeclImpl] = getattr(self, ident.parts[-1])
+        if get_or_set is None:
+            # get_or_set = TcDeclImpl(identifier=identifier)
+            # setattr(self, get_or_set, ident.parts[-1], get_or_set)
+            raise NotImplementedError("Empty get/set (TODO)")
+        return get_or_set.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         # NOTE: ignoring super().to_blark()
@@ -732,18 +785,22 @@ class TcProperty(TcSourceChild):
             # If it's not there, we don't have a property to use.
             return []
 
+        property_ident = Identifier.from_string(base_decl.identifier)
+
         parts = []
         for get_or_set, obj in (("get", self.get), ("set", self.set)):
             if obj is None:
                 continue
 
             for part in obj.to_blark():
-                # The parent will add on the FB name
-                _, decl_or_impl = part.identifier.split("/")
-                prop_name, _ = base_decl.identifier.split("/")
+                part_ident = Identifier.from_string(part.identifier)
+                # Note: the parent will add on the FB name
                 parts.append(
                     BlarkSourceItem(
-                        identifier=f"{prop_name}.{get_or_set}/{decl_or_impl}",
+                        identifier=Identifier(
+                            parts=[*property_ident.parts, get_or_set],
+                            decl_impl=part_ident.decl_impl
+                        ).to_string(),
                         type=SourceType.property,
                         lines=base_decl.lines + part.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),

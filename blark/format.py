@@ -68,6 +68,7 @@ def main(
 
     for filename, results in result_by_filename.items():
         for res in results:
+            print()
             item = res.item
             if item is None:
                 continue
@@ -89,13 +90,13 @@ def main(
                 else:
                     print(formatted_code)
             elif isinstance(user, SupportsWrite):
+                contents = user.to_file_contents()
                 if in_place:
-                    contents = user.to_file_contents()
                     mode = "wb" if isinstance(contents, bytes) else "wt"
                     with open(filename, mode) as fp:
                         fp.write(contents)
                 else:
-                    print(formatted_code)
+                    print(contents.decode())
             else:
                 print(formatted_code)
 
