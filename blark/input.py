@@ -40,6 +40,33 @@ class BlarkSourceItem:
     implicit_end: Optional[str]
     user: Optional[Any] = None
 
+    @classmethod
+    def from_code(
+        cls: type[Self],
+        code: str,
+        *,
+        identifier: str = "",
+        source_type: SourceType = SourceType.general,
+        grammar_rule: Optional[str] = None,
+        implicit_end: Optional[str] = None,
+        first_lineno: int = 1,
+        filename: Optional[pathlib.Path] = None,
+    ) -> Self:
+        grammar_rule = grammar_rule or source_type.get_grammar_rule()
+        if implicit_end is None:
+            implicit_end = source_type.get_implicit_block_end()
+        return BlarkSourceItem(
+            identifier=identifier,
+            lines=BlarkSourceLine.from_code(
+                code,
+                first_lineno=first_lineno,
+                filename=filename,
+            ),
+            type=source_type,
+            grammar_rule=grammar_rule,
+            implicit_end=implicit_end,
+        )
+
     def get_filenames(self) -> set[pathlib.Path]:
         return {line.filename for line in self.lines if line.filename is not None}
 
@@ -147,17 +174,14 @@ def plain_file_loader(
     # TODO: If people want to use it like this, we could pre-parse the file for
     # all identifiers and return a BlarkCompositeSourceItem.
     # As-is, the focus is now on loading TwinCAT XML files directly.
-    item = BlarkSourceItem(
-        identifier=identifier,
-        lines=[
-            BlarkSourceLine(filename=filename, lineno=lineno, code=line)
-            for lineno, line in enumerate(contents.splitlines(), 1)
-        ],
-        type=source_type,
-        grammar_rule=source_type.get_grammar_rule(),
-        implicit_end=source_type.get_implicit_block_end(),
-    )
-    return [item]
+    return [
+        BlarkSourceItem.from_code(
+            code=contents,
+            source_type=source_type,
+            identifier=identifier or "",
+            first_lineno=1,
+        )
+    ]
 
 
 register_file_handler(".txt", plain_file_loader)

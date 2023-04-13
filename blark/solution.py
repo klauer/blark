@@ -106,8 +106,9 @@ def parse_xml_contents(contents: Union[bytes, str]) -> lxml.etree.Element:
 
 
 def projects_from_solution_source(
-    solution_source: str,
+    solution_source: Union[str, bytes],
     root: pathlib.Path,
+    encoding: str = "utf-8",
 ) -> Generator[Project, None, None]:
     """
     Find project filenames from the contents of a solution.
@@ -116,7 +117,12 @@ def projects_from_solution_source(
     ----------
     solution_source : str
         The solution (.sln) file source.
+    root : pathlib.Path
+        The root path to look for project files.
     """
+    if isinstance(solution_source, bytes):
+        solution_source = solution_source.decode(encoding)
+
     for match in _solution_project_regex.finditer(solution_source):
         group = match.groupdict()
         path = pathlib.PureWindowsPath(group["project_path"])
@@ -256,7 +262,7 @@ class TcDeclImpl:
                 f"Unexpected rewrite portion: {identifier} ({ident.decl_impl})"
             )
 
-    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
+    def to_blark(self) -> list[BlarkSourceItem]:
         if self.source_type is None:
             return []
 
@@ -777,7 +783,6 @@ class TcProperty(TcSourceChild):
         return get_or_set.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
-        # NOTE: ignoring super().to_blark()
         try:
             base_decl: BlarkSourceItem = self.decl.to_blark()[0]
         except IndexError:
@@ -854,7 +859,7 @@ class TwincatSourceCodeItem:
     subtype: Optional[str]
     link_always: bool
     guid: Optional[str] = None
-    raw_contents: Optional[str] = None
+    raw_contents: bytes = b''
     contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
     parent: Optional[TwincatPlcProject] = None
 
@@ -899,7 +904,7 @@ class TwincatSourceCodeItem:
             )
         except FileNotFoundError:
             local_path = None
-            raw_contents = None
+            raw_contents = b''
             contents = None
             logger.debug(
                 "Unable to find local file while loading projects from solution: %s",
@@ -907,7 +912,7 @@ class TwincatSourceCodeItem:
                 exc_info=True,
             )
         else:
-            with open(local_path) as fp:
+            with open(local_path, "rb") as fp:
                 raw_contents = fp.read()
             contents = TcSource.from_contents(
                 raw_contents,

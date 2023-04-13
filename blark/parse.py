@@ -87,7 +87,7 @@ DEFAULT_PREPROCESSORS = tuple()
 @dataclass
 class ParseResult:
     source_code: str
-    item: Optional[BlarkSourceItem]
+    item: BlarkSourceItem
     processed_source_code: str
     comments: list[lark.Token]
     line_map: Optional[dict[int, int]] = None
@@ -158,7 +158,7 @@ def parse_source_code(
     transform: bool = True,
     starting_rule: Optional[str] = None,
     line_map: Optional[dict[int, int]] = None,
-    catch_exceptions: bool = True,
+    item: Optional[BlarkSourceItem] = None,
 ) -> ParseResult:
     """
     Parse source code and return the transformed result.
@@ -203,8 +203,14 @@ def parse_source_code(
         else:
             starting_rule = parser.options.start[0]
 
+    if item is None:
+        item = BlarkSourceItem.from_code(
+            source_code,
+            grammar_rule=starting_rule,
+        )
+
     result = ParseResult(
-        item=None,
+        item=item,
         source_code=source_code,
         processed_source_code=processed_source,
         line_map=line_map,
@@ -217,18 +223,12 @@ def parse_source_code(
     except lark.UnexpectedInput as ex:
         if line_map:
             ex.line = line_map.get(ex.line, ex.line)
-        if catch_exceptions:
-            result.exception = ex
-            return result
-        raise
+        result.exception = ex
     except lark.LarkError as ex:
-        if catch_exceptions:
-            result.exception = ex
-            return result
-        raise
-
-    if transform:
-        result.transform()
+        result.exception = ex
+    else:
+        if transform:
+            result.transform()
 
     return result
 
@@ -384,7 +384,6 @@ def main(
     use_json: bool = False,
     print_source: bool = False,
     print_tree: bool = False,
-    catch_exceptions: bool = True,
 ) -> dict[str, list[ParseResult]]:
     """
     Parse the given source code/project.
@@ -407,13 +406,10 @@ def main(
     print_tracebacks = verbose > 1
 
     try:
-        for index, res in enumerate(
-            parse(filename, catch_exceptions=catch_exceptions),
-            start=1,
-        ):
+        for index, res in enumerate(parse(filename), start=1):
             results_by_filename.setdefault(str(filename), []).append(res)
             if print_filenames:
-                print(f"[{index}] Parsing {res.filename}: {res.identifier}")
+                print(f"[{index}] Parsing {res.filename}: {res.identifier} ({res.item.type})")
 
             if print_source:
                 res.dump_source()
