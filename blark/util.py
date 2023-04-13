@@ -39,7 +39,7 @@ class SourceType(enum.Enum):
 
     def get_grammar_rule(self) -> str:
         return {
-            SourceType.action: "action",
+            SourceType.action: "statement_list",
             SourceType.function: "function_declaration",
             SourceType.function_block: "function_block_type_declaration",
             SourceType.general: "iec_source",
@@ -58,7 +58,7 @@ class SourceType(enum.Enum):
 
     def get_implicit_block_end(self) -> str:
         return {
-            SourceType.action: "END_ACTION",
+            SourceType.action: "",
             SourceType.function: "END_FUNCTION",
             SourceType.function_block: "END_FUNCTION_BLOCK",
             SourceType.general: "",

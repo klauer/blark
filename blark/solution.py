@@ -68,15 +68,21 @@ def strip_xml_namespace(tag: str) -> str:
     return lxml.etree.QName(tag).localname
 
 
-def strip_implicit_end_line(code: str, source_type: SourceType) -> str:
+def strip_implicit_lines(code: str, source_type: SourceType) -> str:
     """Strip off (e.g.) END_FUNCTION_BLOCK the provided code."""
     implicit_end = source_type.get_implicit_block_end()
     if not implicit_end or not code:
         return code
 
     # Don't think too hard about this; blark appends this consistently.
-    # We shouldn't have to do more than this, I think.
+    # We shouldn't have to do more than this, I think.  Reformatting tools
+    # should be careful around the implicit lines.
     lines = list(code.splitlines())
+    # NOTE: switched actions to statement_list
+    # if source_type == SourceType.action:
+    #     if lines[0].startswith("ACTION "):
+    #         lines.pop(0)
+
     if lines[-1] == implicit_end:
         lines.pop(-1)
     return "\n".join(lines)
@@ -234,7 +240,7 @@ class TcDeclImpl:
 
     def rewrite_code(self, identifier: str, contents: str):
         if self.source_type is not None:
-            contents = strip_implicit_end_line(contents, self.source_type)
+            contents = strip_implicit_lines(contents, self.source_type)
 
         ident = Identifier.from_string(identifier)
         if ident.decl_impl == "declaration":
@@ -589,23 +595,6 @@ class TcPOU(TcSource):
         # TODO: need to not save the implicit end line
         return self.decl.rewrite_code(identifier, contents)
 
-    @classmethod
-    def from_xml(
-        cls: type[Self],
-        xml: lxml.etree.Element,
-        filename: Optional[pathlib.Path] = None,
-        parent: Optional[TcSource] = None,
-    ) -> Optional[TcPOU]:
-        res = super().from_xml(xml, filename, parent)
-        if res is None:
-            return None
-
-        # Sorry, I tacked this parent concept on at the last minute...
-        for part in res.parts:
-            if hasattr(part, "parent"):
-                part.parent = res
-        return res
-
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
             raise RuntimeError("No source type set?")
@@ -729,30 +718,19 @@ class TcAction(TcSourceChild):
         if self.decl is None or self.decl.implementation is None:
             return []
 
+        if not util.remove_all_comments(self.decl.implementation.value).strip():
+            return []
+
         # Actions have no declaration section; the implementation just has
         # a statement list
         lines = self.decl.implementation.to_lines()
-        if lines:
-            try:
-                first_line = lines[0]
-            except IndexError:
-                first_line = BlarkSourceLine(filename=None, lineno=1, code="")
-
-            lines.insert(
-                0,
-                BlarkSourceLine(
-                    filename=first_line.filename,
-                    lineno=first_line.lineno,
-                    code=f"ACTION {self.name} :",
-                ),
-            )
         return [
             BlarkSourceItem(
                 identifier=self.name,
                 lines=lines,
                 type=SourceType.action,
                 grammar_rule=SourceType.action.get_grammar_rule(),
-                implicit_end="END_ACTION",
+                implicit_end=SourceType.action.get_implicit_block_end(),
                 user=self,
             )
         ]
