@@ -298,7 +298,7 @@ class PlcProjectMetadata:
                 continue
 
             for item in source.contents.to_blark():
-                for code_obj in parse.parse_item(item, transform=True):
+                for code_obj in parse.parse_item(item):
                     if code_obj.exception is not None:
                         logger.debug(
                             "Failed to load: %s %s", code_obj.filename, code_obj
@@ -310,7 +310,8 @@ class PlcProjectMetadata:
                         code_obj.filename
                     )
                     summary = CodeSummary.from_source(
-                        code_obj.transform(), filename=code_obj.filename
+                        code_obj.transform(),
+                        filename=code_obj.filename,
                     )
                     combined_summary.append(summary)
 

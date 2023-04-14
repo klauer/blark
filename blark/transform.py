@@ -3236,6 +3236,55 @@ def merge_comments(source: Any, comments: List[lark.Token]):
                 merge_comments(obj, comments)
 
 
+def transform(
+    source_code: str,
+    tree: lark.Tree,
+    comments: Optional[list[lark.Token]] = None,
+    line_map: Optional[dict[int, int]] = None,
+    filename: Optional[pathlib.Path] = None,
+) -> SourceCode:
+    """
+    Transform a ``lark.Tree`` into dataclasses.
+
+    Parameters
+    ----------
+    source_code : str
+        The plain source code.
+    tree : lark.Tree
+        The parse tree from lark.
+    comments : list[lark.Token], optional
+        A list of pre-processed comments.
+    line_map : dict[int, int], optional
+        A map of lines from ``source_code`` to file lines.
+    filename : pathlib.Path, optional
+        The file associated with the source code.
+
+    Returns
+    -------
+    SourceCode
+    """
+    transformer = GrammarTransformer(
+        comments=list(comments or []),
+        fn=filename,
+        source_code=source_code,
+    )
+    transformed = transformer.transform(tree, line_map=line_map)
+
+    if isinstance(transformed, SourceCode):
+        return transformed
+
+    # TODO: this is for custom starting points and ignores that 'transformed'
+    # may not be a typical "SourceCodeItem". Goal is just returning a
+    # consistent SourceCode instance
+    return SourceCode(
+        items=[transformed],
+        filename=filename,
+        raw_source=source_code,
+        line_map=line_map,
+        meta=transformed.meta,
+    )
+
+
 Constant = Union[
     Duration,
     Lduration,

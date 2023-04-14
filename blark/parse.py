@@ -20,7 +20,6 @@ from . import solution, summary
 from . import transform as tf
 from . import util
 from .input import BlarkCompositeSourceItem, BlarkSourceItem, load_file_by_name
-from .transform import GrammarTransformer
 from .typing import Preprocessor
 from .util import AnyPath
 
@@ -104,8 +103,20 @@ class ParseResult:
         return self.item.identifier
 
     def transform(self) -> tf.SourceCode:
+        if self.tree is None:
+            raise ValueError(
+                f"Source code was not successfully parsed; cannot transform. "
+                f"Exception was {type(self.exception).__name__}: {self.exception}"
+            )
+
         if self.transformed is None:
-            self.transformed = transform_parse_result(self)
+            self.transformed = tf.transform(
+                source_code=self.source_code,
+                tree=self.tree,
+                comments=self.comments,
+                line_map=self.line_map,
+                filename=self.filename,
+            )
         return self.transformed
 
     def dump_source(self, fp=sys.stdout) -> None:
@@ -119,35 +130,6 @@ class ParseResult:
                 print(f"{lineno}: {line}", file=fp)
 
 
-def transform_parse_result(parsed: ParseResult) -> tf.SourceCode:
-    if parsed.tree is None:
-        raise ValueError(
-            f"Source code was not successfully parsed; cannot transform. "
-            f"Exception was {type(parsed.exception).__name__}: {parsed.exception}"
-        )
-
-    transformer = GrammarTransformer(
-        comments=parsed.comments,
-        fn=parsed.filename,
-        source_code=parsed.source_code,
-    )
-    transformed = transformer.transform(parsed.tree, line_map=parsed.line_map)
-
-    if isinstance(transformed, tf.SourceCode):
-        return transformed
-
-    # TODO: this is for custom starting points and ignores that 'transformed'
-    # may not be a typical "SourceCodeItem". Goal is just returning a
-    # consistent tf.SourceCode instance
-    return tf.SourceCode(
-        items=[transformed],
-        filename=parsed.filename,
-        raw_source=parsed.source_code,
-        line_map=parsed.line_map,
-        meta=transformed.meta,
-    )
-
-
 def parse_source_code(
     source_code: str,
     *,
@@ -155,13 +137,12 @@ def parse_source_code(
     fn: AnyPath = "unknown",
     preprocessors: Sequence[Preprocessor] = DEFAULT_PREPROCESSORS,
     parser: Optional[lark.Lark] = None,
-    transform: bool = True,
     starting_rule: Optional[str] = None,
     line_map: Optional[dict[int, int]] = None,
     item: Optional[BlarkSourceItem] = None,
 ) -> ParseResult:
     """
-    Parse source code and return the transformed result.
+    Parse source code into a ``ParseResult``.
 
     Parameters
     ----------
@@ -180,10 +161,6 @@ def parse_source_code(
     parser : lark.Lark, optional
         The parser instance to use.  Defaults to the global shared one from
         ``get_parser``.
-
-    transform : bool, optional
-        If True, transform the output into blark-defined Python dataclasses.
-        Otherwise, return the ``lark.Tree`` instance.
     """
     processed_source = source_code
     for preprocessor in preprocessors:
@@ -226,34 +203,24 @@ def parse_source_code(
         result.exception = ex
     except lark.LarkError as ex:
         result.exception = ex
-    else:
-        if transform:
-            result.transform()
 
     return result
 
 
-def parse_single_file(
-    fn: AnyPath,
-    *,
-    transform: bool = True,
-    **kwargs,
-) -> ParseResult:
+def parse_single_file(fn: AnyPath, **kwargs) -> ParseResult:
     """Parse a single source code file."""
     source_code = util.get_source_code(fn)
-    return parse_source_code(source_code, fn=fn, transform=transform, **kwargs)
+    return parse_source_code(source_code, fn=fn, **kwargs)
 
 
 def parse_project(
     tsproj_project: AnyFile,
-    *,
-    transform: bool = True,
     **kwargs,
 ) -> Generator[ParseResult, None, None]:
     """Parse an entire tsproj project file."""
     sol = solution.make_solution_from_files(tsproj_project)
     for item in solution.get_blark_input_from_solution(sol):
-        yield from parse_item(item, transform=transform, **kwargs)
+        yield from parse_item(item, **kwargs)
 
 
 def parse_item(
@@ -283,7 +250,6 @@ def parse_item(
         code,
         starting_rule=item.grammar_rule,
         line_map=line_map,
-        transform=transform,
         fn=filename or "unknown",
         **kwargs,
     )
@@ -293,15 +259,13 @@ def parse_item(
 
 def parse(
     path: AnyPath,
-    *,
-    transform: bool = True,
     **kwargs,
 ) -> Generator[ParseResult, None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
     for item in load_file_by_name(path):
-        yield from parse_item(item, transform=transform, **kwargs)
+        yield from parse_item(item, **kwargs)
 
 
 def build_arg_parser(argparser=None):
