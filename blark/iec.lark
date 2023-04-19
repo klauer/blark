@@ -331,6 +331,7 @@ _array_spec_type: STRING_TYPE
                 | function_call
                 | non_generic_type_name
                 | object_initializer_array
+                | array_specification
 
 object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
 
