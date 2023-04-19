@@ -1226,19 +1226,32 @@ class _ArrayInitialElementCount:
 
 
 @dataclass
-@_rule_handler("array_initialization")
-class ArrayInitialization:
-    elements: List[ArrayInitialElement]
-    count: Optional[Union[EnumeratedValue, Integer]] = None
-    meta: Optional[Meta] = meta_field()
-
+@_rule_handler("bracketed_array_initialization")
+class _BracketedArrayInitialization:
     @staticmethod
     def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
-        return ArrayInitialization(list(elements))
+        return ArrayInitialization(list(elements), brackets=True)
+
+
+@dataclass
+@_rule_handler("bare_array_initialization")
+class _BareArrayInitialization:
+    @staticmethod
+    def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
+        return ArrayInitialization(list(elements), brackets=False)
+
+
+@dataclass
+class ArrayInitialization:
+    elements: List[ArrayInitialElement]
+    brackets: bool = False
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         elements = ", ".join(str(element) for element in self.elements)
-        return f"[{elements}]"
+        if self.brackets:
+            return f"[{elements}]"
+        return elements
 
 
 @dataclass
@@ -1619,25 +1632,19 @@ class FunctionCall(Expression):
     @staticmethod
     def from_lark(
         name: SymbolicVariable,
-        first_parameter: Optional[ParameterAssignment] = None,
-        *remaining_parameters: ParameterAssignment,
+        *params: Union[ParameterAssignment, lark.Token, None],
     ) -> FunctionCall:
-        # Remove the Dereference Token if Present in the Remaining Parameters
-        dereferenced = False
-        if remaining_parameters:
-            if str(remaining_parameters[-1]) == "^":
-                dereferenced = True
-                remaining_parameters = remaining_parameters[:-1]
         # Condition parameters (which may be `None`) to represent empty tuple
-        if first_parameter is None:
-            parameters = []
-        else:
-            parameters = [first_parameter] + list(remaining_parameters)
+        if params and params[0] is None:
+            params = params[1:]
+        dereferenced = bool(params and params[-1] == "^")
+        if dereferenced:
+            params = params[:-1]
 
         return FunctionCall(
             name=name,
-            parameters=parameters,
-            dereferenced=dereferenced
+            parameters=typing.cast(List[ParameterAssignment], list(params)),
+            dereferenced=dereferenced,
         )
 
     def __str__(self) -> str:
@@ -2888,16 +2895,6 @@ class AssignmentStatement(Statement):
     def __str__(self):
         variables = " := ".join(str(var) for var in self.variables)
         return f"{variables} := {self.expression};"
-
-
-@dataclass
-@_rule_handler("method_statement", comments=True)
-class MethodStatement(Statement):
-    method: SymbolicVariable
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        return f"{self.method}();"
 
 
 @dataclass

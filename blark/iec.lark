@@ -334,9 +334,8 @@ _array_spec_type: STRING_TYPE
 
 object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
 
-array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
-// Removed to allow correct parsing of FB attribute assignment - JS - 20230410
-//                    | array_initial_element ( "," array_initial_element )*
+array_initialization: "[" array_initial_element ( "," array_initial_element )* "]" -> bracketed_array_initialization
+                    | array_initial_element ( "," array_initial_element )*         -> bare_array_initialization
 
 array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
                      | _array_initial_element
@@ -719,7 +718,6 @@ function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )
 statement_list: _statement+
 
 _statement: ";"
-          | method_statement
           | assignment_statement
           | no_op_statement
           | set_statement
@@ -747,9 +745,6 @@ set_statement: _variable "S="i expression ";"+
 reset_statement: _variable "R="i expression ";"+
 
 reference_assignment_statement: _variable "REF="i expression ";"+
-
-// method ::= expression [DEREFERENCED] '.' _identifier '(' ')';
-method_statement: symbolic_variable "(" ")" DEREFERENCED? ";"+
 
 // B.3.2.2
 return_statement.1: "RETURN"i ";"*
