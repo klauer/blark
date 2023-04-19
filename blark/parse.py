@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import enum
 import json
+import logging
 import pathlib
 import sys
 from dataclasses import dataclass
@@ -27,6 +28,9 @@ try:
     import apischema
 except ImportError:
     apischema = None
+
+
+logger = logging.getLogger(__name__)
 
 
 DESCRIPTION = __doc__
@@ -293,6 +297,12 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
+        "--print-filename",
+        action="store_true",
+        help="Print filenames along with results",
+    )
+
+    argparser.add_argument(
         "--print-source",
         action="store_true",
         help="Dump the source code",
@@ -331,6 +341,13 @@ def build_arg_parser(argparser=None):
         help="Output JSON representation only",
     )
 
+    argparser.add_argument(
+        "--filter",
+        nargs="*",
+        dest="filter_by_name",
+        help="Filter items to parse by name",
+    )
+
     return argparser
 
 
@@ -346,17 +363,20 @@ def main(
     interactive: bool = False,
     summary: bool = False,
     use_json: bool = False,
+    print_filename: bool = False,
     print_source: bool = False,
     print_tree: bool = False,
+    filter_by_name: Optional[list[str]] = None,
 ) -> dict[str, list[ParseResult]]:
     """
     Parse the given source code/project.
     """
     results_by_filename = {}
+    filter_by_name = filter_by_name or []
     filename = pathlib.Path(filename)
 
     if use_json:
-        print_filenames = False
+        print_filename = False
 
         if apischema is None:
             raise RuntimeError(
@@ -364,15 +384,25 @@ def main(
                 "representation of source code."
             )
 
-    print_filenames = bool(verbose > 0)
+    print_filename = print_filename or verbose > 1
     print_source = print_source or verbose > 1
     print_tree = print_tree or verbose > 1
     print_tracebacks = verbose > 1
 
+    def get_items():
+        for item in load_file_by_name(filename):
+            if filter_by_name:
+                if not any(flt.lower() in item.identifier for flt in filter_by_name):
+                    logger.debug("Filtered out: %s (%s)", item.identifier, type(item))
+                    continue
+                else:
+                    logger.debug("Included by filter: %s", item.identifier)
+            yield from parse_item(item)
+
     try:
-        for index, res in enumerate(parse(filename), start=1):
+        for index, res in enumerate(get_items(), start=1):
             results_by_filename.setdefault(str(filename), []).append(res)
-            if print_filenames:
+            if print_filename:
                 print(f"[{index}] Parsing {res.filename}: {res.identifier} ({res.item.type})")
 
             if print_source:

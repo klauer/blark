@@ -40,11 +40,11 @@ def build_arg_parser(argparser=None):
         help="On failure, still return the results tree"
     )
 
-    # argparser.add_argument(
-    #     "--output-format",
-    #     type=str,
-    #     help="Output file format"
-    # )
+    argparser.add_argument(
+        "--output-format",
+        type=str,
+        help="Output file format"
+    )
 
     argparser.add_argument(
         "--in-place",
@@ -61,6 +61,7 @@ def main(
     debug: bool = False,
     interactive: bool = False,
     in_place: bool = False,
+    output_format: str = "input",
 ):
     result_by_filename = parse_main(
         filename, verbose=verbose, debug=debug, interactive=interactive
