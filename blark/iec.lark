@@ -344,6 +344,7 @@ array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_eleme
 _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
+                      | array_initialization
 
 structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 

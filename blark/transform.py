@@ -3247,6 +3247,7 @@ ArrayInitialElementType = Union[
     Constant,
     StructureInitialization,
     EnumeratedValue,
+    ArrayInitialization,
 ]
 
 
