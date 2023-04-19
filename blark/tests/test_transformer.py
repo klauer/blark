@@ -417,8 +417,6 @@ def test_input_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
-            # Appears to collide with enum rule; need to fix
         ),
     ],
 )
@@ -472,8 +470,6 @@ def test_output_roundtrip(rule_name, value):
             END_VAR
             """,
             ),
-            marks=pytest.mark.xfail(reason="TODO; this is valid grammar, I think"),
-            # Appears to collide with enum rule; need to fix
         ),
     ],
 )
