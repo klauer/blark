@@ -28,8 +28,16 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     print(transformed)
     if expected is None:
         expected = value
-    assert str(transformed) == expected, \
-        "Transformed object does not produce identical source code"
+    try:
+        assert str(transformed) == expected, \
+            "Transformed object does not produce identical source code"
+    except Exception:
+        tree = parse_source_code(value, parser=parser, transform=False)
+        print("\n\nTransformation failure. The original source code was:")
+        print(value)
+        print("\n\nThe parse tree is:")
+        print(tree.pretty())
+        raise
 
     conftest.check_serialization(
         transformed, deserialize=True, require_same_source=True
@@ -62,6 +70,9 @@ def test_check_unhandled_rules(grammar):
 
         # handled as aliases
         "case_list",
+
+        # handled as special cases
+        "array_initialization",
 
         # handled as tree
         "global_var_list",
@@ -444,6 +455,13 @@ def test_output_roundtrip(rule_name, value):
                 fbTest : FB_Test(1, 2, A := 1, B := 2, C => 3);
                 fbTest : FB_Test(initializer := 5) := (A := 1, B := 2, C := 3);
                 fbTest : FB_Test := (1, 2, 3);
+            END_VAR
+            """
+        )),
+        param("input_output_declarations", tf.multiline_code_block(
+            """
+            VAR_IN_OUT
+                fbProblematic1 : FB_Test(initializer := 5) := (A := 1, B := 2, C := 3);
             END_VAR
             """
         )),

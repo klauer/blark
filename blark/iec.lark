@@ -334,8 +334,8 @@ _array_spec_type: STRING_TYPE
 
 object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
 
-array_initialization: "[" array_initial_element ( "," array_initial_element )* "]"
-                    | array_initial_element ( "," array_initial_element )*
+array_initialization: "[" array_initial_element ( "," array_initial_element )* "]" -> bracketed_array_initialization
+                    | array_initial_element ( "," array_initial_element )*         -> bare_array_initialization
 
 array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
                      | _array_initial_element

@@ -1226,19 +1226,32 @@ class _ArrayInitialElementCount:
 
 
 @dataclass
-@_rule_handler("array_initialization")
-class ArrayInitialization:
-    elements: List[ArrayInitialElement]
-    count: Optional[Union[EnumeratedValue, Integer]] = None
-    meta: Optional[Meta] = meta_field()
-
+@_rule_handler("bracketed_array_initialization")
+class _BracketedArrayInitialization:
     @staticmethod
     def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
-        return ArrayInitialization(list(elements))
+        return ArrayInitialization(list(elements), brackets=True)
+
+
+@dataclass
+@_rule_handler("bare_array_initialization")
+class _BareArrayInitialization:
+    @staticmethod
+    def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
+        return ArrayInitialization(list(elements), brackets=False)
+
+
+@dataclass
+class ArrayInitialization:
+    elements: List[ArrayInitialElement]
+    brackets: bool = False
+    meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
         elements = ", ".join(str(element) for element in self.elements)
-        return f"[{elements}]"
+        if self.brackets:
+            return f"[{elements}]"
+        return elements
 
 
 @dataclass
