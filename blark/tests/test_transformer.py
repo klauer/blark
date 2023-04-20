@@ -776,6 +776,51 @@ def test_type_name_roundtrip(rule_name, value):
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                ReturnStatus := mReturnStatus;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                ContinueWorking := somethingElse;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                BreakWork := somethingElse;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
                 Method();
                 IF 1 THEN
                     EXIT;

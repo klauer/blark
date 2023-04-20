@@ -749,7 +749,7 @@ reset_statement: _variable "R="i expression ";"+
 reference_assignment_statement: _variable "REF="i expression ";"+
 
 // B.3.2.2
-return_statement.1: "RETURN"i ";"*
+return_statement.1: "RETURN"i ";"+
 // return_statement: priority > 0 so that it doesn't clash with no_op_statement
 
 function_call_statement: function_call ";"+
@@ -793,4 +793,4 @@ repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"
 
 exit_statement.1: "EXIT"i ";"*
 
-continue_statement.1: "CONTINUE"i ";"*
+continue_statement.1: "CONTINUE"i ";"+
