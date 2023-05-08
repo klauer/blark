@@ -791,6 +791,6 @@ while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
 
 repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"*
 
-exit_statement.1: "EXIT"i ";"*
+exit_statement.1: "EXIT"i ";"+
 
 continue_statement.1: "CONTINUE"i ";"+
