@@ -1166,7 +1166,7 @@ class IndirectSimpleSpecification:
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type: Union[DataType, FunctionCall, ObjectInitializerArray]
+    type: Union[DataType, FunctionCall, ObjectInitializerArray, ArraySpecification]
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
@@ -1175,6 +1175,8 @@ class ArraySpecification:
         """The base type name."""
         if isinstance(self.type, DataType):
             return self.type.type_name
+        if isinstance(self.type, ArraySpecification):
+            return self.type.base_type_name
         return str(self.type.name)
 
     @property
@@ -3245,6 +3247,7 @@ ArrayInitialElementType = Union[
     Constant,
     StructureInitialization,
     EnumeratedValue,
+    ArrayInitialization,
 ]
 
 
