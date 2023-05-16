@@ -188,9 +188,16 @@ def test_literal(name, value, expected):
         param("single_byte_string_spec", "STRING[1]"),
         param("single_byte_string_spec", "STRING(1)"),
         param("single_byte_string_spec", "STRING(1) := 'abc'"),
+        param("single_byte_string_spec", "STRING(g_Constant)"),
+        param("single_byte_string_spec", "STRING(g_Constant + 1)"),
+        param("single_byte_string_spec", "STRING(1 + g_Constant)"),
+        param("single_byte_string_spec", "STRING(g_Constant + 1) := 'abc'"),
         param("double_byte_string_spec", "WSTRING[1]"),
         param("double_byte_string_spec", "WSTRING(1)"),
         param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
+        param("double_byte_string_spec", "WSTRING(g_Constant)"),
+        param("double_byte_string_spec", "WSTRING(g_Constant + 1)"),
+        param("double_byte_string_spec", 'WSTRING(g_Constant + 1) := "abc"'),
     ],
 )
 def test_literal_roundtrip(name, value):
@@ -638,6 +645,9 @@ def test_global_attr_pragmas(rule_name: str, value: str, pragmas: List[str]):
         param("non_generic_type_name", "POINTER TO Package.FBName"),
         param("non_generic_type_name", "POINTER TO POINTER TO Package.FBName"),
         param("non_generic_type_name", "Package.FBName"),
+        param("non_generic_type_name", "POINTER TO STRING(255)"),
+        param("non_generic_type_name", "POINTER TO STRING(g_Constant + 1)"),
+        param("non_generic_type_name", "POINTER TO POINTER TO STRING(g_Constant + 1)"),
     ],
 )
 def test_type_name_roundtrip(rule_name, value):
