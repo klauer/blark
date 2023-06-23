@@ -331,6 +331,7 @@ _array_spec_type: STRING_TYPE
                 | function_call
                 | non_generic_type_name
                 | object_initializer_array
+                | array_specification
 
 object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
 
@@ -343,6 +344,7 @@ array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_eleme
 _array_initial_element: constant
                       | structure_initialization
                       | enumerated_value
+                      | array_initialization
 
 structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
 
@@ -747,7 +749,7 @@ reset_statement: _variable "R="i expression ";"+
 reference_assignment_statement: _variable "REF="i expression ";"+
 
 // B.3.2.2
-return_statement.1: "RETURN"i ";"*
+return_statement.1: "RETURN"i ";"+
 // return_statement: priority > 0 so that it doesn't clash with no_op_statement
 
 function_call_statement: function_call ";"+
@@ -789,6 +791,6 @@ while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
 
 repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"*
 
-exit_statement.1: "EXIT"i ";"*
+exit_statement.1: "EXIT"i ";"+
 
-continue_statement.1: "CONTINUE"i ";"*
+continue_statement.1: "CONTINUE"i ";"+

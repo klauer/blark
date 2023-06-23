@@ -274,6 +274,8 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)"),  # noqa: E501
+        param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT"),
+        param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT"),  # noqa: E501
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
@@ -770,6 +772,66 @@ def test_type_name_roundtrip(rule_name, value):
                 END_IF
                 Method();
                 RETURN;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                ReturnStatus := mReturnStatus;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                ContinueWorking := somethingElse;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                BreakWork := somethingElse;
+            END_FUNCTION_BLOCK
+            """
+        )),
+        param("function_block_type_declaration", tf.multiline_code_block(
+            """
+            FUNCTION_BLOCK fbName
+                iValue := 1;
+                IF 1 THEN
+                    iValue := 1;
+                    IF 1 THEN
+                        iValue := 1;
+                    END_IF
+                END_IF
+                Method();
+                ExitWork := somethingElse;
             END_FUNCTION_BLOCK
             """
         )),
@@ -1422,6 +1484,12 @@ def test_miscellaneous(rule_name, value):
             tf.ArrayTypeInitialization,
             "INT",
             "ARRAY [1..10] OF INT",
+        ),
+        param(
+            "fValue : ARRAY [1..10] OF ARRAY [1..10] OF INT;",
+            tf.ArrayTypeInitialization,
+            "INT",
+            "ARRAY [1..10] OF ARRAY [1..10] OF INT",
         ),
         param(
             "fValue : FB_Test(1, 2, 3);",
