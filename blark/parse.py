@@ -125,7 +125,8 @@ class ParseResult:
 
     def dump_source(self, fp=sys.stdout) -> None:
         if self.line_map is not None:
-            code_lines = dict(enumerate(self.source_code.splitlines(), 1))
+            # NOTE: split("\n") and splitlines() differ wrt the final newline
+            code_lines = dict(enumerate(self.source_code.split("\n"), 1))
             for code_lineno, source_lineno in self.line_map.items():
                 line = code_lines[code_lineno]
                 print(f"{code_lineno} ({source_lineno}) {line}", file=fp)
@@ -154,7 +155,7 @@ def parse_source_code(
         The source code text.
 
     verbose : int, optional
-        Verbosity level for output. (deprecated; unused)
+        Verbosity level for output. (deprecated)
 
     fn : pathlib.Path or str, optional
         The filename associated with the source code.
@@ -229,8 +230,6 @@ def parse_project(
 
 def parse_item(
     item: Union[BlarkSourceItem, BlarkCompositeSourceItem],
-    *,
-    transform: bool = True,
     **kwargs,
 ) -> Generator[ParseResult, None, None]:
     if isinstance(item, BlarkCompositeSourceItem):
@@ -263,12 +262,13 @@ def parse_item(
 
 def parse(
     path: AnyPath,
+    input_format: Optional[str] = None,
     **kwargs,
 ) -> Generator[ParseResult, None, None]:
     """
     Parse the given source code file (or all files from the given project).
     """
-    for item in load_file_by_name(path):
+    for item in load_file_by_name(path, input_format=input_format):
         yield from parse_item(item, **kwargs)
 
 
@@ -285,6 +285,17 @@ def build_arg_parser(argparser=None):
         help=(
             "Path to project, solution, source code file (.tsproj, .sln, "
             ".TcPOU, .TcGVL)"
+        ),
+    )
+
+    # TODO: may eventually do file format checking
+    argparser.add_argument(
+        "-if",
+        "--input-format",
+        required=False,
+        help=(
+            "Load the provided files as the given type, overriding built-in "
+            "filename extension mapping."
         ),
     )
 
@@ -367,6 +378,7 @@ def main(
     print_source: bool = False,
     print_tree: bool = False,
     filter_by_name: Optional[list[str]] = None,
+    input_format: Optional[str] = None,
 ) -> dict[str, list[ParseResult]]:
     """
     Parse the given source code/project.
@@ -390,9 +402,15 @@ def main(
     print_tracebacks = verbose > 1
 
     def get_items():
-        for item in load_file_by_name(filename):
+        for item in load_file_by_name(filename, input_format):
             if filter_by_name:
-                if not any(flt.lower() in item.identifier for flt in filter_by_name):
+                if any(flt.lower() in str(filename) for flt in filter_by_name):
+                    logger.debug(
+                        "Included by filter (filename match): %s (%s)",
+                        item.identifier,
+                        type(item),
+                    )
+                elif not any(flt.lower() in item.identifier for flt in filter_by_name):
                     logger.debug("Filtered out: %s (%s)", item.identifier, type(item))
                     continue
                 else:

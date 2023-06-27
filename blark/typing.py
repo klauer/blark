@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pathlib
 import typing
-from typing import Callable, Union, overload
+from typing import Callable, Optional, Union, overload
 
 __all__ = ["Self"]
 
@@ -45,9 +45,12 @@ class ContainsBlarkCode(Protocol):
         ...
 
 
+# TODO: these got refactored out; any use for them?
+
+
 @runtime_checkable
 class SupportsRewrite(Protocol):
-    def rewrite_code(self, identifier: str, contents: str):
+    def rewrite_code(self, identifier: Optional[str], contents: str):
         ...
 
 
@@ -63,6 +66,6 @@ class SupportsWrite(Protocol):
 
 
 @runtime_checkable
-class SupportsCustomSave(Protocol):
+class SupportsSaveToPath(Protocol):
     def save_to(self, path: AnyPath, **kwargs) -> None:
         ...

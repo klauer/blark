@@ -791,13 +791,13 @@ class CodeSummary:
         code: tf.SourceCode, filename: Optional[pathlib.Path] = None
     ) -> CodeSummary:
         result = CodeSummary()
-        code_by_lines = [""] + code.raw_source.splitlines()
         items = code.items
 
         def get_code_by_meta(meta: Optional[tf.Meta]) -> str:
-            if not meta:
+            if meta is None or meta.line is None or meta.end_line is None:
                 return ""
-            return "\n".join(code_by_lines[meta.line:meta.end_line + 1])
+
+            return "\n".join(code.range_from_file_lines(meta.line, meta.end_line))
 
         last_parent = None
         for item in items:

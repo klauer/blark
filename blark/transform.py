@@ -34,7 +34,19 @@ _rule_to_class: Dict[str, type] = {}
 _class_handlers = {}
 _comment_consumers = []
 
-INDENT = "    "  # TODO: make it configurable
+
+@dataclasses.dataclass
+class FormatSettings:
+    indent: str = "    "
+
+
+_format_settings = FormatSettings()
+
+
+def configure_formatting(settings: FormatSettings):
+    """Override the default code formatting settings."""
+    global _format_settings
+    _format_settings = settings
 
 
 def multiline_code_block(block: str) -> str:
@@ -50,15 +62,19 @@ def join_if(value1: Optional[Any], delimiter: str, value2: Optional[Any]) -> str
     )
 
 
-def indent_if(value: Optional[Any], prefix: str = INDENT) -> Optional[str]:
+def indent_if(value: Optional[Any], prefix: Optional[str] = None) -> Optional[str]:
     """Stringified and indented {value} if not None."""
     if value is not None:
+        if prefix is None:
+            prefix = _format_settings.indent
         return textwrap.indent(str(value), prefix)
     return None
 
 
-def indent(value: Any, prefix: str = INDENT) -> str:
+def indent(value: Any, prefix: Optional[str] = None) -> str:
     """Stringified and indented {value}."""
+    if prefix is None:
+        prefix = _format_settings.indent
     return textwrap.indent(str(value), prefix)
 
 
@@ -3054,6 +3070,19 @@ class SourceCode:
     @staticmethod
     def from_lark(*args: SourceCodeItem) -> SourceCode:
         return SourceCode(list(args))
+
+    def range_from_file_lines(self, start: int, end: int) -> list[str]:
+        if not self.raw_source:
+            return []
+
+        code_lines = self.raw_source.split("\n")  # not splitlines()
+        if not self.line_map:
+            return code_lines[start - 1: end]
+
+        line_map = {
+            raw_line: file_line for (file_line, raw_line) in self.line_map.items()
+        }
+        return code_lines[line_map[start] - 1: line_map[end]]
 
     def __str__(self):
         return "\n".join(str(item) for item in self.items)

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import dataclasses
+import logging
 import pathlib
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from .typing import Self
-from .util import AnyPath, SourceType, find_pou_type_and_identifier
+from .util import AnyPath, SourceType
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -51,6 +54,7 @@ class BlarkSourceItem:
         implicit_end: Optional[str] = None,
         first_lineno: int = 1,
         filename: Optional[pathlib.Path] = None,
+        user: Optional[Any] = None,
     ) -> Self:
         grammar_rule = grammar_rule or source_type.get_grammar_rule()
         if implicit_end is None:
@@ -65,6 +69,7 @@ class BlarkSourceItem:
             type=source_type,
             grammar_rule=grammar_rule,
             implicit_end=implicit_end,
+            user=user,
         )
 
     def get_filenames(self) -> set[pathlib.Path]:
@@ -128,27 +133,33 @@ class BlarkCompositeSourceItem:
         }
 
 
-handlers = {}
-
 Handler = Callable[
     [pathlib.Path], List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
 ]
+
+
+handlers: Dict[str, Callable] = {}
 
 
 class UnsupportedFileFormatError(Exception):
     ...
 
 
-def register_file_handler(extension: str, handler: Handler):
+def register_input_handler(extension: str, handler: Handler):
     handlers[extension.lower()] = handler
 
 
 def load_file_by_name(
     filename: AnyPath,
+    input_format: Optional[str] = None,
 ) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
     filename = pathlib.Path(filename).expanduser().resolve()
+    if input_format is not None:
+        extension = input_format
+    else:
+        extension = filename.suffix.lower()
     try:
-        handler = handlers[filename.suffix.lower()]
+        handler = handlers[extension]
     except KeyError:
         raise UnsupportedFileFormatError(
             f"Unable to find a handler for {filename} based on file extension. "
@@ -156,33 +167,3 @@ def load_file_by_name(
         ) from None
 
     return handler(filename)
-
-
-def plain_file_loader(
-    filename: pathlib.Path,
-) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
-    with open(filename, "rt") as fp:
-        contents = fp.read()
-
-    source_type, identifier = find_pou_type_and_identifier(contents)
-    # if source_type is None:
-    #     return []
-    source_type = SourceType.general
-    # We'll pick the first identifier here only. IEC source (as what blark
-    # accepts for iput) it's allowed to have multiple declarations in the same
-    # file.
-    # TODO: If people want to use it like this, we could pre-parse the file for
-    # all identifiers and return a BlarkCompositeSourceItem.
-    # As-is, the focus is now on loading TwinCAT XML files directly.
-    return [
-        BlarkSourceItem.from_code(
-            code=contents,
-            source_type=source_type,
-            identifier=identifier or "",
-            first_lineno=1,
-        )
-    ]
-
-
-register_file_handler(".txt", plain_file_loader)
-register_file_handler(".st", plain_file_loader)

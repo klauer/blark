@@ -34,11 +34,14 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
         assert str(transformed) == expected, \
             "Transformed object does not produce identical source code"
     except Exception:
-        tree = parse_source_code(value, parser=parser, transform=False)
+        result = parse_source_code(value, parser=parser)
         print("\n\nTransformation failure. The original source code was:")
         print(value)
         print("\n\nThe parse tree is:")
-        print(tree.pretty())
+        if result is not None and result.tree is not None:
+            print(result.tree.pretty())
+        else:
+            print("None / unavailable")
         raise
 
     conftest.check_serialization(

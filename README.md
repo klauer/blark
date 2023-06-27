@@ -113,7 +113,6 @@ Dump out a parsed and reformatted set of source code:
 
 ```bash
 $ blark format blark/tests/source/array_of_objects.st
-
 {attribute 'hide'}
 METHOD prv_Detection : BOOL
     VAR_IN_OUT

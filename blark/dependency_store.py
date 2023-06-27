@@ -4,13 +4,14 @@ TwinCAT project dependency handling.
 from __future__ import annotations
 
 import dataclasses
-import distutils.version
 import functools
 import json
 import logging
 import pathlib
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+
+import packaging.version
 
 from . import parse
 from . import transform as tf
@@ -70,14 +71,12 @@ class DependencyStoreLibrary:
         pathlib.Path
         """
 
-        def get_version(path):
+        def get_version(path: pathlib.Path) -> Optional[packaging.version.Version]:
             try:
-                version = path.name.lstrip("v").replace("-", ".")
-                version = tuple(distutils.version.LooseVersion(version).version)
-                if isinstance(version[0], int):
-                    return version
+                version_string = path.name.lstrip("v").replace("-", ".")
+                return packaging.version.parse(version_string)
             except Exception:
-                ...
+                return None
 
         project_root = root / self.path
 

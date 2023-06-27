@@ -38,7 +38,8 @@ import lxml.etree
 
 from . import util
 from .input import (BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine,
-                    register_file_handler)
+                    register_input_handler)
+from .output import OutputBlock, register_output_handler
 from .typing import ContainsBlarkCode, Self
 from .util import AnyPath, SourceType
 
@@ -387,7 +388,7 @@ class TcSource:
             f"Rewriting code not yet supported for {type(self)}"
         )
 
-    def to_file_contents(self) -> str:
+    def to_file_contents(self, delimiter: str = "\r\n") -> bytes:
         parent_to_file_contents = getattr(self.parent, "to_file_contents", None)
         if parent_to_file_contents is not None:
             # If we have a parent, we can't serialize just part of the file.
@@ -395,8 +396,7 @@ class TcSource:
             return parent_to_file_contents()
 
         tree = self.to_xml()
-        lxml.etree.indent(tree, space=" " * 2)
-        return lxml.etree.tostring(tree)
+        return util.tree_to_xml_source(tree, delimiter=delimiter)
 
     def to_xml(self) -> lxml.etree.Element:
         md = dict(self.metadata)
@@ -474,13 +474,21 @@ class TcDUT(TcSource):
     file_extension: ClassVar[str] = ".TcDUT"
     source_type: ClassVar[SourceType] = SourceType.struct
 
-    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
-        if self.decl is not None:
-            res = self.decl.to_blark()
-            for item in res:
-                item.user = self
-            return res
-        return []
+    def to_blark(self) -> list[BlarkCompositeSourceItem]:
+        if self.decl is None:
+            return []
+
+        res = self.decl.to_blark()
+        for item in res:
+            item.user = self
+        return [
+            BlarkCompositeSourceItem(
+                identifier=self.decl.identifier,
+                filename=self.filename,
+                parts=res,
+                user=self,
+            )
+        ]
 
 
 @dataclasses.dataclass
@@ -493,13 +501,21 @@ class TcGVL(TcSource):
         # TODO: need to not save the implicit end line
         return self.decl.rewrite_code(identifier, contents)
 
-    def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
-        if self.decl is not None:
-            res = self.decl.to_blark()
-            for item in res:
-                item.user = self
-            return res
-        return []
+    def to_blark(self) -> list[BlarkCompositeSourceItem]:
+        if self.decl is None:
+            return []
+
+        res = self.decl.to_blark()
+        for item in res:
+            item.user = self
+        return [
+            BlarkCompositeSourceItem(
+                identifier=self.decl.identifier,
+                filename=self.filename,
+                parts=res,
+                user=self,
+            )
+        ]
 
 
 @dataclasses.dataclass
@@ -526,11 +542,12 @@ class TcIO(TcSource):
         ]
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
-        if self.decl is not None:
-            res = self.decl.to_blark()
-            for item in res:
-                item.user = self
-            return res
+        # TODO: blark does not yet understand INTERFACE
+        # if self.decl is not None:
+        #     res = self.decl.to_blark()
+        #     for item in res:
+        #         item.user = self
+        #     return res
         return []
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
@@ -863,28 +880,17 @@ class TwincatSourceCodeItem:
     contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
     parent: Optional[TwincatPlcProject] = None
 
-    def to_string(self, delimiter: str = "\r\n") -> str:
+    def to_file_contents(self, delimiter: str = "\r\n") -> bytes:
         if self.contents is None:
             raise ValueError(
                 f"No contents to save (file not found on host for {self.saved_path})"
             )
 
-        lines = ['<?xml version="1.0" encoding="utf-8"?>']
         tree = self.contents.to_xml()
-        lxml.etree.indent(tree, space=" " * 2)
-        lines += (
-            lxml.etree.tostring(
-                tree,
-                pretty_print=True,
-                encoding="utf-8",
-            )
-            .decode("utf-8")
-            .splitlines()
-        )
-        return delimiter.join(lines)
+        return util.tree_to_xml_source(tree, delimiter=delimiter)
 
     def save_to(self, path: AnyPath, delimiter: str = "\r\n") -> None:
-        code = self.to_string(delimiter)
+        code = self.to_file_contents(delimiter)
         with codecs.open(str(path), "w", "utf-8-sig") as fp:
             fp.write(code)
 
@@ -1344,10 +1350,38 @@ def solution_loader(
     return get_blark_input_from_solution(solution)
 
 
-register_file_handler(TcPOU.file_extension, single_file_loader)
-register_file_handler(TcGVL.file_extension, single_file_loader)
-register_file_handler(TcIO.file_extension, single_file_loader)
-register_file_handler(TcDUT.file_extension, single_file_loader)
-register_file_handler(Solution.file_extension, solution_loader)
-register_file_handler(TwincatTsProject.file_extension, project_loader)
-register_file_handler(TwincatPlcProject.file_extension, project_loader)
+def twincat_file_writer(
+    user: Any,
+    source_filename: Optional[pathlib.Path],
+    parts: List[OutputBlock],
+) -> str:
+    if not isinstance(user, TcSource):
+        raise ValueError(
+            "Sorry, blark only supports writing files in the same output "
+            "format as input format currently."
+        )
+
+    for part in parts:
+        if part.origin is None:
+            raise ValueError(
+                "New code not originally based on existing code from a "
+                "TwinCAT project is not yet supported"
+            )
+
+        user.rewrite_code(part.origin.item.identifier, part.code)
+
+    return user.to_file_contents()
+
+
+register_input_handler(TcPOU.file_extension, single_file_loader)
+register_input_handler(TcGVL.file_extension, single_file_loader)
+register_input_handler(TcIO.file_extension, single_file_loader)
+register_input_handler(TcDUT.file_extension, single_file_loader)
+register_input_handler(Solution.file_extension, solution_loader)
+register_input_handler(TwincatTsProject.file_extension, project_loader)
+register_input_handler(TwincatPlcProject.file_extension, project_loader)
+register_output_handler("twincat", twincat_file_writer)
+register_output_handler(TcPOU.file_extension, twincat_file_writer)
+register_output_handler(TcGVL.file_extension, twincat_file_writer)
+register_output_handler(TcIO.file_extension, twincat_file_writer)
+register_output_handler(TcDUT.file_extension, twincat_file_writer)

@@ -7,8 +7,9 @@ import re
 from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar
 
 import lark
+import lxml.etree
 
-from .typing import AnyPath  # Back-compat
+from .typing import AnyPath
 
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
 NEWLINES = "\n\r"
@@ -521,3 +522,28 @@ def rebuild_lark_tree_with_line_map(
         ],
         meta=meta,
     )
+
+
+def tree_to_xml_source(
+    tree: lxml.etree.Element,
+    encoding: str = "utf-8",
+    delimiter: str = "\r\n",
+    xml_header: str = '<?xml version="1.0" encoding="{encoding}"?>',
+    indent: str = "  ",
+) -> bytes:
+    # NOTE: we avoid lxml.etree.tostring(xml_declaration=True) as we want
+    # to write a declaration that matches what TwinCAT writes. It uses double
+    # quotes instead of single quotes.
+    header_bytes = xml_header.format(encoding=encoding).encode(encoding)
+    lxml.etree.indent(tree, space=indent)
+    source = header_bytes + lxml.etree.tostring(
+        tree,
+        pretty_print=True,
+        encoding=encoding,
+    )
+    if delimiter == "\n":
+        # This is what lxml gives us
+        return source
+
+    source_lines = source.split(b"\n")
+    return delimiter.encode(encoding).join(source_lines)
