@@ -353,6 +353,13 @@ def build_arg_parser(argparser=None):
     )
 
     argparser.add_argument(
+        "--no-meta",
+        action="store_false",
+        dest="include_meta",
+        help="Summarize code inputs and outputs",
+    )
+
+    argparser.add_argument(
         "--filter",
         nargs="*",
         dest="filter_by_name",
@@ -377,6 +384,7 @@ def main(
     print_filename: bool = False,
     print_source: bool = False,
     print_tree: bool = False,
+    include_meta: bool = True,
     filter_by_name: Optional[list[str]] = None,
     input_format: Optional[str] = None,
 ) -> dict[str, list[ParseResult]]:
@@ -458,6 +466,8 @@ def main(
                     exclude_defaults=True,
                     no_copy=True,
                 )
+                if not include_meta:
+                    serialized = util.recursively_remove_keys(serialized, {"meta"})
                 print(json.dumps(serialized, indent=2))
     except KeyboardInterrupt:
         print("\nCaught KeyboardInterrupt; stopping parsing.")

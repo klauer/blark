@@ -4,7 +4,7 @@ import enum
 import hashlib
 import pathlib
 import re
-from typing import Any, Dict, Generator, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generator, List, Optional, Set, Tuple, TypeVar
 
 import lark
 import lxml.etree
@@ -531,6 +531,7 @@ def tree_to_xml_source(
     xml_header: str = '<?xml version="1.0" encoding="{encoding}"?>',
     indent: str = "  ",
 ) -> bytes:
+    """Return the contents to write for the given XML tree."""
     # NOTE: we avoid lxml.etree.tostring(xml_declaration=True) as we want
     # to write a declaration that matches what TwinCAT writes. It uses double
     # quotes instead of single quotes.
@@ -547,3 +548,13 @@ def tree_to_xml_source(
 
     source_lines = source.split(b"\n")
     return delimiter.encode(encoding).join(source_lines)
+
+
+def recursively_remove_keys(obj, keys: Set[str]) -> Any:
+    """Remove the provided keys from the JSON object."""
+    if isinstance(obj, dict):
+        return {key: recursively_remove_keys(value, keys) for key, value in obj.items()
+                if key not in keys}
+    if isinstance(obj, (list, tuple)):
+        return [recursively_remove_keys(value, keys) for value in obj]
+    return obj
