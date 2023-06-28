@@ -4,7 +4,12 @@ import pathlib
 import typing
 from typing import Callable, Optional, Union, overload
 
-__all__ = ["Self"]
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+__all__ = ["Self", "Literal"]
 
 
 if typing.TYPE_CHECKING:

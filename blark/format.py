@@ -205,10 +205,11 @@ def main(
         current_group = []
         for _, results in result_by_filename.items():
             for res in results:
+                user = res.item.user
                 if res.item.user is not last_user or res.filename != last_filename:
                     current_group = [res]
-                    by_loader_obj.append((res.item.user, res.filename, current_group))
-                    last_user = res.item.user
+                    by_loader_obj.append((user, res.filename, current_group))
+                    last_user = user
                     last_filename = res.filename
                 else:
                     current_group.append(res)

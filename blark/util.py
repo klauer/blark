@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import codecs
 import enum
 import hashlib
 import pathlib
@@ -31,7 +32,7 @@ class SourceType(enum.Enum):
     property = enum.auto()
     property_get = enum.auto()
     property_set = enum.auto()
-    struct = enum.auto()
+    dut = enum.auto()
     statement_list = enum.auto()
     var_global = enum.auto()
 
@@ -52,7 +53,7 @@ class SourceType(enum.Enum):
             SourceType.property_get: "function_block_property_declaration",
             SourceType.property_set: "function_block_property_declaration",
             SourceType.statement_list: "statement_list",
-            SourceType.struct: "data_type_declaration",
+            SourceType.dut: "data_type_declaration",
             # NOTE: multiple definitions can be present in GVLs:
             SourceType.var_global: "iec_source",
         }[self]
@@ -70,7 +71,7 @@ class SourceType(enum.Enum):
             SourceType.property_get: "",
             SourceType.property_set: "",
             SourceType.statement_list: "",
-            SourceType.struct: "",
+            SourceType.dut: "",
             SourceType.var_global: "",
         }[self]
 
@@ -346,8 +347,10 @@ def find_and_clean_comments(
             end_column=end_col + 1,
         )
         if line_map is not None:
-            token.line = line_map.get(start_line + 1, start_line + 1)
-            token.end_line = line_map.get(end_line + 1, end_line + 1)
+            token.line = line_map[start_line + 1]
+            token.end_line = line_map[end_line + 1]
+            # token.line = line_map.get(start_line + 1, start_line + 1)
+            # token.end_line = line_map.get(end_line + 1, end_line + 1)
         return token
 
     for lineno, colno, this_ch, next_ch in get_characters():
@@ -530,24 +533,32 @@ def tree_to_xml_source(
     delimiter: str = "\r\n",
     xml_header: str = '<?xml version="1.0" encoding="{encoding}"?>',
     indent: str = "  ",
+    include_utf8_sig: bool = True,
 ) -> bytes:
     """Return the contents to write for the given XML tree."""
     # NOTE: we avoid lxml.etree.tostring(xml_declaration=True) as we want
     # to write a declaration that matches what TwinCAT writes. It uses double
     # quotes instead of single quotes.
+    delim_bytes = delimiter.encode(encoding)
     header_bytes = xml_header.format(encoding=encoding).encode(encoding)
     lxml.etree.indent(tree, space=indent)
-    source = header_bytes + lxml.etree.tostring(
+    if encoding.startswith("utf-8") and include_utf8_sig:
+        # Additionally, TwinCAT includes a utf-8 byte order marker (BOM).
+        # Let's include that or our formatted output will differ.
+        header_bytes = codecs.BOM_UTF8 + header_bytes
+
+    source = header_bytes + delim_bytes + lxml.etree.tostring(
         tree,
         pretty_print=True,
         encoding=encoding,
     )
-    if delimiter == "\n":
+
+    if delim_bytes == b"\n":
         # This is what lxml gives us
         return source
 
     source_lines = source.split(b"\n")
-    return delimiter.encode(encoding).join(source_lines)
+    return delim_bytes.join(source_lines)
 
 
 def recursively_remove_keys(obj, keys: Set[str]) -> Any:

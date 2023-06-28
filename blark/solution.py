@@ -40,7 +40,7 @@ from . import util
 from .input import (BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine,
                     register_input_handler)
 from .output import OutputBlock, register_output_handler
-from .typing import ContainsBlarkCode, Self
+from .typing import ContainsBlarkCode, Literal, Self
 from .util import AnyPath, SourceType
 
 logger = logging.getLogger(__name__)
@@ -67,6 +67,17 @@ _solution_project_regex = re.compile(
 def strip_xml_namespace(tag: str) -> str:
     """Strip off {{namespace}} from: {{namespace}}tag."""
     return lxml.etree.QName(tag).localname
+
+
+def split_property_and_base_decl(code: str) -> tuple[str, str]:
+    lines = code.splitlines()
+    base_decl = []
+    for idx, line in enumerate(lines):
+        if line.lower().startswith("property "):
+            base_decl = "\n".join(lines[:idx + 1])
+            decl = "\n".join(lines[idx + 1:])
+            return base_decl, decl
+    return "", code
 
 
 def strip_implicit_lines(code: str, source_type: SourceType) -> str:
@@ -195,10 +206,13 @@ def get_child_located_text(
         return None
 
 
+DeclarationOrImplementation = Literal["declaration", "implementation"]
+
+
 @dataclasses.dataclass
 class Identifier:
     parts: List[str]
-    decl_impl: Optional[str]
+    decl_impl: Optional[DeclarationOrImplementation]
 
     def to_string(self) -> str:
         parts = ".".join(self.parts)
@@ -263,39 +277,50 @@ class TcDeclImpl:
                 f"Unexpected rewrite portion: {identifier} ({ident.decl_impl})"
             )
 
-    def to_blark(self) -> list[BlarkSourceItem]:
+    def declaration_to_blark(self) -> Optional[BlarkSourceItem]:
         if self.source_type is None:
-            return []
+            return None
 
-        res = []
-        if self.declaration is not None:
-            decl = BlarkSourceItem(
-                identifier=f"{self.identifier}/declaration",
-                type=self.source_type,
-                lines=self.declaration.to_lines(),
-                grammar_rule=self.source_type.get_grammar_rule(),
-                implicit_end=self.source_type.get_implicit_block_end(),
-                user=self.parent or self,
-            )
-            res.append(decl)
+        if self.declaration is None:
+            return None
 
-        if self.implementation is not None:
-            # TODO: statement_list in the grammar cannot be empty.  We
-            # pre-filter the implementation to ensure that it has some code.
-            # If this affects how you're using blark, feel free to open an issue
-            # and we can resolve it.
-            if util.remove_all_comments(self.implementation.value).strip():
-                impl = BlarkSourceItem(
-                    identifier=f"{self.identifier}/implementation",
-                    type=self.source_type,
-                    lines=self.implementation.to_lines(),
-                    grammar_rule=SourceType.statement_list.name,
-                    implicit_end=SourceType.statement_list.get_implicit_block_end(),
-                    user=self.parent or self,
-                )
-                res.append(impl)
+        return BlarkSourceItem(
+            identifier=f"{self.identifier}/declaration",
+            type=self.source_type,
+            lines=self.declaration.to_lines(),
+            grammar_rule=self.source_type.get_grammar_rule(),
+            implicit_end=self.source_type.get_implicit_block_end(),
+            user=self.parent or self,
+        )
 
-        return res
+    def implementation_to_blark(self) -> Optional[BlarkSourceItem]:
+        if self.source_type is None:
+            return None
+        if self.implementation is None:
+            return None
+
+        # TODO: statement_list in the grammar cannot be empty.  We
+        # pre-filter the implementation to ensure that it has some code.
+        # If this affects how you're using blark, feel free to open an issue
+        # and we can resolve it.
+        if not util.remove_all_comments(self.implementation.value).strip():
+            return None
+
+        return BlarkSourceItem(
+            identifier=f"{self.identifier}/implementation",
+            type=self.source_type,
+            lines=self.implementation.to_lines(),
+            grammar_rule=SourceType.statement_list.name,
+            implicit_end=SourceType.statement_list.get_implicit_block_end(),
+            user=self.parent or self,
+        )
+
+    def to_blark(self) -> list[BlarkSourceItem]:
+        return [
+            part
+            for part in (self.declaration_to_blark(), self.implementation_to_blark())
+            if part is not None
+        ]
 
     def _serialize(self, parent: lxml.etree.Element) -> None:
         if self.declaration is not None:
@@ -315,6 +340,8 @@ class TcDeclImpl:
         cls: type[Self],
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
+        default_source_type: Optional[SourceType] = None,
+        default_identifier: Optional[str] = None,
     ) -> Self:
         declaration = get_child_located_text(xml, "Declaration", filename=filename)
         if declaration is not None:
@@ -323,6 +350,9 @@ class TcDeclImpl:
             )
         else:
             source_type, identifier = None, None
+
+        source_type = source_type or default_source_type
+        identifier = identifier or default_identifier
         return cls(
             identifier=identifier or (filename and filename.stem) or "unknown",
             declaration=declaration,
@@ -376,12 +406,15 @@ class TcSource:
     filename: Optional[pathlib.Path]
     parent: Optional[TwincatSourceCodeItem]
     xml: dataclasses.InitVar[lxml.etree.Element | None] = None
+    source_type: Optional[SourceType] = None
+    default_source_type: ClassVar[Optional[SourceType]] = None
 
-    @property
-    def source_type(self) -> Optional[SourceType]:
-        if self.decl is None:
-            return None
-        return self.decl.source_type
+    # TODO
+    # @property
+    # def source_type(self) -> Optional[SourceType]:
+    #     if self.decl is None:
+    #         return None
+    #     return self.decl.source_type
 
     def rewrite_code(self, identifier: str, contents: str):
         raise NotImplementedError(
@@ -419,7 +452,7 @@ class TcSource:
     def from_xml(
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
-        parent: Optional[TcSource] = None,
+        parent: Optional[TwincatSourceCodeItem] = None,
     ) -> Optional[Union[TcDUT, TcTTO, TcPOU, TcIO, TcGVL]]:
         tcplc_object = get_tcplc_from_xml(xml)
         if tcplc_object is None:
@@ -434,7 +467,12 @@ class TcSource:
         metadata["version"] = tcplc_object.attrib.get("Version", "")
         metadata["product_version"] = tcplc_object.attrib.get("ProductVersion", "")
 
-        decl = TcDeclImpl.from_xml(item, filename=filename)
+        decl = TcDeclImpl.from_xml(
+            item,
+            filename=filename,
+            default_identifier=filename.stem if filename else None,
+            default_source_type=source_cls.default_source_type,
+        )
 
         source = source_cls(
             filename=filename or filename_from_xml(xml),
@@ -444,7 +482,10 @@ class TcSource:
             metadata=metadata,
             parent=parent,
             xml=xml,
+            source_type=decl.source_type,
         )
+        # TODO annotations
+        assert isinstance(source, (TcDUT, TcTTO, TcPOU, TcIO, TcGVL))
         source.decl.parent = source
         return source
 
@@ -472,7 +513,15 @@ class TcSource:
 class TcDUT(TcSource):
     _tag: ClassVar[str] = "DUT"
     file_extension: ClassVar[str] = ".TcDUT"
-    source_type: ClassVar[SourceType] = SourceType.struct
+    default_source_type: ClassVar[SourceType] = SourceType.dut
+
+    def rewrite_code(self, identifier: str, contents: str):
+        contents = strip_implicit_lines(
+            contents,
+            source_type=self.source_type,
+        )
+
+        return self.decl.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[BlarkCompositeSourceItem]:
         if self.decl is None:
@@ -481,6 +530,7 @@ class TcDUT(TcSource):
         res = self.decl.to_blark()
         for item in res:
             item.user = self
+
         return [
             BlarkCompositeSourceItem(
                 identifier=self.decl.identifier,
@@ -495,7 +545,7 @@ class TcDUT(TcSource):
 class TcGVL(TcSource):
     _tag: ClassVar[str] = "GVL"
     file_extension: ClassVar[str] = ".TcGVL"
-    source_type: ClassVar[SourceType] = SourceType.var_global
+    default_source_type: ClassVar[SourceType] = SourceType.var_global
 
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
@@ -522,6 +572,7 @@ class TcGVL(TcSource):
 class TcIO(TcSource):
     _tag: ClassVar[str] = "Itf"
     file_extension: ClassVar[str] = ".TcIO"
+    default_source_type: ClassVar[SourceType] = SourceType.interface
 
     parts: list[Union[TcMethod, TcProperty, TcUnknownXml]] = dataclasses.field(
         default_factory=list
@@ -591,13 +642,15 @@ class TcTTO(TcSource):
         primary.getparent().replace(primary, self.xml)
 
 
+SupportedPOUPart = Union["TcAction", "TcMethod", "TcProperty"]
+POUPart = Union[SupportedPOUPart, "TcUnknownXml"]
+
+
 @dataclasses.dataclass
 class TcPOU(TcSource):
     _tag: ClassVar[str] = "POU"
     file_extension: ClassVar[str] = ".TcPOU"
-    parts: list[
-        Union[TcAction, TcMethod, TcProperty, TcUnknownXml]
-    ] = dataclasses.field(default_factory=list)
+    parts: list[POUPart] = dataclasses.field(default_factory=list)
 
     def __post_init__(self, xml: Optional[lxml.etree.Element]) -> None:
         if xml is None:
@@ -614,9 +667,38 @@ class TcPOU(TcSource):
             if child.tag not in ("Declaration", "Implementation")
         ]
 
+    @property
+    def parts_by_name(self) -> dict[str, SupportedPOUPart]:
+        return {
+            part.name: part
+            for part in self.parts
+            if not isinstance(part, TcUnknownXml)
+        }
+
+    def get_child_by_identifier(
+        self, identifier: str
+    ) -> Union[SupportedPOUPart, TcDeclImpl]:
+        ident = Identifier.from_string(identifier)
+        if len(ident.parts) < 1:
+            raise ValueError("Empty identifier")
+
+        if ident.parts[0] != self.name:
+            raise ValueError(
+                f"Unexpected identifier to rewrite for POU {self.name}: "
+                f"{ident.parts[0]} ({ident.decl_impl})"
+            )
+
+        if len(ident.parts) == 1:
+            return self.decl
+
+        parts = ident.parts[1:]
+        name = parts[0]
+        return self.parts_by_name[name]
+
     def rewrite_code(self, identifier: str, contents: str):
         # TODO: need to not save the implicit end line
-        return self.decl.rewrite_code(identifier, contents)
+        part = self.get_child_by_identifier(identifier)
+        return part.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
         if self.source_type is None:
@@ -635,7 +717,7 @@ class TcPOU(TcSource):
                 for item in part.to_blark():
                     if identifier:
                         item.identifier = f"{identifier}.{item.identifier}"
-                    item.user = part
+                    item.user = self
                     parts.append(item)
             elif not isinstance(part, (TcExtraInfo, TcUnknownXml)):
                 raise NotImplementedError(
@@ -754,7 +836,7 @@ class TcAction(TcSourceChild):
                 type=SourceType.action,
                 grammar_rule=SourceType.action.get_grammar_rule(),
                 implicit_end=SourceType.action.get_implicit_block_end(),
-                user=self,
+                user=self.parent or self,
             )
         ]
 
@@ -790,13 +872,23 @@ class TcProperty(TcSourceChild):
         self.set = set
 
     def rewrite_code(self, identifier: str, contents: str):
-        # TODO: need to not save the implicit end line
         ident = Identifier.from_string(identifier)
         get_or_set: Optional[TcDeclImpl] = getattr(self, ident.parts[-1])
         if get_or_set is None:
             # get_or_set = TcDeclImpl(identifier=identifier)
             # setattr(self, get_or_set, ident.parts[-1], get_or_set)
             raise NotImplementedError("Empty get/set (TODO)")
+
+        contents = strip_implicit_lines(
+            contents,
+            source_type=SourceType.property,
+        )
+        # TODO: move this out
+        if ident.decl_impl == "declaration":
+            base_decl, contents = split_property_and_base_decl(contents)
+            if base_decl:
+                self.decl.rewrite_code("/declaration", base_decl)
+
         return get_or_set.rewrite_code(identifier, contents)
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
@@ -814,20 +906,36 @@ class TcProperty(TcSourceChild):
             if obj is None:
                 continue
 
-            for part in obj.to_blark():
-                part_ident = Identifier.from_string(part.identifier)
-                # Note: the parent will add on the FB name
+            decl = obj.declaration_to_blark()
+            # Note: the parent will add on the FB name
+            if decl is not None:
                 parts.append(
                     BlarkSourceItem(
                         identifier=Identifier(
                             parts=[*property_ident.parts, get_or_set],
-                            decl_impl=part_ident.decl_impl
+                            decl_impl="declaration",
                         ).to_string(),
                         type=SourceType.property,
-                        lines=base_decl.lines + part.lines,
+                        lines=base_decl.lines + decl.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
-                        user=self,
+                        user=self.parent or self,
+                    )
+                )
+
+            impl = obj.implementation_to_blark()
+            if impl is not None:
+                parts.append(
+                    BlarkSourceItem(
+                        identifier=Identifier(
+                            parts=[*property_ident.parts, get_or_set],
+                            decl_impl="implementation",
+                        ).to_string(),
+                        type=SourceType.property,
+                        lines=impl.lines,
+                        grammar_rule=SourceType.statement_list.get_grammar_rule(),
+                        implicit_end="",
+                        user=self.parent or self,
                     )
                 )
 
@@ -1370,6 +1478,7 @@ def twincat_file_writer(
 
         user.rewrite_code(part.origin.item.identifier, part.code)
 
+    # TODO xml with utf-8-sig?
     return user.to_file_contents()
 
 

@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 import collections
+import logging
 import pathlib
 import textwrap
-import typing
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import Any, Dict, Generator, Iterable, List, Optional, Tuple, Union
+from typing import (TYPE_CHECKING, Any, Dict, Generator, Iterable, List,
+                    Optional, Tuple, Union)
 
 from . import transform as tf
+from .typing import Literal
+
+LocationType = Literal["input", "output", "memory"]
+
+if TYPE_CHECKING:
+    from .parse import ParseResult
+
+
+logger = logging.getLogger(__name__)
 
 
 def _indented_outline(item: Any, indent: str = "    ") -> Optional[str]:
@@ -85,7 +95,7 @@ class Summary:
     meta: Optional[tf.Meta] = field(repr=False)
 
     def __str__(self) -> str:
-        return text_outline(self)
+        return text_outline(self) or ""
 
     @staticmethod
     def get_meta_kwargs(meta: Optional[tf.Meta]) -> Dict[str, Any]:
@@ -102,13 +112,6 @@ class Summary:
             pragmas=pragmas,
             meta=meta,
         )
-
-
-if hasattr(typing, "Literal"):
-    from typing import Literal
-    LocationType = Union[Literal["input"], Literal["output"], Literal["memory"]]
-else:
-    LocationType = str
 
 
 @dataclass
@@ -148,7 +151,7 @@ class DeclarationSummary(Summary):
     @classmethod
     def from_declaration(
         cls,
-        item: tf.InitDeclaration,
+        item: Union[tf.InitDeclaration, tf.StructureElementDeclaration],
         parent: Optional[
             Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
         ] = None,
@@ -156,13 +159,11 @@ class DeclarationSummary(Summary):
         filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
-        for var in item.variables:
-            name = getattr(var, "name", var)
-            location = getattr(var, "location", None)
-            result[name] = DeclarationSummary(
-                name=str(name),
+        if isinstance(item, tf.StructureElementDeclaration):
+            result[item.name] = DeclarationSummary(
+                name=str(item.name),
                 item=item,
-                location=str(location).replace("AT ", "") if location else None,
+                location=item.location.name if item.location else None,
                 block=block_header,
                 type=item.init.full_type_name,
                 base_type=item.init.base_type_name,
@@ -171,6 +172,23 @@ class DeclarationSummary(Summary):
                 filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
             )
+        elif isinstance(item, tf.InitDeclaration):
+            for var in item.variables:
+                result[var.name] = DeclarationSummary(
+                    name=str(var.name),
+                    item=item,
+                    location=str(var.location).replace("AT ", "") if var.location else None,
+                    block=block_header,
+                    type=item.init.full_type_name,
+                    base_type=item.init.base_type_name,
+                    value=str(item.init.value),
+                    parent=parent.name if parent is not None else "",
+                    filename=filename,
+                    **Summary.get_meta_kwargs(item.meta),
+                )
+        else:
+            raise NotImplementedError(f"TODO: {type(item)}")
+
         return result
 
     @classmethod
@@ -222,6 +240,7 @@ class ActionSummary(Summary):
     name: str
     item: tf.Action
     source_code: str
+    implementation: Optional[tf.StatementList] = None
 
     def __getitem__(self, key: str):
         raise KeyError(f"{key}: Actions do not contain declarations")
@@ -252,6 +271,7 @@ class MethodSummary(Summary):
     item: tf.Method
     return_type: Optional[str]
     source_code: str
+    implementation: Optional[tf.StatementList] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -296,6 +316,7 @@ class PropertySummary(Summary):
     name: str
     item: tf.Property
     source_code: str
+    implementation: Optional[tf.StatementList] = None
 
     def __getitem__(self, key: str):
         raise KeyError(f"{key}: Properties do not contain declarations")
@@ -326,6 +347,7 @@ class FunctionSummary(Summary):
     item: tf.Function
     return_type: Optional[str]
     source_code: str
+    implementation: Optional[tf.StatementList] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -373,14 +395,16 @@ class FunctionBlockSummary(Summary):
     item: tf.FunctionBlock
     extends: Optional[str]
     squashed: bool
+    implementation: Optional[tf.StatementList] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
+    properties: List[PropertySummary] = field(default_factory=list)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
         if key in self.declarations:
             return self.declarations[key]
-        for item in self.actions + self.methods:
+        for item in self.actions + self.methods + self.properties:
             if item.name == key:
                 return item
         raise KeyError(key)
@@ -603,6 +627,7 @@ class ProgramSummary(Summary):
     name: str
     source_code: str
     item: tf.Program
+    implementation: Optional[tf.StatementList] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -664,6 +689,7 @@ class CodeSummary:
     data_types: Dict[str, DataTypeSummary] = field(default_factory=dict)
     programs: Dict[str, ProgramSummary] = field(default_factory=dict)
     globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
+    # interfaces: Dict[str, ...] = field(default_factory=dict)  # TODO
 
     def __str__(self):
         attr_to_header = {
@@ -787,92 +813,125 @@ class CodeSummary:
             #     self.programs[f"{namespace}.{name}"] = item
 
     @staticmethod
-    def from_source(
-        code: tf.SourceCode, filename: Optional[pathlib.Path] = None
-    ) -> CodeSummary:
+    def from_parse_results(all_parsed_items: list[ParseResult]) -> CodeSummary:
         result = CodeSummary()
-        items = code.items
 
-        def get_code_by_meta(meta: Optional[tf.Meta]) -> str:
+        def get_code_by_meta(parsed: ParseResult, meta: Optional[tf.Meta]) -> str:
             if meta is None or meta.line is None or meta.end_line is None:
                 return ""
 
-            return "\n".join(code.range_from_file_lines(meta.line, meta.end_line))
+            transformed = parsed.transform()
+            return "\n".join(
+                transformed.range_from_file_lines(meta.line, meta.end_line)
+            )
 
-        last_parent = None
-        for item in items:
-            if isinstance(item, tf.FunctionBlock):
-                summary = FunctionBlockSummary.from_function_block(
-                    item,
-                    source_code=get_code_by_meta(item.meta),
-                    filename=filename,
-                )
-                result.function_blocks[item.name] = summary
-                last_parent = summary
-            elif isinstance(item, tf.Function):
-                summary = FunctionSummary.from_function(
-                    item,
-                    source_code=get_code_by_meta(item.meta),
-                    filename=filename,
-                )
-                result.functions[item.name] = summary
-                last_parent = None
-            elif isinstance(item, tf.DataTypeDeclaration):
-                if isinstance(item.declaration, tf.StructureTypeDeclaration):
-                    summary = DataTypeSummary.from_data_type(
-                        item.declaration,
-                        source_code=get_code_by_meta(item.declaration.meta),
-                        filename=filename,
-                    )
-                    result.data_types[item.declaration.name] = summary
-                last_parent = None
-            elif isinstance(item, tf.Method):
-                if last_parent is not None:
-                    last_parent.methods.append(
-                        MethodSummary.from_method(
-                            item,
-                            source_code=get_code_by_meta(item.meta),
-                            filename=filename,
-                        )
-                    )
-            elif isinstance(item, tf.Action):
-                if last_parent is not None:
-                    last_parent.actions.append(
-                        ActionSummary.from_action(
-                            item,
-                            source_code=get_code_by_meta(item.meta),
-                            filename=filename,
-                        )
-                    )
-            elif isinstance(item, tf.Property):
-                if last_parent is not None and isinstance(last_parent, ProgramSummary):
-                    last_parent.properties.append(
-                        PropertySummary.from_property(
-                            item,
-                            source_code=get_code_by_meta(item.meta),
-                            filename=filename,
-                        )
-                    )
-            elif isinstance(item, tf.GlobalVariableDeclarations):
-                summary = GlobalVariableSummary.from_globals(
-                    item,
-                    source_code=get_code_by_meta(item.meta),
-                    filename=filename,
-                )
-                result.globals[item.name] = summary
-                # for global_var in summary.declarations.values():
-                #     if not qualified_only:
-                #         result.globals[global_var.name] = summary
-                #     result.globals[global_var.qualified_name] = summary
+        stack = []
 
-            elif isinstance(item, tf.Program):
-                summary = ProgramSummary.from_program(
-                    item,
-                    source_code=get_code_by_meta(item.meta),
-                    filename=filename,
-                )
-                result.programs[item.name] = summary
-                last_parent = summary
+        def clear_context():
+            stack.clear()
+
+        def new_context(summary: Summary):
+            stack[:] = [summary]
+
+        def push_context(summary: Summary):
+            stack.append(summary)
+
+        def get_pou_context() -> Union[ProgramSummary, FunctionBlockSummary]:
+            for item in reversed(stack):
+                if isinstance(item, (ProgramSummary, tf.FunctionBlockSummary)):
+                    return item
+
+            raise ValueError(
+                "Expected to parse a POU prior to this but none were on the stack"
+            )
+
+        for parsed in all_parsed_items:
+            transformed = parsed.transform()
+            for item in transformed.items:
+                if isinstance(item, tf.FunctionBlock):
+                    summary = FunctionBlockSummary.from_function_block(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    result.function_blocks[item.name] = summary
+                    new_context(summary)
+                elif isinstance(item, tf.Function):
+                    summary = FunctionSummary.from_function(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    result.functions[item.name] = summary
+                    new_context(summary)
+                elif isinstance(item, tf.DataTypeDeclaration):
+                    if isinstance(item.declaration, tf.StructureTypeDeclaration):
+                        summary = DataTypeSummary.from_data_type(
+                            item.declaration,
+                            source_code=get_code_by_meta(parsed, item.declaration.meta),
+                            filename=parsed.filename,
+                        )
+                        result.data_types[item.declaration.name] = summary
+                    clear_context()
+                elif isinstance(item, tf.Method):
+                    pou = get_pou_context()
+                    summary = MethodSummary.from_method(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    pou.methods.append(summary)
+                    push_context(summary)
+                elif isinstance(item, tf.Action):
+                    pou = get_pou_context()
+                    summary = ActionSummary.from_action(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    pou.actions.append(summary)
+                    push_context(summary)
+                elif isinstance(item, tf.Property):
+                    pou = get_pou_context()
+                    summary = PropertySummary.from_property(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    pou.properties.append(summary)
+                    push_context(summary)
+                elif isinstance(item, tf.GlobalVariableDeclarations):
+                    clear_context()
+                    summary = GlobalVariableSummary.from_globals(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    result.globals[item.name] = summary
+                    # for global_var in summary.declarations.values():
+                    #     if not qualified_only:
+                    #         result.globals[global_var.name] = summary
+                    #     result.globals[global_var.qualified_name] = summary
+
+                elif isinstance(item, tf.Program):
+                    summary = ProgramSummary.from_program(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    result.programs[item.name] = summary
+                    new_context(summary)
+                elif isinstance(item, tf.StatementList):
+                    last = stack[-1] if stack else None
+                    if not last or not hasattr(last, "implementation"):
+                        raise RuntimeError(
+                            f"Implementation without previous declaration? "
+                            f"{parsed.filename} {parsed.identifier} {item}"
+                        )
+                    assert last.implementation is None
+                    last.implementation = item
+                else:
+                    logger.warning("Unhandled: %s", type(item))
 
         for name, item in list(result.function_blocks.items()):
             if item.extends and not item.squashed:

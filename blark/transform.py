@@ -2992,10 +2992,11 @@ class StatementList:
         return "\n".join(str(statement) for statement in self.statements)
 
 
-FunctionBlockBody = Union[
-    StatementList,
-]
+# FunctionBlockBody = Union[
+#     StatementList,
+# ]
 
+FunctionBlockBody = StatementList  # Only supported option, for now
 FunctionBody = FunctionBlockBody  # Identical, currently
 
 

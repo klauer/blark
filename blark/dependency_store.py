@@ -13,9 +13,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import packaging.version
 
-from . import parse
-from . import transform as tf
-from . import util
+from . import parse, util
 from .config import BLARK_TWINCAT_ROOT
 from .solution import (DependencyVersion, TwincatPlcProject,
                        make_solution_from_files)
@@ -186,7 +184,7 @@ class DependencyStore:
     def get_dependency(
         self,
         name: str,
-        version: Optional[str],
+        version: Optional[str] = None,
     ) -> List[PlcProjectMetadata]:
         """Get a dependency by name and version number."""
         try:
@@ -258,7 +256,7 @@ class PlcProjectMetadata:
     name: str
     filename: pathlib.Path
     include_dependencies: bool
-    code: List[tf.SourceCode]
+    code: List[parse.ParseResult]
     summary: CodeSummary
     loaded_files: Dict[pathlib.Path, str]
     dependencies: Dict[str, DependencyVersion]
@@ -297,21 +295,21 @@ class PlcProjectMetadata:
                 continue
 
             for item in source.contents.to_blark():
-                for code_obj in parse.parse_item(item):
-                    if code_obj.exception is not None:
+                results = []
+                for result in parse.parse_item(item):
+                    if result.exception is not None:
                         logger.debug(
-                            "Failed to load: %s %s", code_obj.filename, code_obj
+                            "Failed to load: %s %s", result.filename, result
                         )
                         continue
-                    assert code_obj.filename is not None
-                    code.append(code_obj)
-                    loaded_files[code_obj.filename] = util.get_file_sha256(
-                        code_obj.filename
+                    assert result.filename is not None
+                    results.append(result)
+                    loaded_files[result.filename] = util.get_file_sha256(
+                        result.filename
                     )
-                    summary = CodeSummary.from_source(
-                        code_obj.transform(),
-                        filename=code_obj.filename,
-                    )
+
+                if results:
+                    summary = CodeSummary.from_parse_results(results)
                     combined_summary.append(summary)
 
         # tmc = plc.tmc
