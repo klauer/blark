@@ -33,6 +33,9 @@ AnyBlarkSourceItem = Union["BlarkCompositeSourceItem", "BlarkSourceItem"]
 Preprocessor = Callable[[str], str]
 
 
+DeclarationOrImplementation = Literal["declaration", "implementation"]
+
+
 @runtime_checkable
 class ContainsBlarkCode(Protocol):
     """Indicates that the given class can emit blark-compatible source items."""

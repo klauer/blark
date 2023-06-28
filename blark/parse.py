@@ -341,6 +341,7 @@ def build_arg_parser(argparser=None):
     argparser.add_argument(
         "-s",
         "--summary",
+        dest="output_summary",
         action="store_true",
         help="Summarize code inputs and outputs",
     )
@@ -369,9 +370,21 @@ def build_arg_parser(argparser=None):
     return argparser
 
 
-def summarize(code: tf.SourceCode) -> summary.CodeSummary:
-    """Get a code summary instance from a SourceCode item."""
-    return summary.CodeSummary.from_source(code)
+def summarize(parsed: list[ParseResult]) -> summary.CodeSummary:
+    """Get a code summary instance from one or more ParseResult instances."""
+    return summary.CodeSummary.from_parse_results(parsed)
+
+
+def dump_json(type_, obj, include_meta: bool = True, indent: Optional[int] = 2) -> str:
+    serialized = apischema.serialize(
+        type_,
+        obj,
+        exclude_defaults=True,
+        no_copy=True,
+    )
+    if not include_meta:
+        serialized = util.recursively_remove_keys(serialized, {"meta"})
+    return json.dumps(serialized, indent=2)
 
 
 def main(
@@ -379,7 +392,7 @@ def main(
     verbose: int = 0,
     debug: bool = False,
     interactive: bool = False,
-    summary: bool = False,
+    output_summary: bool = False,
     use_json: bool = False,
     print_filename: bool = False,
     print_source: bool = False,
@@ -425,8 +438,10 @@ def main(
                     logger.debug("Included by filter: %s", item.identifier)
             yield from parse_item(item)
 
+    all_results = []
     try:
         for index, res in enumerate(get_items(), start=1):
+            all_results.append(res)
             results_by_filename.setdefault(str(filename), []).append(res)
             if print_filename:
                 print(f"[{index}] Parsing {res.filename}: {res.identifier} ({res.item.type})")
@@ -455,22 +470,29 @@ def main(
                         ),
                     )
 
-            if summary and res.tree is not None:
-                print(summarize(res.transform()))
+            if output_summary:
+                # Summary comes at the end
+                continue
 
             if use_json:
                 assert apischema is not None
 
-                serialized = apischema.serialize(
+                serialized = dump_json(
+                    tf.SourceCode,
                     res.transform(),
-                    exclude_defaults=True,
-                    no_copy=True,
+                    include_meta=include_meta,
                 )
-                if not include_meta:
-                    serialized = util.recursively_remove_keys(serialized, {"meta"})
-                print(json.dumps(serialized, indent=2))
+                print(serialized)
+
     except KeyboardInterrupt:
         print("\nCaught KeyboardInterrupt; stopping parsing.")
+
+    if output_summary:
+        summarized = summarize(all_results)
+        if use_json:
+            print(dump_json(summary.CodeSummary, summarized, include_meta=include_meta))
+        else:
+            print(summarized)
 
     if not results_by_filename:
         return {}

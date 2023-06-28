@@ -2,6 +2,8 @@ import pathlib
 
 import pytest
 
+from blark.util import SourceType
+
 from ..parse import parse, parse_source_code, summarize
 from . import conftest
 
@@ -10,15 +12,19 @@ TEST_PATH = pathlib.Path(__file__).parent
 
 def test_parsing_tcpous(twincat_pou_filename: str):
     """Test parsing TwinCAT TcPOU files."""
+    all_parts = []
     for part in parse(twincat_pou_filename):
+        all_parts.append(part)
+
         transformed = part.transform()
         print("transformed:")
         print(transformed)
         print("summary:")
         if part.exception:
             raise part.exception
-        print(summarize(transformed))
         conftest.check_serialization(transformed, deserialize=False)
+
+    print(summarize(all_parts))
 
 
 def test_parsing_source(source_filename: str):
@@ -33,7 +39,17 @@ def test_parsing_source(source_filename: str):
     print("summary:")
     if result.exception:
         raise result.exception
-    print(summarize(transformed))
+
+    if result.item.type in (
+        SourceType.dut,
+        SourceType.function,
+        SourceType.function_block,
+        SourceType.interface,
+        SourceType.statement_list,
+        SourceType.var_global,
+        SourceType.program,
+    ):
+        print(summarize([result]))
     conftest.check_serialization(transformed, deserialize=False)
 
 

@@ -150,7 +150,9 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
         ]
     )
     # Ensure comments transferred over
-    impl = str(loghandler.implementation)
+    assert loghandler.implementation is None
+
+    impl = str(loghandler["CircuitBreaker"].implementation)
     assert "Logic explanation" in impl
     assert "// reset the count for the next" in impl
     # Check about reformatting

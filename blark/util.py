@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import codecs
+import dataclasses
 import enum
 import hashlib
 import pathlib
@@ -10,7 +11,7 @@ from typing import Any, Dict, Generator, List, Optional, Set, Tuple, TypeVar
 import lark
 import lxml.etree
 
-from .typing import AnyPath
+from .typing import AnyPath, DeclarationOrImplementation, Self
 
 RE_LEADING_WHITESPACE = re.compile("^[ \t]+", re.MULTILINE)
 NEWLINES = "\n\r"
@@ -74,6 +75,56 @@ class SourceType(enum.Enum):
             SourceType.dut: "",
             SourceType.var_global: "",
         }[self]
+
+
+@dataclasses.dataclass
+class Identifier:
+    """
+    A blark convention for giving portions of code unique names.
+
+    Examples of valid identifiers include:
+
+    * FB_Name/declaration
+    * FB_Name/implementation
+    * FB_Name.Action/declaration
+    * FB_Name.Action/implementation
+    * FB_Name.Property.get/implementation
+    * FB_Name.Property.set/implementation
+
+    Attributes
+    ----------
+    parts : list of str
+        Parts of the name, split by the "." character.
+    decl_impl : "declaration" or "implementation"
+        The final "/portion", indicating whether the code section is describing
+        the declaration portion or the implementation portion.
+    """
+    parts: List[str]
+    decl_impl: Optional[DeclarationOrImplementation] = None
+
+    @property
+    def dotted_name(self) -> str:
+        return ".".join(self.parts)
+
+    def to_string(self) -> str:
+        parts = ".".join(self.parts)
+        if self.decl_impl:
+            return f"{parts}/{self.decl_impl}"
+        return parts
+
+    @classmethod
+    def from_string(cls: type[Self], value: str) -> Self:
+        if "/" in value:
+            identifier, decl_impl = value.split("/")
+            assert decl_impl in {"declaration", "implementation", None}
+            return cls(
+                parts=identifier.split("."),
+                decl_impl=decl_impl,
+            )
+        return cls(
+            parts=value.split("."),
+            decl_impl=None,
+        )
 
 
 def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:

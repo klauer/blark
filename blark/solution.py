@@ -40,8 +40,8 @@ from . import util
 from .input import (BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine,
                     register_input_handler)
 from .output import OutputBlock, register_output_handler
-from .typing import ContainsBlarkCode, Literal, Self
-from .util import AnyPath, SourceType
+from .typing import ContainsBlarkCode, Self
+from .util import AnyPath, Identifier, SourceType
 
 logger = logging.getLogger(__name__)
 
@@ -204,34 +204,6 @@ def get_child_located_text(
         )
     except IndexError:
         return None
-
-
-DeclarationOrImplementation = Literal["declaration", "implementation"]
-
-
-@dataclasses.dataclass
-class Identifier:
-    parts: List[str]
-    decl_impl: Optional[DeclarationOrImplementation]
-
-    def to_string(self) -> str:
-        parts = ".".join(self.parts)
-        if self.decl_impl:
-            return f"{parts}/{self.decl_impl}"
-        return parts
-
-    @classmethod
-    def from_string(cls: type[Self], value: str) -> Self:
-        if "/" in value:
-            identifier, decl_impl = value.split("/")
-            return cls(
-                parts=identifier.split("."),
-                decl_impl=decl_impl,
-            )
-        return cls(
-            parts=value.split("."),
-            decl_impl=None,
-        )
 
 
 @dataclasses.dataclass

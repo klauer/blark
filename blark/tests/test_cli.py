@@ -59,7 +59,7 @@ def input_filename(request):
             id="json",
         ),
         param(
-            dict(verbose=3, summary=True, debug=True),
+            dict(verbose=3, output_summary=True, debug=True),
             id="verbose",
         ),
     ]

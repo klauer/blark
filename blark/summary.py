@@ -8,8 +8,11 @@ from dataclasses import dataclass, field, fields, is_dataclass
 from typing import (TYPE_CHECKING, Any, Dict, Generator, Iterable, List,
                     Optional, Tuple, Union)
 
+import lark
+
 from . import transform as tf
 from .typing import Literal
+from .util import Identifier, SourceType
 
 LocationType = Literal["input", "output", "memory"]
 
@@ -118,7 +121,7 @@ class Summary:
 class DeclarationSummary(Summary):
     """Summary representation of a single declaration."""
     name: str
-    item: Union[tf.Declaration, tf.GlobalVariableDeclaration]
+    item: Union[tf.Declaration, tf.GlobalVariableDeclaration, tf.VariableInitDeclaration]
     parent: Optional[str]
     location: Optional[str]
     block: str
@@ -172,6 +175,26 @@ class DeclarationSummary(Summary):
                 filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
             )
+        elif isinstance(
+            item,
+            (
+                tf.FunctionBlockNameDeclaration,
+                tf.FunctionBlockInvocationDeclaration,
+            ),
+        ):
+            for var in item.variables:
+                result[var] = DeclarationSummary(
+                    name=str(var),
+                    item=item,
+                    location=None,
+                    block=block_header,
+                    type=item.init.full_type_name,
+                    base_type=item.init.base_type_name,
+                    value=str(item.init.value),
+                    parent=parent.name if parent is not None else "",
+                    filename=filename,
+                    **Summary.get_meta_kwargs(item.meta),
+                )
         elif isinstance(item, tf.InitDeclaration):
             for var in item.variables:
                 result[var.name] = DeclarationSummary(
@@ -246,6 +269,30 @@ class ActionSummary(Summary):
         raise KeyError(f"{key}: Actions do not contain declarations")
 
     @classmethod
+    def from_statement_list(
+        cls,
+        name: str,
+        statements: tf.StatementList,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
+    ) -> ActionSummary:
+        if source_code is None:
+            source_code = str(statements)
+
+        return ActionSummary(
+            name=name,
+            item=tf.Action(
+                name=lark.Token(name, name),
+                body=statements,
+                meta=statements.meta,
+            ),
+            source_code=source_code,
+            filename=filename,
+            implementation=statements,  # TODO: this is no good
+            **Summary.get_meta_kwargs(statements.meta),
+        )
+
+    @classmethod
     def from_action(
         cls,
         action: tf.Action,
@@ -311,14 +358,31 @@ class MethodSummary(Summary):
 
 
 @dataclass
-class PropertySummary(Summary):
-    """Summary representation of a single property."""
+class PropertyGetSetSummary(Summary):
     name: str
     item: tf.Property
     source_code: str
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     implementation: Optional[tf.StatementList] = None
 
+    def __getitem__(self, key: str) -> DeclarationSummary:
+        return self.declarations[key]
+
+
+@dataclass
+class PropertySummary(Summary):
+    """Summary representation of a single property."""
+    name: str
+    getter: PropertyGetSetSummary
+    setter: PropertyGetSetSummary
+    source_code: str
+    # implementation: Optional[tf.StatementList] = None
+
     def __getitem__(self, key: str):
+        if key == "get":
+            return self.getter
+        if key == "set":
+            return self.setter
         raise KeyError(f"{key}: Properties do not contain declarations")
 
     @classmethod
@@ -331,9 +395,23 @@ class PropertySummary(Summary):
         if source_code is None:
             source_code = str(property)
 
+        # TODO: this is broken at the moment
         return PropertySummary(
             name=str(property.name),
-            item=property,
+            getter=PropertyGetSetSummary(
+                name=str(property.name),
+                item=property,
+                source_code=source_code,
+                filename=filename,
+                **Summary.get_meta_kwargs(property.meta),
+            ),
+            setter=PropertyGetSetSummary(
+                name=str(property.name),
+                item=property,
+                source_code=source_code,
+                filename=filename,
+                **Summary.get_meta_kwargs(property.meta),
+            ),
             source_code=source_code,
             filename=filename,
             **Summary.get_meta_kwargs(property.meta),
@@ -728,7 +806,7 @@ class CodeSummary:
         return path[-1] if path else None
 
     def find_path(self, name: str) -> Optional[List[Summary]]:
-        """Given a qualified name, find its Declaration."""
+        """Given a qualified variable name, find its Declaration."""
         parts = collections.deque(name.split("."))
         if len(parts) <= 1:
             item = self.get_item_by_name(name)
@@ -763,6 +841,22 @@ class CodeSummary:
             ...
 
         return path
+
+    def find_code_object_by_dotted_name(self, name: str) -> Optional[Summary]:
+        """Given a qualified code object name, find its Summary object(s)."""
+        # TODO: These functions are a bit of a mess and confuse even me
+        # The intent with *this* flavor of 'find' is to take in things like:
+        # FB_Block.ActionName
+        # FB_Block.PropertyName.get
+        # FB_Block.PropertyName.set
+        parts = Identifier.from_string(name).parts
+        obj = self.get_item_by_name(parts[0])
+        if len(parts) == 1:
+            return obj
+
+        for remainder in parts[1:]:
+            obj = obj[remainder]
+        return obj
 
     def get_all_items_by_name(self, name: str) -> Generator:
         """Get any code item (function, data type, global variable, etc.) by name."""
@@ -825,28 +919,60 @@ class CodeSummary:
                 transformed.range_from_file_lines(meta.line, meta.end_line)
             )
 
-        stack = []
+        def add_implementation(parsed: ParseResult, impl: tf.StatementList):
+            assert parsed.identifier is not None
+            identifier = Identifier.from_string(parsed.identifier)
+            assert identifier.decl_impl == "implementation"
+
+            match = result.find_code_object_by_dotted_name(identifier.dotted_name)
+            if match is None:
+                raise RuntimeError(
+                    f"Implementation without previous declaration? "
+                    f"{parsed.filename} {parsed.identifier}"
+                )
+            # if len(matches) > 1:
+            #     raise RuntimeError(
+            #         f"Multiple matches for implementation? "
+            #         f"{parsed.filename} {parsed.identifier}"
+            #     )
+
+            if match.implementation is not None:
+                raise RuntimeError(
+                    f"Implementation specified twice for {parsed.filename} "
+                    f"{parsed.identifier}"
+                )
+
+            if isinstance(match, PropertyGetSetSummary):
+                ...
+
+            match.implementation = impl
+
+        context = []
 
         def clear_context():
-            stack.clear()
+            context.clear()
 
         def new_context(summary: Summary):
-            stack[:] = [summary]
+            context[:] = [summary]
 
         def push_context(summary: Summary):
-            stack.append(summary)
+            context.append(summary)
 
         def get_pou_context() -> Union[ProgramSummary, FunctionBlockSummary]:
-            for item in reversed(stack):
-                if isinstance(item, (ProgramSummary, tf.FunctionBlockSummary)):
+            for item in reversed(context):
+                if isinstance(item, (ProgramSummary, FunctionBlockSummary)):
                     return item
 
             raise ValueError(
-                "Expected to parse a POU prior to this but none were on the stack"
+                "Expected to parse a POU prior to this but none were in the context "
+                "list.  Code summaries of PROPERTY objects, for example, require "
+                "that a FUNCTION_BLOCK (or other PROPERTY-containing POU) be "
+                "parsed previously."
             )
 
         for parsed in all_parsed_items:
             transformed = parsed.transform()
+            identifier = Identifier.from_string(parsed.identifier) if parsed.identifier else None
             for item in transformed.items:
                 if isinstance(item, tf.FunctionBlock):
                     summary = FunctionBlockSummary.from_function_block(
@@ -922,14 +1048,21 @@ class CodeSummary:
                     result.programs[item.name] = summary
                     new_context(summary)
                 elif isinstance(item, tf.StatementList):
-                    last = stack[-1] if stack else None
-                    if not last or not hasattr(last, "implementation"):
-                        raise RuntimeError(
-                            f"Implementation without previous declaration? "
-                            f"{parsed.filename} {parsed.identifier} {item}"
+                    if parsed.item.type != SourceType.action:
+                        add_implementation(parsed, item)
+                    else:
+                        assert identifier is not None
+                        # Special-case: actions only have implementations
+                        parent_identifier = Identifier(parts=identifier.parts[:-1])
+                        parent, = result.find_path(parent_identifier.dotted_name)
+                        assert isinstance(parent, (FunctionBlockSummary, ProgramSummary))
+                        action = ActionSummary.from_statement_list(
+                            name=identifier.parts[-1],
+                            statements=item,
+                            source_code=parsed.source_code,  # TODO above?
+                            filename=parsed.filename,
                         )
-                    assert last.implementation is None
-                    last.implementation = item
+                        parent.actions.append(action)
                 else:
                     logger.warning("Unhandled: %s", type(item))
 
