@@ -198,9 +198,7 @@ TYPE_LDATETIME: "LDATE_AND_TIME"i
 ?elementary_type_name: NUMERIC_TYPE_NAME
                      | DATE_TYPE_NAME
                      | BIT_STRING_TYPE_NAME
-                     | STRING_TYPE
-
-STRING_TYPE: ( STRING | WSTRING ) WS* [ STRING_SPEC_LENGTH ]
+                     | string_type_specification
 
 NUMERIC_TYPE_NAME: INTEGER_TYPE_NAME
                  | REAL_TYPE_NAME
@@ -327,7 +325,7 @@ array_spec_init: [ indirection_type ] array_specification [ ":=" array_initializ
 
 array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_spec_type
 
-_array_spec_type: STRING_TYPE
+_array_spec_type: string_type_specification
                 | function_call
                 | non_generic_type_name
                 | object_initializer_array
@@ -361,7 +359,7 @@ structure_initialization: "(" structure_element_initialization ( "," structure_e
 structure_element_initialization: constant
                                 | structure_element_name ":=" ( constant | expression | enumerated_value | array_initialization | structure_initialization )
 
-string_type_declaration: string_type_name ":" ( STRING | WSTRING ) [ STRING_SPEC_LENGTH ] [ ":=" string_literal ]
+string_type_declaration: string_type_name ":" string_type_specification [ ":=" string_literal ]
 
 // B.1.4
 _variable: direct_variable
@@ -505,14 +503,16 @@ global_var_list: global_var_name ( "," global_var_name )*
 
 single_byte_string_var_declaration: var1_list ":" single_byte_string_spec
 
-STRING_SPEC_LENGTH: "[" ( INTEGER | DOTTED_IDENTIFIER ) "]"
-                  | "(" ( INTEGER | DOTTED_IDENTIFIER ) ")"
+bracketed_expression: "[" expression "]"
 
-!single_byte_string_spec: "STRING"i [ STRING_SPEC_LENGTH ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
+string_spec_length: parenthesized_expression
+                  | bracketed_expression
+
+single_byte_string_spec: STRING [ string_spec_length ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
 
 double_byte_string_var_declaration: var1_list ":" double_byte_string_spec
 
-!double_byte_string_spec: "WSTRING"i [ STRING_SPEC_LENGTH ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
+double_byte_string_spec: WSTRING [ string_spec_length ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
 incomplete_located_var_declarations: "VAR"i [ variable_attributes ] incomplete_located_var_decl* "END_VAR"i ";"*
 
@@ -522,8 +522,7 @@ incomplete_location: "AT"i /\%(I|Q|M)\*/
 STRING: "STRING"i
 WSTRING: "WSTRING"i
 
-string_type_specification: STRING [ STRING_SPEC_LENGTH ]
-                         | WSTRING [ STRING_SPEC_LENGTH ]
+string_type_specification: (STRING | WSTRING) [ string_spec_length ]
 
 ?var_spec: simple_specification
          | subrange_specification
@@ -711,7 +710,9 @@ UNARY_OPERATOR: LOGICAL_NOT
 
 function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")" DEREFERENCED?
 
-?primary_expression: "(" expression ")"      -> parenthesized_expression
+parenthesized_expression: "(" expression ")"
+
+?primary_expression: parenthesized_expression
                    | function_call
                    | _variable
                    | constant

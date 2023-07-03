@@ -188,13 +188,60 @@ def test_literal(name, value, expected):
         param("single_byte_string_spec", "STRING[1]"),
         param("single_byte_string_spec", "STRING(1)"),
         param("single_byte_string_spec", "STRING(1) := 'abc'"),
+        param("single_byte_string_spec", "STRING(g_Constant)"),
+        param("single_byte_string_spec", "STRING(g_Constant + 1)"),
+        param("single_byte_string_spec", "STRING(1 + g_Constant)"),
+        param("single_byte_string_spec", "STRING(g_Constant + 1) := 'abc'"),
         param("double_byte_string_spec", "WSTRING[1]"),
         param("double_byte_string_spec", "WSTRING(1)"),
         param("double_byte_string_spec", 'WSTRING(1) := "abc"'),
+        param("double_byte_string_spec", "WSTRING(g_Constant)"),
+        param("double_byte_string_spec", "WSTRING(g_Constant + 1)"),
+        param("double_byte_string_spec", 'WSTRING(g_Constant + 1) := "abc"'),
     ],
 )
-def test_literal_roundtrip(name, value):
+def test_literal_roundtrip(name: str, value: str):
     roundtrip_rule(name, value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        param("STRING(2_500_000)"),
+        param("STRING(Param.iLower)"),
+        param("STRING(Param.iLower * 2 + 10)"),
+        param("STRING(Param.iLower / 2 + 10)"),
+        param("STRING(Param.iLower * 2 MOD 10 + Param.iUpper)"),
+        param("STRING(Param.iLower XOR 2 + Param.iUpper)"),
+        #  -> Border '(Func() + Param.iUpper)' of array is no constant value
+        # param("STRING(Func() + Param.iUpper)"),
+        #  // size of string expected after "("
+        # param("STRING()"),
+        param("STRING(INT_TO_UDINT(10) + 1)"),
+        #  // oh yeah, ** is not a thing in TwinCAT ST (-> issue)
+        # param("STRING(10 ** 2 + 1)"),
+        #  // 'iValue := 2' of array is no constant value
+        # param("STRING(iValue := 2)"),
+        param("STRING(BOOL_TO_UINT(TRUE AND_THEN TRUE))"),
+        param("STRING(BOOL_TO_UINT(TRUE OR_ELSE FALSE))"),
+        param("STRING(BOOL_TO_UINT(1 <= 10))"),
+        param("STRING(BOOL_TO_UINT(1 >= 10))"),
+
+        param("STRING[2_500_000]"),
+        param("STRING[Param.iLower]"),
+        param("STRING[Param.iLower * 2 + 10]"),
+        param("STRING[Param.iLower / 2 + 10]"),
+        param("STRING[Param.iLower * 2 MOD 10 + Param.iUpper]"),
+        param("STRING[Param.iLower XOR 2 + Param.iUpper]"),
+        param("STRING[INT_TO_UDINT(10) + 1]"),
+        param("STRING[BOOL_TO_UINT(TRUE AND_THEN TRUE)]"),
+        param("STRING[BOOL_TO_UINT(TRUE OR_ELSE FALSE)]"),
+        param("STRING[BOOL_TO_UINT(1 <= 10)]"),
+        param("STRING[BOOL_TO_UINT(1 >= 10)]"),
+    ],
+)
+def test_string_type_specification(value: str):
+    roundtrip_rule("string_type_specification", value)
 
 
 @pytest.mark.parametrize(
@@ -638,6 +685,9 @@ def test_global_attr_pragmas(rule_name: str, value: str, pragmas: List[str]):
         param("non_generic_type_name", "POINTER TO Package.FBName"),
         param("non_generic_type_name", "POINTER TO POINTER TO Package.FBName"),
         param("non_generic_type_name", "Package.FBName"),
+        param("non_generic_type_name", "POINTER TO STRING(255)"),
+        param("non_generic_type_name", "POINTER TO STRING(g_Constant + 1)"),
+        param("non_generic_type_name", "POINTER TO POINTER TO STRING(g_Constant + 1)"),
     ],
 )
 def test_type_name_roundtrip(rule_name, value):
@@ -1316,8 +1366,8 @@ def test_input_output_comments(rule_name, value):
             """
             VAR
                 iValue AT %Q* : INT;
-                sValue AT %I* : STRING [255];
-                wsValue AT %I* : WSTRING [255];
+                sValue AT %I* : STRING[255];
+                wsValue AT %I* : WSTRING[255];
             END_VAR
             """
         )),

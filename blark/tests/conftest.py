@@ -64,7 +64,7 @@ def check_serialization(
             no_copy=True,
         )
     except Exception:
-        print(json.dumps(dataclasses.asdict(obj), indent=2))
+        print(dataclasses.asdict(obj))
         raise
 
     print(f"Serialized {type(obj)} to:")
