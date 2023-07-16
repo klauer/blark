@@ -552,6 +552,8 @@ class TcGVL(TcSource):
 
 @dataclasses.dataclass
 class TcIO(TcSource):
+    """TcIO file - for INTERFACE definitions."""
+
     _tag: ClassVar[str] = "Itf"
     file_extension: ClassVar[str] = ".TcIO"
     default_source_type: ClassVar[SourceType] = SourceType.interface
