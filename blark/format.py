@@ -95,6 +95,16 @@ def reformat_code(
 
 
 def dump_source_to_console(source: Union[bytes, str], encoding: str = "utf-8") -> None:
+    """
+    Output the given source to the console.
+
+    Parameters
+    ----------
+    source : bytes or str
+        The source code.
+    encoding : str
+        Encoding to use for byte strings.
+    """
     if isinstance(source, bytes):
         print(source.decode(encoding, errors="replace"))
     else:
@@ -107,6 +117,20 @@ def write_source_to_file(
     encoding: str = "utf-8",
     overwrite: bool = False,
 ) -> None:
+    """
+    Write source code to the given file.
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+        The filename to write to.
+    source : bytes or str
+        The source code.
+    encoding : str
+        The encoding to use when writing the file.
+    overwrite : bool
+        Overwrite a file, if it exists.  Otherwise, raise ValueError.
+    """
     if filename.exists() and not overwrite:
         raise ValueError(
             f"File would be overwritten: {filename} "
@@ -126,6 +150,21 @@ def determine_output_filename(
     input_filename: pathlib.Path,
     write_to: Optional[pathlib.Path],
 ) -> pathlib.Path:
+    """
+    Get an output filename based on the input filename and destination path.
+
+    Parameters
+    ----------
+    input_filename : pathlib.Path
+        The file the source code comes from.
+    write_to : Optional[pathlib.Path]
+        The destination path to write to.
+
+    Returns
+    -------
+    pathlib.Path
+        The output filename to write to.
+    """
     if write_to:
         output_filename = pathlib.Path(write_to)
         if output_filename.is_dir():
@@ -137,10 +176,39 @@ def determine_output_filename(
 
 def get_reformatted_code_blocks(
     results: List[ParseResult],
+    user: Optional[Any] = None,
+    filename: Optional[pathlib.Path] = None,
     raise_on_error: bool = True,
 ) -> List[OutputBlock]:
+    """
+    For each parsed code block, generate an OutputBlock for writing to disk.
+
+    Parameters
+    ----------
+    results : List[ParseResult]
+        The parsed source code.
+    user : Any, optional
+        The loader used for parsing the above (may be a
+        `blark.plain.PlainFileLoader` or a `blark.solution.TcPOU`, for example)
+    filename : pathlib.Path, optional
+        The filename associated with the source code parts.
+    raise_on_error : bool
+        In the event of a reformatting error, raise immediately.  If False,
+        the original (not reformatted) source code will be used as-is.
+
+    Returns
+    -------
+    List[OutputBlock]
+        [TODO:description]
+    """
     blocks: List[OutputBlock] = []
 
+    logger.debug(
+        "Reformatting %d parse results from file %s by way of loader %s",
+        len(results),
+        filename,
+        user,
+    )
     for res in results:
         try:
             formatted = reformat_code(res.transform())
@@ -217,7 +285,7 @@ def main(
         return by_loader_obj
 
     for user, filename, results in group_by_user_loader():
-        blocks = get_reformatted_code_blocks(results)
+        blocks = get_reformatted_code_blocks(results, user=user, filename=filename)
         if not blocks:
             continue
 
