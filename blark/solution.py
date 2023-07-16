@@ -940,6 +940,12 @@ class TcProperty(TcSourceChild):
 
 @dataclasses.dataclass
 class TcExtraInfo:
+    """
+    Extra information in the project XML such as Line IDs.
+
+    blark supports getting the metadata from the file but does not dig any
+    deeper.
+    """
     metadata: dict[str, str]
     xml: lxml.etree.Element
     parent: TcSource
@@ -955,6 +961,7 @@ class TcExtraInfo:
 
 @dataclasses.dataclass
 class TcUnknownXml:
+    """A currently unsupported block of XML in the project."""
     xml: lxml.etree.Element
     parent: TcSource
 
@@ -1069,9 +1076,13 @@ class TwincatSourceCodeItem:
 
 @dataclasses.dataclass
 class DependencyVersion:
+    #: Dependency name.
     name: str
+    #: Dependency version.
     version: str
+    #: Dependency vendor/author.
     vendor: str
+    #: Dependency namespace name, used in code.
     namespace: str
 
     @classmethod
