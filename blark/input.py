@@ -153,9 +153,30 @@ def load_file_by_name(
     filename: AnyPath,
     input_format: Optional[str] = None,
 ) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    """
+    Load a file using blark's file input handlers.
+
+    Parameters
+    ----------
+    filename : pathlib.Path or str
+        The filename to load.
+    input_format : str, optional
+        Optionally specify the loader to use, if auto-detection based on
+        filename is insufficient.  This may be either the loader name (e.g.,
+        "plain") or an equivalent filename extension (e.g., ".tcpou")
+
+    Returns
+    -------
+    list[BlarkSourceItem | BlarkCompositeSourceItem]
+        A list of items that were loaded, which may be either singular
+        (`BlarkSourceItem`) or composite (`BlarkCompositeSourceItem`).  An
+        example of a composite file is a Beckhoff TwinCAT TcPOU file, which may
+        contain a declaration, implementation, and a number of
+        properties/methods/actions each with their own grammar rules).
+    """
     filename = pathlib.Path(filename).expanduser().resolve()
     if input_format is not None:
-        extension = input_format
+        extension = input_format.lower()
     else:
         extension = filename.suffix.lower()
     try:

@@ -31,7 +31,7 @@ import logging
 import pathlib
 import re
 from collections.abc import Generator
-from typing import Any, ClassVar, List, Optional, Union
+from typing import Any, ClassVar, Optional, Union
 
 import lxml
 import lxml.etree
@@ -61,6 +61,16 @@ _solution_project_regex = re.compile(
     ),
     re.MULTILINE,
 )
+
+
+TcHandlers = Union[
+    "TcDUT",
+    "TcTTO",
+    "TcPOU",
+    "TcIO",
+    "TcGVL",
+    "Solution",
+]
 
 
 @functools.lru_cache(maxsize=2048)
@@ -951,13 +961,30 @@ class TcUnknownXml:
 
 @dataclasses.dataclass
 class TwincatSourceCodeItem:
+    """
+    A wrapper for all TwinCAT project source code files.
+
+    Information from the project may be stored here alongside that of the
+    source code file itself.  The contents of the source code file are
+    stored in ``contents``, with ``raw_contents`` holding raw bytes from
+    the file.
+    """
+    #: The path according to the solution:r likely a Windows-formatted path
+    #: which is case-insensitive.
     saved_path: pathlib.PurePath
+    #: The corresponding local filename.
     local_path: Optional[pathlib.Path]
+    #: The subtype of the file.
     subtype: Optional[str]
+    #: Link always set?
     link_always: bool
+    #: The globally unique identifier for the source code item.
     guid: Optional[str] = None
+    #: Raw file contents.
     raw_contents: bytes = b''
+    #: Raw contents loaded into a type-specific class.
     contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
+    #: The parent project, if applicable.
     parent: Optional[TwincatPlcProject] = None
 
     def to_file_contents(self, delimiter: str = "\r\n") -> bytes:
@@ -1067,8 +1094,11 @@ class DependencyVersion:
 
 @dataclasses.dataclass
 class DependencyInformation:
+    #: The dependency name.
     name: str
+    #: The default version information.
     default: Optional[DependencyVersion] = None
+    #: The resolved version information.
     resolution: Optional[DependencyVersion] = None
 
     @classmethod
@@ -1127,11 +1157,17 @@ class TwincatPlcProject:
     """
 
     file_extension: ClassVar[str] = ".plcproj"
+    #: The globally unique identifier for the tsproj.
     guid: str
+    #: Path to an XTI file for the project.
     xti_path: Optional[pathlib.Path]
+    #: The PLC Project - plcproj - path.
     plcproj_path: Optional[pathlib.Path]
+    #: plcproj-defined properties (name, project build, etc.)
     properties: dict[str, str]
+    #: Dependencies for the PLC project.
     dependencies: dict[str, DependencyInformation]
+    #: Source code parts which blark can extract information from.
     sources: list[TwincatSourceCodeItem]
 
     @classmethod
@@ -1140,6 +1176,21 @@ class TwincatPlcProject:
         tsproj_or_xti_xml: Optional[lxml.etree.Element],
         plcproj_xml: lxml.etree.Element,
     ) -> Self:
+        """
+        Load a PLC project from standalone XML code.
+
+        Parameters
+        ----------
+        tsproj_or_xti_xml : Optional[lxml.etree.Element]
+            lxml-loaded .tsproj or .xti contents.
+        plcproj_xml : lxml.etree.Element
+            lxml-loaded .plcproj contents.
+
+        Returns
+        -------
+        Self
+            [TODO:description]
+        """
         namespaces = {"msbuild": plcproj_xml.xpath("namespace-uri()")}
         properties = {
             strip_xml_namespace(element.tag): element.text
@@ -1179,6 +1230,7 @@ class TwincatPlcProject:
 
     @property
     def name(self) -> Optional[str]:
+        """The project name."""
         return self.properties.get("Name", None)
 
     @classmethod
@@ -1186,11 +1238,34 @@ class TwincatPlcProject:
         cls: type[Self],
         filename: pathlib.Path,
     ) -> Self:
+        """
+        Load a plcproj from its filename.
+
+        Parameters
+        ----------
+        filename : pathlib.Path
+
+        Returns
+        -------
+        Self
+        """
         plcproj = parse_xml_file(filename)
         return cls.from_standalone_xml(None, plcproj)
 
     @classmethod
     def from_xti_filename(cls: type[Self], xti_filename: pathlib.Path) -> Self:
+        """
+        Load a .plcproj from its XTI contents.
+
+        Parameters
+        ----------
+        xti_filename : pathlib.Path
+            XTI filename.
+
+        Returns
+        -------
+        Self
+        """
         xti = parse_xml_file(xti_filename)
         (project,) = xti.xpath("/TcSmItem/Project")
         prj_file_path = pathlib.PureWindowsPath(project.attrib.get("PrjFilePath"))
@@ -1207,7 +1282,23 @@ class TwincatPlcProject:
         xml: lxml.etree.Element,
         root: pathlib.Path,
     ) -> Self:
-        # tsproj -> xti -> plcproj
+        """
+        Load a plcproj from the tsproj itself.
+
+        The loading procedure typically happens in the following order:
+
+        Solution -> tsproj -> xti -> plcproj
+
+        Parameters
+        ----------
+        xml : lxml.etree.Element
+        root : pathlib.Path
+            The root path to load files from the project.
+
+        Returns
+        -------
+        Self
+        """
         file = xml.attrib.get("File", None)
         if file is not None:
             # The PLC project is saved externally in ``xti_filename``.
@@ -1234,6 +1325,17 @@ class TwincatPlcProject:
 
 
 def get_project_guid(element: lxml.etree.Element) -> str:
+    """
+    Get a project target GUID from its xml.
+
+    Parameters
+    ----------
+    element : lxml.etree.Element
+
+    Returns
+    -------
+    str
+    """
     try:
         proj = element.xpath("/TcSmProject/Project")[0]
     except IndexError:
@@ -1243,6 +1345,17 @@ def get_project_guid(element: lxml.etree.Element) -> str:
 
 
 def get_project_target_netid(element: lxml.etree.Element) -> str:
+    """
+    Get a project target AMS Net ID from its xml.
+
+    Parameters
+    ----------
+    element : lxml.etree.Element
+
+    Returns
+    -------
+    str
+    """
     try:
         proj = element.xpath("/TcSmProject/Project")[0]
     except IndexError:
@@ -1253,43 +1366,118 @@ def get_project_target_netid(element: lxml.etree.Element) -> str:
 
 @dataclasses.dataclass
 class TwincatTsProject:
+    """
+    Container for a loaded TwinCAT tsproj project.
+
+    This is typically instantiated after the `Solution` parser generates a
+    `Project` instance. This contains information about the target PLC and all
+    loaded PLC projects.
+    """
     file_extension: ClassVar[str] = ".tsproj"
+    #: The globally unique identifier for the tsproj.
     guid: str
+    #: The AMS Net ID of the target PLC.
     netid: str
+    #: The path to this project on disk.
     path: Optional[pathlib.Path]
+    #: PLC projects (.plcproj) part of this tsproj.
     plcs: list[TwincatPlcProject]
 
     @property
     def plcs_by_name(self) -> dict[str, TwincatPlcProject]:
+        """
+        A dictionary of PLCs by name.
+
+        Returns
+        -------
+        dict[str, TwincatPlcProject]
+        """
         return {plc.name: plc for plc in self.plcs if plc.name is not None}
 
     @classmethod
-    def from_filename(cls, filename: pathlib.Path) -> TwincatTsProject:
-        tsproj = parse_xml_file(filename)
+    def from_xml(
+        cls: type[Self],
+        tsproj: lxml.etree.Element,
+        root: pathlib.Path,
+        filename: Optional[pathlib.Path] = None,
+    ) -> Self:
+        """
+        Load a tsproj project from its XML source.
+
+        Parameters
+        ----------
+        xml : lxml.etree.Element
+        filename : pathlib.Path
+
+        Returns
+        -------
+        TwincatTsProject
+        """
         plcs = [
-            TwincatPlcProject.from_project_xml(plc_project, root=filename.parent)
+            TwincatPlcProject.from_project_xml(plc_project, root=root)
             for plc_project in tsproj.xpath("/TcSmProject/Project/Plc/Project")
         ]
 
-        return TwincatTsProject(
+        return cls(
             path=filename,
             guid=get_project_guid(tsproj),
             netid=get_project_target_netid(tsproj),
             plcs=plcs,
         )
 
+    @classmethod
+    def from_filename(cls, filename: pathlib.Path) -> Self:
+        """
+        Load a tsproj project from its filename.
+
+        Parameters
+        ----------
+        filename : pathlib.Path
+
+        Returns
+        -------
+        TwincatTsProject
+        """
+        root = filename.resolve().absolute().parent
+        tsproj = parse_xml_file(filename)
+        return cls.from_xml(tsproj, filename=filename, root=root)
+
 
 @dataclasses.dataclass
 class Project:
+    """
+    A stub container for a TwinCAT project (.tsproj) file.
+
+    This only contains metadata about the tsproj and allows for full project
+    loading by way of `.load()`.
+    """
+    #: The project name.
     name: str
+    #: The path according to the solution:r likely a Windows-formatted path
+    #: which is case-insensitive.
     saved_path: pathlib.PurePath
+    #: The corresponding local filename.
     local_path: Optional[pathlib.Path]
+    #: The globally unique identifier for the project.
     guid: str
+    #: The unique identifier for the solution.
     solution_guid: str
+    #: The loaded project.
     loaded: Optional[TwincatTsProject] = None
 
     @classmethod
     def from_filename(cls: type[Self], filename: AnyPath) -> Self:
+        """
+        Create a stub project loader from the given filename.
+
+        Parameters
+        ----------
+        filename : AnyPath
+
+        Returns
+        -------
+        Project
+        """
         filename = pathlib.Path(filename)
         if filename.suffix.lower() in (".plcproj",):
             plc = TwincatPlcProject.from_filename(filename)
@@ -1311,6 +1499,7 @@ class Project:
         )
 
     def load(self) -> TwincatTsProject:
+        """Load the project into a `TwincatTsProject`."""
         if self.loaded is not None:
             return self.loaded
 
@@ -1328,6 +1517,8 @@ class Project:
 
 @dataclasses.dataclass
 class Solution:
+    """A container for a TwinCAT/Visual Studio solution (.sln)."""
+
     file_extension: ClassVar[str] = ".sln"
     root: pathlib.Path
     projects: list[Project]
@@ -1341,7 +1532,7 @@ class Solution:
     def from_projects(
         cls: type[Self],
         root: pathlib.Path,
-        projects: List[pathlib.Path],
+        projects: list[pathlib.Path],
     ) -> Self:
         return cls(
             root=root,
@@ -1391,7 +1582,18 @@ def make_solution_from_files(filename: AnyPath) -> Solution:
 
 def single_file_loader(
     filename: pathlib.Path,
-) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    """
+    Load a single TwinCAT file based on its extension.
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+
+    Returns
+    -------
+    list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+    """
     source = TcSource.from_filename(filename)
     if source is None:
         logger.warning("No source found in file %s (is this in error?)", filename)
@@ -1401,7 +1603,18 @@ def single_file_loader(
 
 def get_blark_input_from_solution(
     solution: Solution,
-) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    """
+    Get all blark input from the given solution.
+
+    Parameters
+    ----------
+    solution : Solution
+
+    Returns
+    -------
+    list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+    """
     all_source = []
     for project in solution.projects:
         project = project.load()
@@ -1418,23 +1631,64 @@ def get_blark_input_from_solution(
 
 def project_loader(
     filename: pathlib.Path,
-) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    """
+    Load a TwinCAT project (.tsproj) file.
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+        The project filename.
+
+    Returns
+    -------
+    list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+    """
     solution = Solution.from_projects(filename.parent, [filename])
     return get_blark_input_from_solution(solution)
 
 
 def solution_loader(
     filename: pathlib.Path,
-) -> List[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
+    """
+    Load a TwinCAT solution (.sln) file.
+
+    Parameters
+    ----------
+    filename : pathlib.Path
+        The solution filename.
+
+    Returns
+    -------
+    list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
+    """
     solution = Solution.from_filename(filename)
     return get_blark_input_from_solution(solution)
 
 
 def twincat_file_writer(
-    user: Any,
+    user: TcHandlers,
     source_filename: Optional[pathlib.Path],
-    parts: List[OutputBlock],
-) -> str:
+    parts: list[OutputBlock],
+) -> bytes:
+    """
+    Write source code
+
+    Parameters
+    ----------
+    user : TcHandler
+        The user handler that loaded all the files.
+    source_filename : Optional[pathlib.Path]
+        The source filename associatied with all code blocks
+    parts : list[OutputBlock]
+        The output blocks to write.
+
+    Returns
+    -------
+    bytes
+        The contents of the file to write.
+    """
     if not isinstance(user, TcSource):
         raise ValueError(
             "Sorry, blark only supports writing files in the same output "
@@ -1448,12 +1702,18 @@ def twincat_file_writer(
                 "TwinCAT project is not yet supported"
             )
 
+        logger.debug(
+            "Rewriting code from %s %s",
+            source_filename,
+            part.origin.item.identifier,
+        )
         user.rewrite_code(part.origin.item.identifier, part.code)
 
     # TODO xml with utf-8-sig?
     return user.to_file_contents()
 
 
+# register_input_handler("twincat", twincat_detect_file_loader)
 register_input_handler(TcPOU.file_extension, single_file_loader)
 register_input_handler(TcGVL.file_extension, single_file_loader)
 register_input_handler(TcIO.file_extension, single_file_loader)
@@ -1461,6 +1721,7 @@ register_input_handler(TcDUT.file_extension, single_file_loader)
 register_input_handler(Solution.file_extension, solution_loader)
 register_input_handler(TwincatTsProject.file_extension, project_loader)
 register_input_handler(TwincatPlcProject.file_extension, project_loader)
+
 register_output_handler("twincat", twincat_file_writer)
 register_output_handler(TcPOU.file_extension, twincat_file_writer)
 register_output_handler(TcGVL.file_extension, twincat_file_writer)

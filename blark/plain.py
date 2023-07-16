@@ -78,6 +78,7 @@ class PlainFileLoader:
 
 def _register():
     """Register the plain file handlers."""
+    register_input_handler("plain", PlainFileLoader.load)
     register_input_handler(".txt", PlainFileLoader.load)
     register_input_handler(".st", PlainFileLoader.load)
 
