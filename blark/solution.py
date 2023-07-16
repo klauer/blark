@@ -1580,7 +1580,7 @@ def make_solution_from_files(filename: AnyPath) -> Solution:
     return Solution.from_projects(root=abs_path.parent, projects=[abs_path])
 
 
-def single_file_loader(
+def twincat_file_loader(
     filename: pathlib.Path,
 ) -> list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]:
     """
@@ -1594,10 +1594,22 @@ def single_file_loader(
     -------
     list[Union[BlarkSourceItem, BlarkCompositeSourceItem]]
     """
+    # TODO: consider checking more than file extension here...
+    suffix = filename.suffix.lower()
+    if suffix == Solution.file_extension:
+        return solution_loader(filename)
+
+    if suffix in {
+        TwincatTsProject.file_extension,
+        TwincatPlcProject.file_extension,
+    }:
+        return project_loader(filename)
+
     source = TcSource.from_filename(filename)
     if source is None:
         logger.warning("No source found in file %s (is this in error?)", filename)
         return []
+
     return source.to_blark()
 
 
@@ -1713,14 +1725,14 @@ def twincat_file_writer(
     return user.to_file_contents()
 
 
-# register_input_handler("twincat", twincat_detect_file_loader)
-register_input_handler(TcPOU.file_extension, single_file_loader)
-register_input_handler(TcGVL.file_extension, single_file_loader)
-register_input_handler(TcIO.file_extension, single_file_loader)
-register_input_handler(TcDUT.file_extension, single_file_loader)
-register_input_handler(Solution.file_extension, solution_loader)
-register_input_handler(TwincatTsProject.file_extension, project_loader)
-register_input_handler(TwincatPlcProject.file_extension, project_loader)
+register_input_handler("twincat", twincat_file_loader)
+register_input_handler(TcPOU.file_extension, twincat_file_loader)
+register_input_handler(TcGVL.file_extension, twincat_file_loader)
+register_input_handler(TcIO.file_extension, twincat_file_loader)
+register_input_handler(TcDUT.file_extension, twincat_file_loader)
+register_input_handler(Solution.file_extension, twincat_file_loader)
+register_input_handler(TwincatTsProject.file_extension, twincat_file_loader)
+register_input_handler(TwincatPlcProject.file_extension, twincat_file_loader)
 
 register_output_handler("twincat", twincat_file_writer)
 register_output_handler(TcPOU.file_extension, twincat_file_writer)
