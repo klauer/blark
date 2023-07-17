@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import pathlib
 import shlex
 import sys
 from typing import Any, Dict, List
@@ -47,6 +48,14 @@ def input_filename(request):
     return request.param
 
 
+@pytest.fixture
+def skip_summary(input_filename: str) -> bool:
+    return pathlib.Path(input_filename).name in {
+        "array_of_objects.st",
+        "stray_comment.st",
+    }
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -64,7 +73,16 @@ def input_filename(request):
         ),
     ]
 )
-def test_parse_cli(input_filename: str, kwargs: Dict[str, Any]):
+def test_parse_cli(
+    input_filename: str,
+    kwargs: Dict[str, Any],
+    skip_summary: bool,
+):
+    if skip_summary:
+        # Example files may only include statement list code
+        kwargs = dict(kwargs)
+        kwargs.pop("output_summary", None)
+
     parse_main(input_filename, **kwargs)
 
 
@@ -118,7 +136,7 @@ def test_blark_main_help(monkeypatch, args: List[str]):
             id="basic-parse",
         ),
         param(
-            ["parse", "-vvvs", "--debug", "filename"],
+            ["parse", "-vvv", "--summary", "--debug", "filename"],
             id="parse-verbose",
         ),
         param(
@@ -135,7 +153,7 @@ def test_blark_main_help(monkeypatch, args: List[str]):
         ),
     ]
 )
-def test_blark_main(monkeypatch, input_filename: str, args: List[str]):
+def test_blark_main(monkeypatch, input_filename: str, args: List[str], skip_summary: bool):
     def replace_filename(arg: str) -> str:
         if arg == "filename":
             return input_filename
@@ -143,6 +161,8 @@ def test_blark_main(monkeypatch, input_filename: str, args: List[str]):
 
     args = [replace_filename(arg) for arg in args]
 
+    if skip_summary and "--summary" in args:
+        args.remove("--summary")
     monkeypatch.setattr(sys, "argv", ["blark", *args])
     try:
         blark_main()
