@@ -3089,6 +3089,16 @@ class SourceCode:
         return "\n".join(str(item) for item in self.items)
 
 
+@dataclass
+class ExtendedSourceCode(SourceCode):
+    """
+    Top-level source code item - extended to include the possibility of
+    standalone implementation details (i.e., statement lists).
+    """
+
+    items: List[Union[SourceCodeItem, StatementList]]
+
+
 def _annotator_wrapper(handler):
     def wrapped(self: GrammarTransformer, data: Any, children: list, meta: lark.tree.Meta) -> Any:
         result = handler(*children)

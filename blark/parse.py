@@ -11,7 +11,7 @@ import logging
 import pathlib
 import sys
 from dataclasses import dataclass
-from typing import Generator, Optional, Sequence, Union
+from typing import Generator, Optional, Sequence, Type, TypeVar, Union
 
 import lark
 
@@ -375,7 +375,39 @@ def summarize(parsed: list[ParseResult]) -> summary.CodeSummary:
     return summary.CodeSummary.from_parse_results(parsed)
 
 
-def dump_json(type_, obj, include_meta: bool = True, indent: Optional[int] = 2) -> str:
+T = TypeVar("T")
+
+
+def dump_json(
+    type_: Type[T],
+    obj: T,
+    include_meta: bool = True,
+    indent: Optional[int] = 2,
+) -> str:
+    """
+    Dump object ``obj`` as type ``type_`` with apischema and serialize to a string.
+
+    Parameters
+    ----------
+    type_ : Type[T]
+        The type of ``obj``.
+    obj : T
+        The object to serialize.
+    include_meta : bool
+        Include ``meta`` information in the dump.
+    indent : int or None
+        Make the JSON output prettier with indentation.
+
+    Returns
+    -------
+    str
+    """
+    if apischema is None:
+        raise RuntimeError(
+            "Optional dependency apischema is required to output a JSON "
+            "representation of source code."
+        )
+
     serialized = apischema.serialize(
         type_,
         obj,
@@ -384,7 +416,7 @@ def dump_json(type_, obj, include_meta: bool = True, indent: Optional[int] = 2) 
     )
     if not include_meta:
         serialized = util.recursively_remove_keys(serialized, {"meta"})
-    return json.dumps(serialized, indent=2)
+    return json.dumps(serialized, indent=indent)
 
 
 def main(
@@ -477,8 +509,10 @@ def main(
             if use_json:
                 assert apischema is not None
 
+                # We allow for StatementList to be parsed directly here, though
+                # it's not acceptable as a top-level item in the grammar
                 serialized = dump_json(
-                    tf.SourceCode,
+                    tf.ExtendedSourceCode,
                     res.transform(),
                     include_meta=include_meta,
                 )
