@@ -16,9 +16,7 @@ from ..parse import main as parse_main
 from . import conftest
 
 # Pick a subset of the test files to run with the CLI tools:
-parse_filenames = (
-    conftest.twincat_pou_filenames[:5] + conftest.structured_text_filenames[:5]
-)
+parse_filenames = conftest.twincat_pou_filenames + conftest.structured_text_filenames
 
 README_PATH = MODULE_PATH.parent / "README.md"
 
@@ -51,7 +49,12 @@ def input_filename(request):
 @pytest.fixture
 def skip_summary(input_filename: str) -> bool:
     return pathlib.Path(input_filename).name in {
+        "and_then_or_else.st",
+        # "array_initializer.st",
+        "array_of_arrays.st",
         "array_of_objects.st",
+        "array_with_integer_initializer.st",
+        "dereference_method.st",
         "stray_comment.st",
     }
 
