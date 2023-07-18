@@ -1275,7 +1275,7 @@ class ArrayInitialization:
 @dataclass
 @_rule_handler("object_initializer_array")
 class ObjectInitializerArray:
-    name: SymbolicVariable
+    name: lark.Token
     initializers: List[StructureInitialization]
     meta: Optional[Meta] = meta_field()
 
