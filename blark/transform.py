@@ -1281,8 +1281,8 @@ class ObjectInitializerArray:
 
     @staticmethod
     def from_lark(
-        function_block_type_name: SymbolicVariable,
-        *initializers: List[StructureInitialization]
+        function_block_type_name: lark.Token,
+        *initializers: StructureInitialization
     ) -> ObjectInitializerArray:
         return ObjectInitializerArray(
             name=function_block_type_name,
