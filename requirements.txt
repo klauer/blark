@@ -1,2 +1,4 @@
 lark>1.0
-pytmc
+lxml
+packaging
+typing-extensions ; python_version < "3.11"

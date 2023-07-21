@@ -13,7 +13,7 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
-from .util import AnyPath
+from .util import AnyPath, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
 
@@ -34,7 +34,19 @@ _rule_to_class: Dict[str, type] = {}
 _class_handlers = {}
 _comment_consumers = []
 
-INDENT = "    "  # TODO: make it configurable
+
+@dataclasses.dataclass
+class FormatSettings:
+    indent: str = "    "
+
+
+_format_settings = FormatSettings()
+
+
+def configure_formatting(settings: FormatSettings):
+    """Override the default code formatting settings."""
+    global _format_settings
+    _format_settings = settings
 
 
 def multiline_code_block(block: str) -> str:
@@ -50,15 +62,19 @@ def join_if(value1: Optional[Any], delimiter: str, value2: Optional[Any]) -> str
     )
 
 
-def indent_if(value: Optional[Any], prefix: str = INDENT) -> Optional[str]:
+def indent_if(value: Optional[Any], prefix: Optional[str] = None) -> Optional[str]:
     """Stringified and indented {value} if not None."""
     if value is not None:
+        if prefix is None:
+            prefix = _format_settings.indent
         return textwrap.indent(str(value), prefix)
     return None
 
 
-def indent(value: Any, prefix: str = INDENT) -> str:
+def indent(value: Any, prefix: Optional[str] = None) -> str:
     """Stringified and indented {value}."""
+    if prefix is None:
+        prefix = _format_settings.indent
     return textwrap.indent(str(value), prefix)
 
 
@@ -1272,7 +1288,7 @@ class ArrayInitialization:
 @dataclass
 @_rule_handler("object_initializer_array")
 class ObjectInitializerArray:
-    name: SymbolicVariable
+    name: lark.Token
     initializers: List[StructureInitialization]
     meta: Optional[Meta] = meta_field()
 
@@ -3008,10 +3024,11 @@ class StatementList:
         return "\n".join(str(statement) for statement in self.statements)
 
 
-FunctionBlockBody = Union[
-    StatementList,
-]
+# FunctionBlockBody = Union[
+#     StatementList,
+# ]
 
+FunctionBlockBody = StatementList  # Only supported option, for now
 FunctionBody = FunctionBlockBody  # Identical, currently
 
 
@@ -3068,6 +3085,7 @@ SourceCodeItem = Union[
     Action,
     Method,
     Program,
+    Property,
     GlobalVariableDeclarations,
 ]
 
@@ -3079,14 +3097,38 @@ class SourceCode:
     items: List[SourceCodeItem]
     filename: Optional[pathlib.Path] = None
     raw_source: Optional[str] = None
+    line_map: Optional[Dict[int, int]] = None
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args: SourceCodeItem) -> SourceCode:
         return SourceCode(list(args))
 
+    def range_from_file_lines(self, start: int, end: int) -> list[str]:
+        if not self.raw_source:
+            return []
+
+        code_lines = self.raw_source.split("\n")  # not splitlines()
+        if not self.line_map:
+            return code_lines[start - 1: end]
+
+        line_map = {
+            raw_line: file_line for (file_line, raw_line) in self.line_map.items()
+        }
+        return code_lines[line_map[start] - 1: line_map[end]]
+
     def __str__(self):
         return "\n".join(str(item) for item in self.items)
+
+
+@dataclass
+class ExtendedSourceCode(SourceCode):
+    """
+    Top-level source code item - extended to include the possibility of
+    standalone implementation details (i.e., statement lists).
+    """
+
+    items: List[Union[SourceCodeItem, StatementList]]
 
 
 def _annotator_wrapper(handler):
@@ -3143,7 +3185,13 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
         )
     )
 
-    def transform(self, tree):
+    def transform(self, tree: lark.Tree, *, line_map: Optional[dict[int, int]] = None):
+        if line_map is not None:
+            tree = rebuild_lark_tree_with_line_map(
+                tree,
+                code_line_to_file_line=line_map,
+            )
+
         transformed = super().transform(tree)
         if self.comments:
             merge_comments(transformed, self.comments)
@@ -3257,6 +3305,55 @@ def merge_comments(source: Any, comments: List[lark.Token]):
             obj = getattr(source, field.name, None)
             if obj is not None:
                 merge_comments(obj, comments)
+
+
+def transform(
+    source_code: str,
+    tree: lark.Tree,
+    comments: Optional[list[lark.Token]] = None,
+    line_map: Optional[dict[int, int]] = None,
+    filename: Optional[pathlib.Path] = None,
+) -> SourceCode:
+    """
+    Transform a ``lark.Tree`` into dataclasses.
+
+    Parameters
+    ----------
+    source_code : str
+        The plain source code.
+    tree : lark.Tree
+        The parse tree from lark.
+    comments : list[lark.Token], optional
+        A list of pre-processed comments.
+    line_map : dict[int, int], optional
+        A map of lines from ``source_code`` to file lines.
+    filename : pathlib.Path, optional
+        The file associated with the source code.
+
+    Returns
+    -------
+    SourceCode
+    """
+    transformer = GrammarTransformer(
+        comments=list(comments or []),
+        fn=filename,
+        source_code=source_code,
+    )
+    transformed = transformer.transform(tree, line_map=line_map)
+
+    if isinstance(transformed, SourceCode):
+        return transformed
+
+    # TODO: this is for custom starting points and ignores that 'transformed'
+    # may not be a typical "SourceCodeItem". Goal is just returning a
+    # consistent SourceCode instance
+    return SourceCode(
+        items=[transformed],
+        filename=filename,
+        raw_source=source_code,
+        line_map=line_map,
+        meta=transformed.meta,
+    )
 
 
 Constant = Union[

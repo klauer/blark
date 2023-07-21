@@ -6,6 +6,7 @@ import pathlib
 
 import pytest
 
+from ..dependency_store import DependencyStore
 from ..parse import new_parser
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -17,6 +18,10 @@ except ImportError:
     apischema = None
 
 APISCHEMA_SKIP = apischema is None
+# Dependency store:
+DS_CONFIG_ROOT = TEST_PATH / "twincat_root"
+DS_CONFIG = DS_CONFIG_ROOT / "config.json"
+
 
 twincat_pou_filenames = list(str(path) for path in TEST_PATH.glob("**/*.TcPOU"))
 additional_pous = TEST_PATH / "additional_pous.txt"
@@ -100,3 +105,8 @@ def source_filename(request):
     if not os.path.exists(request.param):
         pytest.skip(f"File missing: {request.param}")
     return request.param
+
+
+@pytest.fixture(scope="function")
+def store() -> DependencyStore:
+    return DependencyStore(root=DS_CONFIG_ROOT)

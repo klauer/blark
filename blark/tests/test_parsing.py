@@ -2,6 +2,8 @@ import pathlib
 
 import pytest
 
+from blark.util import SourceType
+
 from ..parse import parse, parse_source_code, summarize
 from . import conftest
 
@@ -10,15 +12,19 @@ TEST_PATH = pathlib.Path(__file__).parent
 
 def test_parsing_tcpous(twincat_pou_filename: str):
     """Test parsing TwinCAT TcPOU files."""
-    ((_, result),) = list(parse(twincat_pou_filename))
-    print("transformed:")
-    print(result)
-    print("summary:")
-    if isinstance(result, Exception):
-        raise result
-    print(summarize(result))
+    all_parts = []
+    for part in parse(twincat_pou_filename):
+        all_parts.append(part)
 
-    conftest.check_serialization(result, deserialize=False)
+        transformed = part.transform()
+        print("transformed:")
+        print(transformed)
+        print("summary:")
+        if part.exception:
+            raise part.exception
+        conftest.check_serialization(transformed, deserialize=False)
+
+    print(summarize(all_parts))
 
 
 def test_parsing_source(source_filename: str):
@@ -27,13 +33,24 @@ def test_parsing_source(source_filename: str):
         content = src.read()
 
     result = parse_source_code(content)
+    transformed = result.transform()
     print("transformed:")
-    print(result)
+    print(transformed)
     print("summary:")
-    if isinstance(result, Exception):
-        raise result
-    print(summarize(result))
-    conftest.check_serialization(result, deserialize=False)
+    if result.exception:
+        raise result.exception
+
+    if result.item.type in (
+        SourceType.dut,
+        SourceType.function,
+        SourceType.function_block,
+        SourceType.interface,
+        SourceType.statement_list,
+        SourceType.var_global,
+        SourceType.program,
+    ):
+        print(summarize([result]))
+    conftest.check_serialization(transformed, deserialize=False)
 
 
 must_fail = pytest.mark.xfail(reason="Bad input", strict=True)

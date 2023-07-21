@@ -1,7 +1,7 @@
 // Beckhoff-flavor IEC61131-3 Lark grammar
+// Part of the blark project by Ken Lauer (@klauer) and contributors.
 //
-// Based on X-Pie Software GmbH's iec2xml grammar (v1.2) which was distributed
-// under the GPL.  Heavily modified and customized for blark.
+// For full license information, see the packaged LICENSE file.
 
 ?start: iec_source
 

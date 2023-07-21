@@ -4,7 +4,6 @@ TwinCAT project dependency handling.
 from __future__ import annotations
 
 import dataclasses
-import distutils.version
 import functools
 import json
 import logging
@@ -12,13 +11,12 @@ import pathlib
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
-import pytmc
-import pytmc.code
+import packaging.version
 
-from . import parse
-from . import transform as tf
-from . import util
+from . import parse, util
 from .config import BLARK_TWINCAT_ROOT
+from .solution import (DependencyVersion, TwincatPlcProject,
+                       make_solution_from_files)
 from .summary import CodeSummary
 
 AnyPath = Union[str, pathlib.Path]
@@ -28,17 +26,9 @@ _dependency_store = None
 
 
 @dataclass
-class ResolvedDependency:
-    """Resolved dependency version information."""
-    name: str
-    vendor: str
-    version: str
-    vendor_short: str
-
-
-@dataclass
 class DependencyStoreConfig:
     """Dependency store configuration, from ``config.json``."""
+
     filename: Optional[pathlib.Path]
     libraries: Dict[str, DependencyStoreLibrary]
 
@@ -78,40 +68,41 @@ class DependencyStoreLibrary:
         -------
         pathlib.Path
         """
-        def get_version(path):
+
+        def get_version(path: pathlib.Path) -> Optional[packaging.version.Version]:
             try:
-                version = path.name.lstrip('v').replace('-', '.')
-                version = tuple(distutils.version.LooseVersion(version).version)
-                if isinstance(version[0], int):
-                    return version
+                version_string = path.name.lstrip("v").replace("-", ".")
+                return packaging.version.parse(version_string)
             except Exception:
-                ...
+                return None
 
         project_root = root / self.path
 
         paths = {
-            (get_version(path), path) for path in project_root.iterdir()
+            (get_version(path), path)
+            for path in project_root.iterdir()
             if get_version(path) is not None
         }
 
         for version, path in reversed(sorted(paths)):
             project_fn = path / self.project
             if project_fn.exists():
-                logger.debug(
-                    "Found latest %s %s in %s",
-                    self.name, version, project_fn
-                )
+                logger.debug("Found latest %s %s in %s", self.name, version, project_fn)
                 return project_fn
 
         raise FileNotFoundError(
             f"No valid versions of {self.name} found in {project_root}"
         )
 
-    def get_project_filename(self, root: pathlib.Path, version: str) -> pathlib.Path:
+    def get_project_filename(
+        self,
+        root: pathlib.Path,
+        version: Optional[str],
+    ) -> pathlib.Path:
         """Get the full project filename, given the root path and version."""
         if not self.versioned:
             return root / self.path / self.project
-        if version == "*":
+        if version == "*" or version is None:
             return self.get_latest_version_path(root)
 
         return root / self.path / version / self.project
@@ -153,6 +144,7 @@ class DependencyStore:
     ``lcls-twincat-motion/VERSION/lcls-twincat-motion.sln``
     where VERSION is the project-defined version.
     """
+
     root: pathlib.Path
     config: DependencyStoreConfig
 
@@ -171,14 +163,15 @@ class DependencyStore:
 
     def load_config(self):
         """Load the dependency store configuration file."""
+        logger.debug("Loading dependency store config from %s", self.config_filename)
         try:
             config = self._read_config()
         except FileNotFoundError:
             logger.warning(
-                "pytmc dependencies will not be loaded as either "
+                "Project dependencies will not be loaded as either "
                 "BLARK_TWINCAT_ROOT is unset or invalid.  Expected "
                 "file %s to exist",
-                self.root / "config.json"
+                self.root / "config.json",
             )
             self.config = DependencyStoreConfig(filename=None, libraries={})
             return
@@ -188,18 +181,28 @@ class DependencyStore:
         )
 
     @functools.lru_cache(maxsize=50)
-    def get_dependency(self, name: str, version: str) -> List[PlcProjectMetadata]:
+    def get_dependency(
+        self,
+        name: str,
+        version: Optional[str] = None,
+    ) -> List[PlcProjectMetadata]:
         """Get a dependency by name and version number."""
         try:
             info: DependencyStoreLibrary = self.config.libraries[name]
         except KeyError:
-            logger.warning("Unable to find library %s in dependency store", name)
+            logger.warning(
+                "Unable to find library %s in dependency store. Known libraries: %s",
+                name,
+                ", ".join(self.config.libraries),
+            )
             return []
 
         try:
             filename = info.get_project_filename(self.root, version=version)
         except FileNotFoundError:
-            logger.warning("Unable to find library project %s version %s", name, version)
+            logger.warning(
+                "Unable to find library project %s version %s", name, version
+            )
             return []
 
         if not filename.exists():
@@ -221,19 +224,15 @@ class DependencyStore:
 
     def get_dependencies(
         self,
-        plc: pytmc.parser.Plc,
-    ) -> Generator[Tuple[ResolvedDependency, PlcProjectMetadata], None, None]:
+        plc: TwincatPlcProject,
+    ) -> Generator[Tuple[DependencyVersion, PlcProjectMetadata], None, None]:
         """Get dependency projects from a PLC."""
-        for resolution in plc.root.find(pytmc.parser.Resolution):
-            resolution: pytmc.parser.Resolution
-            try:
-                info = ResolvedDependency(**resolution.resolution)
-            except (KeyError, ValueError) as ex:
-                logger.warning("Failed to get dependency: %s", ex)
+        for _, info in plc.dependencies.items():
+            if info.resolution is None:
                 continue
 
-            for proj in self.get_dependency(info.name, info.version):
-                yield info, proj
+            for proj in self.get_dependency(info.name, info.resolution.version):
+                yield info.resolution, proj
 
     @staticmethod
     def get_instance() -> DependencyStore:
@@ -246,33 +245,34 @@ def get_dependency_store() -> DependencyStore:
     global _dependency_store
 
     if _dependency_store is None:
-        _dependency_store = DependencyStore(
-            root=pathlib.Path(BLARK_TWINCAT_ROOT)
-        )
+        _dependency_store = DependencyStore(root=pathlib.Path(BLARK_TWINCAT_ROOT))
     return _dependency_store
 
 
 @dataclass
 class PlcProjectMetadata:
     """This is a per-PLC project metadata container."""
+
     name: str
     filename: pathlib.Path
     include_dependencies: bool
-    code: List[tf.SourceCode]
+    code: List[parse.ParseResult]
     summary: CodeSummary
-    tmc_symbols: Dict[str, pytmc.parser.Symbol]
     loaded_files: Dict[pathlib.Path, str]
-    dependencies: Dict[str, ResolvedDependency]
-    plc: Optional[pytmc.parser.Plc]
+    dependencies: Dict[str, DependencyVersion]
+    plc: Optional[TwincatPlcProject]
 
     @classmethod
-    def from_pytmc(
+    def from_plcproject(
         cls,
-        plc: pytmc.parser.Plc,
+        plc: TwincatPlcProject,
         include_dependencies: bool = True,
     ) -> Optional[PlcProjectMetadata]:
-        """Create a PlcProjectMetadata instance from a pytmc-parsed one."""
-        filename = plc.filename.resolve()
+        """Create a PlcProjectMetadata instance from a ``TwincatPlcProject``."""
+        if plc.plcproj_path is None:
+            raise ValueError(f"The PLC {plc.name!r} must have a location on disk.")
+
+        filename = plc.plcproj_path.resolve()
         loaded_files = {}
         deps = {}
         code = []
@@ -287,19 +287,34 @@ class PlcProjectMetadata:
                 deps.update(proj.dependencies)
                 loaded_files.update(proj.loaded_files)
                 deps[resolution.name] = resolution
-                combined_summary.append(proj.summary, namespace=proj.plc.name)
+                plc_name = proj.plc.name if proj.plc is not None else "unknown"
+                combined_summary.append(proj.summary, namespace=plc_name)
 
-        for code_path, code_obj in parse.parse_plc(plc, transform=True):
-            if isinstance(code_obj, Exception):
-                logger.debug("Failed to load: %s %s", code_path, code_obj)
+        for source in plc.sources:
+            if not source.contents:
                 continue
-            code.append(code_obj)
-            loaded_files[code_path] = util.get_file_sha256(code_path)
-            combined_summary.append(CodeSummary.from_source(code_obj, filename=code_path))
 
-        tmc = plc.tmc
+            for item in source.contents.to_blark():
+                results = []
+                for result in parse.parse_item(item):
+                    if result.exception is not None:
+                        logger.debug(
+                            "Failed to load: %s %s", result.filename, result
+                        )
+                        continue
+                    assert result.filename is not None
+                    results.append(result)
+                    loaded_files[result.filename] = util.get_file_sha256(
+                        result.filename
+                    )
+
+                if results:
+                    summary = CodeSummary.from_parse_results(results)
+                    combined_summary.append(summary)
+
+        # tmc = plc.tmc
         return cls(
-            name=plc.name,
+            name=plc.name or "unknown",
             filename=filename,
             include_dependencies=include_dependencies,
             code=code,
@@ -307,7 +322,7 @@ class PlcProjectMetadata:
             loaded_files=loaded_files,
             summary=combined_summary,
             plc=plc,
-            tmc_symbols=list(tmc.find(pytmc.parser.Symbol, recurse=False)) if tmc else None,
+            # tmc_symbols=list(tmc.find(pytmc.parser.Symbol, recurse=False)) if tmc else None,
         )
 
     @classmethod
@@ -318,12 +333,14 @@ class PlcProjectMetadata:
         plc_whitelist: Optional[List[str]] = None,
     ) -> Generator[PlcProjectMetadata, None, None]:
         """Given a project/solution filename, get all PlcProjectMetadata."""
-        solution_path, projects = util.get_tsprojects_from_filename(project)
-        logger.debug("Solution path %s projects %s", solution_path, projects)
-        for tsproj_project in projects:
+        solution = make_solution_from_files(project)
+        logger.debug(
+            "Solution path %s projects %s", solution.filename, solution.projects
+        )
+        for tsproj_project in solution.projects:
             logger.debug("Found tsproj %s", tsproj_project.name)
             try:
-                parsed_tsproj = pytmc.parser.parse(tsproj_project)
+                parsed_tsproj = tsproj_project.load()
             except Exception:
                 logger.exception("Failed to load project %s", tsproj_project.name)
                 continue
@@ -333,7 +350,7 @@ class PlcProjectMetadata:
                     continue
 
                 logger.debug("Found PLC project %s", plc_name)
-                plc_md = cls.from_pytmc(
+                plc_md = cls.from_plcproject(
                     plc,
                     include_dependencies=include_dependencies,
                 )
@@ -350,7 +367,8 @@ def load_projects(
     result = []
     for project in projects:
         mds = PlcProjectMetadata.from_project_filename(
-            project, include_dependencies=include_dependencies,
+            project,
+            include_dependencies=include_dependencies,
             plc_whitelist=plc_whitelist,
         )
         result.extend(mds)
