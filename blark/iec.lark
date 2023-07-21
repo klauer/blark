@@ -339,7 +339,7 @@ array_initialization: "[" array_initial_element ( "," array_initial_element )* "
 array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
                      | _array_initial_element
 
-_array_initial_element: constant
+_array_initial_element: expression
                       | structure_initialization
                       | enumerated_value
                       | array_initialization

@@ -3373,7 +3373,7 @@ Constant = Union[
 
 
 ArrayInitialElementType = Union[
-    Constant,
+    Expression,
     StructureInitialization,
     EnumeratedValue,
     ArrayInitialization,
