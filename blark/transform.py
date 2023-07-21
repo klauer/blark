@@ -1577,7 +1577,6 @@ class UnaryOperation(Expression):
     "xor_expression",
     "comparison_expression",
     "equality_expression",
-    "power_expression",
     "expression_term"
 )
 class BinaryOperation(Expression):

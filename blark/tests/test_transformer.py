@@ -223,8 +223,6 @@ def test_literal_roundtrip(name: str, value: str):
         #  // size of string expected after "("
         # param("STRING()"),
         param("STRING(INT_TO_UDINT(10) + 1)"),
-        #  // oh yeah, ** is not a thing in TwinCAT ST (-> issue)
-        # param("STRING(10 ** 2 + 1)"),
         #  // 'iValue := 2' of array is no constant value
         # param("STRING(iValue := 2)"),
         param("STRING(BOOL_TO_UINT(TRUE AND_THEN TRUE))"),
@@ -298,7 +296,14 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("expression", "3 <> 4"),
         param("expression", "3 <= 4"),
         param("expression", "3 >= 4"),
-        param("expression", "3 ** 4"),
+        param(
+            "expression",
+            "3 ** 4",
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="Exponential operator is not valid in TwinCAT",
+            ),
+        ),
         param("expression", "1 + 2 * (3 - 4)"),
         param("expression", "NOT 1"),
         param("expression", "NOT (3 - 4)"),
