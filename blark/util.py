@@ -46,8 +46,7 @@ class SourceType(enum.Enum):
             SourceType.function: "function_declaration",
             SourceType.function_block: "function_block_type_declaration",
             SourceType.general: "iec_source",
-            # TODO no grammar rule exists yet for 'INTERFACE'
-            SourceType.interface: "iec_source",
+            SourceType.interface: "interface_declaration",
             SourceType.method: "function_block_method_declaration",
             SourceType.program: "program_declaration",
             SourceType.property: "function_block_property_declaration",

@@ -26,6 +26,7 @@ _library_element_declaration: data_type_declaration
                             | function_block_type_declaration
                             | function_block_method_declaration
                             | function_block_property_declaration
+                            | interface_declaration
                             | program_declaration
                             | global_var_declarations
                             | action
@@ -637,6 +638,17 @@ program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
 ?access_name: IDENTIFIER
 
 program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name [ access_direction ]
+
+// Beckhoff/codesys-specific INTERFACE definition describing variables, methods,
+// and properties of other POUs
+
+?interface_var_declaration: input_declarations
+                          | output_declarations
+                          | input_output_declarations
+                          | external_var_declarations
+                          | var_declarations
+
+interface_declaration: "INTERFACE"i IDENTIFIER [ extends ] interface_var_declaration* "END_INTERFACE"i ";"*
 
 // B.1.6
 ?step_name: IDENTIFIER

@@ -1296,6 +1296,51 @@ def test_program_roundtrip(rule_name, value):
 
 
 @pytest.mark.parametrize(
+    "source",
+    [
+        param(
+            tf.multiline_code_block(
+                """
+                INTERFACE Itf
+                END_INTERFACE
+                """
+            )
+        ),
+        param(
+            tf.multiline_code_block(
+                """
+                INTERFACE Itf EXTENDS ItfBase
+                END_INTERFACE
+                """
+            )
+        ),
+        param(
+            tf.multiline_code_block(
+                """
+                INTERFACE Itf EXTENDS ItfBase
+                VAR
+                    iVar1 : INT;
+                END_VAR
+                VAR_INPUT
+                    iInputVar1 : INT;
+                END_VAR
+                VAR_OUTPUT
+                    iOutputVar1 : INT;
+                END_VAR
+                VAR_EXTERNAL
+                    iExternVar1 : INT;
+                END_VAR
+                END_INTERFACE
+                """
+            )
+        ),
+    ],
+)
+def test_interface_roundtrip(source: str):
+    roundtrip_rule("interface_declaration", source)
+
+
+@pytest.mark.parametrize(
     "rule_name, value",
     [
         param("input_output_declarations", tf.multiline_code_block(
