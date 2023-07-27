@@ -1,6 +1,6 @@
 import pathlib
 
-from . import _version, plain
+from . import _version, html, plain
 from .parse import get_parser, new_parser, parse_project, parse_source_code
 from .solution import Project, Solution, TwincatTsProject
 from .transform import GrammarTransformer
@@ -13,6 +13,7 @@ del pathlib
 GRAMMAR_FILENAME = MODULE_PATH / "iec.lark"
 
 plain._register()
+html._register()
 
 __all__ = [
     "GRAMMAR_FILENAME",
