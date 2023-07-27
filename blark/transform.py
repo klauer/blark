@@ -263,6 +263,9 @@ class AccessSpecifier(_FlagHelper, enum.IntFlag):
 class Expression:
     ...
 
+    def __str__(self) -> str:
+        raise NotImplementedError
+
 
 @as_tagged_union
 class Literal(Expression):
@@ -913,14 +916,16 @@ class SimpleTypeDeclaration:
 @_rule_handler("string_type_declaration")
 class StringTypeDeclaration:
     name: lark.Token
-    string_type: lark.Token
-    length: Optional[lark.Token]
+    string_type: StringTypeSpecification
     value: Optional[String]
     meta: Optional[Meta] = meta_field()
 
+    @property
+    def type_name(self) -> lark.Token:
+        return self.string_type.type_name
+
     def __str__(self) -> str:
-        type_and_length = join_if(self.string_type, "", self.length)
-        type_and_value = join_if(type_and_length, " := ", self.value)
+        type_and_value = join_if(self.string_type, " := ", self.value)
         return f"{self.name} : {type_and_value}"
 
 
@@ -928,8 +933,7 @@ class StringTypeDeclaration:
 @_rule_handler("string_type_specification")
 class StringTypeSpecification:
     type_name: lark.Token
-    # TODO: length includes brackets or parentheses: [255] or (255) or [Const]
-    length: Optional[lark.Token] = None
+    length: Optional[StringSpecLength] = None
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -969,11 +973,10 @@ class StringTypeInitialization:
     @staticmethod
     def from_lark(
         string_type: lark.Token,
-        length: Optional[lark.Token],
-        *value_parts: Optional[lark.Token],
+        length: Optional[StringSpecLength] = None,
+        value: Optional[lark.Token] = None,
     ) -> StringTypeInitialization:
         spec = StringTypeSpecification(string_type, length)
-        _, value = value_parts or [None, None]
         return StringTypeInitialization(spec=spec, value=value)
 
     def __str__(self) -> str:
@@ -1149,7 +1152,7 @@ class EnumeratedTypeDeclaration:
 @_rule_handler("non_generic_type_name")
 class DataType:
     indirection: Optional[IndirectionType]
-    type_name: lark.Token
+    type_name: Union[lark.Token, StringTypeSpecification]
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
@@ -1161,7 +1164,7 @@ class DataType:
 @dataclass
 @_rule_handler("simple_specification")
 class SimpleSpecification:
-    type: lark.Token
+    type: Union[lark.Token, StringTypeSpecification]
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
@@ -1179,10 +1182,20 @@ class IndirectSimpleSpecification:
         return join_if(self.indirection, " ", self.type)
 
 
+# _array_spec_type
+ArraySpecType = Union[
+    DataType,
+    "FunctionCall",
+    "ObjectInitializerArray",
+    "ArraySpecification",
+    StringTypeSpecification,
+]
+
+
 @dataclass
 @_rule_handler("array_specification")
 class ArraySpecification:
-    type: Union[DataType, FunctionCall, ObjectInitializerArray, ArraySpecification]
+    type: ArraySpecType
     subranges: List[Subrange]
     meta: Optional[Meta] = meta_field()
 
@@ -1564,7 +1577,6 @@ class UnaryOperation(Expression):
     "xor_expression",
     "comparison_expression",
     "equality_expression",
-    "power_expression",
     "expression_term"
 )
 class BinaryOperation(Expression):
@@ -1611,6 +1623,25 @@ class ParenthesizedExpression(Expression):
 
     def __str__(self) -> str:
         return f"({self.expr})"
+
+
+@dataclass
+@_rule_handler("bracketed_expression")
+class BracketedExpression(Expression):
+    expression: Expression
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return f"[{self.expression}]"
+
+
+@dataclass
+@_rule_handler("string_spec_length")
+class StringSpecLength:
+    length: Union[ParenthesizedExpression, BracketedExpression]
+
+    def __str__(self) -> str:
+        return str(self.length)
 
 
 @dataclass
@@ -3388,7 +3419,7 @@ Constant = Union[
 
 
 ArrayInitialElementType = Union[
-    Constant,
+    Expression,
     StructureInitialization,
     EnumeratedValue,
     ArrayInitialization,
