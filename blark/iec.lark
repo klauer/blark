@@ -660,7 +660,6 @@ ADDING: "+"
 SUBTRACTING: "-"
 MULTIPLY_WITH: "*"
 DIVIDE_BY: "/"
-ELEVATED_BY: "**"
 MINUS: "-"
 PLUS: "+"
 ASSIGNMENT: ":="
@@ -694,13 +693,11 @@ add_expression: expression_term ( ADD_OPERATOR expression_term )*
 ADD_OPERATOR: ADDING
             | SUBTRACTING
 
-expression_term: power_expression ( MULTIPLY_OPERATOR power_expression )*
+expression_term: unary_expression ( MULTIPLY_OPERATOR unary_expression )*
 
 MULTIPLY_OPERATOR: MODULO
                  | MULTIPLY_WITH
                  | DIVIDE_BY
-
-power_expression: unary_expression ( ELEVATED_BY unary_expression )*
 
 unary_expression: [ UNARY_OPERATOR ] primary_expression
 
