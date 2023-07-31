@@ -4,6 +4,7 @@ import codecs
 import dataclasses
 import enum
 import hashlib
+import os
 import pathlib
 import re
 from typing import Any, Dict, Generator, List, Optional, Set, Tuple, TypeVar
@@ -522,7 +523,7 @@ def fix_case_insensitive_path(path: AnyPath) -> pathlib.Path:
                 part = all_files[part.lower()]
             except KeyError:
                 raise FileNotFoundError(
-                    f"Path does not exist:\n" f"{path}\n{new_path}/{part} missing"
+                    f"Path does not exist: {path}\n{new_path}{os.pathsep}{part} missing"
                 ) from None
         new_path = new_path / part
     return new_path.resolve()

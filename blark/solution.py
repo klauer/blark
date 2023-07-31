@@ -179,7 +179,11 @@ def filename_from_xml(xml: Optional[lxml.etree.Element]) -> Optional[pathlib.Pat
 
     if root.docinfo.URL is None:
         return None
-    return pathlib.Path(root.docinfo.URL)
+    url = str(root.docinfo.URL)
+    if url.startswith("file:/"):
+        # Note: this only seems to be necessary on Windows and I'm not entirely sure why
+        url = url[len("file:/"):]
+    return pathlib.Path(url)
 
 
 def get_child_text(
