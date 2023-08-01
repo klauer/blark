@@ -179,7 +179,11 @@ def filename_from_xml(xml: Optional[lxml.etree.Element]) -> Optional[pathlib.Pat
 
     if root.docinfo.URL is None:
         return None
-    return pathlib.Path(root.docinfo.URL)
+    url = str(root.docinfo.URL)
+    if url.startswith("file:/"):
+        # Note: this only seems to be necessary on Windows and I'm not entirely sure why
+        url = url[len("file:/"):]
+    return pathlib.Path(url)
 
 
 def get_child_text(
@@ -577,13 +581,37 @@ class TcIO(TcSource):
         ]
 
     def to_blark(self) -> list[Union[BlarkCompositeSourceItem, BlarkSourceItem]]:
-        # TODO: blark does not yet understand INTERFACE
-        # if self.decl is not None:
-        #     res = self.decl.to_blark()
-        #     for item in res:
-        #         item.user = self
-        #     return res
-        return []
+        if self.source_type is None:
+            raise RuntimeError("No source type set?")
+
+        parts = []
+
+        if self.decl is not None:
+            identifier = self.decl.identifier
+            parts.extend(self.decl.to_blark())
+        else:
+            identifier = None
+
+        for part in self.parts:
+            if isinstance(part, ContainsBlarkCode):
+                for item in part.to_blark():
+                    if identifier:
+                        item.identifier = f"{identifier}.{item.identifier}"
+                    item.user = self
+                    parts.append(item)
+            elif not isinstance(part, (TcExtraInfo, TcUnknownXml)):
+                raise NotImplementedError(
+                    f"TcPOU portion {type(part)} not yet implemented"
+                )
+
+        return [
+            BlarkCompositeSourceItem(
+                filename=self.filename,
+                identifier=self.decl.identifier if self.decl is not None else "unknown",
+                parts=parts,
+                user=self,
+            )
+        ]
 
     def _serialize(self, primary: lxml.etree.Element) -> None:
         super()._serialize(primary)

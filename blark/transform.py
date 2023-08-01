@@ -1294,8 +1294,8 @@ class ObjectInitializerArray:
 
     @staticmethod
     def from_lark(
-        function_block_type_name: SymbolicVariable,
-        *initializers: List[StructureInitialization]
+        function_block_type_name: lark.Token,
+        *initializers: StructureInitialization
     ) -> ObjectInitializerArray:
         return ObjectInitializerArray(
             name=function_block_type_name,
@@ -2118,6 +2118,53 @@ class Program:
                 "END_PROGRAM",
             )
             if s is not None
+        )
+
+
+InterfaceVariableDeclarationBlock = Union[
+    "InputDeclarations",
+    "OutputDeclarations",
+    "InputOutputDeclarations",
+    "ExternalVariableDeclarations",
+    "VariableDeclarations",
+]
+
+
+@dataclass
+@_rule_handler("interface_declaration", comments=True)
+class Interface:
+    name: lark.Token
+    extends: Optional[Extends]
+    # TODO: want this to be tagged during serialization, so it's kept as
+    # VariableDeclarationBlock.  More specifically it is
+    # declarations: List[InterfaceVariableDeclarationBlock]
+    declarations: List[VariableDeclarationBlock]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(
+        name: lark.Token,
+        # access: Optional[AccessSpecifier],
+        extends: Optional[Extends],
+        *decls: VariableDeclarationBlock,
+    ) -> Interface:
+        return Interface(
+            name=name,
+            extends=extends,
+            declarations=list(decls),
+        )
+
+    def __str__(self) -> str:
+        header = f"INTERFACE {self.name}"
+        header = join_if(header, " ", self.extends)
+        return "\n".join(
+            line for line in
+            (
+                header,
+                *[str(declaration) for declaration in self.declarations],
+                "END_INTERFACE",
+            )
+            if line is not None
         )
 
 

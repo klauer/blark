@@ -4,6 +4,7 @@ import codecs
 import dataclasses
 import enum
 import hashlib
+import os
 import pathlib
 import re
 from typing import Any, Dict, Generator, List, Optional, Set, Tuple, TypeVar
@@ -46,8 +47,7 @@ class SourceType(enum.Enum):
             SourceType.function: "function_declaration",
             SourceType.function_block: "function_block_type_declaration",
             SourceType.general: "iec_source",
-            # TODO no grammar rule exists yet for 'INTERFACE'
-            SourceType.interface: "iec_source",
+            SourceType.interface: "interface_declaration",
             SourceType.method: "function_block_method_declaration",
             SourceType.program: "program_declaration",
             SourceType.property: "function_block_property_declaration",
@@ -523,7 +523,7 @@ def fix_case_insensitive_path(path: AnyPath) -> pathlib.Path:
                 part = all_files[part.lower()]
             except KeyError:
                 raise FileNotFoundError(
-                    f"Path does not exist:\n" f"{path}\n{new_path}/{part} missing"
+                    f"Path does not exist: {path}\n{new_path}{os.pathsep}{part} missing"
                 ) from None
         new_path = new_path / part
     return new_path.resolve()

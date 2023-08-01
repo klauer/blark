@@ -48,6 +48,7 @@ class BlarkStartingRule(enum.Enum):
     function_block_type_declaration = enum.auto()
     function_declaration = enum.auto()
     global_var_declarations = enum.auto()
+    interface_declaration = enum.auto()
     program_declaration = enum.auto()
     statement_list = enum.auto()
 

@@ -209,6 +209,23 @@ class DeclarationSummary(Summary):
                     filename=filename,
                     **Summary.get_meta_kwargs(item.meta),
                 )
+        elif isinstance(item, tf.ExternalVariableDeclaration):
+            location = str(getattr(item.spec, "location", None))
+            init = str(getattr(item.spec, "init", None))
+            type_ = getattr(init, "full_type_name", str(item.spec))
+            base_type = getattr(init, "base_type_name", str(item.spec))
+            result[item.name] = DeclarationSummary(
+                name=str(item.name),
+                item=item,
+                location=location,
+                block=block_header,
+                type=type_,
+                base_type=base_type,
+                value="None",  # TODO
+                parent=parent.name if parent is not None else "",
+                filename=filename,
+                **Summary.get_meta_kwargs(item.meta),
+            )
         else:
             raise NotImplementedError(f"TODO: {type(item)}")
 
@@ -479,7 +496,9 @@ class FunctionBlockSummary(Summary):
     methods: List[MethodSummary] = field(default_factory=list)
     properties: List[PropertySummary] = field(default_factory=list)
 
-    def __getitem__(self, key: str) -> DeclarationSummary:
+    def __getitem__(
+        self, key: str
+    ) -> Union[DeclarationSummary, MethodSummary, PropertySummary, ActionSummary]:
         if key in self.declarations:
             return self.declarations[key]
         for item in self.actions + self.methods + self.properties:
@@ -528,7 +547,7 @@ class FunctionBlockSummary(Summary):
         if self.extends is None:
             return self
 
-        extends_from = function_blocks.get(self.extends, None)
+        extends_from = function_blocks.get(str(self.extends), None)
         if extends_from is None:
             return self
 
@@ -539,6 +558,7 @@ class FunctionBlockSummary(Summary):
         declarations.update(self.declarations)
         actions = list(extends_from.actions) + self.actions
         methods = list(extends_from.methods) + self.methods
+        properties = list(extends_from.properties) + self.properties
         return FunctionBlockSummary(
             name=self.name,
             comments=extends_from.comments + self.comments,
@@ -550,6 +570,101 @@ class FunctionBlockSummary(Summary):
             extends=self.extends,
             declarations=declarations,
             actions=actions,
+            methods=methods,
+            properties=properties,
+            squashed=True,
+        )
+
+
+@dataclass
+class InterfaceSummary(Summary):
+    """Summary representation of an Interfae."""
+
+    name: str
+    source_code: str
+    item: tf.Interface
+    extends: Optional[str]
+    squashed: bool
+    declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
+    methods: List[MethodSummary] = field(default_factory=list)
+    properties: List[PropertySummary] = field(default_factory=list)
+    # TwinCAT IDE doesn't allow for actions to be added to interfaces, it
+    # seems. Overlap with methods?
+    # actions: List[ActionSummary] = field(default_factory=list)
+
+    def __getitem__(
+        self, key: str
+    ) -> Union[DeclarationSummary, MethodSummary, PropertySummary]:
+        if key in self.declarations:
+            return self.declarations[key]
+        for item in self.methods + self.properties:
+            if item.name == key:
+                return item
+        raise KeyError(key)
+
+    @property
+    def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
+        result = {}
+        for decl in self.declarations.values():
+            result.setdefault(decl.block, {})[decl.name] = decl
+        return result
+
+    @classmethod
+    def from_interface(
+        cls,
+        itf: tf.Interface,
+        source_code: Optional[str] = None,
+        filename: Optional[pathlib.Path] = None,
+    ) -> InterfaceSummary:
+        if source_code is None:
+            source_code = str(itf)
+
+        summary = InterfaceSummary(
+            name=itf.name,
+            item=itf,
+            source_code=source_code,
+            filename=filename,
+            extends=itf.extends.name if itf.extends else None,
+            squashed=False,
+            **Summary.get_meta_kwargs(itf.meta),
+        )
+
+        for decl in itf.declarations:
+            summary.declarations.update(
+                DeclarationSummary.from_block(decl, parent=itf, filename=filename)
+            )
+
+        return summary
+
+    def squash_base_extends(
+        self, interfaces: Dict[str, InterfaceSummary]
+    ) -> InterfaceSummary:
+        """Squash the "EXTENDS" INTERFACE into this one."""
+        if self.extends is None:
+            return self
+
+        extends_from = interfaces.get(str(self.extends), None)
+        if extends_from is None:
+            return self
+
+        if extends_from.extends:
+            extends_from = extends_from.squash_base_extends(interfaces)
+
+        declarations = dict(extends_from.declarations)
+        declarations.update(self.declarations)
+        methods = list(extends_from.methods) + self.methods
+        properties = list(extends_from.properties) + self.properties
+        return InterfaceSummary(
+            name=self.name,
+            comments=extends_from.comments + self.comments,
+            pragmas=extends_from.pragmas + self.pragmas,
+            meta=self.meta,
+            filename=self.filename,
+            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            item=self.item,
+            extends=self.extends,
+            declarations=declarations,
+            properties=properties,
             methods=methods,
             squashed=True,
         )
@@ -622,7 +737,7 @@ class DataTypeSummary(Summary):
         if self.extends is None:
             return self
 
-        extends_from = data_types.get(self.extends, None)
+        extends_from = data_types.get(str(self.extends), None)
         if extends_from is None:
             return self
 
@@ -631,7 +746,6 @@ class DataTypeSummary(Summary):
 
         declarations = dict(extends_from.declarations)
         declarations.update(self.declarations)
-        raise
         return DataTypeSummary(
             name=self.name,
             type=self.type,
@@ -767,15 +881,16 @@ class CodeSummary:
     data_types: Dict[str, DataTypeSummary] = field(default_factory=dict)
     programs: Dict[str, ProgramSummary] = field(default_factory=dict)
     globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
-    # interfaces: Dict[str, ...] = field(default_factory=dict)  # TODO
+    interfaces: Dict[str, InterfaceSummary] = field(default_factory=dict)
 
     def __str__(self):
         attr_to_header = {
+            "data_types": "Data Types",
+            "globals": "Global Variable Declarations",
+            "interfaces": "Interface Declarations",
             "functions": "Functions",
             "function_blocks": "Function Blocks",
-            "data_types": "Data Types",
             "programs": "Programs",
-            "globals": "Global Variable Declarations",
         }
         summary_text = []
         for attr, header in attr_to_header.items():
@@ -892,6 +1007,7 @@ class CodeSummary:
         self.data_types.update(other.data_types)
         self.globals.update(other.globals)
         self.programs.update(other.programs)
+        self.interfaces.update(other.interfaces)
 
         if namespace:
             # LCLS_General.GVL_Logger and GVL_Logger are equally valid
@@ -906,8 +1022,13 @@ class CodeSummary:
             # for name, item in other.programs.items():
             #     self.programs[f"{namespace}.{name}"] = item
 
+        self.squash()
+
     @staticmethod
-    def from_parse_results(all_parsed_items: list[ParseResult]) -> CodeSummary:
+    def from_parse_results(
+        all_parsed_items: list[ParseResult],
+        squash: bool = True,
+    ) -> CodeSummary:
         result = CodeSummary()
 
         def get_code_by_meta(parsed: ParseResult, meta: Optional[tf.Meta]) -> str:
@@ -958,16 +1079,19 @@ class CodeSummary:
         def push_context(summary: Summary):
             context.append(summary)
 
-        def get_pou_context() -> Union[ProgramSummary, FunctionBlockSummary]:
+        def get_pou_context() -> Union[
+            ProgramSummary, FunctionBlockSummary, InterfaceSummary
+        ]:
             for item in reversed(context):
-                if isinstance(item, (ProgramSummary, FunctionBlockSummary)):
+                if isinstance(
+                    item, (ProgramSummary, FunctionBlockSummary, InterfaceSummary)
+                ):
                     return item
 
             raise ValueError(
                 "Expected to parse a POU prior to this but none were in the context "
                 "list.  Code summaries of PROPERTY objects, for example, require "
-                "that a FUNCTION_BLOCK (or other PROPERTY-containing POU) be "
-                "parsed previously."
+                "that a FUNCTION_BLOCK, INTERFACE, or PROGRAM be parsed previously."
             )
 
         for parsed in all_parsed_items:
@@ -1047,6 +1171,14 @@ class CodeSummary:
                     )
                     result.programs[item.name] = summary
                     new_context(summary)
+                elif isinstance(item, tf.Interface):
+                    summary = InterfaceSummary.from_interface(
+                        item,
+                        source_code=get_code_by_meta(parsed, item.meta),
+                        filename=parsed.filename,
+                    )
+                    result.interfaces[item.name] = summary
+                    new_context(summary)
                 elif isinstance(item, tf.StatementList):
                     if parsed.item.type != SourceType.action:
                         add_implementation(parsed, item)
@@ -1064,21 +1196,33 @@ class CodeSummary:
                         )
                         parent.actions.append(action)
                 else:
+                    raise ValueError(type(item))
                     logger.warning("Unhandled: %s", type(item))
 
-        for name, item in list(result.function_blocks.items()):
-            if item.extends and not item.squashed:
-                result.function_blocks[name] = item.squash_base_extends(
-                    result.function_blocks
-                )
-
-        for name, item in list(result.data_types.items()):
-            if item.extends and not item.squashed:
-                result.data_types[name] = item.squash_base_extends(
-                    result.data_types
-                )
+        if squash:
+            result.squash()
 
         return result
+
+    def squash(self) -> None:
+        """Squash derived interfaces/etc to include base summaries."""
+        for name, item in list(self.function_blocks.items()):
+            if item.extends and not item.squashed:
+                self.function_blocks[name] = item.squash_base_extends(
+                    self.function_blocks
+                )
+
+        for name, item in list(self.data_types.items()):
+            if item.extends and not item.squashed:
+                self.data_types[name] = item.squash_base_extends(
+                    self.data_types
+                )
+
+        for name, item in list(self.interfaces.items()):
+            if item.extends and not item.squashed:
+                self.interfaces[name] = item.squash_base_extends(
+                    self.interfaces
+                )
 
 
 @dataclass

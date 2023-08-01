@@ -5,7 +5,7 @@ import pytest
 
 from .. import transform as tf
 from ..dependency_store import DependencyStore, PlcProjectMetadata
-from ..summary import DeclarationSummary
+from ..summary import DeclarationSummary, MethodSummary, PropertySummary
 
 
 @dataclass
@@ -38,7 +38,8 @@ def check_declarations(
         assert summary.base_type == check.base_type
         if check.value is None:
             assert summary.value == "None"  # TODO?
-            assert summary.item.init.value is None
+            if hasattr(summary.item, "init"):
+                assert summary.item.init.value is None
         else:
             assert summary.value == check.value
             assert str(summary.item.init.value) == check.value
@@ -241,3 +242,77 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
             ),
         ],
     )
+
+
+def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
+    summary = twincat_general_281.summary
+    assert set(str(itf) for itf in summary.interfaces) == {"I_Base", "I_Interface"}
+    base = summary.interfaces["I_Base"]
+    itf = summary.interfaces["I_Interface"]
+
+    check_declarations(
+        base.declarations,
+        [
+            DeclarationCheck(
+                name="iTestBase",
+                base_type="INT",
+                value=None,
+            ),
+        ]
+    )
+
+    check_declarations(
+        itf.declarations,
+        [
+            # Inherited
+            DeclarationCheck(
+                name="iTestBase",
+                base_type="INT",
+                value=None,
+            ),
+            # Defined
+            DeclarationCheck(
+                name="iVar1",
+                base_type="INT",
+                value=None,
+            ),
+            DeclarationCheck(
+                name="iInputVar1",
+                base_type="INT",
+                value=None,
+            ),
+            DeclarationCheck(
+                name="iOutputVar1",
+                base_type="INT",
+                value=None,
+            ),
+            DeclarationCheck(
+                name="iExternVar1",
+                base_type="INT",
+                value=None,
+            ),
+        ]
+    )
+
+    assert {prop.name for prop in base.properties} == {"BaseProperty"}
+    assert {method.name for method in base.methods} == {"BaseMethod"}
+
+    for test_if in (base, itf):
+        base_prop = test_if["BaseProperty"]
+        assert isinstance(base_prop, PropertySummary)
+        assert str(base_prop.getter.item.return_type) == "INT"
+
+        base_method = test_if["BaseMethod"]
+        assert isinstance(base_method, MethodSummary)
+        assert base_method.return_type == "BOOL"
+
+    assert {prop.name for prop in itf.properties} == {"BaseProperty", "Property1"}
+    assert {method.name for method in itf.methods} == {"BaseMethod", "Method1"}
+
+    prop1 = itf["Property1"]
+    assert isinstance(prop1, PropertySummary)
+    assert str(prop1.getter.item.return_type) == "INT"
+
+    method1 = itf["Method1"]
+    assert isinstance(method1, MethodSummary)
+    assert method1.return_type == "BOOL"
