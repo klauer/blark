@@ -3055,7 +3055,40 @@ class ForStatement(Statement):
 
 
 @dataclass
-@_rule_handler("statement_list")
+@_rule_handler(
+    "labeled_statement",
+    "end_of_statement_list_label",
+    comments=True,
+)
+class LabeledStatement(Statement):
+    label: lark.Token
+    statement: Optional[Statement] = None
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        if self.statement is None:
+            return f"{self.label} :"
+
+        statement = str(self.statement)
+        if statement.count("\n") > 1:
+            # Multiline statement after label - put it on the next line
+            return f"{self.label} :\n{statement}"
+        # Single line statement after label - put it on the same line
+        return f"{self.label} : {statement}"
+
+
+@dataclass
+@_rule_handler("jmp_statement", comments=True)
+class JumpStatement(Statement):
+    label: lark.Token
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return f"JMP {self.label};"
+
+
+@dataclass
+@_rule_handler("statement_list", "case_element_statement_list")
 class StatementList:
     statements: List[Statement]
     meta: Optional[Meta] = meta_field()

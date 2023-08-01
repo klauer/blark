@@ -727,7 +727,7 @@ parenthesized_expression: "(" expression ")"
                    | constant
 
 // B.3.2
-statement_list: _statement+
+statement_list: _statement+ end_of_statement_list_label?
 
 _statement: ";"
           | assignment_statement
@@ -745,6 +745,8 @@ _statement: ";"
           | repeat_statement
           | exit_statement
           | continue_statement
+          | jmp_statement
+          | labeled_statement
 
 
 // B.3.2.1
@@ -779,7 +781,29 @@ case_statement: "CASE"i expression "OF"i case_elements [ else_clause ] "END_CASE
 
 case_elements: case_element+
 
-case_element: case_list ":" [ statement_list ]
+case_element_statement_list: _case_element_statement+
+
+// Specifically exclude labeled statements as they are aliased to case
+// statements themselves:
+_case_element_statement: ";"
+                       | assignment_statement
+                       | no_op_statement
+                       | set_statement
+                       | reset_statement
+                       | reference_assignment_statement
+                       | return_statement
+                       | chained_function_call_statement
+                       | function_call_statement
+                       | if_statement
+                       | case_statement
+                       | for_statement
+                       | while_statement
+                       | repeat_statement
+                       | exit_statement
+                       | continue_statement
+                       | jmp_statement
+
+case_element: case_list ":" [ case_element_statement_list ]
 
 case_list: case_list_element ( "," case_list_element )*
 
@@ -804,3 +828,11 @@ repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"
 exit_statement.1: "EXIT"i ";"+
 
 continue_statement.1: "CONTINUE"i ";"+
+
+LABEL: IDENTIFIER
+labeled_statement.1: LABEL ":" _statement
+
+// End-of-statement list may have a label associated with it:
+end_of_statement_list_label: LABEL ":"
+
+jmp_statement: "JMP"i LABEL ";"+
