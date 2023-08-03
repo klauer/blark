@@ -1724,3 +1724,60 @@ def test_statement_priority(statement: str, cls: type):
     assert isinstance(transformed, tf.StatementList)
     transformed_statement, = transformed.statements
     assert isinstance(transformed_statement, cls)
+
+
+@pytest.mark.parametrize(
+    "statements, labels",
+    [
+        param(
+            tf.multiline_code_block(
+                """
+                JMP _label;
+                _label :
+                """,
+            ),
+            [],
+            id="simple_jump_no_statement"
+        ),
+        param(
+            tf.multiline_code_block(
+                """
+                JMP _label;
+                _label : A := 5;
+                """,
+            ),
+            [],
+            id="simple_jump_with_assignment"
+        ),
+        param(
+            tf.multiline_code_block(
+                """
+                JMP _label;
+                _label :
+                IF a = 2 THEN
+                    b := 3;
+                END_IF
+                """,
+            ),
+            [],
+            id="simple_jump_with_assignment"
+        ),
+        param(
+            tf.multiline_code_block(
+                """
+                JMP _label1;
+                _label1 :
+                _label2 :
+                IF a = 2 THEN
+                    b := 3;
+                END_IF
+                """,
+            ),
+            [],
+            id="multi_label"
+        ),
+    ],
+)
+def test_labeled_statements_roundtrip(statements: str, labels: List[str]):
+    transformed = roundtrip_rule("statement_list", statements)
+    assert isinstance(transformed, tf.StatementList)
