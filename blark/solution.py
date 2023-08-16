@@ -1052,12 +1052,12 @@ class TwincatSourceCodeItem:
     subtype: Optional[str]
     #: Link always set?
     link_always: bool
+    #: Raw file contents.
+    raw_contents: bytes
+    #: Contents loaded into a type-specific class.
+    contents: Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]
     #: The globally unique identifier for the source code item.
     guid: Optional[str] = None
-    #: Raw file contents.
-    raw_contents: bytes = b''
-    #: Raw contents loaded into a type-specific class.
-    contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
     #: The parent project, if applicable.
     parent: Optional[TwincatPlcProject] = None
 
@@ -1699,10 +1699,6 @@ def twincat_file_loader(
             filename,
             exc_info=True,
         )
-        return []
-
-    if source is None:
-        logger.warning("No source found in file %s (is this in error?)", filename)
         return []
 
     return source.to_blark()
