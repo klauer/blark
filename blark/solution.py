@@ -1691,16 +1691,7 @@ def twincat_file_loader(
     }:
         return project_loader(filename)
 
-    try:
-        source = TcSource.from_filename(filename)
-    except UnsupportedSourceFileError:
-        logger.debug(
-            "Unsupported source code file not loaded: %s",
-            filename,
-            exc_info=True,
-        )
-        return []
-
+    source = TcSource.from_filename(filename)
     return source.to_blark()
 
 
