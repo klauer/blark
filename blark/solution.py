@@ -73,6 +73,26 @@ TcHandlers = Union[
 ]
 
 
+class SolutionLoaderError(Exception):
+    """Solution loader-related exception base class."""
+
+
+class UnsupportedSourceFileError(SolutionLoaderError):
+    """
+    Unsupported project file.
+
+    blark does not support loading of these compilable items:
+    1. GlobalTextList
+    2. Any other non-structured text source code files
+    """
+
+    type: Optional[str] = None
+
+    def __init__(self, msg: str, type: Optional[str] = None):
+        self.type = type
+        super().__init__(msg)
+
+
 @functools.lru_cache(maxsize=2048)
 def strip_xml_namespace(tag: str) -> str:
     """Strip off {{namespace}} from: {{namespace}}tag."""
@@ -439,19 +459,29 @@ class TcSource:
         xml: lxml.etree.Element,
         filename: Optional[pathlib.Path] = None,
         parent: Optional[TwincatSourceCodeItem] = None,
-    ) -> Optional[Union[TcDUT, TcTTO, TcPOU, TcIO, TcGVL]]:
+    ) -> Union[TcDUT, TcTTO, TcPOU, TcIO, TcGVL]:
         tcplc_object = get_tcplc_from_xml(xml)
         if tcplc_object is None:
-            return None
+            plc_attribs = {}
+        else:
+            plc_attribs = tcplc_object.attrib
+
         source_cls, item = get_code_object_from_xml(xml)
         if source_cls is None or item is None:
-            raise RuntimeError(
-                f"Unsupported xml type for TcSource: {xml}"
+            try:
+                child_type = xml.getchildren()[0].tag
+            except Exception:
+                child_type = "unknown"
+            raise UnsupportedSourceFileError(
+                f"Unsupported xml type for TcSource in "
+                f"{filename_from_xml(xml)}: {xml.tag}/{child_type} "
+                f"(parent={parent})",
+                type=child_type,
             )
 
         metadata = dict(item.attrib)
-        metadata["version"] = tcplc_object.attrib.get("Version", "")
-        metadata["product_version"] = tcplc_object.attrib.get("ProductVersion", "")
+        metadata["version"] = plc_attribs.get("Version", "")
+        metadata["product_version"] = plc_attribs.get("ProductVersion", "")
 
         decl = TcDeclImpl.from_xml(
             item,
@@ -481,15 +511,19 @@ class TcSource:
         contents: bytes,
         filename: Optional[pathlib.Path] = None,
         parent: Optional[TcSource] = None,
-    ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
-        return cls.from_xml(parse_xml_contents(contents), filename=filename, parent=parent)
+    ) -> Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]:
+        return cls.from_xml(
+            parse_xml_contents(contents),
+            filename=filename,
+            parent=parent,
+        )
 
     @classmethod
     def from_filename(
         cls: type[Self],
         filename: AnyPath,
         parent: Optional[TcSource] = None,
-    ) -> Optional[Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]]:
+    ) -> Union[TcDUT, TcPOU, TcIO, TcTTO, TcGVL]:
         with open(filename, "rb") as fp:
             raw_contents = fp.read()
         return cls.from_contents(raw_contents, filename=pathlib.Path(filename), parent=parent)
@@ -995,6 +1029,9 @@ class TcUnknownXml:
     xml: lxml.etree.Element
     parent: TcSource
 
+    def to_blark(self) -> list[BlarkSourceItem]:
+        return []
+
 
 @dataclasses.dataclass
 class TwincatSourceCodeItem:
@@ -1015,12 +1052,12 @@ class TwincatSourceCodeItem:
     subtype: Optional[str]
     #: Link always set?
     link_always: bool
+    #: Raw file contents.
+    raw_contents: bytes
+    #: Contents loaded into a type-specific class.
+    contents: Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]
     #: The globally unique identifier for the source code item.
     guid: Optional[str] = None
-    #: Raw file contents.
-    raw_contents: bytes = b''
-    #: Raw contents loaded into a type-specific class.
-    contents: Optional[Union[TcDUT, TcPOU, TcIO, TcGVL, TcTTO]] = None
     #: The parent project, if applicable.
     parent: Optional[TwincatPlcProject] = None
 
@@ -1064,11 +1101,19 @@ class TwincatSourceCodeItem:
         else:
             with open(local_path, "rb") as fp:
                 raw_contents = fp.read()
-            contents = TcSource.from_contents(
-                raw_contents,
-                filename=local_path,
-                parent=None,
-            )
+            try:
+                contents = TcSource.from_contents(
+                    raw_contents,
+                    filename=local_path,
+                    parent=None,
+                )
+            except UnsupportedSourceFileError:
+                logger.debug(
+                    "Unsupported source code file not loaded: %s",
+                    local_path,
+                    exc_info=True,
+                )
+                return None
 
         namespaces = {"msbuild": xml.xpath("namespace-uri()")}
         subtype = get_child_text(
@@ -1647,10 +1692,6 @@ def twincat_file_loader(
         return project_loader(filename)
 
     source = TcSource.from_filename(filename)
-    if source is None:
-        logger.warning("No source found in file %s (is this in error?)", filename)
-        return []
-
     return source.to_blark()
 
 

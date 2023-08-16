@@ -8,7 +8,8 @@ from . import conftest
 if not conftest.DS_CONFIG.exists():
     pytest.skip(
         "twincat_root directory not found! Did you recursively clone the "
-        "repository? (git clone --recursive ...)"
+        "repository? (git clone --recursive ...)",
+        allow_module_level=True,
     )
 
 
