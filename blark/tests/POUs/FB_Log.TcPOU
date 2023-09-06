@@ -1,0 +1,324 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Log" Id="{109d7a4d-eb69-4ad3-a712-f6cfd124a520}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'call_after_init'}
+{attribute 'reflection'} 
+FUNCTION_BLOCK FB_Log IMPLEMENTS I_SendLog
+
+VAR
+	{attribute 'hide'}
+	_aLogBaseExt 				: ARRAY[-1..SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo)] OF FB_LogBaseExt;
+	{attribute 'hide'}
+	_aInternalMsg				: ARRAY[-1..SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo)] OF STRING(100);
+	{attribute 'hide'}
+	_aLogSeverity				: ARRAY[-1..SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo)] OF E_Severity;
+	
+	{attribute 'hide'}
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+    _InstancePath 					: STRING; 						// contains instance path 	
+
+
+	{attribute 'hide'}
+	_bUseExternalName				: BOOL;
+	_InstanceName 					: STRING(25);
+
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="External" Id="{44366482-53e3-4013-880e-78d7711b79ed}">
+      <Folder Name="Severities" Id="{40aa847d-2e73-44e4-97ca-3b095735a324}" />
+    </Folder>
+    <Folder Name="Get/Set" Id="{3903cc3c-2e60-4fa9-a6b0-f48b20231a41}" />
+    <Folder Name="Internal" Id="{4be4cd9f-341a-482f-b3a1-45a9d816dfcd}" />
+    <Method Name="_GetLogConditionFullfilled" Id="{eff3713e-a77d-4fe0-9cd4-75ecc46ac5a5}" FolderPath="Get/Set\">
+      <Declaration><![CDATA[METHOD Protected _GetLogConditionFullfilled : BOOL
+VAR_INPUT
+	eSeverity	: E_Severity;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ // Each Tasklogger is configured identically, therefore it is sufficient to check the first.
+_GetLogConditionFullfilled := _aLogBaseExt[1].GetLogConditionFullfilled(eSeverity);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Init" Id="{0e12f3d0-a254-410d-bda3-c19c038fd1dd}" FolderPath="Internal\">
+      <Declaration><![CDATA[{attribute 'call_after_init'}
+METHOD protected _Init
+
+VAR_INST
+	i					:	UINT;
+	_sShortenedPath		:	T_MAXSTRING;
+	_nPosInString		:	INT := 0;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Get Instance Path
+IF NOT _bUseExternalName THEN
+	_sShortenedPath := _InstancePath;
+	
+	WHILE(FIND(_sShortenedPath, '.') > 0) DO
+		_nPosInString := FIND(_sShortenedPath, '.');
+		_sShortenedPath := DELETE(_sShortenedPath, _nPosInString+1, 0);	
+	END_WHILE
+
+	_InstanceName := _sShortenedPath;
+	Name := _sShortenedPath;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddString" Id="{e7f31b77-dc46-4ae0-8e44-0599c16ce265}" FolderPath="External\">
+      <Declaration><![CDATA[METHOD AddString : I_SendLog
+VAR_INPUT
+	sString	: STRING(50);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] <> E_Severity.off THEN
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := Concat(_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()],sString);
+END_IF
+AddString := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddVar" Id="{41fcd9d6-a84a-44ca-9849-15cb6dfbaebc}" FolderPath="External\">
+      <Declaration><![CDATA[{attribute 'hasanytype'}
+METHOD AddVar : I_SendLog
+
+VAR_INPUT
+	{attribute 'anytypeclass' := 'ANY'}
+	anyVar	: __SYSTEM.AnyType;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] <> E_Severity.off THEN
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := Concat(_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()],TO_STRING(anyVar.pValue^));
+END_IF
+AddVar := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Debug" Id="{0ffe6957-f2b4-49bb-aa12-b3e0e497b253}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Debug : I_SendLog
+VAR_INPUT
+	sMsg	: STRING(25);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.debug) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.debug;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Debug := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Error" Id="{4d0b31aa-bb30-4a69-a343-3f4217293006}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Error : I_SendLog
+VAR_INPUT
+	sMsg : STRING(25);
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.error) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.error;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Error := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Fatal" Id="{aeacf9c0-48e5-4e89-8083-0f2fef85d923}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Fatal : I_SendLog
+VAR_INPUT
+	sMsg	: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.fatal) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.fatal;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Fatal := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Info" Id="{b4a1c211-05ac-4219-9a0e-1a843f9d4300}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Info : I_SendLog
+VAR_INPUT
+	sMsg	: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.info) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.info;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Info := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="LogCollector" Id="{ac06bd05-216f-4578-a924-892e6ec29b69}" FolderPath="Get/Set\">
+      <Declaration><![CDATA[PROPERTY PUBLIC LogCollector : I_PushLog]]></Declaration>
+      <Set Name="Set" Id="{caffe710-c626-4f41-9fe6-227b89e05871}">
+        <Declaration><![CDATA[VAR
+	n : DINT;
+END_VAR]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[FOR n := -1 TO SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo) DO
+	_aLogBaseExt[n].LogCollector := LogCollector;
+END_FOR]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="MinSeverity" Id="{06ab50fe-2b74-4fc5-873d-6d606277c87b}" FolderPath="Get/Set\">
+      <Declaration><![CDATA[PROPERTY Public MinSeverity : E_Severity]]></Declaration>
+      <Set Name="Set" Id="{39e59a5e-b90d-4ee5-b370-19d4bd55a41c}">
+        <Declaration><![CDATA[VAR
+	n : DINT;
+END_VAR]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[FOR n := -1 TO SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo) DO
+	_aLogBaseExt[n].MinSeverity := MinSeverity;
+END_FOR]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Name" Id="{70eb1b3d-44f7-4c9a-98e8-82ecb25b0e5f}" FolderPath="Get/Set\">
+      <Declaration><![CDATA[PROPERTY Name : String(25)]]></Declaration>
+      <Set Name="Set" Id="{e577ca28-e360-4834-8716-8ab2be2e863b}">
+        <Declaration><![CDATA[VAR
+	n : DINT;
+END_VAR]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_bUseExternalName := TRUE;
+_InstanceName := Name;
+FOR n := -1 TO SIZEOF(TwinCAT_SystemInfoVarList._TaskInfo)/SIZEOF(PlcTaskSystemInfo) DO
+	_aLogBaseExt[n].Name := Name;
+END_FOR]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Send" Id="{74aadea7-f021-411c-8f22-79856c996b07}" FolderPath="External\">
+      <Declaration><![CDATA[METHOD Send : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] <> E_Severity.off THEN
+	Send := _aLogBaseExt[Tc2_System.GETCURTASKINDEXEX()].SendMessage(sMsg := _aInternalMsg[Tc2_System.GETCURTASKINDEXEX()],
+																	eSeverity := _aLogSeverity[Tc2_System.GETCURTASKINDEXEX()]);
+ELSE
+	Send := FALSE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Trace" Id="{2c57975a-5275-4c58-bf2f-2109fda3867c}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Trace : I_SendLog
+VAR_INPUT
+	sMsg	: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.trace) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.trace;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Trace := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Warn" Id="{8fa6c46d-8bad-4dbb-8550-6e6ebeb2d493}" FolderPath="External\Severities\">
+      <Declaration><![CDATA[METHOD Warn : I_SendLog
+VAR_INPUT
+	sMsg	: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _GetLogConditionFullfilled(eSeverity := E_Severity.warn) THEN
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_Severity.warn;
+	_aInternalMsg[Tc2_System.GETCURTASKINDEXEX()] := sMsg;
+ELSE
+	_aLogSeverity[Tc2_System.GETCURTASKINDEXEX()] := E_severity.off;
+END_IF
+
+Warn := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Log">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log._GetLogConditionFullfilled">
+      <LineId Id="11" Count="0" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log._Init">
+      <LineId Id="6" Count="9" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.AddString">
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.AddVar">
+      <LineId Id="42" Count="2" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Debug">
+      <LineId Id="27" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Error">
+      <LineId Id="52" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Fatal">
+      <LineId Id="7" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Info">
+      <LineId Id="7" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.LogCollector.Set">
+      <LineId Id="6" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.MinSeverity.Set">
+      <LineId Id="5" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Name.Set">
+      <LineId Id="8" Count="1" />
+      <LineId Id="4" Count="1" />
+      <LineId Id="3" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Send">
+      <LineId Id="6" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Trace">
+      <LineId Id="7" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Log.Warn">
+      <LineId Id="7" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
