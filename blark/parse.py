@@ -528,6 +528,8 @@ def main(
             print(dump_json(summary.CodeSummary, summarized, include_meta=include_meta))
         else:
             print(summarized)
+    else:
+        summarized = None
 
     if not results_by_filename:
         return {}
@@ -543,6 +545,7 @@ def main(
                 "results": results,
                 "by_filename": results_by_filename,
                 "failures": failures,
+                "summary": summarized,
             },
             message=(
                 f"Saw {len(results_by_filename)} files with {len(results)} "
