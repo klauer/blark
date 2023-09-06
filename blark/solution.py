@@ -718,7 +718,7 @@ class TcPOU(TcSource):
         return {
             part.name: part
             for part in self.parts
-            if not isinstance(part, TcUnknownXml)
+            if isinstance(part, (TcAction, TcMethod, TcProperty))
         }
 
     def get_child_by_identifier(

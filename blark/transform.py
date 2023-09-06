@@ -1203,8 +1203,12 @@ class ArraySpecification:
     def base_type_name(self) -> Union[str, lark.Token]:
         """The base type name."""
         if isinstance(self.type, DataType):
+            if isinstance(self.type.type_name, StringTypeSpecification):
+                return str(self.type)
             return self.type.type_name
         if isinstance(self.type, ArraySpecification):
+            return self.type.base_type_name
+        if isinstance(self.type, StringTypeSpecification):
             return self.type.base_type_name
         return str(self.type.name)
 
