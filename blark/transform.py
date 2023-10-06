@@ -1132,7 +1132,7 @@ class TypeInitialization(TypeInitializationBase):
 
     Example::
 
-        TypeName := Value
+        TypeName := (1, 2)   # TODO
         STRING[100] := "value"
     """
     indirection: Optional[IndirectionType]
@@ -1355,6 +1355,7 @@ class SubrangeTypeInitialization(TypeInitializationBase):
 
     Examples::
 
+        INT (1..2) := 25
     """
     # TODO: coverage + examples?
     indirection: Optional[IndirectionType]
@@ -1496,7 +1497,7 @@ class DataType:
     """
     A non-generic type name, or a data type name.
 
-    May be indirect (i.e., POINTER TO).
+    May be indirect (e.g., POINTER TO).
 
     An elementary type name, a derived type name, or a general dotted
     identifier are valid for this.
@@ -1533,6 +1534,13 @@ class SimpleSpecification(TypeSpecificationBase):
 class IndirectSimpleSpecification(TypeSpecificationBase):
     """
     A simple specification with the possibility of indirection.
+
+    Examples::
+
+        TypeName
+        POINTER TO TypeName
+        REFERENCE TO TypeName
+        REFERENCE TO POINTER TO TypeName
     """
     indirection: Optional[IndirectionType]
     type: SimpleSpecification
@@ -1730,6 +1738,17 @@ class ObjectInitializerArray:
 @dataclass
 @_rule_handler("array_spec_init")
 class ArrayTypeInitialization(TypeInitializationBase):
+    """
+    Array specification and optional default (initialization) value.
+
+    May be indirect (e.g., POINTER TO).
+
+    Examples::
+
+        ARRAY[*] OF TypeName
+        ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        POINTER TO ARRAY[1..2] OF Call(1, 2)
+    """
     indirection: Optional[IndirectionType]
     spec: ArraySpecification
     value: Optional[ArrayInitialization]
@@ -1750,6 +1769,22 @@ class ArrayTypeInitialization(TypeInitializationBase):
 @dataclass
 @_rule_handler("array_type_declaration", comments=True)
 class ArrayTypeDeclaration:
+    """
+    Full declaration of an array type.
+
+    Examples::
+
+        ArrayType : ARRAY[*] OF TypeName
+        ArrayType : ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        ArrayType : POINTER TO ARRAY[1..2] OF Call(1, 2)
+        TypeName : ARRAY [1..2, 3..4] OF INT
+        TypeName : ARRAY [1..2] OF INT := [1, 2]
+        TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]
+        TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType
+        TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)
+        TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT
+        TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT
+    """
     name: lark.Token
     init: ArrayTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -1761,6 +1796,34 @@ class ArrayTypeDeclaration:
 @dataclass
 @_rule_handler("structure_type_declaration", comments=True)
 class StructureTypeDeclaration:
+    """
+    Full structure type declaration, as part of a TYPE.
+
+    Examples::
+
+        TypeName EXTENDS Other.Type :
+        STRUCT
+            iValue : INT;
+        END_STRUCT
+
+        TypeName : POINTER TO
+        STRUCT
+            iValue : INT;
+        END_STRUCT
+
+        TypeName : POINTER TO
+        STRUCT
+            iValue : INT := 3 + 4;
+            stTest : ST_Testing := (1, 2);
+            eValue : E_Test := E_Test.ABC;
+            arrValue : ARRAY [1..2] OF INT := [1, 2];
+            arrValue1 : INT (1..2);
+            arrValue1 : (Value1 := 1) INT;
+            sValue : STRING := 'abc';
+            iValue1 AT %I* : INT := 5;
+            sValue1 : STRING[10] := 'test';
+        END_STRUCT
+    """
     name: lark.Token
     extends: Optional[Extends]
     indirection: Optional[IndirectionType]
@@ -1801,6 +1864,21 @@ class StructureTypeDeclaration:
 @dataclass
 @_rule_handler("structure_element_declaration", comments=True)
 class StructureElementDeclaration:
+    """
+    Declaration of a single element of a structure.
+
+    Examples::
+
+        iValue : INT := 3 + 4;
+        stTest : ST_Testing := (1, 2);
+        eValue : E_Test := E_Test.ABC;
+        arrValue : ARRAY [1..2] OF INT := [1, 2];
+        arrValue1 : INT (1..2);
+        arrValue1 : (Value1 := 1) INT;
+        sValue : STRING := 'abc';
+        iValue1 AT %I* : INT := 5;
+        sValue1 : STRING[10] := 'test';
+    """
     name: lark.Token
     location: Optional[IncompleteLocation]
     init: Union[
@@ -1854,6 +1932,21 @@ UnionElementSpecification = Union[
 @dataclass
 @_rule_handler("union_element_declaration", comments=True)
 class UnionElementDeclaration:
+    """
+    Declaration of a single element of a union.
+
+    Similar to a structure element, but not all types are supported and no
+    initialization/default values are allowed.
+
+    Examples::
+
+        iValue : INT;
+        arrValue : ARRAY [1..2] OF INT;
+        arrValue1 : INT (1..2);
+        arrValue1 : (Value1 := 1) INT;
+        sValue : STRING;
+        psValue1 : POINTER TO STRING[10];
+    """
     name: lark.Token
     spec: UnionElementSpecification
     meta: Optional[Meta] = meta_field()
@@ -1870,6 +1963,21 @@ class UnionElementDeclaration:
 @dataclass
 @_rule_handler("union_type_declaration", comments=True)
 class UnionTypeDeclaration:
+    """
+    A full declaration of a UNION type, as part of a TYPE/END_TYPE block.
+
+    Examples::
+
+        UNION
+            iVal : INT;
+            aAsBytes : ARRAY [0..2] OF BYTE;
+        END_UNION
+
+        UNION
+            iValue : INT;
+            eValue : (iValue := 1, iValue2 := 2) INT;
+        END_UNION
+    """
     name: lark.Token
     declarations: List[UnionElementDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -1905,6 +2013,13 @@ class UnionTypeDeclaration:
 @dataclass
 @_rule_handler("initialized_structure")
 class InitializedStructure(TypeInitializationBase):
+    """
+    A named initialized structure.
+
+    Examples::
+
+        ST_TypeName := (iValue : = 0, bValue := TRUE)
+    """
     name: lark.Token
     init: StructureInitialization
     meta: Optional[Meta] = meta_field()
@@ -2000,6 +2115,7 @@ class StructureElementInitialization:
 @dataclass
 @_rule_handler("unary_expression")
 class UnaryOperation(Expression):
+    """A unary - single operand - operation: ``NOT``, ``-``, or ``+``."""
     op: lark.Token
     expr: Expression
     meta: Optional[Meta] = meta_field()
@@ -2033,6 +2149,23 @@ class UnaryOperation(Expression):
     "expression_term"
 )
 class BinaryOperation(Expression):
+    """
+    A binary (i.e., two operand) operation.
+
+    Examples::
+
+        a + b
+        a AND b
+        a AND_THEN b
+        a OR_ELSE b
+        a := b
+        a XOR b
+        a = b
+        -a * b
+        a * 1.0
+
+    Expressions may be nested in either the left or right operand.
+    """
     left: Expression
     op: lark.Token
     right: Expression
@@ -2071,6 +2204,14 @@ class BinaryOperation(Expression):
 @dataclass
 @_rule_handler("parenthesized_expression")
 class ParenthesizedExpression(Expression):
+    """
+    An expression with parentheses around it.
+
+    Examples::
+
+        (a * b)
+        (1 + b)
+    """
     expr: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -2081,6 +2222,18 @@ class ParenthesizedExpression(Expression):
 @dataclass
 @_rule_handler("bracketed_expression")
 class BracketedExpression(Expression):
+    """
+    An expression with square brackets around it.
+
+    This is used exclusively in string length specifications.
+
+    Examples::
+
+        [a * b]
+        [255]
+
+    See also :class:`StringSpecLength`.
+    """
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -2091,6 +2244,19 @@ class BracketedExpression(Expression):
 @dataclass
 @_rule_handler("string_spec_length")
 class StringSpecLength:
+    """
+    The length of a defined string.
+
+    The grammar makes a distinction between brackets and parentheses, though
+    they appear to be functionally equivalent.
+
+    Examples::
+
+        [1]
+        (1)
+        [255]
+    """
+
     length: Union[ParenthesizedExpression, BracketedExpression]
 
     def __str__(self) -> str:
@@ -2100,8 +2266,23 @@ class StringSpecLength:
 @dataclass
 @_rule_handler("function_call")
 class FunctionCall(Expression):
+    """
+    A function (function block, method, action, etc.) call.
+
+    The return value may be dereferenced with a carat (``^``).
+
+    Examples::
+
+        A()^
+        A(1, 2)
+        A(1, 2, sName:='test', iOutput=>)
+        A.B[1].C(1, 2)
+    """
+    #: The function name.
     name: SymbolicVariable
+    #: Positional, naed, or output parameters.
     parameters: List[ParameterAssignment]
+    #: Dereference the return value?
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
 
@@ -2160,6 +2341,16 @@ class FunctionCall(Expression):
 @dataclass
 @_rule_handler("var1")
 class DeclaredVariable:
+    """
+    A single declared variable name and optional [direct or incomplete] location.
+
+    Examples::
+
+        iVar
+        iVar AT %I*
+        iVar AT %IX1.1
+    """
+
     # Alternate name: VariableWithLocation? MaybeLocatedVariable?
     variable: SimpleVariable
     location: Optional[Union[IncompleteLocation, Location]]
@@ -2203,6 +2394,9 @@ InitDeclarationType = Union[
 
 
 class InitDeclaration:
+    """
+    Base class for a declaration of one or more variables with a type initialization.
+    """
     variables: List[DeclaredVariable]
     init: InitDeclarationType
     meta: Optional[Meta]
@@ -2215,6 +2409,19 @@ class InitDeclaration:
 @dataclass
 @_rule_handler("var1_init_decl", comments=True)
 class VariableOneInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables with a type, subrange, or enumerated
+    type initialization.
+
+    Examples::
+
+        stVar1 : INT (1..2) := 25
+        stVar1, stVar2 : TypeName : TypeName := Value
+        stVar1, stVar2 : TypeName : (Value1 := 1, Value2 := 2)
+        stVar1, stVar2 : TypeName : (Value1 := 1, Value2 := 2) INT := Value1
+        stVar1, stVar2 : TypeName := (1, 2)  # TODO enumerated?
+        stVar1, stVar2 : TypeName := (Value1, Value2 := 1) := IdentifierB  # TODO enumerated?
+    """
     variables: List[DeclaredVariable]
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
     meta: Optional[Meta] = meta_field()
@@ -2223,6 +2430,18 @@ class VariableOneInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("array_var_init_decl", comments=True)
 class ArrayVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables with array type initialization and
+    optional default (initialization) value.
+
+    May be indirect (e.g., POINTER TO).
+
+    Examples::
+
+        aVal1, aVal2 : ARRAY[*] OF TypeName
+        aVal1 : ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        aVal1 : POINTER TO ARRAY[1..2] OF Call(1, 2)
+    """
     variables: List[DeclaredVariable]
     init: ArrayTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -2231,6 +2450,14 @@ class ArrayVariableInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("structured_var_init_decl", comments=True)
 class StructuredVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables using a named initialized structure.
+
+    Examples::
+
+        stVar1 : ST_TypeName := (iValue : = 0, bValue := TRUE)
+        stVar1, stVar2 : ST_TypeName := (iValue : = 0, bValue := TRUE)
+    """
     variables: List[DeclaredVariable]
     init: InitializedStructure
     meta: Optional[Meta] = meta_field()
@@ -2243,6 +2470,16 @@ class StructuredVariableInitDeclaration(InitDeclaration):
     comments=True
 )
 class StringVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables using single/double byte strings,
+    with an optinoal initialization value.
+
+    Examples::
+
+        sVar1 : STRING(2_500_000) := 'test1'
+        sVar2, sVar3 : STRING(Param.iLower) := 'test2'
+        sVar4, sVar5 : WSTRING(Param.iLower) := "test3"
+    """
     variables: List[DeclaredVariable]
     spec: StringTypeSpecification
     value: Optional[lark.Token]
@@ -2267,6 +2504,14 @@ class StringVariableInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("edge_declaration", comments=True)
 class EdgeDeclaration(InitDeclaration):
+    """
+    An edge declaration of one or more variables.
+
+    Examples::
+
+        iValue AT %IX1.1 : BOOL R_EDGE
+        iValue : BOOL F_EDGE
+    """
     variables: List[DeclaredVariable]
     edge: lark.Token
     meta: Optional[Meta] = meta_field()
@@ -2287,12 +2532,26 @@ class EdgeDeclaration(InitDeclaration):
 
 @as_tagged_union
 class FunctionBlockDeclaration:
+    """
+    Base class for declarations of variables using function blocks.
+
+    May either be by name (:class:`FunctionBlockNameDeclaration`) or invocation
+    :class:`FunctionBlockInvocationDeclaration`).
+    """
     ...
 
 
 @dataclass
 @_rule_handler("fb_name_decl", comments=True)
 class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
+    """
+    Base class for declarations of variables using function blocks by name.
+
+    Examples::
+
+        fbName1 : FB_Name
+        fbName1 : FB_Name := (iValue : = 0, bValue := TRUE)
+    """
     variables: List[lark.Token]   # fb_decl_name_list -> fb_name
     spec: lark.Token
     init: Optional[StructureInitialization] = None
@@ -2307,6 +2566,13 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 @dataclass
 @_rule_handler("fb_invocation_decl", comments=True)
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
+    """
+    Base class for declarations of variables using function blocks by invocation.
+
+    Examples::
+
+        fbSample : FB_Sample(nInitParam := 1) := (nInput := 2, nMyProperty := 3)
+    """
     variables: List[lark.Token]
     init: FunctionCall
     defaults: Optional[StructureInitialization] = None
@@ -2320,12 +2586,27 @@ class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
 
 @as_tagged_union
 class ParameterAssignment:
+    """
+    Base class for assigned parameters in function calls.
+
+    May be either input parameters (positional or named ``name :=``) or output
+    parameters (named as in ``name =>``, ``NOT name =>``).
+    """
     ...
 
 
 @dataclass
 @_rule_handler("param_assignment")
 class InputParameterAssignment(ParameterAssignment):
+    """
+    An input parameter in a function call.
+
+    May be a nameless positional parameter or a named one.
+
+    Examples::
+
+        name := value
+    """
     name: Optional[SimpleVariable]
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
@@ -2346,6 +2627,16 @@ class InputParameterAssignment(ParameterAssignment):
 @dataclass
 @_rule_handler("output_parameter_assignment")
 class OutputParameterAssignment(ParameterAssignment):
+    """
+    A named output parameter, which may be inverted.
+
+    Examples::
+
+        name => output
+        NOT name => output2
+        name =>
+        NOT name =>
+    """
     name: SimpleVariable
     value: Optional[Expression]
     inverted: bool = False
@@ -2372,6 +2663,19 @@ AnyLocation = Union[Location, IncompleteLocation]
 @dataclass
 @_rule_handler("global_var_spec")
 class GlobalVariableSpec:
+    """
+    Global variable specification; the part that comes before the
+    initialization.
+
+    Located (or incomplete located) specifications only apply to one variable,
+    whereas simple specifications can have multiple variables.
+
+    Examples::
+
+        iValue1, iValue2
+        iValue3 AT %I*
+        iValue4 AT %IX1.1
+    """
     variables: List[lark.Token]
     location: Optional[AnyLocation]
     meta: Optional[Meta] = meta_field()
