@@ -330,6 +330,12 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT"),  # noqa: E501
+        param("var1_init_decl", "stVar1, stVar2 : TypeName := (1, 2)"),  # TODO
+        param("var1_init_decl", "stVar1, stVar2 : TypeName := (Value1, Value2 := 1)"),  # TODO
+        param("var1_init_decl", "stVar1 : INT (1..2) := 25"),
+        param("var1_init_decl", "stVar1, stVar2 : TypeName := Value"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2)"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1"),
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
