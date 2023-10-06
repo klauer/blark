@@ -1,3 +1,4 @@
+import textwrap
 from dataclasses import dataclass
 from typing import Optional
 
@@ -5,7 +6,9 @@ import pytest
 
 from .. import transform as tf
 from ..dependency_store import DependencyStore, PlcProjectMetadata
-from ..summary import DeclarationSummary, MethodSummary, PropertySummary
+from ..parse import parse_source_code
+from ..summary import (CodeSummary, DeclarationSummary, FunctionBlockSummary,
+                       MethodSummary, PropertySummary)
 
 
 @dataclass
@@ -316,3 +319,68 @@ def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
     method1 = itf["Method1"]
     assert isinstance(method1, MethodSummary)
     assert method1.return_type == "BOOL"
+
+
+def test_isolated_summary():
+    declarations = textwrap.dedent(
+        """\
+        TYPE UnionType :
+            UNION
+                iValue : DINT;
+                bValue : BOOL;
+            END_UNION
+        END_TYPE
+        TYPE BaseStructureType :
+            STRUCT
+                iBase : DINT;
+            END_STRUCT
+        END_TYPE
+        TYPE StructureType EXTENDS BaseStructureType :
+            STRUCT
+                bValue : BOOL;
+            END_STRUCT
+        END_TYPE
+        FUNCTION_BLOCK FB_Test
+            VAR_INPUT
+                iValue : INT;
+                stStruct : StructureType;
+                U_Union : UnionType;
+            END_VAR
+        END_FUNCTION_BLOCK
+        """
+    )
+
+    parsed = parse_source_code(declarations)
+    summary = CodeSummary.from_parse_results(parsed, squash=True)
+
+    fb_test = summary["FB_Test"]
+    assert isinstance(fb_test, FunctionBlockSummary)
+    assert fb_test.name == "FB_Test"
+    assert fb_test.declarations["iValue"].base_type == "INT"
+
+    st_struct = fb_test.declarations["stStruct"]
+    assert st_struct.base_type == "StructureType"
+    assert summary.find_code_object_by_dotted_name("FB_Test.stStruct") is st_struct
+
+    ibase = summary.find_path("FB_Test.stStruct.iBase")
+    assert ibase is not None
+    assert ibase[0] is fb_test
+    assert ibase[1] is st_struct
+    assert isinstance(ibase[2], DeclarationSummary)
+    assert ibase[2].name == "iBase"
+    assert ibase[2].base_type == "DINT"
+
+    assert summary.find("FB_Test.stStruct.iBase") is ibase[2]
+
+    bvalue = summary.find_path("FB_Test.stStruct.bValue")
+    assert bvalue is not None
+    assert bvalue[0] is fb_test
+    assert bvalue[1] is st_struct
+    assert isinstance(bvalue[2], DeclarationSummary)
+    assert bvalue[2].name == "bValue"
+    assert bvalue[2].base_type == "BOOL"
+
+    assert summary.find("FB_Test.stStruct.bValue") is bvalue[2]
+
+    union_bvalue = summary.find("FB_Test.U_Union.bValue")
+    assert union_bvalue is not None
