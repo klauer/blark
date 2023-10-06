@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 import pathlib
+import typing
 from typing import (Any, ClassVar, Dict, Generator, Iterable, List, Optional,
                     Tuple, Type, Union)
 
@@ -25,6 +26,9 @@ from .parse import parse
 
 logger = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from sphinx.builders import Builder
+
 
 MODULE_PATH = pathlib.Path(__file__).parent.resolve()
 STATIC_PATH = MODULE_PATH / "docs"
@@ -44,7 +48,10 @@ class BlarkSphinxCache:
             BlarkSphinxCache._instance_ = BlarkSphinxCache()
         return BlarkSphinxCache._instance_
 
-    def find_by_name(self, name: str):
+    def find_by_name(self, name: str) -> Union[
+        summary.FunctionSummary,
+        summary.FunctionBlockSummary,
+    ]:
         for item in self.cache.values():
             obj = item.find(name)
             if obj is not None:
@@ -52,7 +59,7 @@ class BlarkSphinxCache:
 
         raise KeyError(f"{name!r} not found")
 
-    def configure(self, app: sphinx.application.Sphinx, config):
+    def configure(self, app: sphinx.application.Sphinx, config) -> None:
         for filename in config.blark_projects:
             logger.debug("Loading %s", filename)
             for fn, info in parse(filename):
@@ -121,7 +128,9 @@ def declaration_to_signature(
     )
 
 
-def declaration_to_content(obj: summary.DeclarationSummary):
+def declaration_to_content(
+    obj: summary.DeclarationSummary,
+) -> Generator[nodes.paragraph, None, None]:
     if obj.value:
         default = nodes.paragraph(text="Default: ")
         default += addnodes.literal_strong(text=str(obj.value))
@@ -171,7 +180,11 @@ class DeclarationDirective(BlarkDirective):
     block_header: str
     obj: summary.DeclarationSummary
 
-    def handle_signature(self, sig: str, signode: addnodes.desc_signature) -> Tuple[str, str]:
+    def handle_signature(
+        self,
+        sig: str,
+        signode: addnodes.desc_signature,
+    ) -> Tuple[str, str]:
         # def transform_content(self, contentnode: addnodes.desc_content) -> None:
         func = self.env.ref_context["bk:function"]
         variable = sig
@@ -186,7 +199,7 @@ class DeclarationDirective(BlarkDirective):
 class VariableBlockDirective(BlarkDirective):
     block_header: str
     parent_name: str
-    declarations: List[summary.DeclarationSummary]
+    declarations: Optional[List[summary.DeclarationSummary]]
 
     def handle_signature(
         self, sig: str, signode: addnodes.desc_signature
@@ -208,8 +221,8 @@ class VariableBlockDirective(BlarkDirective):
     def transform_content(self, contentnode: addnodes.desc_content) -> None:
         if not self.env.ref_context.get("bk:function", None):
             return
-
-        contentnode += declarations_to_block(self.declarations, env=self.env)
+        if self.declarations:
+            contentnode += declarations_to_block(self.declarations, env=self.env)
 
 
 def _build_table_from_lists(
@@ -230,7 +243,7 @@ def _build_table_from_lists(
             stub_columns -= 1
         tgroup += colspec
 
-    def _to_row(row: List[nodes.Element]) -> nodes.row:
+    def _to_row(row: List[nodes.Node]) -> nodes.row:
         row_node = nodes.row()
         for cell in row:
             entry = nodes.entry()
@@ -251,7 +264,8 @@ def _build_table_from_lists(
 
 
 def _to_link_table(
-    parent_name: str, decls: Iterable[summary.DeclarationSummary]
+    parent_name: str,
+    decls: Iterable[summary.DeclarationSummary],
 ) -> nodes.table:
     def decl_items() -> Generator[List[nodes.Node], None, None]:
         for decl in sorted(decls, key=lambda decl: decl.name):
@@ -263,7 +277,7 @@ def _to_link_table(
                 reftype="declaration",
                 reftarget=decl.qualified_name,
             )
-            yield [paragraph, nodes.Text(decl.location)]
+            yield [paragraph, nodes.Text(decl.location or "")]
 
     return _build_table_from_lists(
         table_data=[
@@ -289,7 +303,11 @@ class MissingDeclaration:
 
 
 class BlarkDirectiveWithDeclarations(BlarkDirective):
-    obj: Union[summary.FunctionSummary, summary.FunctionBlockSummary]
+    obj: Union[
+        summary.FunctionSummary,
+        summary.FunctionBlockSummary,
+        MissingDeclaration,
+    ]
     doc_field_types = [
         GroupedField(
             "declaration",
@@ -309,7 +327,11 @@ class BlarkDirectiveWithDeclarations(BlarkDirective):
         # ),
     ]
 
-    def handle_signature(self, sig: str, signode: addnodes.desc_signature) -> Tuple[str, str]:
+    def handle_signature(
+        self,
+        sig: str,
+        signode: addnodes.desc_signature,
+    ) -> Tuple[str, str]:
         """Transform a signature/object into RST nodes."""
         try:
             self.obj = BlarkSphinxCache.instance().find_by_name(sig)
@@ -533,7 +555,7 @@ class BlarkDomain(Domain):
         "type": BlarkXRefRole(),
     }
 
-    initial_data: ClassVar[str, Dict[str, Any]] = {
+    initial_data: ClassVar[Dict[str, Dict[str, Any]]] = {
         "action": {},
         "declaration": {},
         "function": {},
@@ -548,7 +570,12 @@ class BlarkDomain(Domain):
         # BlarkModuleIndex,
     ]
 
-    def find_obj(self, rolename, node, targetstring):
+    def find_obj(
+        self,
+        rolename: str,
+        node: nodes.Node,
+        targetstring: str,
+    ):
         for typename, objtype in self.object_types.items():
             if rolename in objtype.roles:
                 break
@@ -561,7 +588,16 @@ class BlarkDomain(Domain):
         # print("scope", rolename, node, list(domaindata))
         return domaindata.get(targetstring, [])
 
-    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+    def resolve_xref(
+        self,
+        env: sphinx.environment.BuildEnvironment,
+        fromdocname: str,
+        builder: Builder,
+        typ: str,
+        target: str,
+        node: addnodes.pending_xref,
+        contnode: nodes.Element,
+    ) -> nodes.reference:
         matches = self.find_obj(typ, node, target)
         if not matches:
             logger.warning("No target found for cross-reference: %s", target)
@@ -574,11 +610,15 @@ class BlarkDomain(Domain):
             )
         match = matches[0]
         return make_refnode(
-            builder, fromdocname, match["docname"], match["qualified_name"],
-            contnode, target
+            builder,
+            fromdocname,
+            match["docname"],
+            match["qualified_name"],
+            contnode,
+            target,
         )
 
-    def clear_doc(self, docname):
+    def clear_doc(self, docname: str) -> None:
         for name in self.initial_data:
             for name, methods in self.env.domaindata["bk"][name].items():
                 to_delete = []
@@ -589,13 +629,13 @@ class BlarkDomain(Domain):
                     methods.pop(idx)
 
 
-def _initialize_domain(app: sphinx.application.Sphinx, config):
+def _initialize_domain(app: sphinx.application.Sphinx, config) -> None:
     """Callback function for 'config-inited'."""
     cache = BlarkSphinxCache.instance()
     cache.configure(app, config)
 
 
-def setup(app: sphinx.application.Sphinx):
+def setup(app: sphinx.application.Sphinx) -> None:
     app.add_config_value('blark_projects', [], 'html')
     app.add_config_value('blark_signature_show_type', True, 'html')
 
