@@ -323,7 +323,6 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2)"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
-        param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]"),
