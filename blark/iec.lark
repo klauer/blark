@@ -529,7 +529,6 @@ string_type_specification: (STRING | WSTRING) [ string_spec_length ]
          | subrange_specification
          | enumerated_specification
          | array_specification
-         | structure_type_name
          | string_type_specification
 
 // B.1.5.1
