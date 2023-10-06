@@ -2453,13 +2453,11 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
         )
 
 
+#: var_spec in the gramar
 IncompleteLocatedVariableSpecInit = Union[
     SimpleSpecification,
-    TypeInitialization,
     SubrangeTypeInitialization,
     EnumeratedTypeInitialization,
-    ArrayTypeInitialization,
-    InitializedStructure,
     StringTypeSpecification,
 ]
 
