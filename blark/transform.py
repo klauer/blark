@@ -387,6 +387,9 @@ class Expression:
 
     This includes all literals (integers, etc.) and more complicated
     mathematical expressions.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
     """
 
     def __str__(self) -> str:
@@ -395,7 +398,12 @@ class Expression:
 
 @as_tagged_union
 class Literal(Expression):
-    """Base class for all literal values."""
+    """
+    Base class for all literal values.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
 
 
 @dataclass
@@ -778,6 +786,9 @@ class String(Literal):
 class Variable(Expression):
     """
     Variable base class.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
 
     Includes:
 
@@ -1275,7 +1286,8 @@ class Subrange:
     """
     Subrange base class.
 
-    May be a full or partial sub-range.
+    May be a full or partial sub-range. Marked as a "tagged union" so that
+    serialization will uniquely identify the Python class.
     """
     ...
 
@@ -2536,7 +2548,8 @@ class FunctionBlockDeclaration:
     Base class for declarations of variables using function blocks.
 
     May either be by name (:class:`FunctionBlockNameDeclaration`) or invocation
-    :class:`FunctionBlockInvocationDeclaration`).
+    :class:`FunctionBlockInvocationDeclaration`). Marked as a "tagged union" so
+    that serialization will uniquely identify the Python class.
     """
     ...
 
@@ -2590,7 +2603,8 @@ class ParameterAssignment:
     Base class for assigned parameters in function calls.
 
     May be either input parameters (positional or named ``name :=``) or output
-    parameters (named as in ``name =>``, ``NOT name =>``).
+    parameters (named as in ``name =>``, ``NOT name =>``). Marked as a "tagged
+    union" so that serialization will uniquely identify the Python class.
     """
     ...
 
@@ -2713,6 +2727,22 @@ LocatedVariableSpecInit = Union[
 @dataclass
 @_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
+    """
+    A declaration of one or more global variables: name and location
+    specification and initialization type.
+
+    Examples::
+
+        fValue1 : INT;
+        fValue2 : INT (0..10);
+        fValue3 : (A, B);
+        fValue4 : (A, B) DINT;
+        fValue5 : ARRAY [1..10] OF INT;
+        fValue6 : ARRAY [1..10] OF ARRAY [1..10] OF INT;
+        fValue7 : FB_Test(1, 2, 3);
+        fValue8 : FB_Test(A := 1, B := 2, C => 3);
+        fValue9 : STRING[10] := 'abc';
+    """
     spec: GlobalVariableSpec
     init: Union[LocatedVariableSpecInit, FunctionCall]
     meta: Optional[Meta] = meta_field()
@@ -2744,6 +2774,15 @@ class GlobalVariableDeclaration:
 @dataclass
 @_rule_handler("extends")
 class Extends:
+    """
+    The "EXTENDS" portion of a function block, interface, structure, etc.
+
+    Examples::
+
+        EXTENDS stName
+        EXTENDS FB_Name
+    """
+
     name: lark.Token
     meta: Optional[Meta] = meta_field()
 
@@ -2754,6 +2793,16 @@ class Extends:
 @dataclass
 @_rule_handler("implements")
 class Implements:
+    """
+    The "IMPLEMENTS" portion of a function block, indicating it implements
+    one or more interfaces.
+
+    Examples::
+
+        IMPLEMENTS I_Interface1
+        IMPLEMENTS I_Interface1, I_Interface2
+    """
+
     interfaces: List[lark.Token]
     meta: Optional[Meta] = meta_field()
 
@@ -2770,6 +2819,36 @@ class Implements:
 @dataclass
 @_rule_handler("function_block_type_declaration", comments=True)
 class FunctionBlock:
+    """
+    A full function block type declaration.
+
+    A function block distinguishes itself from a regular function by having
+    state and potentially having actions, methods, and properties. These
+    additional parts are separate in this grammar (i.e., they do not appear
+    within the FUNCTION_BLOCK itself).
+
+    An implementation is optional, but ``END_FUNCTION_BLOCK`` is required.
+
+    Examples::
+
+        FUNCTION_BLOCK FB_EmptyFunctionBlock
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK FB_Implementer IMPLEMENTS I_fbName
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK ABSTRACT FB_Extender EXTENDS OtherFbName
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK FB_WithVariables
+        VAR_INPUT
+            bExecute : BOOL;
+        END_VAR
+        VAR_OUTPUT
+            iResult : INT;
+        END_VAR
+        END_FUNCTION_BLOCK
+    """
     name: lark.Token
     access: Optional[AccessSpecifier]
     extends: Optional[Extends]
@@ -2817,6 +2896,20 @@ class FunctionBlock:
 @dataclass
 @_rule_handler("function_declaration", comments=True)
 class Function:
+    """
+    A full function block type declaration, with nested variable declaration blocks.
+
+    An implementation is optional, but ``END_FUNCTION`` is required.
+
+    Examples::
+
+        FUNCTION FuncName : INT
+            VAR_INPUT
+                iValue : INT := 0;
+            END_VAR
+            FuncName := iValue;
+        END_FUNCTION
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]]
@@ -2861,6 +2954,23 @@ class Function:
 @dataclass
 @_rule_handler("program_declaration", comments=True)
 class Program:
+    """
+    A full program declaration, with nested variable declaration blocks.
+
+    An implementation is optional, but ``END_PROGRAM`` is required.
+
+    Examples::
+
+        PROGRAM ProgramName
+            VAR_INPUT
+                iValue : INT;
+            END_VAR
+            VAR_ACCESS
+                AccessName : SymbolicVariable : TypeName READ_WRITE;
+            END_VAR
+            iValue := iValue + 1;
+        END_PROGRAM
+    """
     name: lark.Token
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
@@ -2890,6 +3000,15 @@ InterfaceVariableDeclarationBlock = Union[
 @dataclass
 @_rule_handler("interface_declaration", comments=True)
 class Interface:
+    """
+    A full interface declaration, with nested variable declaration blocks.
+
+    An implementation is not allowed for interfaces, but ``END_INTERFACE`` is
+    still required.
+
+    Examples::
+
+    """
     name: lark.Token
     extends: Optional[Extends]
     # TODO: want this to be tagged during serialization, so it's kept as
@@ -2928,6 +3047,23 @@ class Interface:
 @dataclass
 @_rule_handler("action", comments=True)
 class Action:
+    """
+    A full, named action declaration.
+
+    Actions belong to function blocks. Actions may not contain variable blocks,
+    but may contain an implementation.  Variable references are assumed to be
+    from the local namespace (i.e., the owner function block) or in the global
+    scope.
+
+    Examples::
+
+        ACTION ActName
+        END_ACTION
+
+        ACTION ActName
+            iValue := iValue + 2;
+        END_ACTION
+    """
     name: lark.Token
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -2947,6 +3083,21 @@ class Action:
 @dataclass
 @_rule_handler("function_block_method_declaration", comments=True)
 class Method:
+    """
+    A full, named method declaration.
+
+    Methods belong to function blocks. Methods may contain variable blocks
+    and a return type, and may also contain an implementation.
+
+    Examples::
+
+        METHOD PRIVATE MethodName : ARRAY [1..2] OF INT
+        END_METHOD
+
+        METHOD MethodName : INT
+            MethodName := 1;
+        END_METHOD
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
@@ -2988,6 +3139,28 @@ class Method:
 @dataclass
 @_rule_handler("function_block_property_declaration", comments=True)
 class Property:
+    """
+    A named property declaration, which may pertain to a ``get`` or ``set``.
+
+    Properties belong to function blocks. Properties may contain variable
+    blocks and a return type, and may also contain an implementation.
+
+    Examples::
+
+        PROPERTY PropertyName : RETURNTYPE
+            VAR_INPUT
+                bExecute : BOOL;
+            END_VAR
+            VAR_OUTPUT
+                iResult : INT;
+            END_VAR
+            iResult := 5;
+            PropertyName := iResult + 1;
+        END_PROPERTY
+
+        PROPERTY PRIVATE PropertyName : ARRAY [1..2] OF INT
+        END_PROPERTY
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
@@ -3050,6 +3223,12 @@ GlobalVariableDeclarationType = Union[
 
 @as_tagged_union
 class VariableDeclarationBlock:
+    """
+    Base class for variable declaration blocks.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
     block_header: ClassVar[str] = "VAR"
     items: List[Any]
     meta: Optional[Meta]
@@ -3064,6 +3243,11 @@ class VariableDeclarationBlock:
 @dataclass
 @_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
+    """
+    Variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -3089,6 +3273,11 @@ class VariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("static_var_declarations", comments=True)
 class StaticDeclarations(VariableDeclarationBlock):
+    """
+    Static variable declarations block (``VAR_STAT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_STAT"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -3115,6 +3304,11 @@ class StaticDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("temp_var_decls", comments=True)
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
+    """
+    Temporary variable declarations block (``VAR_TEMP``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_TEMP"
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -3138,6 +3332,11 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
+    """
+    Declarations block for instance variables in methods (``VAR_INST``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_INST"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -3168,6 +3367,10 @@ class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("located_var_decl", comments=True)
 class LocatedVariableDeclaration:
+    """
+    Declaration of a variable in a VAR block that is located.
+    """
+    # TODO examples
     name: Optional[SimpleVariable]
     location: Location
     init: LocatedVariableSpecInit
@@ -3181,6 +3384,13 @@ class LocatedVariableDeclaration:
 @dataclass
 @_rule_handler("located_var_declarations", comments=True)
 class LocatedVariableDeclarations(VariableDeclarationBlock):
+    """
+    Located variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+
+    All variables in this are expected to be located (e.g., ``AT %IX1.1``).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[LocatedVariableDeclaration]
@@ -3218,6 +3428,9 @@ IncompleteLocatedVariableSpecInit = Union[
 @dataclass
 @_rule_handler("incomplete_located_var_decl", comments=True)
 class IncompleteLocatedVariableDeclaration:
+    """
+    A named, incomplete located variable declaration inside a variable block.
+    """
     name: SimpleVariable
     location: IncompleteLocation
     init: IncompleteLocatedVariableSpecInit
@@ -3231,6 +3444,14 @@ class IncompleteLocatedVariableDeclaration:
 @dataclass
 @_rule_handler("incomplete_located_var_declarations", comments=True)
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
+    """
+    Incomplete located variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+
+    All variables in this are expected to have incomplete locations (e.g., just
+    ``%I*``).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[IncompleteLocatedVariableDeclaration]
@@ -3259,6 +3480,9 @@ class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("external_declaration", comments=True)
 class ExternalVariableDeclaration:
+    """
+    A named, external variable declaration inside a variable block.
+    """
     name: lark.Token
     spec: Union[
         SimpleSpecification,
@@ -3276,6 +3500,11 @@ class ExternalVariableDeclaration:
 @dataclass
 @_rule_handler("external_var_declarations", comments=True)
 class ExternalVariableDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, external variable declarations (``VAR_EXTERNAL``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_EXTERNAL"
     attrs: Optional[VariableAttributes]
     items: List[ExternalVariableDeclaration]
@@ -3304,6 +3533,11 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_declarations", comments=True)
 class InputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, input variable declarations (``VAR_INPUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_INPUT"
     attrs: Optional[VariableAttributes]
     items: List[InputDeclaration]
@@ -3328,6 +3562,11 @@ class InputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("output_declarations", comments=True)
 class OutputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, output variable declarations (``VAR_OUTPUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_OUTPUT"
     attrs: Optional[VariableAttributes]
     items: List[OutputDeclaration]
@@ -3354,6 +3593,11 @@ class OutputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, input/output variable declarations (``VAR_IN_OUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_IN_OUT"
     attrs: Optional[VariableAttributes]
     items: List[InputOutputDeclaration]
@@ -3375,23 +3619,6 @@ class InputOutputDeclarations(VariableDeclarationBlock):
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
-        )
-
-
-@dataclass
-@_rule_handler("program_access_decl", comments=True)
-class AccessDeclaration:
-    name: lark.Token
-    variable: SymbolicVariable
-    type: DataType
-    direction: Optional[lark.Token]
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
-        return join_if(
-            f"{self.name} : {self.variable} : {self.type}",
-            " ",
-            self.direction
         )
 
 
@@ -3425,8 +3652,41 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
+@_rule_handler("program_access_decl", comments=True)
+class AccessDeclaration:
+    """
+    A single, named program access declaration.
+
+    Examples::
+
+        AccessName : SymbolicVariable : TypeName READ_WRITE;
+        AccessName1 : SymbolicVariable1 : TypeName1 READ_ONLY;
+        AccessName2 : SymbolicVariable2 : TypeName2;
+    """
+    name: lark.Token
+    variable: SymbolicVariable
+    type: DataType
+    direction: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return join_if(
+            f"{self.name} : {self.variable} : {self.type}",
+            " ",
+            self.direction
+        )
+
+
+@dataclass
 @_rule_handler("program_access_decls", comments=True)
 class AccessDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, program access variable declarations (``VAR_ACCESS``).
+
+    See Also
+    --------
+    :class:`AccessDeclaration`
+    """
     block_header: ClassVar[str] = "VAR_ACCESS"
     items: List[AccessDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -3448,6 +3708,11 @@ class AccessDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
+    """
+    Global variable declarations block (``VAR_GLOBAL``).
+
+    May be annotated with attributes (see :class:`GlobalVariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_GLOBAL"
     attrs: Optional[GlobalVariableAttributes]
     items: List[GlobalVariableDeclaration]
@@ -3477,11 +3742,26 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
 
 @as_tagged_union
 class Statement:
-    ...
+    """
+    Base class for all statements in a structured text implementation section.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
 
 
 @_rule_handler("function_call_statement", comments=True)
 class FunctionCallStatement(Statement, FunctionCall):
+    """
+    A function (function block, method, action, etc.) call as a statement.
+
+    Examples::
+
+        A(1, 2);
+        A(1, 2, sName:='test', iOutput=>);
+        A.B[1].C(1, 2);
+    """
+
     @staticmethod
     def from_lark(
         invocation: FunctionCall,
@@ -3501,6 +3781,14 @@ class FunctionCallStatement(Statement, FunctionCall):
 @dataclass
 @_rule_handler("chained_function_call_statement", comments=True)
 class ChainedFunctionCallStatement(Statement):
+    """
+    A chained set of function calls as a statement, in a "fluent" style.
+
+    Examples::
+
+        uut.dothis().andthenthis().andthenthat();
+        uut.getPointerToStruct()^.dothis(A := 1).dothat(B := 2).done();
+    """
     invocations: List[FunctionCall]
     meta: Optional[Meta] = meta_field()
 
@@ -3518,6 +3806,7 @@ class ChainedFunctionCallStatement(Statement):
 @dataclass
 @_rule_handler("else_if_clause", comments=True)
 class ElseIfClause:
+    """The else-if ``ELSIF`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     if_expression: Expression
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
@@ -3535,6 +3824,7 @@ class ElseIfClause:
 @dataclass
 @_rule_handler("else_clause", comments=True)
 class ElseClause:
+    """The ``ELSE`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
 
@@ -3551,6 +3841,7 @@ class ElseClause:
 @dataclass
 @_rule_handler("if_statement", comments=True)
 class IfStatement(Statement):
+    """The ``IF`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     if_expression: Expression
     statements: Optional[StatementList]
     else_ifs: List[ElseIfClause]
@@ -3602,6 +3893,17 @@ CaseMatch = Union[
 @dataclass
 @_rule_handler("case_element", comments=True)
 class CaseElement(Statement):
+    """
+    A single element of a ``CASE`` statement block.
+
+    May contain one or more matches with corresponding statements. Matches
+    may include subranges, integers, enumerated values, symbolic variables,
+    bit strings, or boolean values.
+
+    See Also
+    --------
+    :class:`CaseMatch`
+    """
     matches: List[CaseMatch]
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
@@ -3630,6 +3932,17 @@ class CaseElement(Statement):
 @dataclass
 @_rule_handler("case_statement", comments=True)
 class CaseStatement(Statement):
+    """
+    A switch-like ``CASE`` statement block.
+
+    May contain one or more cases with corresponding statements, and a default
+    ``ELSE`` clause.
+
+    See Also
+    --------
+    :class:`CaseElement`
+    :class:`ElseClause`
+    """
     expression: Expression
     cases: List[CaseElement]
     else_clause: Optional[ElseClause]
@@ -3650,6 +3963,19 @@ class CaseStatement(Statement):
 @dataclass
 @_rule_handler("no_op_statement", comments=True)
 class NoOpStatement(Statement):
+    """
+    A no-operation statement referring to a variable and nothing else.
+
+    Distinguished from an action depending on if the context-sensitive
+    name matches an action or a variable name.
+
+    Note that blark does not handle this for you and may arbitrarily choose
+    one or the other.
+
+    Examples::
+
+        variable;
+    """
     variable: Variable
     meta: Optional[Meta] = meta_field()
 
@@ -3660,6 +3986,15 @@ class NoOpStatement(Statement):
 @dataclass
 @_rule_handler("action_statement", comments=True)
 class ActionStatement(Statement):
+    """
+    A statement to call an action.
+
+    Distinguished from a no-operation depending on if the context-sensitive
+    name matches an action or a variable name.
+
+    Note that blark does not handle this for you and may arbitrarily choose
+    one or the other.
+    """
     # TODO: overlaps with no-op statement?
     action: lark.Token
     meta: Optional[Meta] = meta_field()
@@ -3671,6 +4006,13 @@ class ActionStatement(Statement):
 @dataclass
 @_rule_handler("set_statement", comments=True)
 class SetStatement(Statement):
+    """
+    A "set" statement which conditionally sets a variable to ``TRUE``.
+
+    Examples::
+
+        bValue S= iValue > 5;
+    """
     variable: SymbolicVariable
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3682,6 +4024,13 @@ class SetStatement(Statement):
 @dataclass
 @_rule_handler("reference_assignment_statement", comments=True)
 class ReferenceAssignmentStatement(Statement):
+    """
+    A reference assignment statement.
+
+    Examples::
+
+        refOne REF= refOtherOne;
+    """
     variable: SymbolicVariable
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3693,6 +4042,13 @@ class ReferenceAssignmentStatement(Statement):
 @dataclass
 @_rule_handler("reset_statement")
 class ResetStatement(Statement):
+    """
+    A "reset" statement which conditionally clears a variable to ``FALSE``.
+
+    Examples::
+
+        bValue R= iValue <= 5;
+    """
     variable: SymbolicVariable
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3704,6 +4060,7 @@ class ResetStatement(Statement):
 @dataclass
 @_rule_handler("exit_statement", comments=True)
 class ExitStatement(Statement):
+    """A statement used to exit a loop, ``EXIT``."""
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -3713,6 +4070,7 @@ class ExitStatement(Statement):
 @dataclass
 @_rule_handler("continue_statement", comments=True)
 class ContinueStatement(Statement):
+    """A statement used to jump to the top of a loop, ``CONTINUE``."""
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -3722,6 +4080,11 @@ class ContinueStatement(Statement):
 @dataclass
 @_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
+    """
+    A statement used to return from a function [block], ``RETURN``.
+
+    No value is allowed to be returned with this statement.
+    """
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -3731,6 +4094,14 @@ class ReturnStatement(Statement):
 @dataclass
 @_rule_handler("assignment_statement", comments=True)
 class AssignmentStatement(Statement):
+    """
+    An assignment statement.
+
+    Examples::
+
+        iValue := 5;
+        iValue1 := iValue2 := 6;
+    """
     variables: List[Variable]
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3751,6 +4122,7 @@ class AssignmentStatement(Statement):
 @dataclass
 @_rule_handler("while_statement", comments=True)
 class WhileStatement(Statement):
+    """A beginning conditional loop statement, ``WHILE``."""
     expression: Expression
     statements: StatementList
     meta: Optional[Meta] = meta_field()
@@ -3770,6 +4142,7 @@ class WhileStatement(Statement):
 @dataclass
 @_rule_handler("repeat_statement", comments=True)
 class RepeatStatement(Statement):
+    """An ending conditional loop statement, ``REPEAT``."""
     statements: StatementList
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3789,6 +4162,21 @@ class RepeatStatement(Statement):
 @dataclass
 @_rule_handler("for_statement", comments=True)
 class ForStatement(Statement):
+    """
+    A loop with a control variable and a start, stop, and (optional) step value.
+
+    Examples::
+
+        FOR iIndex := 0 TO 10
+        DO
+            iValue := iIndex * 2;
+        END_FOR
+
+        FOR iIndex := (iValue - 5) TO (iValue + 5) BY 2
+        DO
+            arrArray[iIndex] := iIndex * 2;
+        END_FOR
+    """
     control: SymbolicVariable
     from_: Expression
     to: Expression
@@ -3816,6 +4204,20 @@ class ForStatement(Statement):
     comments=True,
 )
 class LabeledStatement(Statement):
+    """
+    A statement marked with a user-defined label.
+
+    This is to support the "goto"-style ``JMP``.
+
+    Examples::
+
+        label1: A := 1;
+
+        label2:
+        IF iValue = 1 THEN
+            A := 3;
+        END_IF
+    """
     label: lark.Token
     statement: Optional[Statement] = None
     meta: Optional[Meta] = meta_field()
@@ -3835,6 +4237,13 @@ class LabeledStatement(Statement):
 @dataclass
 @_rule_handler("jmp_statement", comments=True)
 class JumpStatement(Statement):
+    """
+    This is the "goto"-style ``JMP``, which points at a label.
+
+    Examples::
+
+        JMP label;
+    """
     label: lark.Token
     meta: Optional[Meta] = meta_field()
 
@@ -3845,6 +4254,7 @@ class JumpStatement(Statement):
 @dataclass
 @_rule_handler("statement_list", "case_element_statement_list")
 class StatementList:
+    """A list of statements, making up a structured text implementation."""
     statements: List[Statement]
     meta: Optional[Meta] = meta_field()
 
@@ -3880,6 +4290,23 @@ TypeDeclarationItem = Union[
 @dataclass
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
+    """
+    A data type declaration, wrapping the other declaration types with
+    ``TYPE``/``END_TYPE``.
+
+    Access specifiers may be included.
+
+    See Also
+    --------
+    :class:`AccessSpecifier`
+    :class:`ArrayTypeDeclaration`
+    :class:`StructureTypeDeclaration`
+    :class:`StringTypeDeclaration`
+    :class:`SimpleTypeDeclaration`
+    :class:`SubrangeTypeDeclaration`
+    :class:`EnumeratedTypeDeclaration`
+    :class:`UnionTypeDeclaration`
+    """
     declaration: Optional[TypeDeclarationItem]
     access: Optional[AccessSpecifier]
     meta: Optional[Meta] = meta_field()
@@ -3927,7 +4354,20 @@ SourceCodeItem = Union[
 @dataclass
 @_rule_handler("iec_source")
 class SourceCode:
-    """Top-level source code item."""
+    """
+    Top-level source code item.
+
+    May contain zero or more of the following as items:
+
+    * :class:`DataTypeDeclaration`
+    * :class:`Function`
+    * :class:`FunctionBlock`
+    * :class:`Action`
+    * :class:`Method`
+    * :class:`Program`
+    * :class:`Property`
+    * :class:`GlobalVariableDeclarations`
+    """
     items: List[SourceCodeItem]
     filename: Optional[pathlib.Path] = None
     raw_source: Optional[str] = None
@@ -3960,6 +4400,11 @@ class ExtendedSourceCode(SourceCode):
     """
     Top-level source code item - extended to include the possibility of
     standalone implementation details (i.e., statement lists).
+
+    See Also
+    --------
+    :class:`SourceCodeItem`
+    :class:`StatementList`
     """
 
     items: List[Union[SourceCodeItem, StatementList]]
