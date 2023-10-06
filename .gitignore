@@ -5,3 +5,5 @@
 /dist
 *.egg-info
 .coverage
+/docs/build
+.DS_Store
