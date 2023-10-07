@@ -320,6 +320,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("subrange_specification", "TypeName"),  # aliased and not usually hit
         param("subrange_type_declaration", "TypeName : INT (1..2)"),
         param("subrange_type_declaration", "TypeName : INT (*) := 1"),
+        param("subrange_spec_init", "INT (1..2) := 25"),
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2)"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
@@ -330,8 +331,9 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT"),  # noqa: E501
-        param("var1_init_decl", "stVar1, stVar2 : TypeName := (1, 2)"),  # TODO
-        param("var1_init_decl", "stVar1, stVar2 : TypeName := (Value1, Value2 := 1)"),  # TODO
+        param("simple_spec_init", "TypeName := Value1"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1, Value2)"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 0, Value2 := 1)"),  # noqa: E501
         param("var1_init_decl", "stVar1 : INT (1..2) := 25"),
         param("var1_init_decl", "stVar1, stVar2 : TypeName := Value"),
         param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2)"),

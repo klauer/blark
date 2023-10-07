@@ -1143,7 +1143,7 @@ class TypeInitialization(TypeInitializationBase):
 
     Example::
 
-        TypeName := (1, 2)   # TODO
+        TypeName := Value1
         STRING[100] := "value"
     """
     indirection: Optional[IndirectionType]
@@ -2427,12 +2427,12 @@ class VariableOneInitDeclaration(InitDeclaration):
 
     Examples::
 
+        stVar1, stVar2 : (Value1, Value2)
+        stVar1, stVar2 : (Value1 := 0, Value2 := 1)
         stVar1 : INT (1..2) := 25
-        stVar1, stVar2 : TypeName : TypeName := Value
-        stVar1, stVar2 : TypeName : (Value1 := 1, Value2 := 2)
-        stVar1, stVar2 : TypeName : (Value1 := 1, Value2 := 2) INT := Value1
-        stVar1, stVar2 : TypeName := (1, 2)  # TODO enumerated?
-        stVar1, stVar2 : TypeName := (Value1, Value2 := 1) := IdentifierB  # TODO enumerated?
+        stVar1, stVar2 : TypeName := Value
+        stVar1, stVar2 : (Value1 := 1, Value2 := 2)
+        stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1
     """
     variables: List[DeclaredVariable]
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
