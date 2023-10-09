@@ -425,7 +425,9 @@ def test_expression_roundtrip(rule_name, value):
         param("var1", "iValue"),
         param("edge_declaration", "iValue AT %IX1.1 : BOOL R_EDGE"),
         param("edge_declaration", "iValue : BOOL F_EDGE"),
-        # param("array_var_init_decl", ""),
+        param("array_var_init_decl", "aVal1, aVal2 : ARRAY [*] OF TypeName"),
+        param("array_var_init_decl", "aVal1 : ARRAY [1..2] OF Call(1, 2) := [1, 2]"),
+        param("array_var_init_decl", "aVal1 : POINTER TO ARRAY [1..2] OF Call(1, 2)"),
         param("input_declarations", tf.multiline_code_block(
             """
             VAR_INPUT
@@ -1889,7 +1891,6 @@ def test_uncovered_grammar():
         "WS",
         "array_initialization",
         "array_var_declaration",
-        "array_var_init_decl",
         "boolean_literal",  # not a transformer class but certainly covered
         "fb_decl",
 
