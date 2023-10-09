@@ -4,14 +4,11 @@ from __future__ import annotations
 import collections
 import dataclasses
 import pathlib
-from typing import Any, DefaultDict, Dict, List, Optional, Union
+from typing import Any, DefaultDict, Dict, List, Optional
 
 import lark
 
-from .input import (BlarkCompositeSourceItem, BlarkSourceItem,
-                    register_input_handler)
 from .output import OutputBlock, register_output_handler
-from .util import AnyPath, SourceType, find_pou_type_and_identifier
 
 
 @dataclasses.dataclass(frozen=True)
@@ -119,7 +116,7 @@ def apply_annotations_to_code(
             font-weight: bold;
         }
     </style>
-    """ + html
+    """ + html  # noqa: E501
     return html
 
 
@@ -166,6 +163,7 @@ class HtmlWriter:
             result.append(writer.to_html())
 
         return "\n\n".join(result)
+
 
 def _register():
     """Register the HTML output file handlers."""
