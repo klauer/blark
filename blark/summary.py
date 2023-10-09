@@ -186,15 +186,15 @@ class DeclarationSummary(Summary):
                 filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
             )
-        if isinstance(item, tf.UnionElementDeclaration):
+        elif isinstance(item, tf.UnionElementDeclaration):
             result[item.name] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=None,
                 block=block_header,
                 type=item.spec.full_type_name,
-                base_type=item.init.base_type_name,
-                value=str(item.spec.init.value),
+                base_type=item.spec.base_type_name,
+                value="",
                 parent=parent.name if parent is not None else "",
                 filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
