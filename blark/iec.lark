@@ -549,11 +549,6 @@ function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";
 
 ?function_body: statement_list
 
-function_var_decl: var1_init_decl
-                 | array_var_init_decl
-                 | structured_var_init_decl
-                 | string_var_declaration
-
 // B.1.5.2
 DOTTED_IDENTIFIER: IDENTIFIER ( "." IDENTIFIER )*
 ?standard_function_block_name: IDENTIFIER
