@@ -1,6 +1,11 @@
+from __future__ import annotations
+
+import os
 import pathlib
 from typing import List, Optional
 
+import lark
+import lark.grammar
 import pytest
 from pytest import param
 
@@ -9,6 +14,27 @@ from ..parse import parse_source_code
 from . import conftest
 
 TEST_PATH = pathlib.Path(__file__).parent
+
+
+class Statistics:
+    """
+    Some global statistics about the grammar rules checked in this test suite
+    module.
+    """
+    #: Rules and terminals seen after running tests.
+    rules_seen = set()
+
+
+def get_rules_used(tree: lark.Tree) -> set[str]:
+    """Get rules and terminals used in the given lark Tree."""
+    seen = set()
+    for subtree in tree.iter_subtrees():
+        seen.add(subtree.data)
+        for child in subtree.children:
+            if isinstance(child, lark.Token):
+                seen.add(child.type)
+
+    return set(str(v) for v in seen)
 
 
 def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
@@ -21,7 +47,14 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     3. Run serialization/deserialization checks (if enabled)
     """
     parser = conftest.get_grammar(start=rule_name)
-    tf_source = parse_source_code(value, parser=parser).transform()
+    parsed = parse_source_code(value, parser=parser)
+
+    assert parsed.tree is not None
+    used_rules = get_rules_used(parsed.tree)
+    Statistics.rules_seen = Statistics.rules_seen.union(used_rules)
+
+    tf_source = parsed.transform()
+
     transformed = tf_source.items[0]
 
     print("\n\nTransformed:")
@@ -50,7 +83,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     return transformed
 
 
-def test_check_unhandled_rules(grammar):
+def test_check_unhandled_rules(grammar: lark.Lark):
     defined_rules = set(
         rule.origin.name for rule in grammar.rules
         if not rule.origin.name.startswith("_")
@@ -1628,9 +1661,7 @@ def test_miscellaneous(rule_name, value):
     ]
 )
 def test_global_types(value, init, base_type, full_type):
-    parser = conftest.get_grammar(start="global_var_decl")
-    tf_source = parse_source_code(value, parser=parser).transform()
-    transformed = tf_source.items[0]
+    transformed = roundtrip_rule(rule_name="global_var_decl", value=value)
     assert isinstance(transformed, tf.GlobalVariableDeclaration)
     assert transformed.variables == ["fValue"]
 
@@ -1788,3 +1819,80 @@ def test_statement_priority(statement: str, cls: type):
 def test_labeled_statements_roundtrip(statements: str, labels: List[str]):
     transformed = roundtrip_rule("statement_list", statements)
     assert isinstance(transformed, tf.StatementList)
+
+
+@pytest.mark.skipif(
+    os.environ.get("BLARK_CHECK_GRAMMAR_COVERAGE", "") != "1",
+    reason="Optional grammar coverage check not selected"
+)
+def test_uncovered_grammar():
+    print("Used grammar:")
+    for name in sorted(Statistics.rules_seen):
+        print(name)
+    print()
+    grammar = conftest.get_grammar()
+
+    def check_opts(
+        rule: tuple[lark.Token, tuple, list, lark.grammar.RuleOptions],
+    ) -> bool:
+        opts = rule[3]
+        return not opts.expand1
+
+    rules = set(
+        str(rule[0])
+        for rule in grammar.grammar.rule_defs
+        if not rule[0].startswith("_") and check_opts(rule)
+    )
+    terminals = set(term[0] for term in grammar.grammar.term_defs)
+    unused = (rules | terminals) - Statistics.rules_seen
+    print("Uncovered grammar:")
+    for name in sorted(unused):
+        print(name)
+    assert set(unused) == {
+        "ADDING",
+        "DATE_TYPE_NAME",
+        "DIVIDE_BY",
+        "DOUBLE_BYTE_CHARACTER",
+        "EQUALS",
+        "EQUALS_NOT",
+        "ESCAPE_CHARACTER",
+        "EXPONENT",
+        "GENERIC_TYPE_NAME",
+        "GREATER_OR_EQUAL",
+        "GREATER_THAN",
+        "INITIAL_STEP",
+        "LESS_OR_EQUAL",
+        "LESS_THAN",
+        "MODULO",
+        "MULTIPLY_WITH",
+        "MULTI_LINE_COMMENT",
+        "NUMERIC_TYPE_NAME",
+        "PERSISTENT",
+        "PLUS",
+        "PRAGMA",
+        "REAL_TYPE_NAME",
+        "SIGN",
+        "SIGNED_INTEGER_TYPE_NAME",
+        "SINGLE_BYTE_CHARACTER",
+        "SINGLE_LINE_COMMENT",
+        "STEP",
+        "SUBTRACTING",
+        "TYPE_DATETIME",
+        "TYPE_LDATETIME",
+        "TYPE_LTOD",
+        "TYPE_TOD",
+        "UNSIGNED_INTEGER_TYPE_NAME",
+        "WS",
+        "array_initialization",
+        "array_var_declaration",
+        "array_var_init_decl",
+        "boolean_literal",
+        "fb_decl",
+        "microseconds",
+        "nanoseconds",
+        "object_initializer_array",
+        "structured_var_declaration",
+
+        # High-level
+        "iec_source",
+    }
