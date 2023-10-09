@@ -345,6 +345,8 @@ def test_isolated_summary():
                 iValue : INT;
                 stStruct : StructureType;
                 U_Union : UnionType;
+                stFbDecl : FB_Sample(nInitParam := 1) := (nInput := 2, nMyProperty := 3);
+                astRunner : ARRAY[1..2] OF FB_Runner[(name := 'one'), (name := 'two')];
             END_VAR
         END_FUNCTION_BLOCK
         """
@@ -384,3 +386,19 @@ def test_isolated_summary():
 
     union_bvalue = summary.find("FB_Test.U_Union.bValue")
     assert union_bvalue is not None
+
+    fbdecl = summary.find("FB_Test.stFbDecl")
+    assert fbdecl is not None
+    assert isinstance(fbdecl, DeclarationSummary)
+    # TODO: not quite right
+    assert fbdecl.base_type == "FB_Sample"
+    assert fbdecl.type == "FB_Sample"
+    assert fbdecl.value == "FB_Sample(nInitParam := 1)"
+
+    runner = summary.find("FB_Test.astRunner")
+    assert runner is not None
+    assert isinstance(runner, DeclarationSummary)
+    # TODO: not quite right
+    assert runner.base_type == "FB_Runner"
+    assert runner.type == "ARRAY [1..2] OF FB_Runner[(name := 'one'), (name := 'two')]"
+    assert runner.value == "None"

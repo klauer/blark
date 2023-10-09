@@ -49,7 +49,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     parser = conftest.get_grammar(start=rule_name)
     parsed = parse_source_code(value, parser=parser)
 
-    assert parsed.tree is not None
+    assert parsed.tree is not None, f"Parse failure for rule {rule_name}: {value}"
     used_rules = get_rules_used(parsed.tree)
     Statistics.rules_seen = Statistics.rules_seen.union(used_rules)
 
@@ -1602,6 +1602,7 @@ def test_data_type_declaration(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param("structure_initialization", "(iValue := 0, bValue := TRUE)"),
         param("structure_element_initialization", "1"),
         param("structure_element_initialization", "name := 1"),
         param("structure_element_initialization", "name := 1 + 2"),

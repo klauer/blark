@@ -620,3 +620,71 @@ def recursively_remove_keys(obj, keys: Set[str]) -> Any:
     if isinstance(obj, (list, tuple)):
         return [recursively_remove_keys(value, keys) for value in obj]
     return obj
+
+
+def simplify_brackets(text: str, brackets: str = "[]") -> str:
+    """
+    Simplify repeated brackets/parentheses in ``text``.
+
+    Parameters
+    ----------
+    text : str
+        The text to process.
+    brackets : str, optional
+        Remove this flavor of brackets - a 2 character string of open and close
+        brackets. Defaults to ``"[]"``.
+    """
+    open_ch, close_ch = brackets
+    open_stack: List[int] = []
+    start_to_end: Dict[int, int] = {}
+    to_remove: List[int] = []
+    for idx, ch in enumerate(text):
+        if ch == open_ch:
+            open_stack.append(idx)
+        elif ch == close_ch:
+            if not open_stack:
+                raise ValueError(f"Unbalanced {brackets} in {text!r}")
+            open_pos = open_stack.pop(-1)
+            if start_to_end.get(open_pos + 1, -1) == idx - 1:
+                to_remove.append(open_pos)
+                to_remove.append(idx)
+            start_to_end[open_pos] = idx
+
+    if not to_remove:
+        return text
+
+    if open_stack:
+        raise ValueError(f"Unbalanced {brackets} in {text!r}")
+
+    return "".join(ch for idx, ch in enumerate(text) if idx not in to_remove)
+
+
+def maybe_add_brackets(text: str, brackets: str = "[]") -> str:
+    """
+    Add brackets to ``text`` if there are no enclosing brackets.
+
+    Parameters
+    ----------
+    text : str
+        The text to process.
+    brackets : str, optional
+        Add this flavor of brackets - a 2 character string of open and close
+        brackets. Defaults to ``"[]"``.
+    """
+    open_ch, close_ch = brackets
+    if not text or text[0] != open_ch or text[-1] != close_ch:
+        return text
+
+    open_stack: List[int] = []
+    start_to_end: Dict[int, int] = {}
+    for idx, ch in enumerate(text):
+        if ch == open_ch:
+            open_stack.append(idx)
+        elif ch == close_ch:
+            if not open_stack:
+                raise ValueError(f"Unbalanced {brackets} in {text!r}")
+            start_to_end[open_stack.pop(-1)] = idx
+
+    if start_to_end[0] == len(text):
+        return text[1:-1]
+    return text

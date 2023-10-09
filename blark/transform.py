@@ -18,7 +18,7 @@ except ImportError:
 
 import lark
 
-from .util import AnyPath, rebuild_lark_tree_with_line_map
+from .util import AnyPath, maybe_add_brackets, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
 
@@ -1127,12 +1127,12 @@ class TypeSpecificationBase:
     @property
     def base_type_name(self) -> Union[lark.Token, str]:
         """The full type name."""
-        return self.type_name
+        return self.type_info.base_type_name
 
     @property
     def full_type_name(self) -> Union[lark.Token, str]:
         """The full type name."""
-        return self.base_type_name
+        return self.type_info.full_type_name
 
 
 @dataclass
@@ -1743,7 +1743,10 @@ class ObjectInitializerArray:
         )
 
     def __str__(self) -> str:
-        initializers = ", ".join([f"({init})" for init in self.initializers])
+        initializers = ", ".join(
+            maybe_add_brackets(str(init), "()")
+            for init in self.initializers
+        )
         return f"{self.name}[{initializers}]"
 
 
@@ -1913,18 +1916,22 @@ class StructureElementDeclaration:
     @property
     def value(self) -> str:
         """The initialization value, if applicable."""
-        return str(self.init)
+        if isinstance(self.init, StructureInitialization):
+            return str(self.init)
+        return str(self.init.value)
 
     @property
     def base_type_name(self) -> Union[lark.Token, str]:
         """The base type name."""
         if isinstance(self.init, StructureInitialization):
-            return "(TODO)"
+            return self.name
         return self.init.base_type_name
 
     @property
     def full_type_name(self) -> lark.Token:
         """The full type name."""
+        if isinstance(self.init, StructureInitialization):
+            return self.name
         return self.init.full_type_name
 
     def __str__(self) -> str:
@@ -2030,7 +2037,7 @@ class InitializedStructure(TypeInitializationBase):
 
     Examples::
 
-        ST_TypeName := (iValue : = 0, bValue := TRUE)
+        ST_TypeName := (iValue := 0, bValue := TRUE)
     """
     name: lark.Token
     init: StructureInitialization
@@ -2055,8 +2062,8 @@ class StructureInitialization:
 
     1. Structure element initialization of default values::
 
-        stStruct : ST_TypeName := (iValue : = 0, bValue := TRUE)
-                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        stStruct : ST_TypeName := (iValue := 0, bValue := TRUE)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     2. Function block declarations (fb_name_decl, fb_invocation_decl)::
 
@@ -2467,8 +2474,8 @@ class StructuredVariableInitDeclaration(InitDeclaration):
 
     Examples::
 
-        stVar1 : ST_TypeName := (iValue : = 0, bValue := TRUE)
-        stVar1, stVar2 : ST_TypeName := (iValue : = 0, bValue := TRUE)
+        stVar1 : ST_TypeName := (iValue := 0, bValue := TRUE)
+        stVar1, stVar2 : ST_TypeName := (iValue  = 0, bValue := TRUE)
     """
     variables: List[DeclaredVariable]
     init: InitializedStructure
@@ -2563,7 +2570,7 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
     Examples::
 
         fbName1 : FB_Name
-        fbName1 : FB_Name := (iValue : = 0, bValue := TRUE)
+        fbName1 : FB_Name := (iValue := 0, bValue := TRUE)
     """
     variables: List[lark.Token]   # fb_decl_name_list -> fb_name
     spec: lark.Token
