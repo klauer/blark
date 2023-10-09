@@ -175,7 +175,9 @@ def test_check_unhandled_rules(grammar: lark.Lark):
         param("lduration", "LTIME#1.1M", tf.Lduration(minutes="1.1")),
         param("lduration", "LTIME#10.1MS", tf.Lduration(milliseconds="10.1")),
         param("lduration", "LT#1D1H1M1S1MS", tf.Lduration(days="1", hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
-        param("lduration", "LTIME#1H1M1S1MS", tf.Lduration(hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
+        param("lduration", "LTIME#10US", tf.Lduration(microseconds="10")),
+        param("lduration", "LTIME#10NS", tf.Lduration(nanoseconds="10")),
+        param("lduration", "LTIME#10.1MS", tf.Lduration(milliseconds="10.1")),
         param("ltime_of_day", "LTIME_OF_DAY#1:1:1.2", tf.LtimeOfDay(hour="1", minute="1", second="1.2")),  # noqa: E501
     ],
 )
@@ -1603,6 +1605,7 @@ def test_data_type_declaration(rule_name, value):
     "rule_name, value",
     [
         param("structure_initialization", "(iValue := 0, bValue := TRUE)"),
+        param("object_initializer_array", "FB_Runner[(name := 'one'), (name := 'two')]"),
         param("structure_element_initialization", "1"),
         param("structure_element_initialization", "name := 1"),
         param("structure_element_initialization", "name := 1 + 2"),
@@ -1887,12 +1890,8 @@ def test_uncovered_grammar():
         "array_initialization",
         "array_var_declaration",
         "array_var_init_decl",
-        "boolean_literal",
+        "boolean_literal",  # not a transformer class but certainly covered
         "fb_decl",
-        "microseconds",
-        "nanoseconds",
-        "object_initializer_array",
-        "structured_var_declaration",
 
         # High-level
         "iec_source",

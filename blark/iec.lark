@@ -448,8 +448,6 @@ var_body: ( var_init_decl ";"+ )*
 
 array_var_declaration: var1_list ":" array_specification
 
-structured_var_declaration: var1_list ":" structure_type_name
-
 var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
 
 static_var_declarations: "VAR_STAT"i [ variable_attributes ] var_body "END_VAR"i ";"*
