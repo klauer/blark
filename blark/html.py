@@ -34,52 +34,57 @@ class HighlighterAnnotation:
         return f'<{tag} class="{classes}">'
 
 
-class HighlighterVisitor(lark.visitors.VisitorBase, lark.visitors.Interpreter):
-    _annotations: DefaultDict[int, List[HighlighterAnnotation]]
-
-    def __init__(self) -> None:
-        self._annotations = collections.defaultdict(list)
-
-    def get_annotations(self) -> Dict[int, List[HighlighterAnnotation]]:
-        """Annotations to be used for highlighting source code."""
-        return dict(self._annotations)
-
-    def _add_pair(self, name: str, start_pos: int, end_pos: int, terminal: bool):
-        self._annotations[start_pos].append(
-            HighlighterAnnotation(
-                name=name,
-                terminal=terminal,
-                is_open_tag=True,
-                other_tag_pos=end_pos,
-            )
+def add_annotation_pair(
+    annotations: DefaultDict[int, List[HighlighterAnnotation]],
+    name: str,
+    start_pos: int,
+    end_pos: int,
+    terminal: bool,
+) -> None:
+    annotations[start_pos].append(
+        HighlighterAnnotation(
+            name=name,
+            terminal=terminal,
+            is_open_tag=True,
+            other_tag_pos=end_pos,
         )
-        self._annotations[end_pos].append(
-            HighlighterAnnotation(
-                name=name,
-                terminal=terminal,
-                is_open_tag=False,
-                other_tag_pos=start_pos,
-            )
+    )
+    annotations[end_pos].append(
+        HighlighterAnnotation(
+            name=name,
+            terminal=terminal,
+            is_open_tag=False,
+            other_tag_pos=start_pos,
         )
+    )
 
-    def __default__(self, tree: lark.Tree):
-        self._add_pair(
-            name=tree.data,
+
+def get_annotations(tree: lark.Tree) -> DefaultDict[int, List[HighlighterAnnotation]]:
+    """Get annotations for syntax elements in the given parse tree."""
+    annotations: DefaultDict[int, List[HighlighterAnnotation]] = collections.defaultdict(
+        list
+    )
+
+    for subtree in tree.iter_subtrees():
+        add_annotation_pair(
+            annotations,
+            name=subtree.data,
             terminal=False,
-            start_pos=tree.meta.start_pos,
-            end_pos=tree.meta.end_pos,
+            start_pos=subtree.meta.start_pos,
+            end_pos=subtree.meta.end_pos,
         )
-        for child in tree.children:
+        for child in subtree.children:
             if isinstance(child, lark.Token):
                 if child.start_pos is not None and child.end_pos is not None:
-                    self._add_pair(
+                    add_annotation_pair(
+                        annotations,
                         name=child.type,
                         terminal=True,
                         start_pos=child.start_pos,
                         end_pos=child.end_pos,
                     )
 
-        return self.visit_children(tree)
+        return annotations
 
 
 def apply_annotations_to_code(
@@ -134,21 +139,20 @@ class HtmlWriter:
     def to_html(self) -> str:
         assert self.block.origin is not None
         assert self.block.origin.tree is not None
-        vis = HighlighterVisitor()
-        vis.visit(self.block.origin.tree)
+        annotations = get_annotations(self.block.origin.tree)
 
         for comment in self.block.origin.comments:
             # print(comment.start_pos, comment.line)
             # TODO
             if comment.start_pos is not None and comment.end_pos is not None:
-                vis._add_pair(
+                add_annotation_pair(
+                    annotations,
                     name=comment.type,
                     start_pos=comment.start_pos,
                     end_pos=comment.end_pos,
                     terminal=True,
                 )
 
-        annotations = vis.get_annotations()
         return apply_annotations_to_code(self.source_code, annotations)
 
     @staticmethod
