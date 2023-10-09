@@ -1859,6 +1859,7 @@ def test_uncovered_grammar():
     for name in sorted(unused):
         print(name)
     assert set(unused) == {
+        # Some of these terminals are certainly covered - what's going on here?
         "ADDING",
         "DATE_TYPE_NAME",
         "DIVIDE_BY",
@@ -1893,9 +1894,14 @@ def test_uncovered_grammar():
         "TYPE_TOD",
         "UNSIGNED_INTEGER_TYPE_NAME",
         "WS",
-        "array_var_declaration",  # not a transformer class
-        "boolean_literal",  # not a transformer class but certainly covered
-        "fb_decl",  # aliased
+
+        # Not transformer clasess, but covered:
+        "array_var_declaration",
+        "boolean_literal",
+
+        # Aliased rules handled separately:
+        "array_initialization",
+        "fb_decl",
 
         # High-level
         "iec_source",
