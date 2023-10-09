@@ -641,11 +641,6 @@ program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name
 
 interface_declaration: "INTERFACE"i IDENTIFIER [ extends ] interface_var_declaration* "END_INTERFACE"i ";"*
 
-// B.1.6
-?step_name: IDENTIFIER
-INITIAL_STEP: "INITIAL_STEP"i
-STEP: "STEP"i
-
 // B.2.1, B.3.1
 LOGICAL_OR: "OR"i
 LOGICAL_XOR: "XOR"i
