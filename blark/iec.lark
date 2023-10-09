@@ -104,7 +104,7 @@ SINGLE_BYTE_CHARACTER: /[^$']/
 
 DOUBLE_BYTE_CHARACTER: /[^$"]/
                      | ESCAPE_CHARACTER
-                     | "$'"
+                     | "$\""
                      | "$" /[0-9A-F][0-9A-F][0-9A-F][0-9A-F]/
 
 SINGLE_BYTE_CHARACTER_STRING: "'" SINGLE_BYTE_CHARACTER* "'"

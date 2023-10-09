@@ -149,6 +149,20 @@ def test_check_unhandled_rules(grammar: lark.Lark):
         param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
         param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501
         param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type_name="word", value="FEEE")),  # noqa: E501
+        param("string_literal", "''", tf.String("''")),
+        param("string_literal", '""', tf.String('""')),
+        param("string_literal", "'abc'", tf.String("'abc'")),
+        param("string_literal", '"abc"', tf.String('"abc"')),
+        param(
+            "string_literal",
+            '"$" $$ $L $N $P $R $T $l $n $p $r $t $0000 $FFFF"',
+            tf.String('"$" $$ $L $N $P $R $T $l $n $p $r $t $0000 $FFFF"'),
+        ),
+        param(
+            "string_literal",
+            "'$' $$ $L $N $P $R $T $l $n $p $r $t $00 $FF'",
+            tf.String("'$' $$ $L $N $P $R $T $l $n $p $r $t $00 $FF'"),
+        ),
         param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
