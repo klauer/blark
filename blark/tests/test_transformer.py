@@ -428,6 +428,10 @@ def test_expression_roundtrip(rule_name, value):
         param("array_var_init_decl", "aVal1, aVal2 : ARRAY [*] OF TypeName"),
         param("array_var_init_decl", "aVal1 : ARRAY [1..2] OF Call(1, 2) := [1, 2]"),
         param("array_var_init_decl", "aVal1 : POINTER TO ARRAY [1..2] OF Call(1, 2)"),
+        param("array_initialization", "[1, 2, 3]"),
+        param("array_initialization", "1, 2, 3"),
+        # This doesn't have a corresponding transform
+        # param("array_var_declaration", "aVar : ARRAY [*] OF TypeName"),
         param("input_declarations", tf.multiline_code_block(
             """
             VAR_INPUT
@@ -1889,10 +1893,9 @@ def test_uncovered_grammar():
         "TYPE_TOD",
         "UNSIGNED_INTEGER_TYPE_NAME",
         "WS",
-        "array_initialization",
-        "array_var_declaration",
+        "array_var_declaration",  # not a transformer class
         "boolean_literal",  # not a transformer class but certainly covered
-        "fb_decl",
+        "fb_decl",  # aliased
 
         # High-level
         "iec_source",
