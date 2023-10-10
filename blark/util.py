@@ -330,7 +330,6 @@ def find_and_clean_comments(
     ``"(*    abc    *)"``.
     """
     lines = text.splitlines()
-    original_lines = list(lines)
     multiline_comments = []
     in_single_comment = False
     in_single_quote = False
@@ -356,18 +355,14 @@ def find_and_clean_comments(
         return "".join(replacement_line)
 
     def get_token(
-        start_line: int, start_col: int, end_line: int, end_col: int
+        start_pos,
+        start_line: int,
+        start_col: int,
+        end_pos: int,
+        end_line: int,
+        end_col: int,
     ) -> lark.Token:
-        if start_line != end_line:
-            block = "\n".join(
-                (
-                    original_lines[start_line][start_col:],
-                    *original_lines[start_line + 1: end_line],
-                    original_lines[end_line][: end_col + 1],
-                )
-            )
-        else:
-            block = original_lines[start_line][start_col: end_col + 1]
+        block = text[start_pos:end_pos + 1]
 
         if block.startswith("//"):
             type_ = "SINGLE_LINE_COMMENT"
@@ -376,7 +371,7 @@ def find_and_clean_comments(
         elif block.startswith("{"):  # }
             type_ = "PRAGMA"
         else:
-            raise RuntimeError("Unexpected block: {contents}")
+            raise RuntimeError(f"Unexpected block: {block!r}")
 
         if start_line != end_line:
             # TODO: move "*)" to separate line
@@ -392,8 +387,10 @@ def find_and_clean_comments(
         token = lark.Token(
             type_,
             block,
+            start_pos=start_pos,
             line=start_line + 1,
             end_line=end_line + 1,
+            end_pos=end_pos,
             column=start_col + 1,
             end_column=end_col + 1,
         )
@@ -404,7 +401,7 @@ def find_and_clean_comments(
             # token.end_line = line_map.get(end_line + 1, end_line + 1)
         return token
 
-    for lineno, colno, this_ch, next_ch in get_characters():
+    for pos, (lineno, colno, this_ch, next_ch) in enumerate(get_characters()):
         if skip:
             skip -= 1
             continue
@@ -416,13 +413,20 @@ def find_and_clean_comments(
         pair = this_ch + next_ch
         if not in_single_quote and not in_double_quote:
             if this_ch == OPEN_PRAGMA and not multiline_comments:
-                pragma_state.append((lineno, colno))
+                pragma_state.append((pos, lineno, colno))
                 continue
             if this_ch == CLOSE_PRAGMA and not multiline_comments:
-                start_line, start_col = pragma_state.pop(-1)
+                start_pos, start_line, start_col = pragma_state.pop(-1)
                 if len(pragma_state) == 0:
                     comments_and_pragmas.append(
-                        get_token(start_line, start_col, lineno, colno + 1)
+                        get_token(
+                            start_pos,
+                            start_line,
+                            start_col,
+                            pos,
+                            lineno,
+                            colno + 1,
+                        )
                     )
                 continue
 
@@ -430,27 +434,41 @@ def find_and_clean_comments(
                 continue
 
             if pair == OPEN_COMMENT:
-                multiline_comments.append((lineno, colno))
+                multiline_comments.append((pos, lineno, colno))
                 skip = 1
                 if len(multiline_comments) > 1:
                     # Nested multi-line comment
                     lines[lineno] = fix_line(lineno, colno)
                 continue
             if pair == CLOSE_COMMENT:
-                start_line, start_col = multiline_comments.pop(-1)
+                start_pos, start_line, start_col = multiline_comments.pop(-1)
                 if len(multiline_comments) > 0:
                     # Nested multi-line comment
                     lines[lineno] = fix_line(lineno, colno)
                 else:
                     comments_and_pragmas.append(
-                        get_token(start_line, start_col, lineno, colno + 1)
+                        get_token(
+                            start_pos,
+                            start_line,
+                            start_col,
+                            pos + 1,  # two character ending
+                            lineno,
+                            colno + 1,  # two character ending
+                        )
                     )
                 skip = 1
                 continue
             if pair == SINGLE_COMMENT:
                 in_single_comment = True
                 comments_and_pragmas.append(
-                    get_token(lineno, colno, lineno, len(lines[lineno]))
+                    get_token(
+                        pos,
+                        lineno,
+                        colno,
+                        pos + (len(lines[lineno]) - colno - 1),
+                        lineno,
+                        len(lines[lineno]),
+                    )
                 )
                 continue
 
