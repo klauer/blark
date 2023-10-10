@@ -83,8 +83,7 @@ def get_annotations(tree: lark.Tree) -> DefaultDict[int, List[HighlighterAnnotat
                         start_pos=child.start_pos,
                         end_pos=child.end_pos,
                     )
-
-        return annotations
+    return annotations
 
 
 def apply_annotations_to_code(
