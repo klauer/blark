@@ -94,7 +94,7 @@ def apply_annotations_to_code(
     result = []
     pos = 0
     for pos, ch in enumerate(code):
-        for ann in annotations.get(pos, []):
+        for ann in reversed(annotations.get(pos, [])):
             result.append(str(ann))
         if ch == " ":
             result.append("&nbsp;")
@@ -113,17 +113,17 @@ def apply_annotations_to_code(
         .blark-code {
             font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",Courier,monospace;
         }
-        .IDENTIFIER {
+        .blark-code > .IDENTIFIER, .variable_name, .multi_element_variable {
             font-weight: bold;
             color: #208050;
         }
-        .INTEGER .SIGNED_INTEGER {
+        .blark-code > .INTEGER, .SIGNED_INTEGER {
             color: red;
         }
-        .set_statement .assignment_statement {
+        .blark-code > .set_statement, .assignment_statement {
             font-weight: bold;
         }
-        .LOGICAL_OR, .LOGICAL_XOR, .LOGICAL_AND, .LOGICAL_NOT,
+        .blark-code > .LOGICAL_OR, .LOGICAL_XOR, .LOGICAL_AND, .LOGICAL_NOT,
         .LOGICAL_AND_THEN, .LOGICAL_OR_ELSE, .MODULO, .EQUALS, .EQUALS_NOT,
         .LESS_OR_EQUAL, .GREATER_OR_EQUAL, .LESS_THAN, .GREATER_THAN, .ADDING,
         .SUBTRACTING, .MULTIPLY_WITH, .DIVIDE_BY, .MINUS, .PLUS, .ASSIGNMENT {
@@ -131,7 +131,7 @@ def apply_annotations_to_code(
             color: red;
         }
 
-        .TYPE_TOD, .TYPE_DATETIME, .TYPE_LTOD, .TYPE_LDATETIME,
+        .blark-code > .TYPE_TOD, .TYPE_DATETIME, .TYPE_LTOD, .TYPE_LDATETIME,
         .elementary_type_name, .NUMERIC_TYPE_NAME, .INTEGER_TYPE_NAME,
         .SIGNED_INTEGER_TYPE_NAME, .UNSIGNED_INTEGER_TYPE_NAME,
         .REAL_TYPE_NAME, .DATE_TYPE_NAME, .BIT_STRING_TYPE_NAME,
