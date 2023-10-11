@@ -3,6 +3,7 @@ from __future__ import annotations
 import codecs
 import dataclasses
 import enum
+import functools
 import hashlib
 import os
 import pathlib
@@ -706,3 +707,54 @@ def maybe_add_brackets(text: str, brackets: str = "[]") -> str:
     if start_to_end[0] == len(text):
         return text[1:-1]
     return text
+
+
+@functools.lru_cache()
+def get_grammar_source() -> str:
+    from . import GRAMMAR_FILENAME
+    with open(GRAMMAR_FILENAME) as fp:
+        return fp.read()
+
+
+def get_grammar_for_rule(rule: str) -> str:
+    """
+    Get the lark grammar source for the provided rule.
+
+    Parameters
+    ----------
+    rule : str
+        The grammar identifier - rule or token name.
+    """
+    # TODO: there may be support for this in lark; consider refactoring
+
+    def split_rule(text: str) -> str:
+        """
+        ``text`` contains the rule and the remainder of ``iec.lark``.
+
+        Split it to just contain the rule, removing the rest.
+        """
+        lines = text.splitlines()
+        for idx, line in enumerate(lines[1:], 1):
+            line = line.strip()
+            if not line.startswith("|"):
+                return "\n".join(lines[:idx])
+        return text
+
+    match = re.search(
+        rf"^\s*(.*->\s*{rule}$)",
+        get_grammar_source(),
+        flags=re.MULTILINE,
+    )
+    if match is not None:
+        return match.groups()[0]
+
+    match = re.search(
+        rf"^(\??{rule}(\.\d)?:.*)",
+        get_grammar_source(),
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    if match is not None:
+        text = match.groups()[0]
+        return split_rule(text)
+
+    raise ValueError(f"Grammar rule not found in source: {rule}")

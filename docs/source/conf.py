@@ -15,10 +15,13 @@
 import pathlib
 import sys
 from datetime import datetime
+from typing import Dict
 
 import sphinx_rtd_theme  # noqa: F401
 
-module_path = pathlib.Path(__file__).resolve().parents[2]
+docs_source_path = pathlib.Path(__file__).parent.resolve()
+docs_path = docs_source_path.parent
+module_path = docs_path.parent
 sys.path.insert(0, str(module_path))
 
 # -- Project information -----------------------------------------------------
@@ -62,7 +65,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = [str(docs_path / "_templates")]
 
 autosummary_generate = True
 
@@ -224,4 +227,24 @@ inheritance_graph_attrs = dict(
 inheritance_alias = {
 }
 
-numpydoc_show_class_members = True
+numpydoc_show_class_members = False
+
+
+def get_grammar_for_class(clsname: str) -> Dict[str, str]:
+    """
+    Given a class name, get blark's ``iec.lark`` associated grammar
+    definition(s).
+    """
+    import blark
+    try:
+        cls = getattr(blark.transform, clsname)
+    except AttributeError:
+        return {}
+
+    return blark.transform.get_grammar_for_class(cls)
+
+
+autosummary_context = {
+    "get_grammar_for_class": get_grammar_for_class,
+    "generated_toctree": "api",
+}

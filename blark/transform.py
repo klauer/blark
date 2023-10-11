@@ -18,6 +18,7 @@ except ImportError:
 
 import lark
 
+from . import util
 from .util import AnyPath, maybe_add_brackets, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
@@ -230,6 +231,24 @@ class Meta:
 def meta_field():
     """Create the Meta field for the dataclass magic."""
     return dataclasses.field(default=None, repr=False, compare=False)
+
+
+def get_grammar_for_class(cls: type) -> Dict[str, str]:
+    """
+    Given a class, get blark's ``iec.lark`` associated grammar definition(s).
+    """
+    matches = {}
+    for rule, othercls in _rule_to_class.items():
+        if othercls is cls:
+            matches[rule] = "unknown"
+
+    if not matches:
+        return matches
+
+    for rule in list(matches):
+        matches[rule] = util.get_grammar_for_rule(rule)
+
+    return matches
 
 
 class _FlagHelper:
@@ -3988,26 +4007,6 @@ class NoOpStatement(Statement):
 
     def __str__(self):
         return f"{self.variable};"
-
-
-@dataclass
-@_rule_handler("action_statement", comments=True)
-class ActionStatement(Statement):
-    """
-    A statement to call an action.
-
-    Distinguished from a no-operation depending on if the context-sensitive
-    name matches an action or a variable name.
-
-    Note that blark does not handle this for you and may arbitrarily choose
-    one or the other.
-    """
-    # TODO: overlaps with no-op statement?
-    action: lark.Token
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        return f"{self.action};"
 
 
 @dataclass

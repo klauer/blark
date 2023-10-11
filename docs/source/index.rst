@@ -17,7 +17,7 @@ Welcome to blark's documentation!
    :caption: Links
    :hidden:
 
-   Github Repository <https://github.com/klauer/blark>
+   GitHub Repository <https://github.com/klauer/blark>
 
 
 
