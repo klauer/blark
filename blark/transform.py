@@ -4021,6 +4021,7 @@ class SetStatement(Statement):
         bValue S= iValue > 5;
     """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -4039,6 +4040,7 @@ class ReferenceAssignmentStatement(Statement):
         refOne REF= refOtherOne;
     """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -4057,6 +4059,7 @@ class ResetStatement(Statement):
         bValue R= iValue <= 5;
     """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -4115,7 +4118,8 @@ class AssignmentStatement(Statement):
 
     @staticmethod
     def from_lark(*args) -> AssignmentStatement:
-        *variables, expression = args
+        *variables_and_ops, expression = args
+        variables = variables_and_ops[::2]
         return AssignmentStatement(
             variables=list(variables),
             expression=expression
