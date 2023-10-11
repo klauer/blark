@@ -66,13 +66,14 @@ def get_annotations(tree: lark.Tree) -> DefaultDict[int, List[HighlighterAnnotat
     )
 
     for subtree in tree.iter_subtrees():
-        add_annotation_pair(
-            annotations,
-            name=subtree.data,
-            terminal=False,
-            start_pos=subtree.meta.start_pos,
-            end_pos=subtree.meta.end_pos,
-        )
+        if hasattr(subtree.meta, "start_pos"):
+            add_annotation_pair(
+                annotations,
+                name=subtree.data,
+                terminal=False,
+                start_pos=subtree.meta.start_pos,
+                end_pos=subtree.meta.end_pos,
+            )
         for child in subtree.children:
             if isinstance(child, lark.Token):
                 if child.start_pos is not None and child.end_pos is not None:
@@ -95,7 +96,10 @@ def apply_annotations_to_code(
     for pos, ch in enumerate(code):
         for ann in annotations.get(pos, []):
             result.append(str(ann))
-        result.append(ch)
+        if ch == " ":
+            result.append("&nbsp;")
+        else:
+            result.append(ch)
 
     for ann in annotations.get(pos + 1, []):
         result.append(str(ann))
@@ -109,7 +113,7 @@ def apply_annotations_to_code(
         .blark-code {
             font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",Courier,monospace;
         }
-        .blark-code .term {
+        .IDENTIFIER {
             font-weight: bold;
             color: #208050;
         }
@@ -118,6 +122,22 @@ def apply_annotations_to_code(
         }
         .set_statement .assignment_statement {
             font-weight: bold;
+        }
+        .LOGICAL_OR, .LOGICAL_XOR, .LOGICAL_AND, .LOGICAL_NOT,
+        .LOGICAL_AND_THEN, .LOGICAL_OR_ELSE, .MODULO, .EQUALS, .EQUALS_NOT,
+        .LESS_OR_EQUAL, .GREATER_OR_EQUAL, .LESS_THAN, .GREATER_THAN, .ADDING,
+        .SUBTRACTING, .MULTIPLY_WITH, .DIVIDE_BY, .MINUS, .PLUS, .ASSIGNMENT {
+            font-weight: bold;
+            color: red;
+        }
+
+        .TYPE_TOD, .TYPE_DATETIME, .TYPE_LTOD, .TYPE_LDATETIME,
+        .elementary_type_name, .NUMERIC_TYPE_NAME, .INTEGER_TYPE_NAME,
+        .SIGNED_INTEGER_TYPE_NAME, .UNSIGNED_INTEGER_TYPE_NAME,
+        .REAL_TYPE_NAME, .DATE_TYPE_NAME, .BIT_STRING_TYPE_NAME,
+        .GENERIC_TYPE_NAME {
+            font-weight: bold;
+            color: blue;
         }
     </style>
     """ + html  # noqa: E501
@@ -141,8 +161,6 @@ class HtmlWriter:
         annotations = get_annotations(self.block.origin.tree)
 
         for comment in self.block.origin.comments:
-            # print(comment.start_pos, comment.line)
-            # TODO
             if comment.start_pos is not None and comment.end_pos is not None:
                 add_annotation_pair(
                     annotations,
