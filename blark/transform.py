@@ -509,9 +509,13 @@ class Real(Literal):
 class BitString(Literal):
     """Bit string literal value."""
 
+    #: The optional type name of the string.
     type_name: Optional[lark.Token]
+    #: The string literal.
     value: lark.Token
+    #: The numeric base of the value (e.g., 10 is decimal)
     base: ClassVar[int] = 10
+    #: Lark metadata.
     meta: Optional[Meta] = meta_field()
 
     @classmethod
@@ -917,10 +921,15 @@ class DirectVariable(Variable):
     May be located (e.g., ``AT %IX1.1``) or incomplete (e.g., just ``%I*``).
     """
 
+    #: The location prefix (e.g., I, Q, or M)
     location_prefix: VariableLocationPrefix
+    #: The location number itself (e.g., 2 of %IX2.1)
     location: lark.Token
+    #: Size prefix, used in locations (e.g., ``%IX1.1`` has a bit prefix).
     size_prefix: VariableSizePrefix
+    #: The number of bits.
     bits: Optional[List[lark.Token]] = None
+    #: Lark metadata.
     meta: Optional[Meta] = meta_field()
 
     @staticmethod

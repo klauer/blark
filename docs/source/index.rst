@@ -8,9 +8,9 @@ Welcome to blark's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Developer documentation
 
-   dataclasses.rst
+   api.rst
 
 .. toctree::
    :maxdepth: 1

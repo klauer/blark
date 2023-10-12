@@ -18,7 +18,7 @@
 
      {{ source | indent("     ") }}
 
-   {%- endfor %}
+   {% endfor %}
    {% endblock %}
    {% endif %}
 

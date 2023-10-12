@@ -7,3 +7,6 @@
 .coverage
 /docs/build
 .DS_Store
+# These are auto-generated:
+/docs/source/api.rst
+/docs/source/api
