@@ -34,7 +34,7 @@ import blark.util  # noqa: E402
 
 def find_all_classes(
     modules,
-    base_classes: list[type],
+    base_classes: tuple[type, ...],
     skip: Optional[list[str]] = None,
 ) -> list[type]:
     """Find all classes in the module and return them as a list."""
@@ -98,7 +98,7 @@ def create_api_list(modules: list[ModuleType]) -> list[str]:
     ]
 
     for module in modules:
-        classes = find_all_classes([module], base_classes=[])
+        classes = find_all_classes([module], base_classes=())
         callables = find_callables([module])
         module_name = module.__name__
         underline = "-" * len(module_name)
