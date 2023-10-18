@@ -1232,7 +1232,6 @@ class CodeSummary:
                     result.functions[item.name] = summary
                     new_context(summary)
                 elif isinstance(item, tf.DataTypeDeclaration):
-                    print("saw", item, type(item.declaration))
                     if isinstance(
                         item.declaration,
                         (tf.StructureTypeDeclaration, tf.UnionTypeDeclaration)

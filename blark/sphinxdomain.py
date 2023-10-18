@@ -4,6 +4,7 @@ import dataclasses
 import logging
 import pathlib
 import typing
+import warnings
 from typing import (Any, ClassVar, Dict, Generator, Iterable, List, Optional,
                     Tuple, Type, Union)
 
@@ -21,8 +22,7 @@ from sphinx.util.docfields import Field, GroupedField
 from sphinx.util.nodes import make_refnode
 from sphinx.util.typing import OptionSpec
 
-from . import summary, util
-from .parse import parse
+from . import parse, summary, util
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +48,7 @@ class BlarkSphinxCache:
             BlarkSphinxCache._instance_ = BlarkSphinxCache()
         return BlarkSphinxCache._instance_
 
-    def find_by_name(self, name: str) -> Union[
-        summary.FunctionSummary,
-        summary.FunctionBlockSummary,
-    ]:
+    def find_by_name(self, name: str) -> summary.CodeSummaryType:
         for item in self.cache.values():
             obj = item.find(name)
             if obj is not None:
@@ -60,11 +57,19 @@ class BlarkSphinxCache:
         raise KeyError(f"{name!r} not found")
 
     def configure(self, app: sphinx.application.Sphinx, config) -> None:
+
+        def parse_verbose(filename: pathlib.Path) -> list[parse.ParseResult]:
+            result = []
+            for res in parse.parse(filename):
+                logger.warning("-> %s: %r", res.filename, res.identifier)
+                result.append(res)
+            return result
+
         for filename in config.blark_projects:
-            logger.debug("Loading %s", filename)
-            for fn, info in parse(filename):
-                logger.debug("Parsed %s", fn)
-                self.cache[fn] = summary.CodeSummary.from_source(info)
+            logger.warning("Loading %s...", filename)
+            parsed = parse_verbose(filename)
+            logger.debug("Parsed %s into %d objects", filename, len(parsed))
+            self.cache[filename] = summary.CodeSummary.from_parse_results(parsed)
 
 
 class BlarkDirective(ObjectDescription[Tuple[str, str]]):
@@ -600,13 +605,13 @@ class BlarkDomain(Domain):
     ) -> nodes.reference:
         matches = self.find_obj(typ, node, target)
         if not matches:
-            logger.warning("No target found for cross-reference: %s", target)
+            warnings.warn(f"No target found for cross-reference: {target}")
             return None
         if len(matches) > 1:
-            logger.warning(
-                "More than one target found for cross-reference " "%r: %s",
-                target,
-                ", ".join(match["qualified_name"] for match in matches),
+            options = ", ".join(match["qualified_name"] for match in matches)
+            warnings.warn(
+                f"More than one target found for cross-reference "
+                f"{target!r}: {options}",
             )
         match = matches[0]
         return make_refnode(
@@ -636,8 +641,9 @@ def _initialize_domain(app: sphinx.application.Sphinx, config) -> None:
 
 
 def setup(app: sphinx.application.Sphinx) -> None:
-    app.add_config_value('blark_projects', [], 'html')
-    app.add_config_value('blark_signature_show_type', True, 'html')
+    # These are the configuration settings in ``conf.py``:
+    app.add_config_value("blark_projects", [], "html")
+    app.add_config_value("blark_signature_show_type", True, "html")
 
     app.add_domain(BlarkDomain)
     app.connect("config-inited", _initialize_domain)
