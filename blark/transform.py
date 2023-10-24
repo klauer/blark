@@ -11,8 +11,14 @@ from enum import Enum
 from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
                     Tuple, Type, TypeVar, Union)
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 import lark
 
+from . import util
 from .util import AnyPath, maybe_add_brackets, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
@@ -140,21 +146,35 @@ def _rule_handler(
 
 @dataclasses.dataclass
 class Meta:
+    """Lark-derived meta information in the form of a dataclass."""
+    #: If the metadata information is not yet filled.
     empty: bool = True
+    #: Column number.
     column: Optional[int] = None
+    #: Comments relating to the line.
     comments: List[lark.Token] = dataclasses.field(default_factory=list)
+    #: Containing start column.
     container_column: Optional[int] = None
+    #: Containing end column.
     container_end_column: Optional[int] = None
+    #: Containing end line.
     container_end_line: Optional[int] = None
+    #: Containing start line.
     container_line: Optional[int] = None
+    #: Final column number.
     end_column: Optional[int] = None
+    #: Final line number.
     end_line: Optional[int] = None
+    #: Final character position.
     end_pos: Optional[int] = None
+    #: Line number.
     line: Optional[int] = None
+    #: Starting character position.
     start_pos: Optional[int] = None
 
     @staticmethod
     def from_lark(lark_meta: lark.tree.Meta) -> Meta:
+        """Generate a Meta instance from the lark Metadata."""
         return Meta(
             empty=lark_meta.empty,
             column=getattr(lark_meta, "column", None),
@@ -213,7 +233,27 @@ def meta_field():
     return dataclasses.field(default=None, repr=False, compare=False)
 
 
+def get_grammar_for_class(cls: type) -> Dict[str, str]:
+    """
+    Given a class, get blark's ``iec.lark`` associated grammar definition(s).
+    """
+    matches = {}
+    for rule, othercls in _rule_to_class.items():
+        if othercls is cls:
+            matches[rule] = "unknown"
+
+    if not matches:
+        return matches
+
+    for rule in list(matches):
+        matches[rule] = util.get_grammar_for_rule(rule)
+
+    return matches
+
+
 class _FlagHelper:
+    """A helper base class which translates tokens to ``enum.Flag`` instances."""
+
     @classmethod
     def from_lark(cls, token: lark.Token, *tokens: lark.Token):
         result = cls[token.lower()]
@@ -227,6 +267,106 @@ class _FlagHelper:
             for option in type(self)
             if option in self
         )
+
+
+@dataclasses.dataclass(frozen=True)
+class TypeInformation:
+    """Type information derived from a specification or initialization."""
+
+    base_type_name: Union[str, lark.Token]
+    full_type_name: Union[str, lark.Token]
+    context: Any
+
+    @classmethod
+    def from_init(
+        cls: Type[Self],
+        init: Union[
+            StructureInitialization,
+            ArrayTypeInitialization,
+            StringTypeInitialization,
+            TypeInitialization,
+            SubrangeTypeInitialization,
+            EnumeratedTypeInitialization,
+            InitializedStructure,
+            FunctionCall,
+        ],
+    ) -> Self:
+        if isinstance(init, StructureInitialization):
+            return UnresolvedTypeInformation(  # TODO
+                base_type_name="",
+                full_type_name="",
+                context=init,
+            )
+        if isinstance(init, InitializedStructure):
+            return cls(
+                base_type_name=init.name,
+                full_type_name=init.name,
+                context=init,
+            )
+        if isinstance(init, FunctionCall):
+            # May be multi-element variable referenve; stringified here.
+            return cls(
+                base_type_name=str(init.name),
+                full_type_name=str(init.name),
+                context=init,
+            )
+        spec_type = cls.from_spec(init.spec)
+        if isinstance(init, TypeInitialization):
+            full_type_name = join_if(init.indirection, " ", spec_type.full_type_name)
+            return cls(
+                base_type_name=spec_type.base_type_name,
+                full_type_name=full_type_name,
+                context=init,
+            )
+        return spec_type
+
+    @classmethod
+    def from_spec(
+        cls: Type[Self],
+        spec: Union[
+            ArraySpecification,
+            DataType,
+            EnumeratedSpecification,
+            FunctionCall,
+            IndirectSimpleSpecification,
+            ObjectInitializerArray,
+            SimpleSpecification,
+            StringTypeSpecification,
+            SubrangeSpecification,
+        ],
+    ) -> Self:
+        full_type_name = str(spec)
+        if isinstance(spec, DataType):
+            if isinstance(spec.type_name, StringTypeSpecification):
+                base_type_name = str(spec)
+            else:
+                base_type_name = spec.type_name
+        elif isinstance(spec, ArraySpecification):
+            base_type_name = spec.base_type_name
+        elif isinstance(spec, StringTypeSpecification):
+            base_type_name = spec.base_type_name
+        elif isinstance(spec, EnumeratedSpecification):
+            base_type_name = str(spec.type_name or spec._implicit_type_default_)
+            full_type_name = base_type_name
+        elif isinstance(spec, (SimpleSpecification, IndirectSimpleSpecification)):
+            base_type_name = str(spec.type)
+        elif isinstance(spec, SubrangeSpecification):
+            base_type_name = str(spec.type_name)
+        elif isinstance(spec, FunctionCall):
+            base_type_name = spec.base_type_name
+        else:
+            # base_type_name = str(spec.name)
+            raise NotImplementedError(spec)
+        return cls(
+            base_type_name=base_type_name,
+            full_type_name=full_type_name,
+            context=spec,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class UnresolvedTypeInformation(TypeInformation):
+    ...
 
 
 @_rule_handler("variable_attributes")
@@ -261,7 +401,15 @@ class AccessSpecifier(_FlagHelper, enum.IntFlag):
 @dataclass
 @as_tagged_union
 class Expression:
-    ...
+    """
+    Base class for all types of expressions.
+
+    This includes all literals (integers, etc.) and more complicated
+    mathematical expressions.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
 
     def __str__(self) -> str:
         raise NotImplementedError
@@ -269,7 +417,12 @@ class Expression:
 
 @as_tagged_union
 class Literal(Expression):
-    """Literal value."""
+    """
+    Base class for all literal values.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
 
 
 @dataclass
@@ -356,9 +509,13 @@ class Real(Literal):
 class BitString(Literal):
     """Bit string literal value."""
 
+    #: The optional type name of the string.
     type_name: Optional[lark.Token]
+    #: The string literal.
     value: lark.Token
+    #: The numeric base of the value (e.g., 10 is decimal)
     base: ClassVar[int] = 10
+    #: Lark metadata.
     meta: Optional[Meta] = meta_field()
 
     @classmethod
@@ -650,6 +807,20 @@ class String(Literal):
 
 @as_tagged_union
 class Variable(Expression):
+    """
+    Variable base class.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+
+    Includes:
+
+    1. Direct variables with I/O linkage (e.g., ``var AT %I*``); may be
+       located (e.g., ``AT %IX1.1``) or incomplete (e.g., just ``%I*``).
+    2. "Simple", single-element variables (referenced by name, potentially
+        dereferenced pointers) (e.g., ``var`` or ``var^``).
+    3. Multi-element variables (e.g., ``a.b.c`` or ``a^.b[1].c``).
+    """
     ...
 
 
@@ -660,7 +831,9 @@ class Variable(Expression):
 )
 class IndirectionType:
     """Indirect access through a pointer or reference."""
+    #: A depth of 1 is "POINTER TO", a depth of 2 is "POINTER TO POINTER TO".
     pointer_depth: int
+    #: If set, "REFERENCE TO POINTER TO..."
     reference: bool
     meta: Optional[Meta] = meta_field()
 
@@ -697,8 +870,11 @@ class IndirectionType:
 class IncompleteLocation(Enum):
     """Incomplete location information."""
     none = enum.auto()
+    #: I/O to PLC task.
     input = "%I*"
+    #: PLC task to I/O.
     output = "%Q*"
+    #: Memory.
     memory = "%M*"
 
     @staticmethod
@@ -712,7 +888,9 @@ class IncompleteLocation(Enum):
 
 
 class VariableLocationPrefix(str, Enum):
+    #: I/O to PLC task.
     input = "I"
+    #: PLC task to I/O.
     output = "Q"
     memory = "M"
 
@@ -721,6 +899,7 @@ class VariableLocationPrefix(str, Enum):
 
 
 class VariableSizePrefix(str, Enum):
+    """Size prefix, used in locations (e.g., ``%IX1.1`` has a bit prefix)."""
     bit = "X"
     byte = "B"
     word_16 = "W"
@@ -734,10 +913,23 @@ class VariableSizePrefix(str, Enum):
 @dataclass
 @_rule_handler("direct_variable")
 class DirectVariable(Variable):
+    """
+    Direct variables with I/O linkage.
+
+    Example: ``var AT %I*``
+
+    May be located (e.g., ``AT %IX1.1``) or incomplete (e.g., just ``%I*``).
+    """
+
+    #: The location prefix (e.g., I, Q, or M)
     location_prefix: VariableLocationPrefix
+    #: The location number itself (e.g., 2 of %IX2.1)
     location: lark.Token
+    #: Size prefix, used in locations (e.g., ``%IX1.1`` has a bit prefix).
     size_prefix: VariableSizePrefix
+    #: The number of bits.
     bits: Optional[List[lark.Token]] = None
+    #: Lark metadata.
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
@@ -764,6 +956,8 @@ class DirectVariable(Variable):
 
 @_rule_handler("location")
 class Location(DirectVariable):
+    """A located direct variable. (e.g., ``AT %IX1.1``)"""
+
     @staticmethod
     def from_lark(var: DirectVariable) -> Location:
         return Location(
@@ -782,6 +976,15 @@ class Location(DirectVariable):
 @dataclass
 @_rule_handler("variable_name")
 class SimpleVariable(Variable):
+    """
+    A simple, single-element variable.
+
+    Specified by name, may potentially be dereferenced pointers.
+    Examples::
+
+        var
+        var^
+    """
     name: lark.Token
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
@@ -802,6 +1005,15 @@ class SimpleVariable(Variable):
 @dataclass
 @_rule_handler("subscript_list")
 class SubscriptList:
+    """
+    A list of subscripts.
+
+    Examples::
+
+        [1, 2, 3]
+        [Constant, GVL.Value, 1 + 3]
+        [1]^
+    """
     subscripts: List[Expression]
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
@@ -822,6 +1034,14 @@ class SubscriptList:
 @dataclass
 @_rule_handler("field_selector")
 class FieldSelector:
+    """
+    Field - or attribute - selector as part of a multi-element variable.
+
+    Examples::
+
+        .field
+        .field^
+    """
     field: SimpleVariable
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
@@ -840,8 +1060,23 @@ class FieldSelector:
 @dataclass
 @_rule_handler("multi_element_variable")
 class MultiElementVariable(Variable):
+    """
+    A multi-element variable - with one or more subscripts and fields.
+
+    Examples::
+
+        a.b.c
+        a^.b[1].c
+        a.b[SomeConstant].c^
+
+    Where ``a`` is the "name"
+    """
+    #: The first part of the variable name.
     name: SimpleVariable
+    #: This is unused (TODO / perhaps for compat elsewhere?)
+    #: Dereference status is held on a per-element basis.
     dereferenced: bool
+    #: The subscripts/fields that make up the multi-element variable.
     elements: List[Union[SubscriptList, FieldSelector]]
     meta: Optional[Meta] = meta_field()
 
@@ -863,44 +1098,108 @@ class MultiElementVariable(Variable):
 SymbolicVariable = Union[SimpleVariable, MultiElementVariable]
 
 
+class TypeInitializationBase:
+    """
+    Base class for type initializations.
+    """
+
+    @property
+    def type_info(self) -> TypeInformation:
+        """The base type name."""
+        return TypeInformation.from_init(self)
+
+    @property
+    def base_type_name(self) -> Union[lark.Token, str]:
+        """The base type name."""
+        return self.type_info.base_type_name
+
+    @property
+    def full_type_name(self) -> Union[lark.Token, str]:
+        """The full, qualified type name."""
+        return self.type_info.full_type_name
+
+
+class TypeSpecificationBase:
+    """
+    Base class for a specification of a type.
+
+    Can specify a:
+
+    1. Enumeration::
+
+        ( 1, 1 ) INT
+        TYPE_NAME     (TODO; ambiguous with 2)
+
+    2. A simple or string type specification::
+
+        TYPE_NAME
+        STRING
+        STRING[255]
+
+    3. An indirect simple specification::
+
+        POINTER TO TYPE_NAME
+        REFERENCE TO TYPE_NAME
+        REFERENCE TO POINTER TO TYPE_NAME
+
+    4. An array specification::
+
+        ARRAY [1..2] OF TypeName
+        ARRAY [1..2] OF TypeName(1, 2)
+    """
+    @property
+    def type_info(self) -> TypeInformation:
+        """The base type name."""
+        return TypeInformation.from_spec(self)
+
+    @property
+    def base_type_name(self) -> Union[lark.Token, str]:
+        """The full type name."""
+        return self.type_info.base_type_name
+
+    @property
+    def full_type_name(self) -> Union[lark.Token, str]:
+        """The full type name."""
+        return self.type_info.full_type_name
+
+
 @dataclass
 @_rule_handler("simple_spec_init")
-class TypeInitialization:
+class TypeInitialization(TypeInitializationBase):
+    """
+    A simple initialization specification of a type name.
+
+    Example::
+
+        TypeName := Value1
+        STRING[100] := "value"
+    """
     indirection: Optional[IndirectionType]
     spec: SimpleSpecification
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
 
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.spec.type
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return join_if(self.indirection, " ", self.spec.type)
-
     def __str__(self) -> str:
         return join_if(self.full_type_name, " := ", self.value)
-
-
-class Declaration:
-    variables: List[DeclaredVariable]
-    items: List[Any]
-    meta: Optional[Meta]
-    init: Union[
-        VariableInitDeclaration,
-        InputOutputDeclaration,
-        OutputDeclaration,
-        InputDeclaration,
-        GlobalVariableDeclarationType,
-    ]
 
 
 @dataclass
 @_rule_handler("simple_type_declaration")
 class SimpleTypeDeclaration:
+    """
+    A declaration of a simple type.
+
+    Examples::
+
+        TypeName : INT
+        TypeName : INT := 5
+        TypeName : INT := 5 + 1 * (2)
+        TypeName : REFERENCE TO INT
+        TypeName : POINTER TO INT
+        TypeName : POINTER TO POINTER TO INT
+        TypeName : REFERENCE TO POINTER TO INT
+        TypeName EXTENDS a.b : POINTER TO INT
+    """
     name: lark.Token
     extends: Optional[Extends]
     init: TypeInitialization
@@ -915,6 +1214,16 @@ class SimpleTypeDeclaration:
 @dataclass
 @_rule_handler("string_type_declaration")
 class StringTypeDeclaration:
+    """
+    A string type declaration.
+
+    Examples::
+        TypeName : STRING
+        TypeName : STRING := 'literal'
+        TypeName : STRING[5]
+        TypeName : STRING[100] := 'literal'
+        TypeName : WSTRING[100] := "literal"
+    """
     name: lark.Token
     string_type: StringTypeSpecification
     value: Optional[String]
@@ -931,7 +1240,22 @@ class StringTypeDeclaration:
 
 @dataclass
 @_rule_handler("string_type_specification")
-class StringTypeSpecification:
+class StringTypeSpecification(TypeSpecificationBase):
+    """
+    Specification of a string type.
+
+    Examples::
+
+        STRING(2_500_000)
+        STRING(Param.iLower)
+        STRING(Param.iLower * 2 + 10)
+        STRING(Param.iLower / 2 + 10)
+
+    Bracketed versions are also acceptable::
+
+        STRING[2_500_000]
+        STRING[Param.iLower]
+    """
     type_name: lark.Token
     length: Optional[StringSpecLength] = None
     meta: Optional[Meta] = meta_field()
@@ -955,20 +1279,21 @@ class StringTypeSpecification:
     "single_byte_string_spec",
     "double_byte_string_spec",
 )
-class StringTypeInitialization:
+class StringTypeInitialization(TypeInitializationBase):
+    """
+    Single or double-byte string specification.
+
+    Examples::
+
+        STRING := 'test'
+        STRING(2_500_000) := 'test'
+        STRING(Param.iLower) := 'test'
+
+    Bracketed versions are also acceptable.
+    """
     spec: StringTypeSpecification
     value: Optional[lark.Token]
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.spec.base_type_name
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return self.spec.full_type_name
 
     @staticmethod
     def from_lark(
@@ -986,11 +1311,25 @@ class StringTypeInitialization:
 @dataclass
 @as_tagged_union
 class Subrange:
+    """
+    Subrange base class.
+
+    May be a full or partial sub-range. Marked as a "tagged union" so that
+    serialization will uniquely identify the Python class.
+    """
     ...
 
 
 @dataclass
 class FullSubrange(Subrange):
+    """
+    A full subrange (i.e., asterisk ``*``).
+
+    Example::
+
+        Array[*]
+              ^
+    """
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
@@ -1000,6 +1339,14 @@ class FullSubrange(Subrange):
 @dataclass
 @_rule_handler("subrange")
 class PartialSubrange(Subrange):
+    """
+    A partial subrange, including a start/stop element index.
+
+    Examples::
+
+        1..2
+        iStart..iEnd
+    """
     start: Expression
     stop: Expression
     meta: Optional[Meta] = meta_field()
@@ -1010,7 +1357,16 @@ class PartialSubrange(Subrange):
 
 @dataclass
 @_rule_handler("subrange_specification")
-class SubrangeSpecification:
+class SubrangeSpecification(TypeSpecificationBase):
+    """
+    A subrange specification.
+
+    Examples::
+
+        INT (*)
+        INT (1..2)
+        TYPE_NAME         (TODO; overlap)
+    """
     type_name: lark.Token
     subrange: Optional[Subrange] = None
     meta: Optional[Meta] = meta_field()
@@ -1033,21 +1389,19 @@ class SubrangeSpecification:
 
 @dataclass
 @_rule_handler("subrange_spec_init")
-class SubrangeTypeInitialization:
+class SubrangeTypeInitialization(TypeInitializationBase):
+    """
+    A subrange type initialization.
+
+    Examples::
+
+        INT (1..2) := 25
+    """
+    # TODO: coverage + examples?
     indirection: Optional[IndirectionType]
     spec: SubrangeSpecification
     value: Optional[Expression] = None
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.spec.base_type_name
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return self.spec.full_type_name
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -1060,6 +1414,14 @@ class SubrangeTypeInitialization:
 @dataclass
 @_rule_handler("subrange_type_declaration")
 class SubrangeTypeDeclaration:
+    """
+    A subrange type declaration.
+
+    Examples::
+
+        TypeName : INT (1..2)
+        TypeName : INT (*) := 1
+    """
     name: lark.Token
     init: SubrangeTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -1071,6 +1433,17 @@ class SubrangeTypeDeclaration:
 @dataclass
 @_rule_handler("enumerated_value")
 class EnumeratedValue:
+    """
+    An enumerated value.
+
+    Examples::
+
+        IdentifierB
+        IdentifierB := 1
+        INT#IdentifierB
+        INT#IdentifierB := 1
+    """
+    # TODO: coverage?
     type_name: Optional[lark.Token]
     name: lark.Token
     value: Optional[Union[Integer, lark.Token]]
@@ -1083,21 +1456,20 @@ class EnumeratedValue:
 
 @dataclass
 @_rule_handler("enumerated_specification")
-class EnumeratedSpecification:
+class EnumeratedSpecification(TypeSpecificationBase):
+    """
+    An enumerated specification.
+
+    Examples::
+
+        (Value1, Value2 := 1)
+        (Value1, Value2 := 1) INT
+        INT
+    """
     _implicit_type_default_: ClassVar[str] = "INT"
     type_name: Optional[lark.Token]
     values: Optional[List[EnumeratedValue]] = None
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> Union[lark.Token, str]:
-        """The full type name."""
-        return self.type_name or self._implicit_type_default_
-
-    @property
-    def full_type_name(self) -> Union[lark.Token, str]:
-        """The full type name."""
-        return self.base_type_name
 
     @staticmethod
     def from_lark(*args):
@@ -1116,21 +1488,23 @@ class EnumeratedSpecification:
 
 @dataclass
 @_rule_handler("enumerated_spec_init")
-class EnumeratedTypeInitialization:
+class EnumeratedTypeInitialization(TypeInitializationBase):
+    """
+    Enumerated specification with initialization enumerated value.
+
+    May be indirect (i.e., POINTER TO).
+
+    Examples::
+
+        (Value1, Value2 := 1) := IdentifierB
+        (Value1, Value2 := 1) INT := IdentifierC
+        INT := IdentifierD
+    """
+    # TODO coverage + double-check examples (doctest-like?)
     indirection: Optional[IndirectionType]
     spec: EnumeratedSpecification
     value: Optional[EnumeratedValue]
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> Union[lark.Token, str]:
-        """The base type name."""
-        return self.spec.base_type_name
-
-    @property
-    def full_type_name(self) -> Union[lark.Token, str]:
-        """The full type name."""
-        return self.spec.full_type_name
 
     def __str__(self) -> str:
         spec = join_if(self.indirection, " ", self.spec)
@@ -1140,6 +1514,15 @@ class EnumeratedTypeInitialization:
 @dataclass
 @_rule_handler("enumerated_type_declaration", comments=True)
 class EnumeratedTypeDeclaration:
+    """
+    An enumerated type declaration.
+
+    Examples::
+
+        TypeName : TypeName := Va
+        TypeName : (Value1 := 1, Value2 := 2)
+        TypeName : (Value1 := 1, Value2 := 2) INT := Value1
+    """
     name: lark.Token
     init: EnumeratedTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -1151,6 +1534,15 @@ class EnumeratedTypeDeclaration:
 @dataclass
 @_rule_handler("non_generic_type_name")
 class DataType:
+    """
+    A non-generic type name, or a data type name.
+
+    May be indirect (e.g., POINTER TO).
+
+    An elementary type name, a derived type name, or a general dotted
+    identifier are valid for this.
+    """
+    # TODO: more grammar overlaps with dotted/simple names?
     indirection: Optional[IndirectionType]
     type_name: Union[lark.Token, StringTypeSpecification]
     meta: Optional[Meta] = meta_field()
@@ -1163,7 +1555,13 @@ class DataType:
 
 @dataclass
 @_rule_handler("simple_specification")
-class SimpleSpecification:
+class SimpleSpecification(TypeSpecificationBase):
+    """
+    A simple specification with just a type name (or a string type name).
+
+    An elementary type name, a simple type name, or a general dotted
+    identifier are valid for this.
+    """
     type: Union[lark.Token, StringTypeSpecification]
     meta: Optional[Meta] = meta_field()
 
@@ -1173,7 +1571,17 @@ class SimpleSpecification:
 
 @dataclass
 @_rule_handler("indirect_simple_specification")
-class IndirectSimpleSpecification:
+class IndirectSimpleSpecification(TypeSpecificationBase):
+    """
+    A simple specification with the possibility of indirection.
+
+    Examples::
+
+        TypeName
+        POINTER TO TypeName
+        REFERENCE TO TypeName
+        REFERENCE TO POINTER TO TypeName
+    """
     indirection: Optional[IndirectionType]
     type: SimpleSpecification
     meta: Optional[Meta] = meta_field()
@@ -1194,9 +1602,21 @@ ArraySpecType = Union[
 
 @dataclass
 @_rule_handler("array_specification")
-class ArraySpecification:
-    type: ArraySpecType
+class ArraySpecification(TypeSpecificationBase):
+    """
+    An array specification.
+
+    Examples::
+
+        ARRAY[*] OF TypeName
+        ARRAY[1..2] OF Call(1, 2)
+        ARRAY[1..2] OF Call(1, 2)
+        ARRAY[1..5] OF Vec(SIZEOF(TestStruct), 0)
+        ARRAY[1..5] OF STRING[10]
+        ARRAY[1..5] OF STRING(Param.iLower)
+    """
     subranges: List[Subrange]
+    type: ArraySpecType
     meta: Optional[Meta] = meta_field()
 
     @property
@@ -1237,6 +1657,21 @@ class ArraySpecification:
 @dataclass
 @_rule_handler("array_initial_element")
 class ArrayInitialElement:
+    """
+    Initial value for an array element (potentialy repeated).
+
+    The element itself may be an expression, a structure initialization, an
+    enumerated value, or an array initialization.
+
+    It may have a repeat value (``count``) as in::
+
+        Repeat(Value)
+        10(5)
+        Repeat(5 + 3)
+        INT#IdentifierB(5 + 3)
+    """
+    # NOTE: order is correct here; see rule array_initial_element_count
+    # TODO: check enumerated value for count? specifically the := one
     element: ArrayInitialElementType
     count: Optional[Union[EnumeratedValue, Integer]] = None
     meta: Optional[Meta] = meta_field()
@@ -1249,6 +1684,10 @@ class ArrayInitialElement:
 
 @_rule_handler("array_initial_element_count")
 class _ArrayInitialElementCount:
+    """
+    An internal handler for array initial elements with repeat count
+    values.
+    """
     @staticmethod
     def from_lark(
         count: Union[EnumeratedValue, Integer],
@@ -1263,6 +1702,11 @@ class _ArrayInitialElementCount:
 @dataclass
 @_rule_handler("bracketed_array_initialization")
 class _BracketedArrayInitialization:
+    """
+    Internal handler for array initialization with brackets.
+
+    See also :class:`ArrayInitialization`
+    """
     @staticmethod
     def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
         return ArrayInitialization(list(elements), brackets=True)
@@ -1271,6 +1715,11 @@ class _BracketedArrayInitialization:
 @dataclass
 @_rule_handler("bare_array_initialization")
 class _BareArrayInitialization:
+    """
+    Internal handler for array initialization, without brackets
+
+    See also :class:`ArrayInitialization`
+    """
     @staticmethod
     def from_lark(*elements: ArrayInitialElement) -> ArrayInitialization:
         return ArrayInitialization(list(elements), brackets=False)
@@ -1278,6 +1727,14 @@ class _BareArrayInitialization:
 
 @dataclass
 class ArrayInitialization:
+    """
+    Array initialization (bare or bracketed).
+
+    Examples::
+
+        [1, 2, 3]
+        1, 2, 3
+    """
     elements: List[ArrayInitialElement]
     brackets: bool = False
     meta: Optional[Meta] = meta_field()
@@ -1292,6 +1749,13 @@ class ArrayInitialization:
 @dataclass
 @_rule_handler("object_initializer_array")
 class ObjectInitializerArray:
+    """
+    Object initialization in array form.
+
+    Examples::
+
+      FB_Runner[(name := 'one'), (name := 'two')]
+    """
     name: lark.Token
     initializers: List[StructureInitialization]
     meta: Optional[Meta] = meta_field()
@@ -1316,21 +1780,22 @@ class ObjectInitializerArray:
 
 @dataclass
 @_rule_handler("array_spec_init")
-class ArrayTypeInitialization:
+class ArrayTypeInitialization(TypeInitializationBase):
+    """
+    Array specification and optional default (initialization) value.
+
+    May be indirect (e.g., POINTER TO).
+
+    Examples::
+
+        ARRAY[*] OF TypeName
+        ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        POINTER TO ARRAY[1..2] OF Call(1, 2)
+    """
     indirection: Optional[IndirectionType]
     spec: ArraySpecification
     value: Optional[ArrayInitialization]
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def base_type_name(self) -> Union[str, lark.Token]:
-        """The base type name."""
-        return self.spec.base_type_name
-
-    @property
-    def full_type_name(self) -> str:
-        """The full type name."""
-        return self.spec.full_type_name
 
     def __str__(self) -> str:
         if self.indirection:
@@ -1347,6 +1812,22 @@ class ArrayTypeInitialization:
 @dataclass
 @_rule_handler("array_type_declaration", comments=True)
 class ArrayTypeDeclaration:
+    """
+    Full declaration of an array type.
+
+    Examples::
+
+        ArrayType : ARRAY[*] OF TypeName
+        ArrayType : ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        ArrayType : POINTER TO ARRAY[1..2] OF Call(1, 2)
+        TypeName : ARRAY [1..2, 3..4] OF INT
+        TypeName : ARRAY [1..2] OF INT := [1, 2]
+        TypeName : ARRAY [1..2, 3..4] OF INT := [2(3), 3(4)]
+        TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType
+        TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)
+        TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT
+        TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT
+    """
     name: lark.Token
     init: ArrayTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -1358,6 +1839,34 @@ class ArrayTypeDeclaration:
 @dataclass
 @_rule_handler("structure_type_declaration", comments=True)
 class StructureTypeDeclaration:
+    """
+    Full structure type declaration, as part of a TYPE.
+
+    Examples::
+
+        TypeName EXTENDS Other.Type :
+        STRUCT
+            iValue : INT;
+        END_STRUCT
+
+        TypeName : POINTER TO
+        STRUCT
+            iValue : INT;
+        END_STRUCT
+
+        TypeName : POINTER TO
+        STRUCT
+            iValue : INT := 3 + 4;
+            stTest : ST_Testing := (1, 2);
+            eValue : E_Test := E_Test.ABC;
+            arrValue : ARRAY [1..2] OF INT := [1, 2];
+            arrValue1 : INT (1..2);
+            arrValue1 : (Value1 := 1) INT;
+            sValue : STRING := 'abc';
+            iValue1 AT %I* : INT := 5;
+            sValue1 : STRING[10] := 'test';
+        END_STRUCT
+    """
     name: lark.Token
     extends: Optional[Extends]
     indirection: Optional[IndirectionType]
@@ -1398,6 +1907,21 @@ class StructureTypeDeclaration:
 @dataclass
 @_rule_handler("structure_element_declaration", comments=True)
 class StructureElementDeclaration:
+    """
+    Declaration of a single element of a structure.
+
+    Examples::
+
+        iValue : INT := 3 + 4;
+        stTest : ST_Testing := (1, 2);
+        eValue : E_Test := E_Test.ABC;
+        arrValue : ARRAY [1..2] OF INT := [1, 2];
+        arrValue1 : INT (1..2);
+        arrValue1 : (Value1 := 1) INT;
+        sValue : STRING := 'abc';
+        iValue1 AT %I* : INT := 5;
+        sValue1 : STRING[10] := 'test';
+    """
     name: lark.Token
     location: Optional[IncompleteLocation]
     init: Union[
@@ -1414,8 +1938,29 @@ class StructureElementDeclaration:
 
     @property
     def variables(self) -> List[str]:
-        """API compat"""
+        """API compat: list of variable names."""
         return [self.name]
+
+    @property
+    def value(self) -> str:
+        """The initialization value, if applicable."""
+        if isinstance(self.init, StructureInitialization):
+            return str(self.init)
+        return str(self.init.value)
+
+    @property
+    def base_type_name(self) -> Union[lark.Token, str]:
+        """The base type name."""
+        if isinstance(self.init, StructureInitialization):
+            return self.name
+        return self.init.base_type_name
+
+    @property
+    def full_type_name(self) -> lark.Token:
+        """The full type name."""
+        if isinstance(self.init, StructureInitialization):
+            return self.name
+        return self.init.full_type_name
 
     def __str__(self) -> str:
         name_and_location = join_if(self.name, " ", self.location)
@@ -1434,6 +1979,21 @@ UnionElementSpecification = Union[
 @dataclass
 @_rule_handler("union_element_declaration", comments=True)
 class UnionElementDeclaration:
+    """
+    Declaration of a single element of a union.
+
+    Similar to a structure element, but not all types are supported and no
+    initialization/default values are allowed.
+
+    Examples::
+
+        iValue : INT;
+        arrValue : ARRAY [1..2] OF INT;
+        arrValue1 : INT (1..2);
+        arrValue1 : (Value1 := 1) INT;
+        sValue : STRING;
+        psValue1 : POINTER TO STRING[10];
+    """
     name: lark.Token
     spec: UnionElementSpecification
     meta: Optional[Meta] = meta_field()
@@ -1450,6 +2010,21 @@ class UnionElementDeclaration:
 @dataclass
 @_rule_handler("union_type_declaration", comments=True)
 class UnionTypeDeclaration:
+    """
+    A full declaration of a UNION type, as part of a TYPE/END_TYPE block.
+
+    Examples::
+
+        UNION
+            iVal : INT;
+            aAsBytes : ARRAY [0..2] OF BYTE;
+        END_UNION
+
+        UNION
+            iValue : INT;
+            eValue : (iValue := 1, iValue2 := 2) INT;
+        END_UNION
+    """
     name: lark.Token
     declarations: List[UnionElementDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -1484,7 +2059,14 @@ class UnionTypeDeclaration:
 
 @dataclass
 @_rule_handler("initialized_structure")
-class InitializedStructure:
+class InitializedStructure(TypeInitializationBase):
+    """
+    A named initialized structure.
+
+    Examples::
+
+        ST_TypeName := (iValue := 0, bValue := TRUE)
+    """
     name: lark.Token
     init: StructureInitialization
     meta: Optional[Meta] = meta_field()
@@ -1494,16 +2076,6 @@ class InitializedStructure:
         """The initialization value (call)."""
         return str(self.init)
 
-    @property
-    def base_type_name(self) -> lark.Token:
-        """The base type name."""
-        return self.name
-
-    @property
-    def full_type_name(self) -> lark.Token:
-        """The full type name."""
-        return self.name
-
     def __str__(self) -> str:
         return f"{self.name} := {self.init}"
 
@@ -1511,6 +2083,28 @@ class InitializedStructure:
 @dataclass
 @_rule_handler("structure_initialization")
 class StructureInitialization:
+    """
+    A structure initialization (i.e., default values) of one or more elements.
+
+    Elements may be either positional or named.  Used in the following:
+
+    1. Structure element initialization of default values::
+
+        stStruct : ST_TypeName := (iValue := 0, bValue := TRUE)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    2. Function block declarations (fb_name_decl, fb_invocation_decl)::
+
+        fbSample : FB_Sample(nInitParam := 1) := (nInput := 2, nMyProperty := 3)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        fbSample : FB_Sample := (nInput := 2, nMyProperty := 3)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    3. Array object initializers (object_initializer_array)::
+
+        runners : ARRAY[1..2] OF FB_Runner[(name := 'one'), (name := 'two')]
+                                          [^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^]
+    """
     elements: List[StructureElementInitialization]
     meta: Optional[Meta] = meta_field()
 
@@ -1526,6 +2120,20 @@ class StructureInitialization:
 @dataclass
 @_rule_handler("structure_element_initialization")
 class StructureElementInitialization:
+    """
+    An initialization (default) value for a structure element.
+
+    This may come in the form of::
+
+        name := value
+
+    or simply::
+
+        value
+
+    ``value`` may refer to an expression, an enumerated value, represent
+    a whole array, or represent a nested structure.
+    """
     name: Optional[lark.Token]
     value: Union[
         Constant,
@@ -1554,6 +2162,7 @@ class StructureElementInitialization:
 @dataclass
 @_rule_handler("unary_expression")
 class UnaryOperation(Expression):
+    """A unary - single operand - operation: ``NOT``, ``-``, or ``+``."""
     op: lark.Token
     expr: Expression
     meta: Optional[Meta] = meta_field()
@@ -1587,6 +2196,23 @@ class UnaryOperation(Expression):
     "expression_term"
 )
 class BinaryOperation(Expression):
+    """
+    A binary (i.e., two operand) operation.
+
+    Examples::
+
+        a + b
+        a AND b
+        a AND_THEN b
+        a OR_ELSE b
+        a := b
+        a XOR b
+        a = b
+        -a * b
+        a * 1.0
+
+    Expressions may be nested in either the left or right operand.
+    """
     left: Expression
     op: lark.Token
     right: Expression
@@ -1625,6 +2251,14 @@ class BinaryOperation(Expression):
 @dataclass
 @_rule_handler("parenthesized_expression")
 class ParenthesizedExpression(Expression):
+    """
+    An expression with parentheses around it.
+
+    Examples::
+
+        (a * b)
+        (1 + b)
+    """
     expr: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -1635,6 +2269,18 @@ class ParenthesizedExpression(Expression):
 @dataclass
 @_rule_handler("bracketed_expression")
 class BracketedExpression(Expression):
+    """
+    An expression with square brackets around it.
+
+    This is used exclusively in string length specifications.
+
+    Examples::
+
+        [a * b]
+        [255]
+
+    See also :class:`StringSpecLength`.
+    """
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -1645,6 +2291,19 @@ class BracketedExpression(Expression):
 @dataclass
 @_rule_handler("string_spec_length")
 class StringSpecLength:
+    """
+    The length of a defined string.
+
+    The grammar makes a distinction between brackets and parentheses, though
+    they appear to be functionally equivalent.
+
+    Examples::
+
+        [1]
+        (1)
+        [255]
+    """
+
     length: Union[ParenthesizedExpression, BracketedExpression]
 
     def __str__(self) -> str:
@@ -1654,8 +2313,23 @@ class StringSpecLength:
 @dataclass
 @_rule_handler("function_call")
 class FunctionCall(Expression):
+    """
+    A function (function block, method, action, etc.) call.
+
+    The return value may be dereferenced with a carat (``^``).
+
+    Examples::
+
+        A()^
+        A(1, 2)
+        A(1, 2, sName:='test', iOutput=>)
+        A.B[1].C(1, 2)
+    """
+    #: The function name.
     name: SymbolicVariable
+    #: Positional, naed, or output parameters.
     parameters: List[ParameterAssignment]
+    #: Dereference the return value?
     dereferenced: bool
     meta: Optional[Meta] = meta_field()
 
@@ -1714,6 +2388,16 @@ class FunctionCall(Expression):
 @dataclass
 @_rule_handler("var1")
 class DeclaredVariable:
+    """
+    A single declared variable name and optional [direct or incomplete] location.
+
+    Examples::
+
+        iVar
+        iVar AT %I*
+        iVar AT %IX1.1
+    """
+
     # Alternate name: VariableWithLocation? MaybeLocatedVariable?
     variable: SimpleVariable
     location: Optional[Union[IncompleteLocation, Location]]
@@ -1757,6 +2441,9 @@ InitDeclarationType = Union[
 
 
 class InitDeclaration:
+    """
+    Base class for a declaration of one or more variables with a type initialization.
+    """
     variables: List[DeclaredVariable]
     init: InitDeclarationType
     meta: Optional[Meta]
@@ -1769,6 +2456,19 @@ class InitDeclaration:
 @dataclass
 @_rule_handler("var1_init_decl", comments=True)
 class VariableOneInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables with a type, subrange, or enumerated
+    type initialization.
+
+    Examples::
+
+        stVar1, stVar2 : (Value1, Value2)
+        stVar1, stVar2 : (Value1 := 0, Value2 := 1)
+        stVar1 : INT (1..2) := 25
+        stVar1, stVar2 : TypeName := Value
+        stVar1, stVar2 : (Value1 := 1, Value2 := 2)
+        stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1
+    """
     variables: List[DeclaredVariable]
     init: Union[TypeInitialization, SubrangeTypeInitialization, EnumeratedTypeInitialization]
     meta: Optional[Meta] = meta_field()
@@ -1777,6 +2477,18 @@ class VariableOneInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("array_var_init_decl", comments=True)
 class ArrayVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables with array type initialization and
+    optional default (initialization) value.
+
+    May be indirect (e.g., POINTER TO).
+
+    Examples::
+
+        aVal1, aVal2 : ARRAY[*] OF TypeName
+        aVal1 : ARRAY[1..2] OF Call(1, 2) := [1, 2]
+        aVal1 : POINTER TO ARRAY[1..2] OF Call(1, 2)
+    """
     variables: List[DeclaredVariable]
     init: ArrayTypeInitialization
     meta: Optional[Meta] = meta_field()
@@ -1785,6 +2497,14 @@ class ArrayVariableInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("structured_var_init_decl", comments=True)
 class StructuredVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables using a named initialized structure.
+
+    Examples::
+
+        stVar1 : ST_TypeName := (iValue := 0, bValue := TRUE)
+        stVar1, stVar2 : ST_TypeName := (iValue  = 0, bValue := TRUE)
+    """
     variables: List[DeclaredVariable]
     init: InitializedStructure
     meta: Optional[Meta] = meta_field()
@@ -1797,6 +2517,16 @@ class StructuredVariableInitDeclaration(InitDeclaration):
     comments=True
 )
 class StringVariableInitDeclaration(InitDeclaration):
+    """
+    A declaration of one or more variables using single/double byte strings,
+    with an optinoal initialization value.
+
+    Examples::
+
+        sVar1 : STRING(2_500_000) := 'test1'
+        sVar2, sVar3 : STRING(Param.iLower) := 'test2'
+        sVar4, sVar5 : WSTRING(Param.iLower) := "test3"
+    """
     variables: List[DeclaredVariable]
     spec: StringTypeSpecification
     value: Optional[lark.Token]
@@ -1821,6 +2551,14 @@ class StringVariableInitDeclaration(InitDeclaration):
 @dataclass
 @_rule_handler("edge_declaration", comments=True)
 class EdgeDeclaration(InitDeclaration):
+    """
+    An edge declaration of one or more variables.
+
+    Examples::
+
+        iValue AT %IX1.1 : BOOL R_EDGE
+        iValue : BOOL F_EDGE
+    """
     variables: List[DeclaredVariable]
     edge: lark.Token
     meta: Optional[Meta] = meta_field()
@@ -1841,12 +2579,27 @@ class EdgeDeclaration(InitDeclaration):
 
 @as_tagged_union
 class FunctionBlockDeclaration:
+    """
+    Base class for declarations of variables using function blocks.
+
+    May either be by name (:class:`FunctionBlockNameDeclaration`) or invocation
+    :class:`FunctionBlockInvocationDeclaration`). Marked as a "tagged union" so
+    that serialization will uniquely identify the Python class.
+    """
     ...
 
 
 @dataclass
 @_rule_handler("fb_name_decl", comments=True)
 class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
+    """
+    Base class for declarations of variables using function blocks by name.
+
+    Examples::
+
+        fbName1 : FB_Name
+        fbName1 : FB_Name := (iValue := 0, bValue := TRUE)
+    """
     variables: List[lark.Token]   # fb_decl_name_list -> fb_name
     spec: lark.Token
     init: Optional[StructureInitialization] = None
@@ -1861,6 +2614,13 @@ class FunctionBlockNameDeclaration(FunctionBlockDeclaration):
 @dataclass
 @_rule_handler("fb_invocation_decl", comments=True)
 class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
+    """
+    Base class for declarations of variables using function blocks by invocation.
+
+    Examples::
+
+        fbSample : FB_Sample(nInitParam := 1) := (nInput := 2, nMyProperty := 3)
+    """
     variables: List[lark.Token]
     init: FunctionCall
     defaults: Optional[StructureInitialization] = None
@@ -1874,12 +2634,28 @@ class FunctionBlockInvocationDeclaration(FunctionBlockDeclaration):
 
 @as_tagged_union
 class ParameterAssignment:
+    """
+    Base class for assigned parameters in function calls.
+
+    May be either input parameters (positional or named ``name :=``) or output
+    parameters (named as in ``name =>``, ``NOT name =>``). Marked as a "tagged
+    union" so that serialization will uniquely identify the Python class.
+    """
     ...
 
 
 @dataclass
 @_rule_handler("param_assignment")
 class InputParameterAssignment(ParameterAssignment):
+    """
+    An input parameter in a function call.
+
+    May be a nameless positional parameter or a named one.
+
+    Examples::
+
+        name := value
+    """
     name: Optional[SimpleVariable]
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
@@ -1900,6 +2676,16 @@ class InputParameterAssignment(ParameterAssignment):
 @dataclass
 @_rule_handler("output_parameter_assignment")
 class OutputParameterAssignment(ParameterAssignment):
+    """
+    A named output parameter, which may be inverted.
+
+    Examples::
+
+        name => output
+        NOT name => output2
+        name =>
+        NOT name =>
+    """
     name: SimpleVariable
     value: Optional[Expression]
     inverted: bool = False
@@ -1926,6 +2712,19 @@ AnyLocation = Union[Location, IncompleteLocation]
 @dataclass
 @_rule_handler("global_var_spec")
 class GlobalVariableSpec:
+    """
+    Global variable specification; the part that comes before the
+    initialization.
+
+    Located (or incomplete located) specifications only apply to one variable,
+    whereas simple specifications can have multiple variables.
+
+    Examples::
+
+        iValue1, iValue2
+        iValue3 AT %I*
+        iValue4 AT %IX1.1
+    """
     variables: List[lark.Token]
     location: Optional[AnyLocation]
     meta: Optional[Meta] = meta_field()
@@ -1963,6 +2762,22 @@ LocatedVariableSpecInit = Union[
 @dataclass
 @_rule_handler("global_var_decl", comments=True)
 class GlobalVariableDeclaration:
+    """
+    A declaration of one or more global variables: name and location
+    specification and initialization type.
+
+    Examples::
+
+        fValue1 : INT;
+        fValue2 : INT (0..10);
+        fValue3 : (A, B);
+        fValue4 : (A, B) DINT;
+        fValue5 : ARRAY [1..10] OF INT;
+        fValue6 : ARRAY [1..10] OF ARRAY [1..10] OF INT;
+        fValue7 : FB_Test(1, 2, 3);
+        fValue8 : FB_Test(A := 1, B := 2, C => 3);
+        fValue9 : STRING[10] := 'abc';
+    """
     spec: GlobalVariableSpec
     init: Union[LocatedVariableSpecInit, FunctionCall]
     meta: Optional[Meta] = meta_field()
@@ -1994,6 +2809,15 @@ class GlobalVariableDeclaration:
 @dataclass
 @_rule_handler("extends")
 class Extends:
+    """
+    The "EXTENDS" portion of a function block, interface, structure, etc.
+
+    Examples::
+
+        EXTENDS stName
+        EXTENDS FB_Name
+    """
+
     name: lark.Token
     meta: Optional[Meta] = meta_field()
 
@@ -2004,6 +2828,16 @@ class Extends:
 @dataclass
 @_rule_handler("implements")
 class Implements:
+    """
+    The "IMPLEMENTS" portion of a function block, indicating it implements
+    one or more interfaces.
+
+    Examples::
+
+        IMPLEMENTS I_Interface1
+        IMPLEMENTS I_Interface1, I_Interface2
+    """
+
     interfaces: List[lark.Token]
     meta: Optional[Meta] = meta_field()
 
@@ -2020,6 +2854,36 @@ class Implements:
 @dataclass
 @_rule_handler("function_block_type_declaration", comments=True)
 class FunctionBlock:
+    """
+    A full function block type declaration.
+
+    A function block distinguishes itself from a regular function by having
+    state and potentially having actions, methods, and properties. These
+    additional parts are separate in this grammar (i.e., they do not appear
+    within the FUNCTION_BLOCK itself).
+
+    An implementation is optional, but ``END_FUNCTION_BLOCK`` is required.
+
+    Examples::
+
+        FUNCTION_BLOCK FB_EmptyFunctionBlock
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK FB_Implementer IMPLEMENTS I_fbName
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK ABSTRACT FB_Extender EXTENDS OtherFbName
+        END_FUNCTION_BLOCK
+
+        FUNCTION_BLOCK FB_WithVariables
+        VAR_INPUT
+            bExecute : BOOL;
+        END_VAR
+        VAR_OUTPUT
+            iResult : INT;
+        END_VAR
+        END_FUNCTION_BLOCK
+    """
     name: lark.Token
     access: Optional[AccessSpecifier]
     extends: Optional[Extends]
@@ -2067,6 +2931,20 @@ class FunctionBlock:
 @dataclass
 @_rule_handler("function_declaration", comments=True)
 class Function:
+    """
+    A full function block type declaration, with nested variable declaration blocks.
+
+    An implementation is optional, but ``END_FUNCTION`` is required.
+
+    Examples::
+
+        FUNCTION FuncName : INT
+            VAR_INPUT
+                iValue : INT := 0;
+            END_VAR
+            FuncName := iValue;
+        END_FUNCTION
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[Union[SimpleSpecification, IndirectSimpleSpecification]]
@@ -2111,6 +2989,23 @@ class Function:
 @dataclass
 @_rule_handler("program_declaration", comments=True)
 class Program:
+    """
+    A full program declaration, with nested variable declaration blocks.
+
+    An implementation is optional, but ``END_PROGRAM`` is required.
+
+    Examples::
+
+        PROGRAM ProgramName
+            VAR_INPUT
+                iValue : INT;
+            END_VAR
+            VAR_ACCESS
+                AccessName : SymbolicVariable : TypeName READ_WRITE;
+            END_VAR
+            iValue := iValue + 1;
+        END_PROGRAM
+    """
     name: lark.Token
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
@@ -2140,6 +3035,15 @@ InterfaceVariableDeclarationBlock = Union[
 @dataclass
 @_rule_handler("interface_declaration", comments=True)
 class Interface:
+    """
+    A full interface declaration, with nested variable declaration blocks.
+
+    An implementation is not allowed for interfaces, but ``END_INTERFACE`` is
+    still required.
+
+    Examples::
+
+    """
     name: lark.Token
     extends: Optional[Extends]
     # TODO: want this to be tagged during serialization, so it's kept as
@@ -2178,6 +3082,23 @@ class Interface:
 @dataclass
 @_rule_handler("action", comments=True)
 class Action:
+    """
+    A full, named action declaration.
+
+    Actions belong to function blocks. Actions may not contain variable blocks,
+    but may contain an implementation.  Variable references are assumed to be
+    from the local namespace (i.e., the owner function block) or in the global
+    scope.
+
+    Examples::
+
+        ACTION ActName
+        END_ACTION
+
+        ACTION ActName
+            iValue := iValue + 2;
+        END_ACTION
+    """
     name: lark.Token
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -2197,6 +3118,21 @@ class Action:
 @dataclass
 @_rule_handler("function_block_method_declaration", comments=True)
 class Method:
+    """
+    A full, named method declaration.
+
+    Methods belong to function blocks. Methods may contain variable blocks
+    and a return type, and may also contain an implementation.
+
+    Examples::
+
+        METHOD PRIVATE MethodName : ARRAY [1..2] OF INT
+        END_METHOD
+
+        METHOD MethodName : INT
+            MethodName := 1;
+        END_METHOD
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
@@ -2238,6 +3174,28 @@ class Method:
 @dataclass
 @_rule_handler("function_block_property_declaration", comments=True)
 class Property:
+    """
+    A named property declaration, which may pertain to a ``get`` or ``set``.
+
+    Properties belong to function blocks. Properties may contain variable
+    blocks and a return type, and may also contain an implementation.
+
+    Examples::
+
+        PROPERTY PropertyName : RETURNTYPE
+            VAR_INPUT
+                bExecute : BOOL;
+            END_VAR
+            VAR_OUTPUT
+                iResult : INT;
+            END_VAR
+            iResult := 5;
+            PropertyName := iResult + 1;
+        END_PROPERTY
+
+        PROPERTY PRIVATE PropertyName : ARRAY [1..2] OF INT
+        END_PROPERTY
+    """
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
@@ -2300,6 +3258,12 @@ GlobalVariableDeclarationType = Union[
 
 @as_tagged_union
 class VariableDeclarationBlock:
+    """
+    Base class for variable declaration blocks.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
     block_header: ClassVar[str] = "VAR"
     items: List[Any]
     meta: Optional[Meta]
@@ -2314,6 +3278,11 @@ class VariableDeclarationBlock:
 @dataclass
 @_rule_handler("var_declarations", comments=True)
 class VariableDeclarations(VariableDeclarationBlock):
+    """
+    Variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -2339,6 +3308,11 @@ class VariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("static_var_declarations", comments=True)
 class StaticDeclarations(VariableDeclarationBlock):
+    """
+    Static variable declarations block (``VAR_STAT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_STAT"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -2365,6 +3339,11 @@ class StaticDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("temp_var_decls", comments=True)
 class TemporaryVariableDeclarations(VariableDeclarationBlock):
+    """
+    Temporary variable declarations block (``VAR_TEMP``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_TEMP"
     items: List[VariableInitDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -2388,6 +3367,11 @@ class TemporaryVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("var_inst_declaration", comments=True)
 class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
+    """
+    Declarations block for instance variables in methods (``VAR_INST``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_INST"
     attrs: Optional[VariableAttributes]
     items: List[VariableInitDeclaration]
@@ -2418,6 +3402,10 @@ class MethodInstanceVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("located_var_decl", comments=True)
 class LocatedVariableDeclaration:
+    """
+    Declaration of a variable in a VAR block that is located.
+    """
+    # TODO examples
     name: Optional[SimpleVariable]
     location: Location
     init: LocatedVariableSpecInit
@@ -2431,6 +3419,13 @@ class LocatedVariableDeclaration:
 @dataclass
 @_rule_handler("located_var_declarations", comments=True)
 class LocatedVariableDeclarations(VariableDeclarationBlock):
+    """
+    Located variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+
+    All variables in this are expected to be located (e.g., ``AT %IX1.1``).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[LocatedVariableDeclaration]
@@ -2456,13 +3451,11 @@ class LocatedVariableDeclarations(VariableDeclarationBlock):
         )
 
 
+#: var_spec in the grammar
 IncompleteLocatedVariableSpecInit = Union[
     SimpleSpecification,
-    TypeInitialization,
     SubrangeTypeInitialization,
     EnumeratedTypeInitialization,
-    ArrayTypeInitialization,
-    InitializedStructure,
     StringTypeSpecification,
 ]
 
@@ -2470,6 +3463,9 @@ IncompleteLocatedVariableSpecInit = Union[
 @dataclass
 @_rule_handler("incomplete_located_var_decl", comments=True)
 class IncompleteLocatedVariableDeclaration:
+    """
+    A named, incomplete located variable declaration inside a variable block.
+    """
     name: SimpleVariable
     location: IncompleteLocation
     init: IncompleteLocatedVariableSpecInit
@@ -2483,6 +3479,14 @@ class IncompleteLocatedVariableDeclaration:
 @dataclass
 @_rule_handler("incomplete_located_var_declarations", comments=True)
 class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
+    """
+    Incomplete located variable declarations block (``VAR``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+
+    All variables in this are expected to have incomplete locations (e.g., just
+    ``%I*``).
+    """
     block_header: ClassVar[str] = "VAR"
     attrs: Optional[VariableAttributes]
     items: List[IncompleteLocatedVariableDeclaration]
@@ -2511,6 +3515,9 @@ class IncompleteLocatedVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("external_declaration", comments=True)
 class ExternalVariableDeclaration:
+    """
+    A named, external variable declaration inside a variable block.
+    """
     name: lark.Token
     spec: Union[
         SimpleSpecification,
@@ -2528,6 +3535,11 @@ class ExternalVariableDeclaration:
 @dataclass
 @_rule_handler("external_var_declarations", comments=True)
 class ExternalVariableDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, external variable declarations (``VAR_EXTERNAL``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_EXTERNAL"
     attrs: Optional[VariableAttributes]
     items: List[ExternalVariableDeclaration]
@@ -2556,6 +3568,11 @@ class ExternalVariableDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_declarations", comments=True)
 class InputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, input variable declarations (``VAR_INPUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_INPUT"
     attrs: Optional[VariableAttributes]
     items: List[InputDeclaration]
@@ -2580,6 +3597,11 @@ class InputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("output_declarations", comments=True)
 class OutputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, output variable declarations (``VAR_OUTPUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_OUTPUT"
     attrs: Optional[VariableAttributes]
     items: List[OutputDeclaration]
@@ -2606,6 +3628,11 @@ class OutputDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("input_output_declarations", comments=True)
 class InputOutputDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, input/output variable declarations (``VAR_IN_OUT``).
+
+    May be annotated with attributes (see :class:`VariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_IN_OUT"
     attrs: Optional[VariableAttributes]
     items: List[InputOutputDeclaration]
@@ -2627,23 +3654,6 @@ class InputOutputDeclarations(VariableDeclarationBlock):
                 *(indent(f"{item};") for item in self.items),
                 "END_VAR",
             )
-        )
-
-
-@dataclass
-@_rule_handler("program_access_decl", comments=True)
-class AccessDeclaration:
-    name: lark.Token
-    variable: SymbolicVariable
-    type: DataType
-    direction: Optional[lark.Token]
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self) -> str:
-        return join_if(
-            f"{self.name} : {self.variable} : {self.type}",
-            " ",
-            self.direction
         )
 
 
@@ -2677,8 +3687,41 @@ class FunctionVariableDeclarations(VariableDeclarationBlock):
 
 
 @dataclass
+@_rule_handler("program_access_decl", comments=True)
+class AccessDeclaration:
+    """
+    A single, named program access declaration.
+
+    Examples::
+
+        AccessName : SymbolicVariable : TypeName READ_WRITE;
+        AccessName1 : SymbolicVariable1 : TypeName1 READ_ONLY;
+        AccessName2 : SymbolicVariable2 : TypeName2;
+    """
+    name: lark.Token
+    variable: SymbolicVariable
+    type: DataType
+    direction: Optional[lark.Token]
+    meta: Optional[Meta] = meta_field()
+
+    def __str__(self) -> str:
+        return join_if(
+            f"{self.name} : {self.variable} : {self.type}",
+            " ",
+            self.direction
+        )
+
+
+@dataclass
 @_rule_handler("program_access_decls", comments=True)
 class AccessDeclarations(VariableDeclarationBlock):
+    """
+    A block of named, program access variable declarations (``VAR_ACCESS``).
+
+    See Also
+    --------
+    :class:`AccessDeclaration`
+    """
     block_header: ClassVar[str] = "VAR_ACCESS"
     items: List[AccessDeclaration]
     meta: Optional[Meta] = meta_field()
@@ -2700,6 +3743,11 @@ class AccessDeclarations(VariableDeclarationBlock):
 @dataclass
 @_rule_handler("global_var_declarations", comments=True)
 class GlobalVariableDeclarations(VariableDeclarationBlock):
+    """
+    Global variable declarations block (``VAR_GLOBAL``).
+
+    May be annotated with attributes (see :class:`GlobalVariableAttributes`).
+    """
     block_header: ClassVar[str] = "VAR_GLOBAL"
     attrs: Optional[GlobalVariableAttributes]
     items: List[GlobalVariableDeclaration]
@@ -2729,11 +3777,26 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
 
 @as_tagged_union
 class Statement:
-    ...
+    """
+    Base class for all statements in a structured text implementation section.
+
+    Marked as a "tagged union" so that serialization will uniquely identify the
+    Python class.
+    """
 
 
 @_rule_handler("function_call_statement", comments=True)
 class FunctionCallStatement(Statement, FunctionCall):
+    """
+    A function (function block, method, action, etc.) call as a statement.
+
+    Examples::
+
+        A(1, 2);
+        A(1, 2, sName:='test', iOutput=>);
+        A.B[1].C(1, 2);
+    """
+
     @staticmethod
     def from_lark(
         invocation: FunctionCall,
@@ -2753,6 +3816,14 @@ class FunctionCallStatement(Statement, FunctionCall):
 @dataclass
 @_rule_handler("chained_function_call_statement", comments=True)
 class ChainedFunctionCallStatement(Statement):
+    """
+    A chained set of function calls as a statement, in a "fluent" style.
+
+    Examples::
+
+        uut.dothis().andthenthis().andthenthat();
+        uut.getPointerToStruct()^.dothis(A := 1).dothat(B := 2).done();
+    """
     invocations: List[FunctionCall]
     meta: Optional[Meta] = meta_field()
 
@@ -2770,6 +3841,7 @@ class ChainedFunctionCallStatement(Statement):
 @dataclass
 @_rule_handler("else_if_clause", comments=True)
 class ElseIfClause:
+    """The else-if ``ELSIF`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     if_expression: Expression
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
@@ -2787,6 +3859,7 @@ class ElseIfClause:
 @dataclass
 @_rule_handler("else_clause", comments=True)
 class ElseClause:
+    """The ``ELSE`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
 
@@ -2803,6 +3876,7 @@ class ElseClause:
 @dataclass
 @_rule_handler("if_statement", comments=True)
 class IfStatement(Statement):
+    """The ``IF`` part of an ``IF/ELSIF/ELSE/END_IF`` block."""
     if_expression: Expression
     statements: Optional[StatementList]
     else_ifs: List[ElseIfClause]
@@ -2854,6 +3928,17 @@ CaseMatch = Union[
 @dataclass
 @_rule_handler("case_element", comments=True)
 class CaseElement(Statement):
+    """
+    A single element of a ``CASE`` statement block.
+
+    May contain one or more matches with corresponding statements. Matches
+    may include subranges, integers, enumerated values, symbolic variables,
+    bit strings, or boolean values.
+
+    See Also
+    --------
+    :class:`CaseMatch`
+    """
     matches: List[CaseMatch]
     statements: Optional[StatementList]
     meta: Optional[Meta] = meta_field()
@@ -2882,6 +3967,17 @@ class CaseElement(Statement):
 @dataclass
 @_rule_handler("case_statement", comments=True)
 class CaseStatement(Statement):
+    """
+    A switch-like ``CASE`` statement block.
+
+    May contain one or more cases with corresponding statements, and a default
+    ``ELSE`` clause.
+
+    See Also
+    --------
+    :class:`CaseElement`
+    :class:`ElseClause`
+    """
     expression: Expression
     cases: List[CaseElement]
     else_clause: Optional[ElseClause]
@@ -2902,6 +3998,19 @@ class CaseStatement(Statement):
 @dataclass
 @_rule_handler("no_op_statement", comments=True)
 class NoOpStatement(Statement):
+    """
+    A no-operation statement referring to a variable and nothing else.
+
+    Distinguished from an action depending on if the context-sensitive
+    name matches an action or a variable name.
+
+    Note that blark does not handle this for you and may arbitrarily choose
+    one or the other.
+
+    Examples::
+
+        variable;
+    """
     variable: Variable
     meta: Optional[Meta] = meta_field()
 
@@ -2910,20 +4019,17 @@ class NoOpStatement(Statement):
 
 
 @dataclass
-@_rule_handler("action_statement", comments=True)
-class ActionStatement(Statement):
-    # TODO: overlaps with no-op statement?
-    action: lark.Token
-    meta: Optional[Meta] = meta_field()
-
-    def __str__(self):
-        return f"{self.action};"
-
-
-@dataclass
 @_rule_handler("set_statement", comments=True)
 class SetStatement(Statement):
+    """
+    A "set" statement which conditionally sets a variable to ``TRUE``.
+
+    Examples::
+
+        bValue S= iValue > 5;
+    """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -2934,7 +4040,15 @@ class SetStatement(Statement):
 @dataclass
 @_rule_handler("reference_assignment_statement", comments=True)
 class ReferenceAssignmentStatement(Statement):
+    """
+    A reference assignment statement.
+
+    Examples::
+
+        refOne REF= refOtherOne;
+    """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -2945,7 +4059,15 @@ class ReferenceAssignmentStatement(Statement):
 @dataclass
 @_rule_handler("reset_statement")
 class ResetStatement(Statement):
+    """
+    A "reset" statement which conditionally clears a variable to ``FALSE``.
+
+    Examples::
+
+        bValue R= iValue <= 5;
+    """
     variable: SymbolicVariable
+    op: lark.Token
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
@@ -2956,6 +4078,7 @@ class ResetStatement(Statement):
 @dataclass
 @_rule_handler("exit_statement", comments=True)
 class ExitStatement(Statement):
+    """A statement used to exit a loop, ``EXIT``."""
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -2965,6 +4088,7 @@ class ExitStatement(Statement):
 @dataclass
 @_rule_handler("continue_statement", comments=True)
 class ContinueStatement(Statement):
+    """A statement used to jump to the top of a loop, ``CONTINUE``."""
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -2974,6 +4098,11 @@ class ContinueStatement(Statement):
 @dataclass
 @_rule_handler("return_statement", comments=True)
 class ReturnStatement(Statement):
+    """
+    A statement used to return from a function [block], ``RETURN``.
+
+    No value is allowed to be returned with this statement.
+    """
     meta: Optional[Meta] = meta_field()
 
     def __str__(self):
@@ -2983,13 +4112,22 @@ class ReturnStatement(Statement):
 @dataclass
 @_rule_handler("assignment_statement", comments=True)
 class AssignmentStatement(Statement):
+    """
+    An assignment statement.
+
+    Examples::
+
+        iValue := 5;
+        iValue1 := iValue2 := 6;
+    """
     variables: List[Variable]
     expression: Expression
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
     def from_lark(*args) -> AssignmentStatement:
-        *variables, expression = args
+        *variables_and_ops, expression = args
+        variables = variables_and_ops[::2]
         return AssignmentStatement(
             variables=list(variables),
             expression=expression
@@ -3003,6 +4141,7 @@ class AssignmentStatement(Statement):
 @dataclass
 @_rule_handler("while_statement", comments=True)
 class WhileStatement(Statement):
+    """A beginning conditional loop statement, ``WHILE``."""
     expression: Expression
     statements: StatementList
     meta: Optional[Meta] = meta_field()
@@ -3022,6 +4161,7 @@ class WhileStatement(Statement):
 @dataclass
 @_rule_handler("repeat_statement", comments=True)
 class RepeatStatement(Statement):
+    """An ending conditional loop statement, ``REPEAT``."""
     statements: StatementList
     expression: Expression
     meta: Optional[Meta] = meta_field()
@@ -3041,6 +4181,21 @@ class RepeatStatement(Statement):
 @dataclass
 @_rule_handler("for_statement", comments=True)
 class ForStatement(Statement):
+    """
+    A loop with a control variable and a start, stop, and (optional) step value.
+
+    Examples::
+
+        FOR iIndex := 0 TO 10
+        DO
+            iValue := iIndex * 2;
+        END_FOR
+
+        FOR iIndex := (iValue - 5) TO (iValue + 5) BY 2
+        DO
+            arrArray[iIndex] := iIndex * 2;
+        END_FOR
+    """
     control: SymbolicVariable
     from_: Expression
     to: Expression
@@ -3068,6 +4223,20 @@ class ForStatement(Statement):
     comments=True,
 )
 class LabeledStatement(Statement):
+    """
+    A statement marked with a user-defined label.
+
+    This is to support the "goto"-style ``JMP``.
+
+    Examples::
+
+        label1: A := 1;
+
+        label2:
+        IF iValue = 1 THEN
+            A := 3;
+        END_IF
+    """
     label: lark.Token
     statement: Optional[Statement] = None
     meta: Optional[Meta] = meta_field()
@@ -3087,6 +4256,13 @@ class LabeledStatement(Statement):
 @dataclass
 @_rule_handler("jmp_statement", comments=True)
 class JumpStatement(Statement):
+    """
+    This is the "goto"-style ``JMP``, which points at a label.
+
+    Examples::
+
+        JMP label;
+    """
     label: lark.Token
     meta: Optional[Meta] = meta_field()
 
@@ -3097,6 +4273,7 @@ class JumpStatement(Statement):
 @dataclass
 @_rule_handler("statement_list", "case_element_statement_list")
 class StatementList:
+    """A list of statements, making up a structured text implementation."""
     statements: List[Statement]
     meta: Optional[Meta] = meta_field()
 
@@ -3132,6 +4309,23 @@ TypeDeclarationItem = Union[
 @dataclass
 @_rule_handler("data_type_declaration", comments=True)
 class DataTypeDeclaration:
+    """
+    A data type declaration, wrapping the other declaration types with
+    ``TYPE``/``END_TYPE``.
+
+    Access specifiers may be included.
+
+    See Also
+    --------
+    :class:`AccessSpecifier`
+    :class:`ArrayTypeDeclaration`
+    :class:`StructureTypeDeclaration`
+    :class:`StringTypeDeclaration`
+    :class:`SimpleTypeDeclaration`
+    :class:`SubrangeTypeDeclaration`
+    :class:`EnumeratedTypeDeclaration`
+    :class:`UnionTypeDeclaration`
+    """
     declaration: Optional[TypeDeclarationItem]
     access: Optional[AccessSpecifier]
     meta: Optional[Meta] = meta_field()
@@ -3179,7 +4373,20 @@ SourceCodeItem = Union[
 @dataclass
 @_rule_handler("iec_source")
 class SourceCode:
-    """Top-level source code item."""
+    """
+    Top-level source code item.
+
+    May contain zero or more of the following as items:
+
+    * :class:`DataTypeDeclaration`
+    * :class:`Function`
+    * :class:`FunctionBlock`
+    * :class:`Action`
+    * :class:`Method`
+    * :class:`Program`
+    * :class:`Property`
+    * :class:`GlobalVariableDeclarations`
+    """
     items: List[SourceCodeItem]
     filename: Optional[pathlib.Path] = None
     raw_source: Optional[str] = None
@@ -3212,6 +4419,11 @@ class ExtendedSourceCode(SourceCode):
     """
     Top-level source code item - extended to include the possibility of
     standalone implementation details (i.e., statement lists).
+
+    See Also
+    --------
+    :class:`SourceCodeItem`
+    :class:`StatementList`
     """
 
     items: List[Union[SourceCodeItem, StatementList]]

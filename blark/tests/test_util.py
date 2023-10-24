@@ -5,6 +5,7 @@ import textwrap
 
 import pytest
 
+from .. import util
 from ..input import BlarkCompositeSourceItem, BlarkSourceItem, BlarkSourceLine
 from ..util import SourceType, find_and_clean_comments
 
@@ -263,3 +264,46 @@ def test_line_map_composite():
         9: 74,
         10: 74,
     }
+
+
+@pytest.mark.parametrize(
+    "code, expected",
+    [
+        pytest.param("(abc)", "(abc)"),
+        pytest.param("()", "()"),
+        pytest.param("(())", "()"),
+        pytest.param("()(abc)", "()(abc)"),
+        pytest.param("((abc))", "(abc)"),
+        pytest.param("((a)b(c))", "((a)b(c))"),
+        pytest.param("((((a)b(c))))", "((a)b(c))"),
+    ],
+)
+def test_simplify_brackets(code: str, expected: str):
+    assert util.simplify_brackets(code, "()") == expected
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        pytest.param("()abc))"),
+        pytest.param("(abc))"),
+        pytest.param("((a)b(c)))"),
+    ],
+)
+def test_simplify_brackets_unbalanced(code: str):
+    with pytest.raises(ValueError):
+        util.simplify_brackets(code, "()")
+
+
+@pytest.mark.parametrize(
+    "code, expected",
+    [
+        pytest.param("(abc)", "(abc)"),
+        pytest.param("()", "()"),
+        pytest.param("()(abc)", "()(abc)"),
+        pytest.param("((a)b(c))", "((a)b(c))"),
+        pytest.param("(((a)b(c)))", "(((a)b(c)))"),
+    ],
+)
+def test_maybe_add_brackets(code: str, expected: str):
+    assert util.maybe_add_brackets(code, "()") == expected
