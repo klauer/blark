@@ -154,6 +154,10 @@ def test_blark_main_help(monkeypatch, args: List[str]):
             ["format", "--debug", "filename"],
             id="format-debug",
         ),
+        param(
+            ["format", "-o", "html", "filename"],
+            id="format-html",
+        ),
     ]
 )
 def test_blark_main(monkeypatch, input_filename: str, args: List[str], skip_summary: bool):

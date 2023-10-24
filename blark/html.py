@@ -4,7 +4,7 @@ from __future__ import annotations
 import collections
 import dataclasses
 import pathlib
-from typing import Any, DefaultDict, Dict, List, Optional
+from typing import Any, DefaultDict, Dict, Generator, List, Optional
 
 import lark
 
@@ -13,6 +13,8 @@ from .output import OutputBlock, register_output_handler
 
 @dataclasses.dataclass(frozen=True)
 class HighlighterAnnotation:
+    """A single HTML tag annotation which applies to a position range of source code."""
+
     name: str
     terminal: bool
     is_open_tag: bool
@@ -34,13 +36,29 @@ class HighlighterAnnotation:
         return f'<{tag} class="{classes}">'
 
 
-def add_annotation_pair(
+def _add_annotation_pair(
     annotations: DefaultDict[int, List[HighlighterAnnotation]],
     name: str,
     start_pos: int,
     end_pos: int,
     terminal: bool,
 ) -> None:
+    """
+    Add a pair of HTML tag annotations to the position-indexed list.
+
+    Parameters
+    ----------
+    annotations : DefaultDict[int, List[HighlighterAnnotation]]
+        Annotations keyed by 0-indexed string position.
+    name : str
+        Name of the annotation.
+    start_pos : int
+        String index position which the annotation applies to.
+    end_pos : int
+        String index position which the annotation ends at.
+    terminal : bool
+        Whether this is a TERMINAL (True) or a rule (false).
+    """
     annotations[start_pos].append(
         HighlighterAnnotation(
             name=name,
@@ -67,7 +85,7 @@ def get_annotations(tree: lark.Tree) -> DefaultDict[int, List[HighlighterAnnotat
 
     for subtree in tree.iter_subtrees():
         if hasattr(subtree.meta, "start_pos"):
-            add_annotation_pair(
+            _add_annotation_pair(
                 annotations,
                 name=subtree.data,
                 terminal=False,
@@ -77,7 +95,7 @@ def get_annotations(tree: lark.Tree) -> DefaultDict[int, List[HighlighterAnnotat
         for child in subtree.children:
             if isinstance(child, lark.Token):
                 if child.start_pos is not None and child.end_pos is not None:
-                    add_annotation_pair(
+                    _add_annotation_pair(
                         annotations,
                         name=child.type,
                         terminal=True,
@@ -91,57 +109,20 @@ def apply_annotations_to_code(
     code: str,
     annotations: Dict[int, List[HighlighterAnnotation]]
 ) -> str:
-    result = []
-    pos = 0
-    for pos, ch in enumerate(code):
-        for ann in reversed(annotations.get(pos, [])):
-            result.append(str(ann))
-        if ch == " ":
-            result.append("&nbsp;")
-        else:
-            result.append(ch)
+    def annotate() -> Generator[str, None, None]:
+        pos = 0
+        for pos, ch in enumerate(code):
+            for ann in reversed(annotations.get(pos, [])):
+                yield str(ann)
+            if ch == " ":
+                yield "&nbsp;"
+            else:
+                yield ch
 
-    for ann in annotations.get(pos + 1, []):
-        result.append(str(ann))
+        for ann in annotations.get(pos + 1, []):
+            yield str(ann)
 
-    html = "".join(result)
-    html = f'<div class="blark-code">{html}</div>'
-    html = html.replace("\n", "<br/>\n")
-    # TODO remove
-    html = """
-    <style>
-        .blark-code {
-            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",Courier,monospace;
-        }
-        .blark-code > .IDENTIFIER, .variable_name, .multi_element_variable {
-            font-weight: bold;
-            color: #208050;
-        }
-        .blark-code > .INTEGER, .SIGNED_INTEGER {
-            color: red;
-        }
-        .blark-code > .set_statement, .assignment_statement {
-            font-weight: bold;
-        }
-        .blark-code > .LOGICAL_OR, .LOGICAL_XOR, .LOGICAL_AND, .LOGICAL_NOT,
-        .LOGICAL_AND_THEN, .LOGICAL_OR_ELSE, .MODULO, .EQUALS, .EQUALS_NOT,
-        .LESS_OR_EQUAL, .GREATER_OR_EQUAL, .LESS_THAN, .GREATER_THAN, .ADDING,
-        .SUBTRACTING, .MULTIPLY_WITH, .DIVIDE_BY, .MINUS, .PLUS, .ASSIGNMENT {
-            font-weight: bold;
-            color: red;
-        }
-
-        .blark-code > .TYPE_TOD, .TYPE_DATETIME, .TYPE_LTOD, .TYPE_LDATETIME,
-        .elementary_type_name, .NUMERIC_TYPE_NAME, .INTEGER_TYPE_NAME,
-        .SIGNED_INTEGER_TYPE_NAME, .UNSIGNED_INTEGER_TYPE_NAME,
-        .REAL_TYPE_NAME, .DATE_TYPE_NAME, .BIT_STRING_TYPE_NAME,
-        .GENERIC_TYPE_NAME {
-            font-weight: bold;
-            color: blue;
-        }
-    </style>
-    """ + html  # noqa: E501
-    return html
+    return "".join(annotate())
 
 
 @dataclasses.dataclass
@@ -152,17 +133,19 @@ class HtmlWriter:
 
     @property
     def source_code(self) -> str:
+        """The source code associated with the block."""
         assert self.block.origin is not None
         return self.block.origin.source_code
 
     def to_html(self) -> str:
+        """HTML tag-annotated source code."""
         assert self.block.origin is not None
         assert self.block.origin.tree is not None
         annotations = get_annotations(self.block.origin.tree)
 
         for comment in self.block.origin.comments:
             if comment.start_pos is not None and comment.end_pos is not None:
-                add_annotation_pair(
+                _add_annotation_pair(
                     annotations,
                     name=comment.type,
                     start_pos=comment.start_pos,
@@ -178,6 +161,7 @@ class HtmlWriter:
         source_filename: Optional[pathlib.Path],
         parts: List[OutputBlock],
     ) -> str:
+        """Convert the source code block to HTML and return it."""
         result = []
         for part in parts:
             writer = HtmlWriter(user, source_filename, part)
@@ -189,4 +173,5 @@ class HtmlWriter:
 def _register():
     """Register the HTML output file handlers."""
     register_output_handler("html", HtmlWriter.save)
+    register_output_handler(".htm", HtmlWriter.save)
     register_output_handler(".html", HtmlWriter.save)
