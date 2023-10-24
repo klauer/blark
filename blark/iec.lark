@@ -739,13 +739,16 @@ _statement: ";"
 // B.3.2.1
 no_op_statement: _variable ";"+
 
-assignment_statement: _variable ":=" ( _variable ":=" )* expression ";"+
+assignment_statement: _variable ASSIGNMENT ( _variable ASSIGNMENT )* expression ";"+
 
-set_statement: _variable "S="i expression ";"+
+SET_ASSIGNMENT: "S="i
+set_statement: _variable SET_ASSIGNMENT expression ";"+
 
-reset_statement: _variable "R="i expression ";"+
+RESET_ASSIGNMENT: "R="i
+reset_statement: _variable RESET_ASSIGNMENT expression ";"+
 
-reference_assignment_statement: _variable "REF="i expression ";"+
+REF_ASSIGNMENT: "REF="i
+reference_assignment_statement: _variable REF_ASSIGNMENT expression ";"+
 
 // B.3.2.2
 return_statement.1: "RETURN"i ";"+

@@ -5,20 +5,16 @@ import logging
 import pathlib
 import textwrap
 from dataclasses import dataclass, field, fields, is_dataclass
-from typing import (TYPE_CHECKING, Any, Dict, Generator, Iterable, List,
-                    Optional, Tuple, Union)
+from typing import Any, Dict, Generator, Iterable, List, Optional, Tuple, Union
 
 import lark
 
 from . import transform as tf
+from .parse import ParseResult
 from .typing import Literal
 from .util import Identifier, SourceType
 
 LocationType = Literal["input", "output", "memory"]
-
-if TYPE_CHECKING:
-    from .parse import ParseResult
-
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +93,9 @@ class Summary:
     filename: Optional[pathlib.Path]
     meta: Optional[tf.Meta] = field(repr=False)
 
+    def __getitem__(self, _: str) -> None:
+        return None
+
     def __str__(self) -> str:
         return text_outline(self) or ""
 
@@ -121,13 +120,24 @@ class Summary:
 class DeclarationSummary(Summary):
     """Summary representation of a single declaration."""
     name: str
-    item: Union[tf.Declaration, tf.GlobalVariableDeclaration, tf.VariableInitDeclaration]
+    item: Union[
+        tf.Declaration,
+        tf.GlobalVariableDeclaration,
+        tf.VariableInitDeclaration,
+        tf.StructureElementDeclaration,
+        tf.UnionElementDeclaration,
+        tf.ExternalVariableDeclaration,
+        tf.InitDeclaration,
+    ]
     parent: Optional[str]
     location: Optional[str]
     block: str
     base_type: str
     type: str
     value: Optional[str]
+
+    def __getitem__(self, key: str) -> None:
+        raise KeyError(f"{self.name}[{key!r}]: declarations do not contain keys")
 
     @property
     def qualified_name(self) -> str:
@@ -154,7 +164,7 @@ class DeclarationSummary(Summary):
     @classmethod
     def from_declaration(
         cls,
-        item: Union[tf.InitDeclaration, tf.StructureElementDeclaration],
+        item: Union[tf.InitDeclaration, tf.StructureElementDeclaration, tf.UnionElementDeclaration],
         parent: Optional[
             Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
         ] = None,
@@ -162,15 +172,29 @@ class DeclarationSummary(Summary):
         filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
+
         if isinstance(item, tf.StructureElementDeclaration):
             result[item.name] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=item.location.name if item.location else None,
                 block=block_header,
-                type=item.init.full_type_name,
-                base_type=item.init.base_type_name,
-                value=str(item.init.value),
+                type=item.full_type_name,  # TODO -> get_type_summary?
+                base_type=item.base_type_name,
+                value=str(item.value),
+                parent=parent.name if parent is not None else "",
+                filename=filename,
+                **Summary.get_meta_kwargs(item.meta),
+            )
+        elif isinstance(item, tf.UnionElementDeclaration):
+            result[item.name] = DeclarationSummary(
+                name=str(item.name),
+                item=item,
+                location=None,
+                block=block_header,
+                type=item.spec.full_type_name,
+                base_type=item.spec.base_type_name,
+                value="",
                 parent=parent.name if parent is not None else "",
                 filename=filename,
                 **Summary.get_meta_kwargs(item.meta),
@@ -268,8 +292,12 @@ class DeclarationSummary(Summary):
         result = {}
         for decl in block.items:
             result.update(
-                cls.from_declaration(decl, parent=parent, block_header=block.block_header,
-                                     filename=filename)
+                cls.from_declaration(
+                    decl,
+                    parent=parent,
+                    block_header=block.block_header,
+                    filename=filename,
+                )
             )
         return result
 
@@ -282,7 +310,7 @@ class ActionSummary(Summary):
     source_code: str
     implementation: Optional[tf.StatementList] = None
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> None:
         raise KeyError(f"{key}: Actions do not contain declarations")
 
     @classmethod
@@ -728,6 +756,17 @@ class DataTypeSummary(Summary):
                     )
                 )
 
+        if isinstance(dtype, tf.UnionTypeDeclaration):
+            for decl in dtype.declarations:
+                summary.declarations.update(
+                    DeclarationSummary.from_declaration(
+                        decl,
+                        parent=dtype,
+                        block_header="UNION",
+                        filename=filename,
+                    )
+                )
+
         return summary
 
     def squash_base_extends(
@@ -871,6 +910,29 @@ def path_to_file_and_line(path: List[Summary]) -> List[Tuple[pathlib.Path, int]]
     return [(part.filename, part.item.meta.line) for part in path]
 
 
+TopLevelCodeSummaryType = Union[
+    FunctionSummary,
+    FunctionBlockSummary,
+    DataTypeSummary,
+    ProgramSummary,
+    InterfaceSummary,
+    GlobalVariableSummary,
+]
+
+NestedCodeSummaryType = Union[
+    DeclarationSummary,
+    MethodSummary,
+    PropertySummary,
+    ActionSummary,
+    PropertyGetSetSummary,
+]
+
+CodeSummaryType = Union[
+    TopLevelCodeSummaryType,
+    NestedCodeSummaryType,
+]
+
+
 @dataclass
 class CodeSummary:
     """Summary representation of a set of code - functions, function blocks, etc."""
@@ -883,7 +945,7 @@ class CodeSummary:
     globals: Dict[str, GlobalVariableSummary] = field(default_factory=dict)
     interfaces: Dict[str, InterfaceSummary] = field(default_factory=dict)
 
-    def __str__(self):
+    def __str__(self) -> str:
         attr_to_header = {
             "data_types": "Data Types",
             "globals": "Global Variable Declarations",
@@ -915,17 +977,43 @@ class CodeSummary:
 
         return "\n".join(summary_text)
 
-    def find(self, name: str) -> Optional[Summary]:
+    def find(self, name: str) -> Optional[CodeSummaryType]:
         """Find a declaration or other item by its qualified name."""
-        path = self.find_path(name)
+        path = self.find_path(name, allow_partial=False)
         return path[-1] if path else None
 
-    def find_path(self, name: str) -> Optional[List[Summary]]:
-        """Given a qualified variable name, find its Declaration."""
+    def find_path(
+        self,
+        name: str,
+        allow_partial: bool = False,
+    ) -> Optional[List[CodeSummaryType]]:
+        """
+        Given a qualified variable name, find the path of CodeSummary objects top-down.
+
+        For example, a variable declared in a function block would return a
+        list containing the FunctionBlockSummary and then the
+        DeclarationSummary.
+
+        Parameters
+        ----------
+        name : str
+            The qualified ("dotted") variable name to find.
+
+        allow_partial : bool, optional
+            If an attribute is missing along the way, return the partial
+            path that was found.
+
+        Returns
+        -------
+        list of CodeSummaryType or None
+            The full path to the given object.
+        """
         parts = collections.deque(name.split("."))
         if len(parts) <= 1:
             item = self.get_item_by_name(name)
-            return [item] if item is not None else None
+            if item is None:
+                return None
+            return [item]
 
         variable_name = parts.pop()
         parent = None
@@ -938,12 +1026,15 @@ class CodeSummary:
             try:
                 if parent is None:
                     parent = self.get_item_by_name(part)
+                    path.append(parent)
                 else:
                     part_obj = parent[part]
                     path.append(part_obj)
                     part_type = str(part_obj.base_type)
                     parent = self.get_item_by_name(part_type)
             except KeyError:
+                if allow_partial:
+                    return path
                 return
 
         if parent is None:
@@ -952,28 +1043,40 @@ class CodeSummary:
         try:
             path.append(parent[variable_name])
         except KeyError:
-            # Is it better to give a partial path or no path at all?
-            ...
+            if not allow_partial:
+                return None
 
         return path
 
-    def find_code_object_by_dotted_name(self, name: str) -> Optional[Summary]:
-        """Given a qualified code object name, find its Summary object(s)."""
-        # TODO: These functions are a bit of a mess and confuse even me
-        # The intent with *this* flavor of 'find' is to take in things like:
-        # FB_Block.ActionName
-        # FB_Block.PropertyName.get
-        # FB_Block.PropertyName.set
+    def find_code_object_by_dotted_name(self, name: str) -> Optional[CodeSummaryType]:
+        """
+        Given a qualified code object name, find its Summary object(s).
+
+        This works to find CodeSummary objects such as::
+
+            FB_Block.ActionName
+            FB_Block.PropertyName.get
+            FB_Block.PropertyName.set
+        """
         parts = Identifier.from_string(name).parts
         obj = self.get_item_by_name(parts[0])
         if len(parts) == 1:
             return obj
+        if obj is None:
+            raise ValueError(f"No object by the name of {parts[0]} exists")
 
         for remainder in parts[1:]:
-            obj = obj[remainder]
+            next_obj = obj[remainder]
+            if next_obj is None:
+                raise ValueError(f"{name}: {obj} has no attribute {remainder!r}")
+            obj = next_obj
+
         return obj
 
-    def get_all_items_by_name(self, name: str) -> Generator:
+    def get_all_items_by_name(
+        self,
+        name: str,
+    ) -> Generator[TopLevelCodeSummaryType, None, None]:
         """Get any code item (function, data type, global variable, etc.) by name."""
         for dct in (
             self.globals,
@@ -988,12 +1091,23 @@ class CodeSummary:
             except KeyError:
                 ...
 
-    def get_item_by_name(self, name: str) -> Optional[Any]:
-        """Get any code item (function, data type, global variable, etc.) by name."""
+    def get_item_by_name(self, name: str) -> Optional[TopLevelCodeSummaryType]:
+        """
+        Get a single code item (function, data type, global variable, etc.) by name.
+
+        Does not handle scenarios where names are shadowed by other
+        declarations.  The first one found will take precedence.
+        """
         try:
             return next(self.get_all_items_by_name(name))
         except StopIteration:
             return None
+
+    def __getitem__(self, name: str) -> TopLevelCodeSummaryType:
+        item = self.get_item_by_name(name)
+        if item is None:
+            raise KeyError(f"{name!r} is not a top-level code object name")
+        return item
 
     def append(self, other: CodeSummary, namespace: Optional[str] = None):
         """
@@ -1026,9 +1140,12 @@ class CodeSummary:
 
     @staticmethod
     def from_parse_results(
-        all_parsed_items: list[ParseResult],
+        all_parsed_items: Union[ParseResult, list[ParseResult]],
         squash: bool = True,
     ) -> CodeSummary:
+        if isinstance(all_parsed_items, ParseResult):
+            all_parsed_items = [all_parsed_items]
+
         result = CodeSummary()
 
         def get_code_by_meta(parsed: ParseResult, meta: Optional[tf.Meta]) -> str:
@@ -1115,7 +1232,10 @@ class CodeSummary:
                     result.functions[item.name] = summary
                     new_context(summary)
                 elif isinstance(item, tf.DataTypeDeclaration):
-                    if isinstance(item.declaration, tf.StructureTypeDeclaration):
+                    if isinstance(
+                        item.declaration,
+                        (tf.StructureTypeDeclaration, tf.UnionTypeDeclaration)
+                    ):
                         summary = DataTypeSummary.from_data_type(
                             item.declaration,
                             source_code=get_code_by_meta(parsed, item.declaration.meta),

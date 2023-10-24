@@ -10,14 +10,13 @@ import json
 import logging
 import pathlib
 import sys
+import typing
 from dataclasses import dataclass
 from typing import Generator, Optional, Sequence, Type, TypeVar, Union
 
 import lark
 
-import blark
-
-from . import solution, summary
+from . import solution
 from . import transform as tf
 from . import util
 from .input import BlarkCompositeSourceItem, BlarkSourceItem, load_file_by_name
@@ -28,6 +27,9 @@ try:
     import apischema
 except ImportError:
     apischema = None
+
+if typing.TYPE_CHECKING:
+    from .summary import CodeSummary
 
 
 logger = logging.getLogger(__name__)
@@ -65,9 +67,10 @@ def new_parser(start: Optional[list[str]] = None, **kwargs) -> lark.Lark:
     if start is None:
         start = [rule.name for rule in BlarkStartingRule]
 
+    from . import GRAMMAR_FILENAME
     return lark.Lark.open_from_package(
         "blark",
-        blark.GRAMMAR_FILENAME.name,
+        GRAMMAR_FILENAME.name,
         parser="earley",
         maybe_placeholders=True,
         propagate_positions=True,
@@ -371,9 +374,13 @@ def build_arg_parser(argparser=None):
     return argparser
 
 
-def summarize(parsed: list[ParseResult]) -> summary.CodeSummary:
+def summarize(
+    parsed: Union[ParseResult, list[ParseResult]],
+    squash: bool = True,
+) -> CodeSummary:
     """Get a code summary instance from one or more ParseResult instances."""
-    return summary.CodeSummary.from_parse_results(parsed)
+    from .summary import CodeSummary
+    return CodeSummary.from_parse_results(parsed, squash=squash)
 
 
 T = TypeVar("T")
@@ -525,7 +532,8 @@ def main(
     if output_summary:
         summarized = summarize(all_results)
         if use_json:
-            print(dump_json(summary.CodeSummary, summarized, include_meta=include_meta))
+            from .summary import CodeSummary
+            print(dump_json(CodeSummary, summarized, include_meta=include_meta))
         else:
             print(summarized)
     else:
