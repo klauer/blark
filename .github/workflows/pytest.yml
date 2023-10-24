@@ -20,6 +20,7 @@ jobs:
 
     env:
       PYTHON: ${{ matrix.python-version }}
+      BLARK_CHECK_GRAMMAR_COVERAGE: 1
 
     steps:
     - uses: actions/checkout@v3
