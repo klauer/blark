@@ -1988,7 +1988,7 @@ class GlobalVariableDeclaration:
         return self.init.full_type_name
 
     def __str__(self) -> str:
-        return f"{self.spec} : {self.init}"
+        return f"{self.spec} : {self.init};"
 
 
 @dataclass
@@ -2721,7 +2721,7 @@ class GlobalVariableDeclarations(VariableDeclarationBlock):
         return "\n".join(
             (
                 join_if("VAR_GLOBAL", " ", self.attrs),
-                *(indent(f"{item};") for item in self.items),
+                *(indent(str(item)) for item in self.items),
                 "END_VAR",
             )
         )
