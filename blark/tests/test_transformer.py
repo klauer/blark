@@ -1,6 +1,11 @@
+from __future__ import annotations
+
+import os
 import pathlib
 from typing import List, Optional
 
+import lark
+import lark.grammar
 import pytest
 from pytest import param
 
@@ -9,6 +14,27 @@ from ..parse import parse_source_code
 from . import conftest
 
 TEST_PATH = pathlib.Path(__file__).parent
+
+
+class Statistics:
+    """
+    Some global statistics about the grammar rules checked in this test suite
+    module.
+    """
+    #: Rules and terminals seen after running tests.
+    rules_seen = set()
+
+
+def get_rules_used(tree: lark.Tree) -> set[str]:
+    """Get rules and terminals used in the given lark Tree."""
+    seen = set()
+    for subtree in tree.iter_subtrees():
+        seen.add(subtree.data)
+        for child in subtree.children:
+            if isinstance(child, lark.Token):
+                seen.add(child.type)
+
+    return set(str(v) for v in seen)
 
 
 def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
@@ -21,7 +47,14 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     3. Run serialization/deserialization checks (if enabled)
     """
     parser = conftest.get_grammar(start=rule_name)
-    tf_source = parse_source_code(value, parser=parser).transform()
+    parsed = parse_source_code(value, parser=parser)
+
+    assert parsed.tree is not None, f"Parse failure for rule {rule_name}: {value}"
+    used_rules = get_rules_used(parsed.tree)
+    Statistics.rules_seen = Statistics.rules_seen.union(used_rules)
+
+    tf_source = parsed.transform()
+
     transformed = tf_source.items[0]
 
     print("\n\nTransformed:")
@@ -50,7 +83,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
     return transformed
 
 
-def test_check_unhandled_rules(grammar):
+def test_check_unhandled_rules(grammar: lark.Lark):
     defined_rules = set(
         rule.origin.name for rule in grammar.rules
         if not rule.origin.name.startswith("_")
@@ -116,6 +149,20 @@ def test_check_unhandled_rules(grammar):
         param("bit_string_literal", "WORD#2#0101", tf.BinaryBitString(type_name="WORD", value="0101")),  # noqa: E501
         param("bit_string_literal", "WORD#8#777", tf.OctalBitString(type_name="WORD", value="777")),  # noqa: E501
         param("bit_string_literal", "word#16#FEEE", tf.HexBitString(type_name="word", value="FEEE")),  # noqa: E501
+        param("string_literal", "''", tf.String("''")),
+        param("string_literal", '""', tf.String('""')),
+        param("string_literal", "'abc'", tf.String("'abc'")),
+        param("string_literal", '"abc"', tf.String('"abc"')),
+        param(
+            "string_literal",
+            '"$" $$ $L $N $P $R $T $l $n $p $r $t $0000 $FFFF"',
+            tf.String('"$" $$ $L $N $P $R $T $l $n $p $r $t $0000 $FFFF"'),
+        ),
+        param(
+            "string_literal",
+            "'$' $$ $L $N $P $R $T $l $n $p $r $t $00 $FF'",
+            tf.String("'$' $$ $L $N $P $R $T $l $n $p $r $t $00 $FF'"),
+        ),
         param("duration", "TIME#-1D", tf.Duration(days="1", negative=True)),
         param("duration", "TIME#1D", tf.Duration(days="1")),
         param("duration", "TIME#10S", tf.Duration(seconds="10")),
@@ -142,7 +189,9 @@ def test_check_unhandled_rules(grammar):
         param("lduration", "LTIME#1.1M", tf.Lduration(minutes="1.1")),
         param("lduration", "LTIME#10.1MS", tf.Lduration(milliseconds="10.1")),
         param("lduration", "LT#1D1H1M1S1MS", tf.Lduration(days="1", hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
-        param("lduration", "LTIME#1H1M1S1MS", tf.Lduration(hours="1", minutes="1", seconds="1", milliseconds="1")),  # noqa: E501
+        param("lduration", "LTIME#10US", tf.Lduration(microseconds="10")),
+        param("lduration", "LTIME#10NS", tf.Lduration(nanoseconds="10")),
+        param("lduration", "LTIME#10.1MS", tf.Lduration(milliseconds="10.1")),
         param("ltime_of_day", "LTIME_OF_DAY#1:1:1.2", tf.LtimeOfDay(hour="1", minute="1", second="1.2")),  # noqa: E501
     ],
 )
@@ -320,9 +369,9 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("subrange_specification", "TypeName"),  # aliased and not usually hit
         param("subrange_type_declaration", "TypeName : INT (1..2)"),
         param("subrange_type_declaration", "TypeName : INT (*) := 1"),
+        param("subrange_spec_init", "INT (1..2) := 25"),
         param("enumerated_type_declaration", "TypeName : TypeName := Value"),
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2)"),
-        param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
         param("enumerated_type_declaration", "TypeName : (Value1 := 1, Value2 := 2) INT := Value1"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2] OF INT := [1, 2]"),
@@ -331,6 +380,13 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF Tc.SomeType(someInput := 3)"),  # noqa: E501
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF INT"),
         param("array_type_declaration", "TypeName : ARRAY [1..2, 3..4] OF ARRAY [1..2] OF ARRAY [3..4] OF INT"),  # noqa: E501
+        param("simple_spec_init", "TypeName := Value1"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1, Value2)"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 0, Value2 := 1)"),  # noqa: E501
+        param("var1_init_decl", "stVar1 : INT (1..2) := 25"),
+        param("var1_init_decl", "stVar1, stVar2 : TypeName := Value"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2)"),
+        param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1"),
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
@@ -383,7 +439,13 @@ def test_expression_roundtrip(rule_name, value):
         param("var1", "iValue"),
         param("edge_declaration", "iValue AT %IX1.1 : BOOL R_EDGE"),
         param("edge_declaration", "iValue : BOOL F_EDGE"),
-        # param("array_var_init_decl", ""),
+        param("array_var_init_decl", "aVal1, aVal2 : ARRAY [*] OF TypeName"),
+        param("array_var_init_decl", "aVal1 : ARRAY [1..2] OF Call(1, 2) := [1, 2]"),
+        param("array_var_init_decl", "aVal1 : POINTER TO ARRAY [1..2] OF Call(1, 2)"),
+        param("array_initialization", "[1, 2, 3]"),
+        param("array_initialization", "1, 2, 3"),
+        # This doesn't have a corresponding transform
+        # param("array_var_declaration", "aVar : ARRAY [*] OF TypeName"),
         param("input_declarations", tf.multiline_code_block(
             """
             VAR_INPUT
@@ -1562,6 +1624,8 @@ def test_data_type_declaration(rule_name, value):
 @pytest.mark.parametrize(
     "rule_name, value",
     [
+        param("structure_initialization", "(iValue := 0, bValue := TRUE)"),
+        param("object_initializer_array", "FB_Runner[(name := 'one'), (name := 'two')]"),
         param("structure_element_initialization", "1"),
         param("structure_element_initialization", "name := 1"),
         param("structure_element_initialization", "name := 1 + 2"),
@@ -1621,9 +1685,7 @@ def test_miscellaneous(rule_name, value):
     ]
 )
 def test_global_types(value, init, base_type, full_type):
-    parser = conftest.get_grammar(start="global_var_decl")
-    tf_source = parse_source_code(value, parser=parser).transform()
-    transformed = tf_source.items[0]
+    transformed = roundtrip_rule(rule_name="global_var_decl", value=value)
     assert isinstance(transformed, tf.GlobalVariableDeclaration)
     assert transformed.variables == ["fValue"]
 
@@ -1781,3 +1843,78 @@ def test_statement_priority(statement: str, cls: type):
 def test_labeled_statements_roundtrip(statements: str, labels: List[str]):
     transformed = roundtrip_rule("statement_list", statements)
     assert isinstance(transformed, tf.StatementList)
+
+
+@pytest.mark.skipif(
+    os.environ.get("BLARK_CHECK_GRAMMAR_COVERAGE", "") != "1",
+    reason="Optional grammar coverage check not selected"
+)
+def test_uncovered_grammar():
+    print("Used grammar:")
+    for name in sorted(Statistics.rules_seen):
+        print(name)
+    print()
+    grammar = conftest.get_grammar()
+
+    def check_opts(
+        rule: tuple[lark.Token, tuple, list, lark.grammar.RuleOptions],
+    ) -> bool:
+        opts = rule[3]
+        return not opts.expand1
+
+    rules = set(
+        str(rule[0])
+        for rule in grammar.grammar.rule_defs
+        if not rule[0].startswith("_") and check_opts(rule)
+    )
+    terminals = set(term[0] for term in grammar.grammar.term_defs)
+    unused = (rules | terminals) - Statistics.rules_seen
+    print("Uncovered grammar:")
+    for name in sorted(unused):
+        print(name)
+    assert set(unused) == {
+        # Some of these terminals are certainly covered - what's going on here?
+        "ADDING",
+        "DATE_TYPE_NAME",
+        "DIVIDE_BY",
+        "DOUBLE_BYTE_CHARACTER",
+        "EQUALS",
+        "EQUALS_NOT",
+        "ESCAPE_CHARACTER",
+        "EXPONENT",
+        "GENERIC_TYPE_NAME",
+        "GREATER_OR_EQUAL",
+        "GREATER_THAN",
+        "LESS_OR_EQUAL",
+        "LESS_THAN",
+        "MODULO",
+        "MULTIPLY_WITH",
+        "MULTI_LINE_COMMENT",
+        "NUMERIC_TYPE_NAME",
+        "PERSISTENT",
+        "PLUS",
+        "PRAGMA",
+        "REAL_TYPE_NAME",
+        "SIGN",
+        "SIGNED_INTEGER_TYPE_NAME",
+        "SINGLE_BYTE_CHARACTER",
+        "SINGLE_LINE_COMMENT",
+        "SUBTRACTING",
+        "TYPE_DATETIME",
+        "TYPE_LDATETIME",
+        "TYPE_LTOD",
+        "TYPE_TOD",
+        "UNSIGNED_INTEGER_TYPE_NAME",
+        "WS",
+
+        # Not transformer clasess, but covered:
+        "array_var_declaration",
+        "boolean_literal",
+
+        # Aliased rules handled separately:
+        "array_initialization",
+        "fb_decl",
+
+        # High-level
+        "iec_source",
+    }
