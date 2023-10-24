@@ -307,3 +307,13 @@ def test_simplify_brackets_unbalanced(code: str):
 )
 def test_maybe_add_brackets(code: str, expected: str):
     assert util.maybe_add_brackets(code, "()") == expected
+
+
+def test_get_grammar_for_class():
+    from ..transform import OctalInteger, SourceCode, get_grammar_for_class
+    assert get_grammar_for_class(SourceCode) == {
+        "iec_source": "iec_source: _library_element_declaration*",
+    }
+    assert get_grammar_for_class(OctalInteger) == {
+        "octal_integer": '| "8#" OCTAL_STRING           -> octal_integer',
+    }
