@@ -13,7 +13,7 @@ from typing import (Any, Callable, ClassVar, Dict, Generator, List, Optional,
 
 import lark
 
-from .util import AnyPath, rebuild_lark_tree_with_line_map
+from .util import AnyPath, maybe_add_brackets, rebuild_lark_tree_with_line_map
 
 T = TypeVar("T")
 
@@ -1307,7 +1307,10 @@ class ObjectInitializerArray:
         )
 
     def __str__(self) -> str:
-        initializers = ", ".join([f"({init})" for init in self.initializers])
+        initializers = ", ".join(
+            maybe_add_brackets(str(init), "()")
+            for init in self.initializers
+        )
         return f"{self.name}[{initializers}]"
 
 
