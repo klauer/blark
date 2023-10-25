@@ -68,8 +68,7 @@ setup(
     python_requires=">=3.6",
     install_requires=requirements,
     extras_require={
-        "all": dev_requirements + doc_requirements,
         "dev": dev_requirements,
-        "doc": doc_requirements,
+        "doc": dev_requirements + doc_requirements,
     },
 )
