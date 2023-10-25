@@ -1,0 +1,214 @@
+name: Documentation
+
+on:
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    name: "Python 3.10: documentation building"
+    runs-on: ubuntu-20.04
+    continue-on-error: false
+
+    defaults:
+      run:
+        # The following allows for each run step to utilize ~/.bash_profile
+        # for setting up the per-step initial state.
+        # --login: a login shell. Source ~/.bash_profile
+        # -e: exit on first error
+        # -o pipefail: piped processes are important; fail if they fail
+        shell: bash --login -eo pipefail {0}
+
+    outputs:
+      deploy_version: ${{ steps.version.outputs.built_docs_version }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: 'recursive'
+
+    - name: Check version tag for deployment
+      id: version
+      shell: bash -l {0}
+      run: |
+        if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+          # It may be a PR against a non-master branch, but that doesn't matter here.
+          version="master"
+        elif [[ "$GITHUB_EVENT_NAME" == "push" && "${{ github.ref }}" = refs/heads/* ]]; then
+          # If this is a push to a branch, then use that branch name.
+          # `basename refs/heads/a` -> "a"
+          version="$(basename "${{ github.ref }}")"
+        else
+          # For refs/tags and anything else, use the version from git.
+          version="$(git describe --tags)"
+        fi
+        (
+          echo "Package version: $(git describe --tags)"
+          echo "Documentation version name: ${version}"
+        ) | tee "$GITHUB_STEP_SUMMARY"
+
+        echo "built_docs_version=${version}" >> $GITHUB_OUTPUT
+
+    - name: Check environment variables for issues
+      run: |
+        if [ -z "${{ steps.version.outputs.built_docs_version }}" ]; then
+          echo "Built docs version unset? See previous step"
+          exit 1
+        fi
+
+    - name: Prepare for log files
+      run: |
+        mkdir $HOME/logs
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Upgrade pip
+      run: |
+        pip install --upgrade pip
+
+    - name: Install blark
+      run: |
+        pip install .[doc]
+
+    - name: List all pip packages
+      run: |
+        pip list
+
+    - name: Build documentation
+      run: |
+        cd docs
+        make html 2>&1 | tee $HOME/logs/docs-build.txt
+
+    - name: Upload documentation as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Documentation
+        path: "docs/build/html"
+
+    - name: Upload log file artifacts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Documentation - logs
+        path: "~/logs"
+
+  deploy:
+    name: "Documentation deployment"
+    runs-on: ubuntu-20.04
+    needs: build
+    if: ${{ github.repository_owner == 'klauer' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')) }}
+
+    permissions:
+      # to deploy to Pages
+      pages: write
+      # push to repo gh-pages branch (*gasp*; is there a better way?)
+      contents: write
+      # deployments: write
+      # to verify the deployment originates from an appropriate source
+      id-token: write
+
+    defaults:
+      run:
+        # The following allows for each run step to utilize ~/.bash_profile
+        # for setting up the per-step initial state.
+        # --login: a login shell. Source ~/.bash_profile
+        # -e: exit on first error
+        # -o pipefail: piped processes are important; fail if they fail
+        shell: bash --login -eo pipefail {0}
+
+    environment:
+      name: gh-pages
+      # url: ${{ steps.build-and-deploy.outputs.page_url }}
+
+    steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Installing documentation upload requirements
+      run: |
+        pip install --upgrade pip
+        pip install docs-versions-menu
+
+    - name: Download documentation artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: Documentation
+
+    - name: Configure git for docs deployment
+      run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+        git config --global init.defaultBranch gh-pages
+
+    - name: List cached documentation
+      run: |
+        ls -lR
+
+    - name: Update documentation with docs-versions-menu
+      run: |
+        # Adapted from my pcds-ci-helpers work:
+        # https://github.com/pcdshub/pcds-ci-helpers/blob/master/.github/workflows/python-docs.yml
+        set -x
+        git clone --branch gh-pages https://github.com/${{ github.repository }} "$HOME/gh-pages" || (
+          mkdir "$HOME/gh-pages"
+          cd "$HOME/gh-pages"
+          git init
+        )
+        rsync -av --delete ./ "$HOME/gh-pages/${{ needs.build.outputs.deploy_version }}/"
+
+        # Run docs-versions-menu
+        cd "$HOME/gh-pages"
+        docs-versions-menu
+
+    - name: Commit updated documentation to gh-pages
+      run: |
+        cd "$HOME/gh-pages"
+
+        git add --all --verbose
+        git status
+
+        if ! git rev-parse HEAD &>/dev/null ; then
+          git commit --verbose \
+            -m "Initial commit of documentation" \
+            -m "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})"
+        else
+          commit_message_file="$HOME/documentation_commit_message.txt"
+          echo "The commit message will be:"
+          echo "---------------------------"
+          git log --format=%B -n 1 | tee "${commit_message_file}"
+          echo "---------------------------"
+          last_log_line=$(cat "${commit_message_file}" | grep -v '^$' | tail -n1)
+          last_author=$(git log --format=%an -n 1)
+          echo "Last log line: ${last_log_line}"
+          echo "Last author: ${last_author}"
+          echo "Current ref: ${{ github.ref }}"
+          if [[ "$last_author" == "github-actions"* && "$last_log_line" == *"${{ github.ref }}"* ]]; then
+            # Amend if the previous commit was done by Actions and was based on the same branch/tag name
+            echo "Amending previous commit"
+            echo "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})" >> "${commit_message_file}"
+            git commit --verbose --amend --file="${commit_message_file}"
+          else
+            echo "Making new commit"
+            git commit --verbose \
+              -m "Auto-update from Github Actions Workflow" \
+              -m "Deployed from commit ${GITHUB_SHA} (${GITHUB_REF})" ||
+                echo "Documentation unchanged"
+          fi
+        fi
+        git log -n 2 --stat
+
+    - name: Pushing documentation
+      run: |
+        cd "$HOME/gh-pages"
+        # --force-with-lease=gh-pages
+        git push --verbose \
+          --force \
+          "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" \
+          gh-pages
