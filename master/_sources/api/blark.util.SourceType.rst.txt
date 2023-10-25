@@ -1,0 +1,43 @@
+﻿blark.util.SourceType
+=====================
+
+.. currentmodule:: blark.util
+
+.. autoclass:: SourceType
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SourceType.get_grammar_rule
+       ~SourceType.get_implicit_block_end
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SourceType.general
+       ~SourceType.action
+       ~SourceType.function
+       ~SourceType.function_block
+       ~SourceType.interface
+       ~SourceType.method
+       ~SourceType.program
+       ~SourceType.property
+       ~SourceType.property_get
+       ~SourceType.property_set
+       ~SourceType.dut
+       ~SourceType.statement_list
+       ~SourceType.var_global
+   

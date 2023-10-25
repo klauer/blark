@@ -1,0 +1,46 @@
+﻿blark.transform.ExitStatement
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ExitStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``exit_statement``
+
+   .. code::
+
+     exit_statement.1: "EXIT"i ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ExitStatement.__init__
+       ~ExitStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ExitStatement.meta
+   

@@ -1,0 +1,48 @@
+﻿blark.transform.UnaryOperation
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: UnaryOperation
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``unary_expression``
+
+   .. code::
+
+     unary_expression: [ UNARY_OPERATOR ] primary_expression
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~UnaryOperation.__init__
+       ~UnaryOperation.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~UnaryOperation.meta
+       ~UnaryOperation.op
+       ~UnaryOperation.expr
+   

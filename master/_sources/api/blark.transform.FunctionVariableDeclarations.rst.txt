@@ -1,0 +1,50 @@
+﻿blark.transform.FunctionVariableDeclarations
+============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionVariableDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_var_declarations``
+
+   .. code::
+
+     function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionVariableDeclarations.__init__
+       ~FunctionVariableDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionVariableDeclarations.attribute_pragmas
+       ~FunctionVariableDeclarations.block_header
+       ~FunctionVariableDeclarations.meta
+       ~FunctionVariableDeclarations.attrs
+       ~FunctionVariableDeclarations.items
+   

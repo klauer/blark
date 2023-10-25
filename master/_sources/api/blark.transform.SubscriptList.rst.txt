@@ -1,0 +1,48 @@
+﻿blark.transform.SubscriptList
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SubscriptList
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``subscript_list``
+
+   .. code::
+
+     subscript_list: "[" _subscript ( "," _subscript )* "]" [ DEREFERENCED ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SubscriptList.__init__
+       ~SubscriptList.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SubscriptList.meta
+       ~SubscriptList.subscripts
+       ~SubscriptList.dereferenced
+   

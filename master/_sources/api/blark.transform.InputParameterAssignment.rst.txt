@@ -1,0 +1,58 @@
+﻿blark.transform.InputParameterAssignment
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: InputParameterAssignment
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``param_assignment``
+
+   .. code::
+
+     param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
+                     | variable_name ":=" [ expression ]
+                     | expression
+
+   
+   ``input_param_assignment``
+
+   .. code::
+
+     input_param_assignment: variable_name ":=" [ expression ]
+                           | expression
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~InputParameterAssignment.__init__
+       ~InputParameterAssignment.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InputParameterAssignment.meta
+       ~InputParameterAssignment.name
+       ~InputParameterAssignment.value
+   

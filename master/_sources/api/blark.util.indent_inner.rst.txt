@@ -1,0 +1,6 @@
+﻿blark.util.indent\_inner
+========================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: indent_inner

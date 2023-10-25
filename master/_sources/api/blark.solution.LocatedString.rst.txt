@@ -1,0 +1,34 @@
+﻿blark.solution.LocatedString
+============================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: LocatedString
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~LocatedString.__init__
+       ~LocatedString.to_lines
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~LocatedString.column
+       ~LocatedString.lineno
+       ~LocatedString.value
+       ~LocatedString.filename
+   

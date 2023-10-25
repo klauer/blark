@@ -1,0 +1,34 @@
+﻿blark.transform.ExtendedSourceCode
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ExtendedSourceCode
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ExtendedSourceCode.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ExtendedSourceCode.filename
+       ~ExtendedSourceCode.line_map
+       ~ExtendedSourceCode.meta
+       ~ExtendedSourceCode.raw_source
+       ~ExtendedSourceCode.items
+   

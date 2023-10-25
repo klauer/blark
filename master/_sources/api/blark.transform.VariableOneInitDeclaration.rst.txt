@@ -1,0 +1,48 @@
+﻿blark.transform.VariableOneInitDeclaration
+==========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableOneInitDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``var1_init_decl``
+
+   .. code::
+
+     var1_init_decl: var1_list ":" ( simple_spec_init | subrange_spec_init | enumerated_spec_init )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableOneInitDeclaration.__init__
+       ~VariableOneInitDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableOneInitDeclaration.meta
+       ~VariableOneInitDeclaration.variables
+       ~VariableOneInitDeclaration.init
+   

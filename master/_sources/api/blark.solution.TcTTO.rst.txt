@@ -1,0 +1,40 @@
+﻿blark.solution.TcTTO
+====================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcTTO
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcTTO.__init__
+       ~TcTTO.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcTTO.default_source_type
+       ~TcTTO.file_extension
+       ~TcTTO.source_type
+       ~TcTTO.xml
+       ~TcTTO.name
+       ~TcTTO.guid
+       ~TcTTO.decl
+       ~TcTTO.metadata
+       ~TcTTO.filename
+       ~TcTTO.parent
+   

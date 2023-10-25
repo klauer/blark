@@ -1,0 +1,6 @@
+﻿blark.solution.get\_code\_object\_from\_xml
+===========================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_code_object_from_xml

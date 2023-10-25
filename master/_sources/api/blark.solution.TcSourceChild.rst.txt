@@ -1,0 +1,39 @@
+﻿blark.solution.TcSourceChild
+============================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcSourceChild
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcSourceChild.__init__
+       ~TcSourceChild.from_xml
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcSourceChild.default_source_type
+       ~TcSourceChild.parent
+       ~TcSourceChild.source_type
+       ~TcSourceChild.xml
+       ~TcSourceChild.name
+       ~TcSourceChild.guid
+       ~TcSourceChild.decl
+       ~TcSourceChild.metadata
+       ~TcSourceChild.filename
+   

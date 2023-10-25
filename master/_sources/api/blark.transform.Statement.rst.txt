@@ -1,0 +1,23 @@
+﻿blark.transform.Statement
+=========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Statement
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   

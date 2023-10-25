@@ -1,0 +1,48 @@
+﻿blark.transform.ObjectInitializerArray
+======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ObjectInitializerArray
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``object_initializer_array``
+
+   .. code::
+
+     object_initializer_array: function_block_type_name "[" structure_initialization ( "," structure_initialization )* "]"
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ObjectInitializerArray.__init__
+       ~ObjectInitializerArray.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ObjectInitializerArray.meta
+       ~ObjectInitializerArray.name
+       ~ObjectInitializerArray.initializers
+   

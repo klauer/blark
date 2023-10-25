@@ -1,0 +1,43 @@
+﻿blark.summary.CodeSummary
+=========================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: CodeSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~CodeSummary.__init__
+       ~CodeSummary.append
+       ~CodeSummary.find
+       ~CodeSummary.find_code_object_by_dotted_name
+       ~CodeSummary.find_path
+       ~CodeSummary.from_parse_results
+       ~CodeSummary.get_all_items_by_name
+       ~CodeSummary.get_item_by_name
+       ~CodeSummary.squash
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~CodeSummary.functions
+       ~CodeSummary.function_blocks
+       ~CodeSummary.data_types
+       ~CodeSummary.programs
+       ~CodeSummary.globals
+       ~CodeSummary.interfaces
+   

@@ -1,0 +1,52 @@
+﻿blark.transform.ArrayTypeInitialization
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ArrayTypeInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``array_spec_init``
+
+   .. code::
+
+     array_spec_init: [ indirection_type ] array_specification [ ":=" array_initialization ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ArrayTypeInitialization.__init__
+       ~ArrayTypeInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ArrayTypeInitialization.base_type_name
+       ~ArrayTypeInitialization.full_type_name
+       ~ArrayTypeInitialization.meta
+       ~ArrayTypeInitialization.type_info
+       ~ArrayTypeInitialization.indirection
+       ~ArrayTypeInitialization.spec
+       ~ArrayTypeInitialization.value
+   

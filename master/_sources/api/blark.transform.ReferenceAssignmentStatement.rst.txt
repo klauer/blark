@@ -1,0 +1,49 @@
+﻿blark.transform.ReferenceAssignmentStatement
+============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ReferenceAssignmentStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``reference_assignment_statement``
+
+   .. code::
+
+     reference_assignment_statement: _variable REF_ASSIGNMENT expression ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ReferenceAssignmentStatement.__init__
+       ~ReferenceAssignmentStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ReferenceAssignmentStatement.meta
+       ~ReferenceAssignmentStatement.variable
+       ~ReferenceAssignmentStatement.op
+       ~ReferenceAssignmentStatement.expression
+   

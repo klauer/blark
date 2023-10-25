@@ -1,0 +1,51 @@
+﻿blark.transform.SourceCode
+==========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SourceCode
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``iec_source``
+
+   .. code::
+
+     iec_source: _library_element_declaration*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SourceCode.__init__
+       ~SourceCode.from_lark
+       ~SourceCode.range_from_file_lines
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SourceCode.filename
+       ~SourceCode.line_map
+       ~SourceCode.meta
+       ~SourceCode.raw_source
+       ~SourceCode.items
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.FunctionBlockNameDeclaration
+============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionBlockNameDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``fb_name_decl``
+
+   .. code::
+
+     fb_decl: fb_decl_name_list ":" function_block_type_name [ ":=" structure_initialization ] -> fb_name_decl
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionBlockNameDeclaration.__init__
+       ~FunctionBlockNameDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionBlockNameDeclaration.init
+       ~FunctionBlockNameDeclaration.meta
+       ~FunctionBlockNameDeclaration.variables
+       ~FunctionBlockNameDeclaration.spec
+   

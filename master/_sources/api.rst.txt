@@ -1,0 +1,416 @@
+API
+###
+
+blark.apischema_compat
+----------------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.apischema_compat.alternative_constructor
+    blark.apischema_compat.as_tagged_union
+    blark.apischema_compat.get_all_subclasses
+    blark.apischema_compat.token_deserializer
+    blark.apischema_compat.token_serializer
+
+blark.config
+------------
+
+blark.dependency_store
+----------------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.dependency_store.DependencyStore
+    blark.dependency_store.DependencyStoreConfig
+    blark.dependency_store.DependencyStoreLibrary
+    blark.dependency_store.PlcProjectMetadata
+    blark.dependency_store.get_dependency_store
+    blark.dependency_store.load_projects
+
+blark.format
+------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.format.build_arg_parser
+    blark.format.determine_output_filename
+    blark.format.dump_source_to_console
+    blark.format.get_reformatted_code_blocks
+    blark.format.main
+    blark.format.reformat_code
+    blark.format.write_source_to_file
+
+blark.html
+----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.html.HighlighterAnnotation
+    blark.html.HtmlWriter
+    blark.html.apply_annotations_to_code
+    blark.html.get_annotations
+
+blark.input
+-----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.input.BlarkCompositeSourceItem
+    blark.input.BlarkSourceItem
+    blark.input.BlarkSourceLine
+    blark.input.UnsupportedFileFormatError
+    blark.input.load_file_by_name
+    blark.input.register_input_handler
+
+blark.main
+----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.main.main
+
+blark.output
+------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.output.OutputBlock
+    blark.output.get_handler_by_name
+    blark.output.register_output_handler
+
+blark.parse
+-----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.parse.BlarkStartingRule
+    blark.parse.ParseResult
+    blark.parse.build_arg_parser
+    blark.parse.dump_json
+    blark.parse.get_parser
+    blark.parse.main
+    blark.parse.new_parser
+    blark.parse.parse
+    blark.parse.parse_item
+    blark.parse.parse_project
+    blark.parse.parse_single_file
+    blark.parse.parse_source_code
+    blark.parse.summarize
+
+blark.plain
+-----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.plain.PlainFileLoader
+
+blark.solution
+--------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.solution.DependencyInformation
+    blark.solution.DependencyVersion
+    blark.solution.LocatedString
+    blark.solution.Project
+    blark.solution.Solution
+    blark.solution.SolutionLoaderError
+    blark.solution.TcAction
+    blark.solution.TcDUT
+    blark.solution.TcDeclImpl
+    blark.solution.TcExtraInfo
+    blark.solution.TcGVL
+    blark.solution.TcIO
+    blark.solution.TcMethod
+    blark.solution.TcPOU
+    blark.solution.TcProperty
+    blark.solution.TcSource
+    blark.solution.TcSourceChild
+    blark.solution.TcTTO
+    blark.solution.TcUnknownXml
+    blark.solution.TwincatPlcProject
+    blark.solution.TwincatSourceCodeItem
+    blark.solution.TwincatTsProject
+    blark.solution.UnsupportedSourceFileError
+    blark.solution.filename_from_xml
+    blark.solution.get_blark_input_from_solution
+    blark.solution.get_child_located_text
+    blark.solution.get_child_text
+    blark.solution.get_code_object_from_xml
+    blark.solution.get_project_guid
+    blark.solution.get_project_target_netid
+    blark.solution.get_tcplc_from_xml
+    blark.solution.make_solution_from_files
+    blark.solution.parse_xml_contents
+    blark.solution.parse_xml_file
+    blark.solution.project_loader
+    blark.solution.projects_from_solution_source
+    blark.solution.solution_loader
+    blark.solution.split_property_and_base_decl
+    blark.solution.strip_implicit_lines
+    blark.solution.strip_xml_namespace
+    blark.solution.twincat_file_loader
+    blark.solution.twincat_file_writer
+
+blark.sphinxdomain
+------------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.sphinxdomain.BlarkDirective
+    blark.sphinxdomain.BlarkDirectiveWithDeclarations
+    blark.sphinxdomain.BlarkDomain
+    blark.sphinxdomain.BlarkSphinxCache
+    blark.sphinxdomain.BlarkXRefRole
+    blark.sphinxdomain.DeclarationDirective
+    blark.sphinxdomain.FunctionBlockDirective
+    blark.sphinxdomain.FunctionDirective
+    blark.sphinxdomain.GvlDirective
+    blark.sphinxdomain.MissingDeclaration
+    blark.sphinxdomain.ProgramDirective
+    blark.sphinxdomain.TypeDirective
+    blark.sphinxdomain.VariableBlockDirective
+    blark.sphinxdomain.declaration_to_content
+    blark.sphinxdomain.declaration_to_signature
+    blark.sphinxdomain.declarations_to_block
+    blark.sphinxdomain.setup
+
+blark.summary
+-------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.summary.ActionSummary
+    blark.summary.CodeSummary
+    blark.summary.DataTypeSummary
+    blark.summary.DeclarationSummary
+    blark.summary.FunctionBlockSummary
+    blark.summary.FunctionSummary
+    blark.summary.GlobalVariableSummary
+    blark.summary.InterfaceSummary
+    blark.summary.LinkableItems
+    blark.summary.MethodSummary
+    blark.summary.ProgramSummary
+    blark.summary.PropertyGetSetSummary
+    blark.summary.PropertySummary
+    blark.summary.Summary
+    blark.summary.get_linkable_declarations
+    blark.summary.path_to_file_and_line
+    blark.summary.text_outline
+
+blark.transform
+---------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.transform.AccessDeclaration
+    blark.transform.AccessDeclarations
+    blark.transform.AccessSpecifier
+    blark.transform.Action
+    blark.transform.ArrayInitialElement
+    blark.transform.ArrayInitialization
+    blark.transform.ArraySpecification
+    blark.transform.ArrayTypeDeclaration
+    blark.transform.ArrayTypeInitialization
+    blark.transform.ArrayVariableInitDeclaration
+    blark.transform.AssignmentStatement
+    blark.transform.BinaryBitString
+    blark.transform.BinaryInteger
+    blark.transform.BinaryOperation
+    blark.transform.BitString
+    blark.transform.Boolean
+    blark.transform.BracketedExpression
+    blark.transform.CaseElement
+    blark.transform.CaseStatement
+    blark.transform.ChainedFunctionCall
+    blark.transform.ChainedFunctionCallStatement
+    blark.transform.ContinueStatement
+    blark.transform.DataType
+    blark.transform.DataTypeDeclaration
+    blark.transform.Date
+    blark.transform.DateTime
+    blark.transform.DeclaredVariable
+    blark.transform.DirectVariable
+    blark.transform.Duration
+    blark.transform.EdgeDeclaration
+    blark.transform.ElseClause
+    blark.transform.ElseIfClause
+    blark.transform.EnumeratedSpecification
+    blark.transform.EnumeratedTypeDeclaration
+    blark.transform.EnumeratedTypeInitialization
+    blark.transform.EnumeratedValue
+    blark.transform.ExitStatement
+    blark.transform.Expression
+    blark.transform.ExtendedSourceCode
+    blark.transform.Extends
+    blark.transform.ExternalVariableDeclaration
+    blark.transform.ExternalVariableDeclarations
+    blark.transform.FieldSelector
+    blark.transform.ForStatement
+    blark.transform.FormatSettings
+    blark.transform.FullSubrange
+    blark.transform.Function
+    blark.transform.FunctionBlock
+    blark.transform.FunctionBlockDeclaration
+    blark.transform.FunctionBlockInvocationDeclaration
+    blark.transform.FunctionBlockNameDeclaration
+    blark.transform.FunctionCall
+    blark.transform.FunctionCallStatement
+    blark.transform.FunctionVariableDeclarations
+    blark.transform.GlobalVariableAttributes
+    blark.transform.GlobalVariableDeclaration
+    blark.transform.GlobalVariableDeclarations
+    blark.transform.GlobalVariableSpec
+    blark.transform.GrammarTransformer
+    blark.transform.HexBitString
+    blark.transform.HexInteger
+    blark.transform.IfStatement
+    blark.transform.Implements
+    blark.transform.IncompleteLocatedVariableDeclaration
+    blark.transform.IncompleteLocatedVariableDeclarations
+    blark.transform.IncompleteLocation
+    blark.transform.IndirectSimpleSpecification
+    blark.transform.IndirectionType
+    blark.transform.InitDeclaration
+    blark.transform.InitializedStructure
+    blark.transform.InputDeclarations
+    blark.transform.InputOutputDeclarations
+    blark.transform.InputParameterAssignment
+    blark.transform.Integer
+    blark.transform.Interface
+    blark.transform.JumpStatement
+    blark.transform.LabeledStatement
+    blark.transform.Ldate
+    blark.transform.LdateTime
+    blark.transform.Lduration
+    blark.transform.Literal
+    blark.transform.LocatedVariableDeclaration
+    blark.transform.LocatedVariableDeclarations
+    blark.transform.Location
+    blark.transform.LtimeOfDay
+    blark.transform.Meta
+    blark.transform.Method
+    blark.transform.MethodInstanceVariableDeclarations
+    blark.transform.MultiElementVariable
+    blark.transform.NoOpStatement
+    blark.transform.ObjectInitializerArray
+    blark.transform.OctalBitString
+    blark.transform.OctalInteger
+    blark.transform.OutputDeclarations
+    blark.transform.OutputParameterAssignment
+    blark.transform.ParameterAssignment
+    blark.transform.ParenthesizedExpression
+    blark.transform.PartialSubrange
+    blark.transform.Program
+    blark.transform.Property
+    blark.transform.Real
+    blark.transform.ReferenceAssignmentStatement
+    blark.transform.RepeatStatement
+    blark.transform.ResetStatement
+    blark.transform.ReturnStatement
+    blark.transform.SetStatement
+    blark.transform.SimpleSpecification
+    blark.transform.SimpleTypeDeclaration
+    blark.transform.SimpleVariable
+    blark.transform.SourceCode
+    blark.transform.Statement
+    blark.transform.StatementList
+    blark.transform.StaticDeclarations
+    blark.transform.String
+    blark.transform.StringSpecLength
+    blark.transform.StringTypeDeclaration
+    blark.transform.StringTypeInitialization
+    blark.transform.StringTypeSpecification
+    blark.transform.StringVariableInitDeclaration
+    blark.transform.StructureElementDeclaration
+    blark.transform.StructureElementInitialization
+    blark.transform.StructureInitialization
+    blark.transform.StructureTypeDeclaration
+    blark.transform.StructuredVariableInitDeclaration
+    blark.transform.Subrange
+    blark.transform.SubrangeSpecification
+    blark.transform.SubrangeTypeDeclaration
+    blark.transform.SubrangeTypeInitialization
+    blark.transform.SubscriptList
+    blark.transform.TemporaryVariableDeclarations
+    blark.transform.TimeOfDay
+    blark.transform.TypeInformation
+    blark.transform.TypeInitialization
+    blark.transform.TypeInitializationBase
+    blark.transform.TypeSpecificationBase
+    blark.transform.UnaryOperation
+    blark.transform.UnionElementDeclaration
+    blark.transform.UnionTypeDeclaration
+    blark.transform.UnresolvedTypeInformation
+    blark.transform.Variable
+    blark.transform.VariableAttributes
+    blark.transform.VariableDeclarationBlock
+    blark.transform.VariableDeclarations
+    blark.transform.VariableLocationPrefix
+    blark.transform.VariableOneInitDeclaration
+    blark.transform.VariableSizePrefix
+    blark.transform.WhileStatement
+    blark.transform._ArrayInitialElementCount
+    blark.transform._BareArrayInitialization
+    blark.transform._BracketedArrayInitialization
+    blark.transform._FlagHelper
+    blark.transform._GenericInit
+    blark.transform.configure_formatting
+    blark.transform.get_grammar_for_class
+    blark.transform.indent
+    blark.transform.indent_if
+    blark.transform.join_if
+    blark.transform.merge_comments
+    blark.transform.meta_field
+    blark.transform.multiline_code_block
+    blark.transform.transform
+
+blark.typing
+------------
+
+.. autosummary::
+    :toctree: api
+
+    blark.typing.ContainsBlarkCode
+    blark.typing.SupportsRewrite
+    blark.typing.SupportsSaveToPath
+    blark.typing.SupportsWrite
+
+blark.util
+----------
+
+.. autosummary::
+    :toctree: api
+
+    blark.util.Identifier
+    blark.util.SourceType
+    blark.util.find_and_clean_comments
+    blark.util.find_pou_type_and_identifier
+    blark.util.fix_case_insensitive_path
+    blark.util.get_file_sha256
+    blark.util.get_grammar_for_rule
+    blark.util.get_grammar_source
+    blark.util.get_source_code
+    blark.util.indent_inner
+    blark.util.maybe_add_brackets
+    blark.util.python_debug_session
+    blark.util.rebuild_lark_tree_with_line_map
+    blark.util.recursively_remove_keys
+    blark.util.remove_all_comments
+    blark.util.remove_comment_characters
+    blark.util.simplify_brackets
+    blark.util.tree_to_xml_source
+    blark.util.try_paths

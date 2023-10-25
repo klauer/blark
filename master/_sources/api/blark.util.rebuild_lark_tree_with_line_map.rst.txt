@@ -1,0 +1,6 @@
+﻿blark.util.rebuild\_lark\_tree\_with\_line\_map
+===============================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: rebuild_lark_tree_with_line_map

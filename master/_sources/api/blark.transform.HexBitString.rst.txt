@@ -1,0 +1,48 @@
+﻿blark.transform.HexBitString
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: HexBitString
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``hex_bit_string_literal``
+
+   .. code::
+
+     | [ BIT_STRING_TYPE_NAME "#" ] "16#" HEX_STRING   -> hex_bit_string_literal
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~HexBitString.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~HexBitString.base
+       ~HexBitString.meta
+       ~HexBitString.type_name
+       ~HexBitString.value
+   

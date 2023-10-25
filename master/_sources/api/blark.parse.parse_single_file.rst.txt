@@ -1,0 +1,6 @@
+﻿blark.parse.parse\_single\_file
+===============================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: parse_single_file

@@ -1,0 +1,6 @@
+﻿blark.summary.text\_outline
+===========================
+
+.. currentmodule:: blark.summary
+
+.. autofunction:: text_outline

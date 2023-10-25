@@ -1,0 +1,50 @@
+﻿blark.transform.OutputDeclarations
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: OutputDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``output_declarations``
+
+   .. code::
+
+     output_declarations: "VAR_OUTPUT"i [ variable_attributes ] var_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~OutputDeclarations.__init__
+       ~OutputDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~OutputDeclarations.attribute_pragmas
+       ~OutputDeclarations.block_header
+       ~OutputDeclarations.meta
+       ~OutputDeclarations.attrs
+       ~OutputDeclarations.items
+   

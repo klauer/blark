@@ -1,0 +1,33 @@
+﻿blark.input.BlarkSourceLine
+===========================
+
+.. currentmodule:: blark.input
+
+.. autoclass:: BlarkSourceLine
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkSourceLine.__init__
+       ~BlarkSourceLine.from_code
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkSourceLine.filename
+       ~BlarkSourceLine.lineno
+       ~BlarkSourceLine.code
+   

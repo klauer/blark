@@ -1,0 +1,41 @@
+﻿blark.solution.TcGVL
+====================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcGVL
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcGVL.__init__
+       ~TcGVL.rewrite_code
+       ~TcGVL.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcGVL.default_source_type
+       ~TcGVL.file_extension
+       ~TcGVL.source_type
+       ~TcGVL.xml
+       ~TcGVL.name
+       ~TcGVL.guid
+       ~TcGVL.decl
+       ~TcGVL.metadata
+       ~TcGVL.filename
+       ~TcGVL.parent
+   

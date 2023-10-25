@@ -1,0 +1,49 @@
+﻿blark.transform.MultiElementVariable
+====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: MultiElementVariable
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``multi_element_variable``
+
+   .. code::
+
+     multi_element_variable: variable_name ( subscript_list | field_selector )+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~MultiElementVariable.__init__
+       ~MultiElementVariable.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~MultiElementVariable.meta
+       ~MultiElementVariable.name
+       ~MultiElementVariable.dereferenced
+       ~MultiElementVariable.elements
+   

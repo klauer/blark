@@ -1,0 +1,41 @@
+﻿blark.solution.TcDeclImpl
+=========================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcDeclImpl
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcDeclImpl.__init__
+       ~TcDeclImpl.declaration_to_blark
+       ~TcDeclImpl.from_xml
+       ~TcDeclImpl.implementation_to_blark
+       ~TcDeclImpl.rewrite_code
+       ~TcDeclImpl.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcDeclImpl.metadata
+       ~TcDeclImpl.parent
+       ~TcDeclImpl.identifier
+       ~TcDeclImpl.filename
+       ~TcDeclImpl.source_type
+       ~TcDeclImpl.declaration
+       ~TcDeclImpl.implementation
+   

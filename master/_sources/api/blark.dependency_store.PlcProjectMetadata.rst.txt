@@ -1,0 +1,39 @@
+﻿blark.dependency\_store.PlcProjectMetadata
+==========================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autoclass:: PlcProjectMetadata
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~PlcProjectMetadata.__init__
+       ~PlcProjectMetadata.from_plcproject
+       ~PlcProjectMetadata.from_project_filename
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~PlcProjectMetadata.name
+       ~PlcProjectMetadata.filename
+       ~PlcProjectMetadata.include_dependencies
+       ~PlcProjectMetadata.code
+       ~PlcProjectMetadata.summary
+       ~PlcProjectMetadata.loaded_files
+       ~PlcProjectMetadata.dependencies
+       ~PlcProjectMetadata.plc
+   

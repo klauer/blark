@@ -1,0 +1,59 @@
+﻿blark.transform.IndirectionType
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: IndirectionType
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``indirection_type``
+
+   .. code::
+
+     indirection_type: REFERENCE_TO
+                     | POINTER_TO+
+                     | REFERENCE_TO POINTER_TO+
+
+   
+   ``pointer_type``
+
+   .. code::
+
+     pointer_type: POINTER_TO+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~IndirectionType.__init__
+       ~IndirectionType.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~IndirectionType.is_indirect
+       ~IndirectionType.meta
+       ~IndirectionType.value
+       ~IndirectionType.pointer_depth
+       ~IndirectionType.reference
+   

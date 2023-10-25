@@ -1,0 +1,6 @@
+﻿blark.dependency\_store.load\_projects
+======================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autofunction:: load_projects

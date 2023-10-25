@@ -1,0 +1,51 @@
+﻿blark.transform.StringTypeSpecification
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StringTypeSpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``string_type_specification``
+
+   .. code::
+
+     string_type_specification: (STRING | WSTRING) [ string_spec_length ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StringTypeSpecification.__init__
+       ~StringTypeSpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StringTypeSpecification.base_type_name
+       ~StringTypeSpecification.full_type_name
+       ~StringTypeSpecification.length
+       ~StringTypeSpecification.meta
+       ~StringTypeSpecification.type_info
+       ~StringTypeSpecification.type_name
+   

@@ -1,0 +1,52 @@
+﻿blark.transform.IndirectSimpleSpecification
+===========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: IndirectSimpleSpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``indirect_simple_specification``
+
+   .. code::
+
+     indirect_simple_specification: [ indirection_type ] simple_specification [ input_param_args ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~IndirectSimpleSpecification.__init__
+       ~IndirectSimpleSpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~IndirectSimpleSpecification.base_type_name
+       ~IndirectSimpleSpecification.full_type_name
+       ~IndirectSimpleSpecification.meta
+       ~IndirectSimpleSpecification.type_info
+       ~IndirectSimpleSpecification.indirection
+       ~IndirectSimpleSpecification.type
+       ~IndirectSimpleSpecification.init_parameters
+   

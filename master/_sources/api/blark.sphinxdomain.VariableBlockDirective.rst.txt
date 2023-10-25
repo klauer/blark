@@ -1,0 +1,50 @@
+﻿blark.sphinxdomain.VariableBlockDirective
+=========================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: VariableBlockDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableBlockDirective.handle_signature
+       ~VariableBlockDirective.transform_content
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableBlockDirective.config
+       ~VariableBlockDirective.doc_field_types
+       ~VariableBlockDirective.domain
+       ~VariableBlockDirective.env
+       ~VariableBlockDirective.final_argument_whitespace
+       ~VariableBlockDirective.has_content
+       ~VariableBlockDirective.indexnode
+       ~VariableBlockDirective.objtype
+       ~VariableBlockDirective.option_spec
+       ~VariableBlockDirective.optional_arguments
+       ~VariableBlockDirective.required_arguments
+       ~VariableBlockDirective.block_header
+       ~VariableBlockDirective.parent_name
+       ~VariableBlockDirective.declarations
+       ~VariableBlockDirective.name
+       ~VariableBlockDirective.rawtext
+       ~VariableBlockDirective.text
+       ~VariableBlockDirective.lineno
+       ~VariableBlockDirective.options
+       ~VariableBlockDirective.content
+   

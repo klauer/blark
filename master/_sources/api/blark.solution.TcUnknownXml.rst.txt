@@ -1,0 +1,32 @@
+﻿blark.solution.TcUnknownXml
+===========================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcUnknownXml
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcUnknownXml.__init__
+       ~TcUnknownXml.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcUnknownXml.xml
+       ~TcUnknownXml.parent
+   

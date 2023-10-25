@@ -1,0 +1,6 @@
+﻿blark.solution.get\_child\_located\_text
+========================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_child_located_text

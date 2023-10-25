@@ -1,0 +1,33 @@
+﻿blark.solution.TcExtraInfo
+==========================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcExtraInfo
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcExtraInfo.__init__
+       ~TcExtraInfo.from_xml
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcExtraInfo.metadata
+       ~TcExtraInfo.xml
+       ~TcExtraInfo.parent
+   

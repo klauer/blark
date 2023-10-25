@@ -1,0 +1,52 @@
+﻿blark.transform.SubrangeSpecification
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SubrangeSpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``subrange_specification``
+
+   .. code::
+
+     subrange_specification: INTEGER_TYPE_NAME "(" subrange ")"
+                           | subrange_type_name
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SubrangeSpecification.__init__
+       ~SubrangeSpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SubrangeSpecification.base_type_name
+       ~SubrangeSpecification.full_type_name
+       ~SubrangeSpecification.meta
+       ~SubrangeSpecification.subrange
+       ~SubrangeSpecification.type_info
+       ~SubrangeSpecification.type_name
+   

@@ -1,0 +1,48 @@
+﻿blark.transform.BinaryBitString
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: BinaryBitString
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``binary_bit_string_literal``
+
+   .. code::
+
+     bit_string_literal: [ BIT_STRING_TYPE_NAME "#" ] "2#" BIT_STRING    -> binary_bit_string_literal
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BinaryBitString.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BinaryBitString.base
+       ~BinaryBitString.meta
+       ~BinaryBitString.type_name
+       ~BinaryBitString.value
+   

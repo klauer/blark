@@ -1,0 +1,36 @@
+﻿blark.dependency\_store.DependencyStore
+=======================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autoclass:: DependencyStore
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DependencyStore.__init__
+       ~DependencyStore.get_dependencies
+       ~DependencyStore.get_dependency
+       ~DependencyStore.get_instance
+       ~DependencyStore.load_config
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DependencyStore.config_filename
+       ~DependencyStore.root
+       ~DependencyStore.config
+   

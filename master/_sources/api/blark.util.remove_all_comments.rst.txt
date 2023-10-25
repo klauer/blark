@@ -1,0 +1,6 @@
+﻿blark.util.remove\_all\_comments
+================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: remove_all_comments

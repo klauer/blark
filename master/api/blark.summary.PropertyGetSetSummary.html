@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.summary.PropertyGetSetSummary &mdash; blark  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.summary.PropertySummary" href="blark.summary.PropertySummary.html" />
+    <link rel="prev" title="blark.summary.ProgramSummary" href="blark.summary.ProgramSummary.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.ActionSummary.html">blark.summary.ActionSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.CodeSummary.html">blark.summary.CodeSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.DataTypeSummary.html">blark.summary.DataTypeSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.DeclarationSummary.html">blark.summary.DeclarationSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.FunctionBlockSummary.html">blark.summary.FunctionBlockSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.FunctionSummary.html">blark.summary.FunctionSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.GlobalVariableSummary.html">blark.summary.GlobalVariableSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.InterfaceSummary.html">blark.summary.InterfaceSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.LinkableItems.html">blark.summary.LinkableItems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.MethodSummary.html">blark.summary.MethodSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.ProgramSummary.html">blark.summary.ProgramSummary</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.summary.PropertyGetSetSummary</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.summary.PropertyGetSetSummary"><code class="docutils literal notranslate"><span class="pre">PropertyGetSetSummary</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.PropertySummary.html">blark.summary.PropertySummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.Summary.html">blark.summary.Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.get_linkable_declarations.html">blark.summary.get_linkable_declarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.path_to_file_and_line.html">blark.summary.path_to_file_and_line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.text_outline.html">blark.summary.text_outline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.summary.PropertyGetSetSummary</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.summary.PropertyGetSetSummary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-summary-propertygetsetsummary">
+<h1>blark.summary.PropertyGetSetSummary<a class="headerlink" href="#blark-summary-propertygetsetsummary" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.summary.</span></span><span class="sig-name descname"><span class="pre">PropertyGetSetSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comments:</span> <span class="pre">'List[str]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pragmas:</span> <span class="pre">'List[str]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename:</span> <span class="pre">'Optional[pathlib.Path]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta:</span> <span class="pre">'Optional[tf.Meta]'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">'str'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item:</span> <span class="pre">'tf.Property'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_code:</span> <span class="pre">'str'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">declarations:</span> <span class="pre">'Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DeclarationSummary]'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">implementation:</span> <span class="pre">'Optional[tf.StatementList]'</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/summary.html#PropertyGetSetSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.PropertyGetSetSummary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="blark.summary.Summary.html#blark.summary.Summary" title="blark.summary.Summary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.__init__" title="blark.summary.PropertyGetSetSummary.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(comments, pragmas, filename, meta, ...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.implementation" title="blark.summary.PropertyGetSetSummary.implementation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">implementation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.name" title="blark.summary.PropertyGetSetSummary.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.item" title="blark.summary.PropertyGetSetSummary.item"><code class="xref py py-obj docutils literal notranslate"><span class="pre">item</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.source_code" title="blark.summary.PropertyGetSetSummary.source_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source_code</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.PropertyGetSetSummary.declarations" title="blark.summary.PropertyGetSetSummary.declarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">declarations</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">comments</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pragmas</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></em><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.item">
+<span class="sig-name descname"><span class="pre">item</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="blark.transform.Property.html#blark.transform.Property" title="blark.transform.Property"><span class="pre">Property</span></a></em><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.item" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.source_code">
+<span class="sig-name descname"><span class="pre">source_code</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></em><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.source_code" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.declarations">
+<span class="sig-name descname"><span class="pre">declarations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DeclarationSummary.html#blark.summary.DeclarationSummary" title="blark.summary.DeclarationSummary"><span class="pre">DeclarationSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.declarations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.implementation">
+<span class="sig-name descname"><span class="pre">implementation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="blark.transform.StatementList.html#blark.transform.StatementList" title="blark.transform.StatementList"><span class="pre">StatementList</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.implementation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.PropertyGetSetSummary.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">comments:</span> <span class="pre">~typing.List[str],</span> <span class="pre">pragmas:</span> <span class="pre">~typing.List[str],</span> <span class="pre">filename:</span> <span class="pre">~pathlib.Path</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">meta:</span> <span class="pre">~blark.transform.Meta</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">item:</span> <span class="pre">~blark.transform.Property,</span> <span class="pre">source_code:</span> <span class="pre">str,</span> <span class="pre">declarations:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">~blark.summary.DeclarationSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">implementation:</span> <span class="pre">~blark.transform.StatementList</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#blark.summary.PropertyGetSetSummary.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.summary.ProgramSummary.html" class="btn btn-neutral float-left" title="blark.summary.ProgramSummary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.summary.PropertySummary.html" class="btn btn-neutral float-right" title="blark.summary.PropertySummary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

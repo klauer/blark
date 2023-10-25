@@ -1,0 +1,39 @@
+﻿blark.transform.\_ArrayInitialElementCount
+==========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: _ArrayInitialElementCount
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``array_initial_element_count``
+
+   .. code::
+
+     array_initial_element: ( integer | enumerated_value ) "(" [ _array_initial_element ] ")" -> array_initial_element_count
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~_ArrayInitialElementCount.from_lark
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+﻿blark.util.remove\_comment\_characters
+======================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: remove_comment_characters

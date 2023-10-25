@@ -1,0 +1,50 @@
+﻿blark.transform.VariableDeclarations
+====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``var_declarations``
+
+   .. code::
+
+     var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableDeclarations.__init__
+       ~VariableDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableDeclarations.attribute_pragmas
+       ~VariableDeclarations.block_header
+       ~VariableDeclarations.meta
+       ~VariableDeclarations.attrs
+       ~VariableDeclarations.items
+   

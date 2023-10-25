@@ -1,0 +1,6 @@
+﻿blark.format.write\_source\_to\_file
+====================================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: write_source_to_file

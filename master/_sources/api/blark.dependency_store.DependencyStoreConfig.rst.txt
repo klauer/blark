@@ -1,0 +1,34 @@
+﻿blark.dependency\_store.DependencyStoreConfig
+=============================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autoclass:: DependencyStoreConfig
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DependencyStoreConfig.__init__
+       ~DependencyStoreConfig.as_json
+       ~DependencyStoreConfig.from_dict
+       ~DependencyStoreConfig.save
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DependencyStoreConfig.filename
+       ~DependencyStoreConfig.libraries
+   

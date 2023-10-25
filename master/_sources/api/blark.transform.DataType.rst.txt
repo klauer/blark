@@ -1,0 +1,48 @@
+﻿blark.transform.DataType
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: DataType
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``non_generic_type_name``
+
+   .. code::
+
+     non_generic_type_name: [ pointer_type ] ( elementary_type_name | derived_type_name | DOTTED_IDENTIFIER )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DataType.__init__
+       ~DataType.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DataType.meta
+       ~DataType.indirection
+       ~DataType.type_name
+   

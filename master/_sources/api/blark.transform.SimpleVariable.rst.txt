@@ -1,0 +1,48 @@
+﻿blark.transform.SimpleVariable
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SimpleVariable
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``variable_name``
+
+   .. code::
+
+     variable_name: IDENTIFIER [ DEREFERENCED ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SimpleVariable.__init__
+       ~SimpleVariable.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SimpleVariable.meta
+       ~SimpleVariable.name
+       ~SimpleVariable.dereferenced
+   

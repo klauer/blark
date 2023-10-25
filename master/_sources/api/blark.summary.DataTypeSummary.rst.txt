@@ -1,0 +1,43 @@
+﻿blark.summary.DataTypeSummary
+=============================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: DataTypeSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DataTypeSummary.__init__
+       ~DataTypeSummary.from_data_type
+       ~DataTypeSummary.squash_base_extends
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DataTypeSummary.declarations_by_block
+       ~DataTypeSummary.squashed
+       ~DataTypeSummary.name
+       ~DataTypeSummary.item
+       ~DataTypeSummary.source_code
+       ~DataTypeSummary.type
+       ~DataTypeSummary.extends
+       ~DataTypeSummary.declarations
+       ~DataTypeSummary.comments
+       ~DataTypeSummary.pragmas
+       ~DataTypeSummary.filename
+       ~DataTypeSummary.meta
+   

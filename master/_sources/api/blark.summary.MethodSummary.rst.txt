@@ -1,0 +1,41 @@
+﻿blark.summary.MethodSummary
+===========================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: MethodSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~MethodSummary.__init__
+       ~MethodSummary.from_method
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~MethodSummary.declarations_by_block
+       ~MethodSummary.implementation
+       ~MethodSummary.name
+       ~MethodSummary.item
+       ~MethodSummary.return_type
+       ~MethodSummary.source_code
+       ~MethodSummary.declarations
+       ~MethodSummary.comments
+       ~MethodSummary.pragmas
+       ~MethodSummary.filename
+       ~MethodSummary.meta
+   

@@ -1,0 +1,53 @@
+﻿blark.transform.Duration
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Duration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``duration``
+
+   .. code::
+
+     duration: ( "TIME"i | "T"i ) "#" [ MINUS ] _interval
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Duration.__init__
+       ~Duration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Duration.days
+       ~Duration.hours
+       ~Duration.meta
+       ~Duration.milliseconds
+       ~Duration.minutes
+       ~Duration.negative
+       ~Duration.seconds
+       ~Duration.value
+   

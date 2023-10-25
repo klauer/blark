@@ -1,0 +1,52 @@
+﻿blark.transform.InitializedStructure
+====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: InitializedStructure
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``initialized_structure``
+
+   .. code::
+
+     initialized_structure: structure_type_name ":=" structure_initialization
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~InitializedStructure.__init__
+       ~InitializedStructure.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InitializedStructure.base_type_name
+       ~InitializedStructure.full_type_name
+       ~InitializedStructure.meta
+       ~InitializedStructure.type_info
+       ~InitializedStructure.value
+       ~InitializedStructure.name
+       ~InitializedStructure.init
+   

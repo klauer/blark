@@ -1,0 +1,46 @@
+﻿blark.summary.DeclarationSummary
+================================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: DeclarationSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DeclarationSummary.__init__
+       ~DeclarationSummary.from_block
+       ~DeclarationSummary.from_declaration
+       ~DeclarationSummary.from_global_variable
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DeclarationSummary.location_type
+       ~DeclarationSummary.qualified_name
+       ~DeclarationSummary.name
+       ~DeclarationSummary.item
+       ~DeclarationSummary.parent
+       ~DeclarationSummary.location
+       ~DeclarationSummary.block
+       ~DeclarationSummary.base_type
+       ~DeclarationSummary.type
+       ~DeclarationSummary.value
+       ~DeclarationSummary.comments
+       ~DeclarationSummary.pragmas
+       ~DeclarationSummary.filename
+       ~DeclarationSummary.meta
+   

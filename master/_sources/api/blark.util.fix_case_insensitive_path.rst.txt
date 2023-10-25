@@ -1,0 +1,6 @@
+﻿blark.util.fix\_case\_insensitive\_path
+=======================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: fix_case_insensitive_path

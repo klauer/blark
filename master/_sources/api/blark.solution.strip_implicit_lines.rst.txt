@@ -1,0 +1,6 @@
+﻿blark.solution.strip\_implicit\_lines
+=====================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: strip_implicit_lines

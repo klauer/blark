@@ -1,0 +1,48 @@
+﻿blark.transform.CaseElement
+===========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: CaseElement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``case_element``
+
+   .. code::
+
+     case_element: case_list ":" [ case_element_statement_list ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~CaseElement.__init__
+       ~CaseElement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~CaseElement.meta
+       ~CaseElement.matches
+       ~CaseElement.statements
+   

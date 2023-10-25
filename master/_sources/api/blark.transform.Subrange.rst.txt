@@ -1,0 +1,24 @@
+﻿blark.transform.Subrange
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Subrange
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Subrange.__init__
+   
+   
+
+   
+   
+   

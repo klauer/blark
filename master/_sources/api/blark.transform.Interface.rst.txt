@@ -1,0 +1,49 @@
+﻿blark.transform.Interface
+=========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Interface
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``interface_declaration``
+
+   .. code::
+
+     interface_declaration: "INTERFACE"i IDENTIFIER [ extends ] interface_var_declaration* "END_INTERFACE"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Interface.__init__
+       ~Interface.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Interface.meta
+       ~Interface.name
+       ~Interface.extends
+       ~Interface.declarations
+   

@@ -1,0 +1,6 @@
+﻿blark.apischema\_compat.token\_serializer
+=========================================
+
+.. currentmodule:: blark.apischema_compat
+
+.. autofunction:: token_serializer

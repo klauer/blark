@@ -1,0 +1,23 @@
+﻿blark.transform.Literal
+=======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Literal
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+﻿blark.main.main
+===============
+
+.. currentmodule:: blark.main
+
+.. autofunction:: main

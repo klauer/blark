@@ -1,0 +1,49 @@
+﻿blark.transform.AccessDeclarations
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: AccessDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``program_access_decls``
+
+   .. code::
+
+     program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~AccessDeclarations.__init__
+       ~AccessDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~AccessDeclarations.attribute_pragmas
+       ~AccessDeclarations.block_header
+       ~AccessDeclarations.meta
+       ~AccessDeclarations.items
+   

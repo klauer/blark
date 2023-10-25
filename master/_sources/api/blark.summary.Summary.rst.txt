@@ -1,0 +1,34 @@
+﻿blark.summary.Summary
+=====================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: Summary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Summary.__init__
+       ~Summary.get_meta_kwargs
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Summary.comments
+       ~Summary.pragmas
+       ~Summary.filename
+       ~Summary.meta
+   

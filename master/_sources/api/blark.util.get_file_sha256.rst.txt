@@ -1,0 +1,6 @@
+﻿blark.util.get\_file\_sha256
+============================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: get_file_sha256

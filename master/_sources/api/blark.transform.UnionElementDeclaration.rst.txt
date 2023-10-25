@@ -1,0 +1,49 @@
+﻿blark.transform.UnionElementDeclaration
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: UnionElementDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``union_element_declaration``
+
+   .. code::
+
+     union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~UnionElementDeclaration.__init__
+       ~UnionElementDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~UnionElementDeclaration.meta
+       ~UnionElementDeclaration.variables
+       ~UnionElementDeclaration.name
+       ~UnionElementDeclaration.spec
+   

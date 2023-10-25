@@ -1,0 +1,184 @@
+﻿blark.transform.GrammarTransformer
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: GrammarTransformer
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GrammarTransformer.__init__
+       ~GrammarTransformer.access_specifier
+       ~GrammarTransformer.action
+       ~GrammarTransformer.add_expression
+       ~GrammarTransformer.and_expression
+       ~GrammarTransformer.and_then_expression
+       ~GrammarTransformer.array_initial_element
+       ~GrammarTransformer.array_initial_element_count
+       ~GrammarTransformer.array_spec_init
+       ~GrammarTransformer.array_specification
+       ~GrammarTransformer.array_type_declaration
+       ~GrammarTransformer.array_var_init_decl
+       ~GrammarTransformer.assignment_expression
+       ~GrammarTransformer.assignment_statement
+       ~GrammarTransformer.bare_array_initialization
+       ~GrammarTransformer.binary_bit_string_literal
+       ~GrammarTransformer.binary_integer
+       ~GrammarTransformer.bit_string_literal
+       ~GrammarTransformer.bracketed_array_initialization
+       ~GrammarTransformer.bracketed_expression
+       ~GrammarTransformer.case_element
+       ~GrammarTransformer.case_element_statement_list
+       ~GrammarTransformer.case_elements
+       ~GrammarTransformer.case_statement
+       ~GrammarTransformer.chained_function_call
+       ~GrammarTransformer.chained_function_call_statement
+       ~GrammarTransformer.comparison_expression
+       ~GrammarTransformer.constant
+       ~GrammarTransformer.continue_statement
+       ~GrammarTransformer.data_type_declaration
+       ~GrammarTransformer.date
+       ~GrammarTransformer.date_and_time
+       ~GrammarTransformer.direct_variable
+       ~GrammarTransformer.double_byte_string_spec
+       ~GrammarTransformer.double_byte_string_var_declaration
+       ~GrammarTransformer.duration
+       ~GrammarTransformer.edge_declaration
+       ~GrammarTransformer.else_clause
+       ~GrammarTransformer.else_if_clause
+       ~GrammarTransformer.end_of_statement_list_label
+       ~GrammarTransformer.enumerated_spec_init
+       ~GrammarTransformer.enumerated_specification
+       ~GrammarTransformer.enumerated_type_declaration
+       ~GrammarTransformer.enumerated_value
+       ~GrammarTransformer.equality_expression
+       ~GrammarTransformer.exit_statement
+       ~GrammarTransformer.expression
+       ~GrammarTransformer.expression_term
+       ~GrammarTransformer.extends
+       ~GrammarTransformer.external_declaration
+       ~GrammarTransformer.external_var_declarations
+       ~GrammarTransformer.false
+       ~GrammarTransformer.fb_decl_name_list
+       ~GrammarTransformer.fb_invocation_decl
+       ~GrammarTransformer.fb_name_decl
+       ~GrammarTransformer.field_selector
+       ~GrammarTransformer.for_statement
+       ~GrammarTransformer.full_subrange
+       ~GrammarTransformer.function_block_method_declaration
+       ~GrammarTransformer.function_block_property_declaration
+       ~GrammarTransformer.function_block_type_declaration
+       ~GrammarTransformer.function_call
+       ~GrammarTransformer.function_call_statement
+       ~GrammarTransformer.function_declaration
+       ~GrammarTransformer.function_var_declarations
+       ~GrammarTransformer.global_var_decl
+       ~GrammarTransformer.global_var_declarations
+       ~GrammarTransformer.global_var_spec
+       ~GrammarTransformer.global_variable_attributes
+       ~GrammarTransformer.hex_bit_string_literal
+       ~GrammarTransformer.hex_integer
+       ~GrammarTransformer.iec_source
+       ~GrammarTransformer.if_statement
+       ~GrammarTransformer.implements
+       ~GrammarTransformer.incomplete_located_var_decl
+       ~GrammarTransformer.incomplete_located_var_declarations
+       ~GrammarTransformer.incomplete_location
+       ~GrammarTransformer.indirect_simple_specification
+       ~GrammarTransformer.indirection_type
+       ~GrammarTransformer.initialized_structure
+       ~GrammarTransformer.input_declarations
+       ~GrammarTransformer.input_output_declarations
+       ~GrammarTransformer.input_param_assignment
+       ~GrammarTransformer.integer
+       ~GrammarTransformer.integer_literal
+       ~GrammarTransformer.interface_declaration
+       ~GrammarTransformer.jmp_statement
+       ~GrammarTransformer.labeled_statement
+       ~GrammarTransformer.ldate
+       ~GrammarTransformer.ldate_and_time
+       ~GrammarTransformer.lduration
+       ~GrammarTransformer.located_var_decl
+       ~GrammarTransformer.located_var_declarations
+       ~GrammarTransformer.location
+       ~GrammarTransformer.ltime_of_day
+       ~GrammarTransformer.multi_element_variable
+       ~GrammarTransformer.no_op_statement
+       ~GrammarTransformer.non_generic_type_name
+       ~GrammarTransformer.object_initializer_array
+       ~GrammarTransformer.octal_bit_string_literal
+       ~GrammarTransformer.octal_integer
+       ~GrammarTransformer.or_else_expression
+       ~GrammarTransformer.output_declarations
+       ~GrammarTransformer.output_parameter_assignment
+       ~GrammarTransformer.param_assignment
+       ~GrammarTransformer.parenthesized_expression
+       ~GrammarTransformer.pointer_type
+       ~GrammarTransformer.program_access_decl
+       ~GrammarTransformer.program_access_decls
+       ~GrammarTransformer.program_declaration
+       ~GrammarTransformer.program_var_declarations
+       ~GrammarTransformer.real_literal
+       ~GrammarTransformer.reference_assignment_statement
+       ~GrammarTransformer.repeat_statement
+       ~GrammarTransformer.reset_statement
+       ~GrammarTransformer.return_statement
+       ~GrammarTransformer.set_statement
+       ~GrammarTransformer.signed_integer
+       ~GrammarTransformer.simple_spec_init
+       ~GrammarTransformer.simple_specification
+       ~GrammarTransformer.simple_type_declaration
+       ~GrammarTransformer.single_byte_string_spec
+       ~GrammarTransformer.single_byte_string_var_declaration
+       ~GrammarTransformer.statement_list
+       ~GrammarTransformer.static_var_declarations
+       ~GrammarTransformer.string_literal
+       ~GrammarTransformer.string_spec_length
+       ~GrammarTransformer.string_type_declaration
+       ~GrammarTransformer.string_type_specification
+       ~GrammarTransformer.structure_element_declaration
+       ~GrammarTransformer.structure_element_initialization
+       ~GrammarTransformer.structure_initialization
+       ~GrammarTransformer.structure_type_declaration
+       ~GrammarTransformer.structured_var_init_decl
+       ~GrammarTransformer.subrange
+       ~GrammarTransformer.subrange_spec_init
+       ~GrammarTransformer.subrange_specification
+       ~GrammarTransformer.subrange_type_declaration
+       ~GrammarTransformer.subscript_list
+       ~GrammarTransformer.temp_var_decls
+       ~GrammarTransformer.time_of_day
+       ~GrammarTransformer.transform
+       ~GrammarTransformer.true
+       ~GrammarTransformer.unary_expression
+       ~GrammarTransformer.union_element_declaration
+       ~GrammarTransformer.union_type_declaration
+       ~GrammarTransformer.var1
+       ~GrammarTransformer.var1_init_decl
+       ~GrammarTransformer.var1_list
+       ~GrammarTransformer.var_declarations
+       ~GrammarTransformer.var_inst_declaration
+       ~GrammarTransformer.variable_attributes
+       ~GrammarTransformer.variable_name
+       ~GrammarTransformer.while_statement
+       ~GrammarTransformer.xor_expression
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GrammarTransformer.comments
+   

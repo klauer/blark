@@ -1,0 +1,47 @@
+﻿blark.transform.ParenthesizedExpression
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ParenthesizedExpression
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``parenthesized_expression``
+
+   .. code::
+
+     parenthesized_expression: "(" expression ")"
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ParenthesizedExpression.__init__
+       ~ParenthesizedExpression.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ParenthesizedExpression.meta
+       ~ParenthesizedExpression.expr
+   

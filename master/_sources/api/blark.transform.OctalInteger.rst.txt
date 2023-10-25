@@ -1,0 +1,48 @@
+﻿blark.transform.OctalInteger
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: OctalInteger
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``octal_integer``
+
+   .. code::
+
+     | "8#" OCTAL_STRING           -> octal_integer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~OctalInteger.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~OctalInteger.base
+       ~OctalInteger.meta
+       ~OctalInteger.type_name
+       ~OctalInteger.value
+   

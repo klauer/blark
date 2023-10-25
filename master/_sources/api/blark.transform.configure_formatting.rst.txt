@@ -1,0 +1,6 @@
+﻿blark.transform.configure\_formatting
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autofunction:: configure_formatting
