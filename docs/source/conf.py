@@ -214,7 +214,8 @@ texinfo_documents = [
 
 # Intersphinx
 intersphinx_mapping = {
-    # 'python': ('https://docs.python.org/3', None),
+    "python": ("https://docs.python.org/3", None),
+    "lark": ("https://lark-parser.readthedocs.io/en/stable", None)
 }
 
 
