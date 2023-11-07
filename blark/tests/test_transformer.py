@@ -358,6 +358,8 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("expression", "NOT (3 - 4)"),
         param("expression", "(i_xTrigger OR NOT i_xPress_OK) AND NOT xVeto"),
         param("expression", "(nEventIdx := (nEventIdx + 1)) = nMaxEvents"),
+        param("expression", "_directoryFileList.Item(_i).ToString()"),
+        param("expression", "_directoryFileList.Item(_i)^.ToString()"),
         param("simple_type_declaration", "TypeName : INT"),
         param("simple_type_declaration", "TypeName : INT := 5"),
         param("simple_type_declaration", "TypeName : INT := 5 + 1 * (2)"),

@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: "Python 3.10: documentation building"
+    name: Build
     runs-on: ubuntu-20.04
     continue-on-error: false
 
@@ -99,7 +99,7 @@ jobs:
         path: "~/logs"
 
   deploy:
-    name: "Documentation deployment"
+    name: Deploy
     runs-on: ubuntu-20.04
     needs: build
     if: ${{ github.repository_owner == 'klauer' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')) }}
