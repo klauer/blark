@@ -705,11 +705,13 @@ UNARY_OPERATOR: LOGICAL_NOT
               | PLUS
 
 function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")" DEREFERENCED?
+chained_function_call: function_call ( "." function_call )+
 
 parenthesized_expression: "(" expression ")"
 
 ?primary_expression: parenthesized_expression
                    | function_call
+                   | chained_function_call
                    | _variable
                    | constant
 
@@ -756,7 +758,7 @@ return_statement.1: "RETURN"i ";"+
 
 function_call_statement: function_call ";"+
 
-chained_function_call_statement: function_call ("." function_call)+ ";"+
+chained_function_call_statement: chained_function_call ";"+
 
 param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
                 | variable_name ":=" [ expression ]

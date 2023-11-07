@@ -2386,6 +2386,34 @@ class FunctionCall(Expression):
 
 
 @dataclass
+@_rule_handler("chained_function_call")
+class ChainedFunctionCall(Expression):
+    """
+    A set of chained function (function block, method, action, etc.) calls.
+
+    The return value may be dereferenced with a carat (``^``).
+
+    Examples::
+
+        A()^.B()
+        A(1, 2).B().C()
+        A(1, 2, sName:='test', iOutput=>).C().D()
+        A.B[1].C(1, 2)
+    """
+    invocations: List[FunctionCall]
+    meta: Optional[Meta] = meta_field()
+
+    @staticmethod
+    def from_lark(*invocations: FunctionCall) -> ChainedFunctionCall:
+        return ChainedFunctionCall(
+            invocations=list(invocations)
+        )
+
+    def __str__(self) -> str:
+        return ".".join(str(invocation) for invocation in self.invocations)
+
+
+@dataclass
 @_rule_handler("var1")
 class DeclaredVariable:
     """
@@ -3828,9 +3856,9 @@ class ChainedFunctionCallStatement(Statement):
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(*invocations: FunctionCall) -> ChainedFunctionCallStatement:
+    def from_lark(chain: ChainedFunctionCall) -> ChainedFunctionCallStatement:
         return ChainedFunctionCallStatement(
-            invocations=list(invocations)
+            invocations=chain.invocations,
         )
 
     def __str__(self) -> str:
