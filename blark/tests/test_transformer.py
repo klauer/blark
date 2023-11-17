@@ -115,6 +115,7 @@ def test_check_unhandled_rules(grammar: lark.Lark):
         # handled as tree
         "global_var_list",
         "var_body",
+        "input_param_args",
     }
 
     todo_rules = set()
@@ -367,6 +368,8 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("simple_type_declaration", "TypeName : POINTER TO INT"),
         param("simple_type_declaration", "TypeName : POINTER TO POINTER TO INT"),
         param("simple_type_declaration", "TypeName : REFERENCE TO POINTER TO INT"),
+        param("simple_type_declaration", "TypeName : POINTER TO fbSomething(1, 2, 3)"),
+        param("simple_type_declaration", "TypeName : POINTER TO fbSomething(1, 2, C := 4)"),  # noqa: E501
         param("simple_type_declaration", "TypeName EXTENDS a.b : POINTER TO INT"),
         param("subrange_specification", "TypeName"),  # aliased and not usually hit
         param("subrange_type_declaration", "TypeName : INT (1..2)"),

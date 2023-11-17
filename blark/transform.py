@@ -312,10 +312,9 @@ class TypeInformation:
             )
         spec_type = cls.from_spec(init.spec)
         if isinstance(init, TypeInitialization):
-            full_type_name = join_if(init.indirection, " ", spec_type.full_type_name)
             return cls(
                 base_type_name=spec_type.base_type_name,
-                full_type_name=full_type_name,
+                full_type_name=spec_type.full_type_name,
                 context=init,
             )
         return spec_type
@@ -1174,8 +1173,7 @@ class TypeInitialization(TypeInitializationBase):
         TypeName := Value1
         STRING[100] := "value"
     """
-    indirection: Optional[IndirectionType]
-    spec: SimpleSpecification
+    spec: Union[SimpleSpecification, IndirectSimpleSpecification]
     value: Optional[Expression]
     meta: Optional[Meta] = meta_field()
 
@@ -1581,13 +1579,47 @@ class IndirectSimpleSpecification(TypeSpecificationBase):
         POINTER TO TypeName
         REFERENCE TO TypeName
         REFERENCE TO POINTER TO TypeName
+
+    Initialization parameters such as these are parsed but otherwise ignored
+    by TwinCAT::
+
+        POINTER TO TypeName(1, 2)
+        POINTER TO TypeName(1, 2, C := 4)
     """
     indirection: Optional[IndirectionType]
     type: SimpleSpecification
+    init_parameters: Optional[List[InputParameterAssignment]]
     meta: Optional[Meta] = meta_field()
 
+    @staticmethod
+    def from_lark(
+        indirection: Optional[IndirectionType],
+        type_: SimpleSpecification,
+        init_parameters_tree: Optional[lark.Tree],
+    ) -> IndirectSimpleSpecification:
+        if init_parameters_tree is None:
+            init_parameters = None
+        else:
+            init_parameters = typing.cast(
+                List[InputParameterAssignment],
+                list(init_parameters_tree.children)
+            )
+        return IndirectSimpleSpecification(
+            indirection,
+            type_,
+            init_parameters,
+        )
+
     def __str__(self) -> str:
-        return join_if(self.indirection, " ", self.type)
+        full_type = join_if(self.indirection, " ", self.type)
+        if not self.init_parameters:
+            return full_type
+
+        initializers = ", ".join(
+            str(init)
+            for init in self.init_parameters
+        )
+        return f"{full_type}({initializers})"
 
 
 # _array_spec_type
@@ -2673,7 +2705,7 @@ class ParameterAssignment:
 
 
 @dataclass
-@_rule_handler("param_assignment")
+@_rule_handler("param_assignment", "input_param_assignment")
 class InputParameterAssignment(ParameterAssignment):
     """
     An input parameter in a function call.
