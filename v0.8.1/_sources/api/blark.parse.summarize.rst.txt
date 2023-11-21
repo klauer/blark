@@ -1,0 +1,6 @@
+﻿blark.parse.summarize
+=====================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: summarize

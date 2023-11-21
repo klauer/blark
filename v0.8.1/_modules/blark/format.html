@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.format &mdash; blark  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">blark.format</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for blark.format</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">`blark format` is a command-line utility to parse and print formatted TwinCAT3</span>
+<span class="sd">source code files.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">blark</span> <span class="kn">import</span> <span class="n">output</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">from</span> <span class="nn">.output</span> <span class="kn">import</span> <span class="n">OutputBlock</span>
+<span class="kn">from</span> <span class="nn">.parse</span> <span class="kn">import</span> <span class="n">ParseResult</span>
+<span class="kn">from</span> <span class="nn">.parse</span> <span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">parse_main</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">AnyPath</span>
+
+<span class="n">DESCRIPTION</span> <span class="o">=</span> <span class="vm">__doc__</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="build_arg_parser">
+<a class="viewcode-back" href="../../api/blark.format.build_arg_parser.html#blark.format.build_arg_parser">[docs]</a>
+<span class="k">def</span> <span class="nf">build_arg_parser</span><span class="p">(</span><span class="n">argparser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">argparser</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">argparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">DESCRIPTION</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawTextHelpFormatter</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;filename&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Path to project, solution, source code file (.tsproj, .sln, &quot;</span>
+            <span class="s2">&quot;.TcPOU, .TcGVL)&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-if&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--input-format&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output file format, if not the same as the input format&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Increase verbosity, up to -vvv&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--indent&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Single indent to reformat with&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--debug&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;On failure, still return the results tree&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Overwrite existing files&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--write-to&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Write formatted contents to this path&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">argparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-of&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output-format&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output file format, if not the same as the input format&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">argparser</span></div>
+
+
+
+<div class="viewcode-block" id="reformat_code">
+<a class="viewcode-back" href="../../api/blark.format.reformat_code.html#blark.format.reformat_code">[docs]</a>
+<span class="k">def</span> <span class="nf">reformat_code</span><span class="p">(</span>
+    <span class="n">code</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">SourceCode</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reformat the code with the provided settings.&quot;&quot;&quot;</span>
+    <span class="c1"># For anyone following at home, this is not a &quot;good&quot; formatting</span>
+    <span class="c1"># of the output - just a consistent output formatting.</span>
+    <span class="c1"># Opinionated, stylized output remains a TODO.</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="dump_source_to_console">
+<a class="viewcode-back" href="../../api/blark.format.dump_source_to_console.html#blark.format.dump_source_to_console">[docs]</a>
+<span class="k">def</span> <span class="nf">dump_source_to_console</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Output the given source to the console.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : bytes or str</span>
+<span class="sd">        The source code.</span>
+<span class="sd">    encoding : str</span>
+<span class="sd">        Encoding to use for byte strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">source</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="write_source_to_file">
+<a class="viewcode-back" href="../../api/blark.format.write_source_to_file.html#blark.format.write_source_to_file">[docs]</a>
+<span class="k">def</span> <span class="nf">write_source_to_file</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write source code to the given file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : pathlib.Path</span>
+<span class="sd">        The filename to write to.</span>
+<span class="sd">    source : bytes or str</span>
+<span class="sd">        The source code.</span>
+<span class="sd">    encoding : str</span>
+<span class="sd">        The encoding to use when writing the file.</span>
+<span class="sd">    overwrite : bool</span>
+<span class="sd">        Overwrite a file, if it exists.  Otherwise, raise ValueError.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;File would be overwritten: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;if this is OK use --overwrite&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># NOTE: if this is undesirable, make your output handler</span>
+        <span class="c1"># return bytes instead of a string</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">source</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="determine_output_filename">
+<a class="viewcode-back" href="../../api/blark.format.determine_output_filename.html#blark.format.determine_output_filename">[docs]</a>
+<span class="k">def</span> <span class="nf">determine_output_filename</span><span class="p">(</span>
+    <span class="n">input_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+    <span class="n">write_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get an output filename based on the input filename and destination path.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_filename : pathlib.Path</span>
+<span class="sd">        The file the source code comes from.</span>
+<span class="sd">    write_to : Optional[pathlib.Path]</span>
+<span class="sd">        The destination path to write to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path</span>
+<span class="sd">        The output filename to write to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">write_to</span><span class="p">:</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">write_to</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_filename</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">output_filename</span> <span class="o">/</span> <span class="n">input_filename</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">output_filename</span>
+
+    <span class="k">return</span> <span class="n">input_filename</span></div>
+
+
+
+<div class="viewcode-block" id="get_reformatted_code_blocks">
+<a class="viewcode-back" href="../../api/blark.format.get_reformatted_code_blocks.html#blark.format.get_reformatted_code_blocks">[docs]</a>
+<span class="k">def</span> <span class="nf">get_reformatted_code_blocks</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParseResult</span><span class="p">],</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">raise_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each parsed code block, generate an OutputBlock for writing to disk.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    results : List[ParseResult]</span>
+<span class="sd">        The parsed source code.</span>
+<span class="sd">    user : Any, optional</span>
+<span class="sd">        The loader used for parsing the above (may be a</span>
+<span class="sd">        `blark.plain.PlainFileLoader` or a `blark.solution.TcPOU`, for example)</span>
+<span class="sd">    filename : pathlib.Path, optional</span>
+<span class="sd">        The filename associated with the source code parts.</span>
+<span class="sd">    raise_on_error : bool</span>
+<span class="sd">        In the event of a reformatting error, raise immediately.  If False,</span>
+<span class="sd">        the original (not reformatted) source code will be used as-is.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[OutputBlock]</span>
+<span class="sd">        [TODO:description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Reformatting </span><span class="si">%d</span><span class="s2"> parse results from file </span><span class="si">%s</span><span class="s2"> by way of loader </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">formatted</span> <span class="o">=</span> <span class="n">reformat_code</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">transform</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to reformat code block for identifier </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">raise_on_error</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="n">formatted</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">source_code</span>
+
+        <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">OutputBlock</span><span class="p">(</span>
+                <span class="n">code</span><span class="o">=</span><span class="n">formatted</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="p">{},</span>  <span class="c1"># what might go here?</span>
+                <span class="n">origin</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">blocks</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/blark.format.main.html#blark.format.main">[docs]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span><span class="p">,</span>
+    <span class="n">write_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AnyPath</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">output_format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">write_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">write_to</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">write_to</span><span class="p">)</span>
+
+    <span class="n">result_by_filename</span> <span class="o">=</span> <span class="n">parse_main</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>  <span class="c1"># deprecated</span>
+        <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="n">interactive</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">FormatSettings</span><span class="p">(</span>
+        <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">configure_formatting</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">group_by_user_loader</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ParseResult</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Group all ParseResults by their loader (or &quot;user&quot; defined wrapper.)</span>
+
+<span class="sd">        This grouping ensures that things like POUs (which may contain multiple</span>
+<span class="sd">        actions, methods, and properties stored in different parts of a source</span>
+<span class="sd">        file) have their rewrite stage happen in two steps: (1) reformat and</span>
+<span class="sd">        then rewrite all disjoint parts of the source and (2) write the final</span>
+<span class="sd">        results to the user-specified destination.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">by_loader_obj</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">last_user</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+        <span class="n">last_filename</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+        <span class="n">current_group</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="n">result_by_filename</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="n">user</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">user</span>
+                <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">last_user</span> <span class="ow">or</span> <span class="n">res</span><span class="o">.</span><span class="n">filename</span> <span class="o">!=</span> <span class="n">last_filename</span><span class="p">:</span>
+                    <span class="n">current_group</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">]</span>
+                    <span class="n">by_loader_obj</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">user</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">current_group</span><span class="p">))</span>
+                    <span class="n">last_user</span> <span class="o">=</span> <span class="n">user</span>
+                    <span class="n">last_filename</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">filename</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">current_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">by_loader_obj</span>
+
+    <span class="k">for</span> <span class="n">user</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="n">group_by_user_loader</span><span class="p">():</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="n">get_reformatted_code_blocks</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">blocks</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Default to &#39;output format&#39; if specified</span>
+        <span class="c1"># Fall back to writing to the user-provided input format</span>
+        <span class="c1"># Finally try to detect the input format to determine the output format</span>
+        <span class="n">output_handler</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">get_handler_by_name</span><span class="p">(</span>
+           <span class="n">output_format</span> <span class="ow">or</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">suffix</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Chose output handler </span><span class="si">%s</span><span class="s2"> based on </span><span class="si">%r</span><span class="s2"> -&gt; </span><span class="si">%r</span><span class="s2"> -&gt; </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="n">output_handler</span><span class="p">,</span>
+            <span class="n">output_format</span><span class="p">,</span>
+            <span class="n">input_format</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Possibilities:</span>
+        <span class="c1"># 1. Save to same file in same format (--overwrite)</span>
+        <span class="c1"># 2. Save to different file/directory in same format (--write-to)</span>
+        <span class="c1"># 3. Save to different file in different format (--output-format, --write-to)</span>
+        <span class="c1"># 4. Save to same file in different format (--output-format xyz, --overwrite)</span>
+
+        <span class="c1"># For now, we&#39;ll only *really* support cases (1) and (2)</span>
+        <span class="c1"># Exceptions:</span>
+        <span class="c1"># - Allow anything-&gt;plain conversion because it&#39;s easy.</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output_contents</span> <span class="o">=</span> <span class="n">output_handler</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">blocks</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to transform output for handler </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">output_format</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">write_to</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="n">dump_source_to_console</span><span class="p">(</span><span class="n">output_contents</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">determine_output_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">write_to</span><span class="p">)</span>
+        <span class="n">write_source_to_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">output_contents</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result_by_filename</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

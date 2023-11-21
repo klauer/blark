@@ -1,0 +1,54 @@
+﻿blark.transform.StatementList
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StatementList
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``statement_list``
+
+   .. code::
+
+     statement_list: _statement+ end_of_statement_list_label?
+
+   
+   ``case_element_statement_list``
+
+   .. code::
+
+     case_element_statement_list: _case_element_statement+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StatementList.__init__
+       ~StatementList.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StatementList.meta
+       ~StatementList.statements
+   

@@ -1,0 +1,6 @@
+﻿blark.util.get\_grammar\_for\_rule
+==================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: get_grammar_for_rule

@@ -1,0 +1,47 @@
+﻿blark.sphinxdomain.TypeDirective
+================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: TypeDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TypeDirective.config
+       ~TypeDirective.doc_field_types
+       ~TypeDirective.domain
+       ~TypeDirective.env
+       ~TypeDirective.final_argument_whitespace
+       ~TypeDirective.has_content
+       ~TypeDirective.indexnode
+       ~TypeDirective.objtype
+       ~TypeDirective.option_spec
+       ~TypeDirective.optional_arguments
+       ~TypeDirective.required_arguments
+       ~TypeDirective.signature_prefix
+       ~TypeDirective.obj
+       ~TypeDirective.name
+       ~TypeDirective.rawtext
+       ~TypeDirective.text
+       ~TypeDirective.lineno
+       ~TypeDirective.options
+       ~TypeDirective.content
+   

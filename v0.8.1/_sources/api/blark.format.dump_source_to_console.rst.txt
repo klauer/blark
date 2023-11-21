@@ -1,0 +1,6 @@
+﻿blark.format.dump\_source\_to\_console
+======================================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: dump_source_to_console

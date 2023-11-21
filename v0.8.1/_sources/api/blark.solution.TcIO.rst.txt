@@ -1,0 +1,42 @@
+﻿blark.solution.TcIO
+===================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcIO
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcIO.__init__
+       ~TcIO.create_source_child_from_xml
+       ~TcIO.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcIO.default_source_type
+       ~TcIO.file_extension
+       ~TcIO.source_type
+       ~TcIO.xml
+       ~TcIO.parts
+       ~TcIO.name
+       ~TcIO.guid
+       ~TcIO.decl
+       ~TcIO.metadata
+       ~TcIO.filename
+       ~TcIO.parent
+   

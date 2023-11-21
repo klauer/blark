@@ -1,0 +1,39 @@
+﻿blark.plain.PlainFileLoader
+===========================
+
+.. currentmodule:: blark.plain
+
+.. autoclass:: PlainFileLoader
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~PlainFileLoader.__init__
+       ~PlainFileLoader.load
+       ~PlainFileLoader.rewrite_code
+       ~PlainFileLoader.save
+       ~PlainFileLoader.save_to
+       ~PlainFileLoader.to_file_contents
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~PlainFileLoader.formatted_code
+       ~PlainFileLoader.identifier
+       ~PlainFileLoader.source_type
+       ~PlainFileLoader.filename
+       ~PlainFileLoader.raw_source
+   

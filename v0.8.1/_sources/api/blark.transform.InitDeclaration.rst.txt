@@ -1,0 +1,31 @@
+﻿blark.transform.InitDeclaration
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: InitDeclaration
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InitDeclaration.variables
+       ~InitDeclaration.init
+       ~InitDeclaration.meta
+   

@@ -1,0 +1,47 @@
+﻿blark.transform.ChainedFunctionCall
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ChainedFunctionCall
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``chained_function_call``
+
+   .. code::
+
+     chained_function_call: function_call ( "." function_call )+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ChainedFunctionCall.__init__
+       ~ChainedFunctionCall.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ChainedFunctionCall.meta
+       ~ChainedFunctionCall.invocations
+   

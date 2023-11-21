@@ -1,0 +1,6 @@
+﻿blark.solution.strip\_xml\_namespace
+====================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: strip_xml_namespace

@@ -1,0 +1,50 @@
+﻿blark.transform.InputDeclarations
+=================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: InputDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``input_declarations``
+
+   .. code::
+
+     input_declarations: "VAR_INPUT"i [ variable_attributes ] _var_input_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~InputDeclarations.__init__
+       ~InputDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InputDeclarations.attribute_pragmas
+       ~InputDeclarations.block_header
+       ~InputDeclarations.meta
+       ~InputDeclarations.attrs
+       ~InputDeclarations.items
+   

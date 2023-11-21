@@ -1,0 +1,27 @@
+﻿blark.transform.VariableSizePrefix
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableSizePrefix
+
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableSizePrefix.bit
+       ~VariableSizePrefix.byte
+       ~VariableSizePrefix.word_16
+       ~VariableSizePrefix.dword_32
+       ~VariableSizePrefix.lword_64
+   

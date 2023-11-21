@@ -1,0 +1,6 @@
+﻿blark.solution.SolutionLoaderError
+==================================
+
+.. currentmodule:: blark.solution
+
+.. autoexception:: SolutionLoaderError

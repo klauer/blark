@@ -1,0 +1,43 @@
+﻿blark.transform.AccessSpecifier
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: AccessSpecifier
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``access_specifier``
+
+   .. code::
+
+     access_specifier: ACCESS_SPECIFIER+
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~AccessSpecifier.public
+       ~AccessSpecifier.private
+       ~AccessSpecifier.abstract
+       ~AccessSpecifier.protected
+       ~AccessSpecifier.internal
+       ~AccessSpecifier.final
+   

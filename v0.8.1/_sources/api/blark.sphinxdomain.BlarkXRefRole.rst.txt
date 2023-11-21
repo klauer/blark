@@ -1,0 +1,43 @@
+﻿blark.sphinxdomain.BlarkXRefRole
+================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: BlarkXRefRole
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkXRefRole.process_link
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkXRefRole.config
+       ~BlarkXRefRole.env
+       ~BlarkXRefRole.explicit_title_re
+       ~BlarkXRefRole.has_explicit_title
+       ~BlarkXRefRole.disabled
+       ~BlarkXRefRole.title
+       ~BlarkXRefRole.target
+       ~BlarkXRefRole.name
+       ~BlarkXRefRole.rawtext
+       ~BlarkXRefRole.text
+       ~BlarkXRefRole.lineno
+       ~BlarkXRefRole.inliner
+       ~BlarkXRefRole.options
+       ~BlarkXRefRole.content
+   

@@ -1,0 +1,51 @@
+﻿blark.transform.FunctionCallStatement
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionCallStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_call_statement``
+
+   .. code::
+
+     function_call_statement: function_call ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionCallStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionCallStatement.base_type_name
+       ~FunctionCallStatement.full_type_name
+       ~FunctionCallStatement.meta
+       ~FunctionCallStatement.value
+       ~FunctionCallStatement.name
+       ~FunctionCallStatement.parameters
+       ~FunctionCallStatement.dereferenced
+   

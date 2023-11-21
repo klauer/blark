@@ -1,0 +1,50 @@
+﻿blark.transform.StaticDeclarations
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StaticDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``static_var_declarations``
+
+   .. code::
+
+     static_var_declarations: "VAR_STAT"i [ variable_attributes ] var_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StaticDeclarations.__init__
+       ~StaticDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StaticDeclarations.attribute_pragmas
+       ~StaticDeclarations.block_header
+       ~StaticDeclarations.meta
+       ~StaticDeclarations.attrs
+       ~StaticDeclarations.items
+   

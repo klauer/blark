@@ -1,0 +1,48 @@
+﻿blark.transform.AssignmentStatement
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: AssignmentStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``assignment_statement``
+
+   .. code::
+
+     assignment_statement: _variable ASSIGNMENT ( _variable ASSIGNMENT )* expression ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~AssignmentStatement.__init__
+       ~AssignmentStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~AssignmentStatement.meta
+       ~AssignmentStatement.variables
+       ~AssignmentStatement.expression
+   

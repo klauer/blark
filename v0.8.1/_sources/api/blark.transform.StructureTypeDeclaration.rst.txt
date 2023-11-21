@@ -1,0 +1,50 @@
+﻿blark.transform.StructureTypeDeclaration
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StructureTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``structure_type_declaration``
+
+   .. code::
+
+     structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StructureTypeDeclaration.__init__
+       ~StructureTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StructureTypeDeclaration.meta
+       ~StructureTypeDeclaration.name
+       ~StructureTypeDeclaration.extends
+       ~StructureTypeDeclaration.indirection
+       ~StructureTypeDeclaration.declarations
+   

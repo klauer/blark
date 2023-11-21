@@ -1,0 +1,6 @@
+﻿blark.solution.get\_blark\_input\_from\_solution
+================================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_blark_input_from_solution

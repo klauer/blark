@@ -1,0 +1,6 @@
+﻿blark.util.tree\_to\_xml\_source
+================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: tree_to_xml_source

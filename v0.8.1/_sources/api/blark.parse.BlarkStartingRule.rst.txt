@@ -1,0 +1,33 @@
+﻿blark.parse.BlarkStartingRule
+=============================
+
+.. currentmodule:: blark.parse
+
+.. autoclass:: BlarkStartingRule
+
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkStartingRule.iec_source
+       ~BlarkStartingRule.action
+       ~BlarkStartingRule.data_type_declaration
+       ~BlarkStartingRule.function_block_method_declaration
+       ~BlarkStartingRule.function_block_property_declaration
+       ~BlarkStartingRule.function_block_type_declaration
+       ~BlarkStartingRule.function_declaration
+       ~BlarkStartingRule.global_var_declarations
+       ~BlarkStartingRule.interface_declaration
+       ~BlarkStartingRule.program_declaration
+       ~BlarkStartingRule.statement_list
+   

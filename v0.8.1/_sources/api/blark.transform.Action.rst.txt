@@ -1,0 +1,48 @@
+﻿blark.transform.Action
+======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Action
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``action``
+
+   .. code::
+
+     action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Action.__init__
+       ~Action.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Action.meta
+       ~Action.name
+       ~Action.body
+   

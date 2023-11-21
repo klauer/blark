@@ -1,0 +1,35 @@
+﻿blark.dependency\_store.DependencyStoreLibrary
+==============================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autoclass:: DependencyStoreLibrary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DependencyStoreLibrary.__init__
+       ~DependencyStoreLibrary.get_latest_version_path
+       ~DependencyStoreLibrary.get_project_filename
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DependencyStoreLibrary.name
+       ~DependencyStoreLibrary.versioned
+       ~DependencyStoreLibrary.path
+       ~DependencyStoreLibrary.project
+   

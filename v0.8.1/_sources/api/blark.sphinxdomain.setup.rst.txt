@@ -1,0 +1,6 @@
+﻿blark.sphinxdomain.setup
+========================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autofunction:: setup

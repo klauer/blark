@@ -1,0 +1,41 @@
+﻿blark.solution.TwincatPlcProject
+================================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TwincatPlcProject
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TwincatPlcProject.__init__
+       ~TwincatPlcProject.from_filename
+       ~TwincatPlcProject.from_project_xml
+       ~TwincatPlcProject.from_standalone_xml
+       ~TwincatPlcProject.from_xti_filename
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TwincatPlcProject.file_extension
+       ~TwincatPlcProject.name
+       ~TwincatPlcProject.guid
+       ~TwincatPlcProject.xti_path
+       ~TwincatPlcProject.plcproj_path
+       ~TwincatPlcProject.properties
+       ~TwincatPlcProject.dependencies
+       ~TwincatPlcProject.sources
+   

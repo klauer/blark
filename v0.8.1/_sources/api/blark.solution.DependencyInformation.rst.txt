@@ -1,0 +1,33 @@
+﻿blark.solution.DependencyInformation
+====================================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: DependencyInformation
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DependencyInformation.__init__
+       ~DependencyInformation.from_xml
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DependencyInformation.default
+       ~DependencyInformation.resolution
+       ~DependencyInformation.name
+   

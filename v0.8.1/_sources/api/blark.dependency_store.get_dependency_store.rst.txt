@@ -1,0 +1,6 @@
+﻿blark.dependency\_store.get\_dependency\_store
+==============================================
+
+.. currentmodule:: blark.dependency_store
+
+.. autofunction:: get_dependency_store

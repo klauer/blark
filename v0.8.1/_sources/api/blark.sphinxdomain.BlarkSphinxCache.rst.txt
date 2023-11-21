@@ -1,0 +1,33 @@
+﻿blark.sphinxdomain.BlarkSphinxCache
+===================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: BlarkSphinxCache
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkSphinxCache.__init__
+       ~BlarkSphinxCache.configure
+       ~BlarkSphinxCache.find_by_name
+       ~BlarkSphinxCache.instance
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkSphinxCache.cache
+   

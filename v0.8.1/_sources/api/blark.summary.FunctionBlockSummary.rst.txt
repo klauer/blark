@@ -1,0 +1,46 @@
+﻿blark.summary.FunctionBlockSummary
+==================================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: FunctionBlockSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionBlockSummary.__init__
+       ~FunctionBlockSummary.from_function_block
+       ~FunctionBlockSummary.squash_base_extends
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionBlockSummary.declarations_by_block
+       ~FunctionBlockSummary.implementation
+       ~FunctionBlockSummary.name
+       ~FunctionBlockSummary.source_code
+       ~FunctionBlockSummary.item
+       ~FunctionBlockSummary.extends
+       ~FunctionBlockSummary.squashed
+       ~FunctionBlockSummary.declarations
+       ~FunctionBlockSummary.actions
+       ~FunctionBlockSummary.methods
+       ~FunctionBlockSummary.properties
+       ~FunctionBlockSummary.comments
+       ~FunctionBlockSummary.pragmas
+       ~FunctionBlockSummary.filename
+       ~FunctionBlockSummary.meta
+   

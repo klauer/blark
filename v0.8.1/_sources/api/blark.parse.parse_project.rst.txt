@@ -1,0 +1,6 @@
+﻿blark.parse.parse\_project
+==========================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: parse_project

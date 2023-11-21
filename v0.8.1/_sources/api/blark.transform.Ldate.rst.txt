@@ -1,0 +1,50 @@
+﻿blark.transform.Ldate
+=====================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Ldate
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``ldate``
+
+   .. code::
+
+     ldate: "LDATE"i "#" _date_literal
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Ldate.__init__
+       ~Ldate.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Ldate.meta
+       ~Ldate.value
+       ~Ldate.year
+       ~Ldate.month
+       ~Ldate.day
+   

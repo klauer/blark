@@ -1,0 +1,41 @@
+﻿blark.solution.TcDUT
+====================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcDUT
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcDUT.__init__
+       ~TcDUT.rewrite_code
+       ~TcDUT.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcDUT.default_source_type
+       ~TcDUT.file_extension
+       ~TcDUT.source_type
+       ~TcDUT.xml
+       ~TcDUT.name
+       ~TcDUT.guid
+       ~TcDUT.decl
+       ~TcDUT.metadata
+       ~TcDUT.filename
+       ~TcDUT.parent
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.PartialSubrange
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: PartialSubrange
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``subrange``
+
+   .. code::
+
+     subrange: expression ".." expression
+             | "*"                        -> full_subrange
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~PartialSubrange.__init__
+       ~PartialSubrange.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~PartialSubrange.meta
+       ~PartialSubrange.start
+       ~PartialSubrange.stop
+   

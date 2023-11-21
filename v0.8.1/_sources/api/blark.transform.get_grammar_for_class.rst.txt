@@ -1,0 +1,6 @@
+﻿blark.transform.get\_grammar\_for\_class
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autofunction:: get_grammar_for_class

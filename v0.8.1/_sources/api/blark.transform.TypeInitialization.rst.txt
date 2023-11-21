@@ -1,0 +1,51 @@
+﻿blark.transform.TypeInitialization
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TypeInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``simple_spec_init``
+
+   .. code::
+
+     simple_spec_init: ( simple_specification | indirect_simple_specification ) [ ":=" expression ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TypeInitialization.__init__
+       ~TypeInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TypeInitialization.base_type_name
+       ~TypeInitialization.full_type_name
+       ~TypeInitialization.meta
+       ~TypeInitialization.type_info
+       ~TypeInitialization.spec
+       ~TypeInitialization.value
+   

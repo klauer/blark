@@ -1,0 +1,52 @@
+﻿blark.transform.EnumeratedTypeInitialization
+============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: EnumeratedTypeInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``enumerated_spec_init``
+
+   .. code::
+
+     enumerated_spec_init: [ indirection_type ] enumerated_specification [ ":=" enumerated_value ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~EnumeratedTypeInitialization.__init__
+       ~EnumeratedTypeInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~EnumeratedTypeInitialization.base_type_name
+       ~EnumeratedTypeInitialization.full_type_name
+       ~EnumeratedTypeInitialization.meta
+       ~EnumeratedTypeInitialization.type_info
+       ~EnumeratedTypeInitialization.indirection
+       ~EnumeratedTypeInitialization.spec
+       ~EnumeratedTypeInitialization.value
+   

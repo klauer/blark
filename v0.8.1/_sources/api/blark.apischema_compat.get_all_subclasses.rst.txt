@@ -1,0 +1,6 @@
+﻿blark.apischema\_compat.get\_all\_subclasses
+============================================
+
+.. currentmodule:: blark.apischema_compat
+
+.. autofunction:: get_all_subclasses

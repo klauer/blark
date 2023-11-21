@@ -1,0 +1,53 @@
+﻿blark.transform.StructureElementDeclaration
+===========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StructureElementDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``structure_element_declaration``
+
+   .. code::
+
+     structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init | function_call )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StructureElementDeclaration.__init__
+       ~StructureElementDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StructureElementDeclaration.base_type_name
+       ~StructureElementDeclaration.full_type_name
+       ~StructureElementDeclaration.meta
+       ~StructureElementDeclaration.value
+       ~StructureElementDeclaration.variables
+       ~StructureElementDeclaration.name
+       ~StructureElementDeclaration.location
+       ~StructureElementDeclaration.init
+   

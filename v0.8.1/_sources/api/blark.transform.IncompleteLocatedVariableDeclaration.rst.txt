@@ -1,0 +1,49 @@
+﻿blark.transform.IncompleteLocatedVariableDeclaration
+====================================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: IncompleteLocatedVariableDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``incomplete_located_var_decl``
+
+   .. code::
+
+     incomplete_located_var_decl: variable_name incomplete_location ":" var_spec ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~IncompleteLocatedVariableDeclaration.__init__
+       ~IncompleteLocatedVariableDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~IncompleteLocatedVariableDeclaration.meta
+       ~IncompleteLocatedVariableDeclaration.name
+       ~IncompleteLocatedVariableDeclaration.location
+       ~IncompleteLocatedVariableDeclaration.init
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.ResetStatement
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ResetStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``reset_statement``
+
+   .. code::
+
+     reset_statement: _variable RESET_ASSIGNMENT expression ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ResetStatement.__init__
+       ~ResetStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ResetStatement.meta
+       ~ResetStatement.variable
+       ~ResetStatement.op
+       ~ResetStatement.expression
+   

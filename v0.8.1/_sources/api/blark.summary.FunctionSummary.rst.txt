@@ -1,0 +1,41 @@
+﻿blark.summary.FunctionSummary
+=============================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: FunctionSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionSummary.__init__
+       ~FunctionSummary.from_function
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionSummary.declarations_by_block
+       ~FunctionSummary.implementation
+       ~FunctionSummary.name
+       ~FunctionSummary.item
+       ~FunctionSummary.return_type
+       ~FunctionSummary.source_code
+       ~FunctionSummary.declarations
+       ~FunctionSummary.comments
+       ~FunctionSummary.pragmas
+       ~FunctionSummary.filename
+       ~FunctionSummary.meta
+   

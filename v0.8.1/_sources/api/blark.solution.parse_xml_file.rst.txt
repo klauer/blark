@@ -1,0 +1,6 @@
+﻿blark.solution.parse\_xml\_file
+===============================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: parse_xml_file

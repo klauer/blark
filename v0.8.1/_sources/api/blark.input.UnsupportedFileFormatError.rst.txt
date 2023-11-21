@@ -1,0 +1,6 @@
+﻿blark.input.UnsupportedFileFormatError
+======================================
+
+.. currentmodule:: blark.input
+
+.. autoexception:: UnsupportedFileFormatError

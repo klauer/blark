@@ -1,0 +1,47 @@
+﻿blark.sphinxdomain.ProgramDirective
+===================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: ProgramDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ProgramDirective.config
+       ~ProgramDirective.doc_field_types
+       ~ProgramDirective.domain
+       ~ProgramDirective.env
+       ~ProgramDirective.final_argument_whitespace
+       ~ProgramDirective.has_content
+       ~ProgramDirective.indexnode
+       ~ProgramDirective.objtype
+       ~ProgramDirective.option_spec
+       ~ProgramDirective.optional_arguments
+       ~ProgramDirective.required_arguments
+       ~ProgramDirective.signature_prefix
+       ~ProgramDirective.obj
+       ~ProgramDirective.name
+       ~ProgramDirective.rawtext
+       ~ProgramDirective.text
+       ~ProgramDirective.lineno
+       ~ProgramDirective.options
+       ~ProgramDirective.content
+   

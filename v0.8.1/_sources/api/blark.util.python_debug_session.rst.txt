@@ -1,0 +1,6 @@
+﻿blark.util.python\_debug\_session
+=================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: python_debug_session

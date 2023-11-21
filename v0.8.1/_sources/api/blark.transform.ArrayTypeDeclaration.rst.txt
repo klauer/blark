@@ -1,0 +1,48 @@
+﻿blark.transform.ArrayTypeDeclaration
+====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ArrayTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``array_type_declaration``
+
+   .. code::
+
+     array_type_declaration: array_type_name ":" array_spec_init
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ArrayTypeDeclaration.__init__
+       ~ArrayTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ArrayTypeDeclaration.meta
+       ~ArrayTypeDeclaration.name
+       ~ArrayTypeDeclaration.init
+   

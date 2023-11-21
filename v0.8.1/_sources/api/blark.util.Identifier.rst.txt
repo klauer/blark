@@ -1,0 +1,34 @@
+﻿blark.util.Identifier
+=====================
+
+.. currentmodule:: blark.util
+
+.. autoclass:: Identifier
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Identifier.__init__
+       ~Identifier.from_string
+       ~Identifier.to_string
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Identifier.decl_impl
+       ~Identifier.dotted_name
+       ~Identifier.parts
+   

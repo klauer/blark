@@ -1,0 +1,23 @@
+﻿blark.transform.ParameterAssignment
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ParameterAssignment
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   

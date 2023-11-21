@@ -1,0 +1,48 @@
+﻿blark.transform.ArrayVariableInitDeclaration
+============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ArrayVariableInitDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``array_var_init_decl``
+
+   .. code::
+
+     array_var_init_decl: var1_list ":" array_spec_init
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ArrayVariableInitDeclaration.__init__
+       ~ArrayVariableInitDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ArrayVariableInitDeclaration.meta
+       ~ArrayVariableInitDeclaration.variables
+       ~ArrayVariableInitDeclaration.init
+   

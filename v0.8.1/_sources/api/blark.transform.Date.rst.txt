@@ -1,0 +1,50 @@
+﻿blark.transform.Date
+====================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Date
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``date``
+
+   .. code::
+
+     date: ( "DATE"i | "D"i | "d"i ) "#" _date_literal
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Date.__init__
+       ~Date.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Date.meta
+       ~Date.value
+       ~Date.year
+       ~Date.month
+       ~Date.day
+   

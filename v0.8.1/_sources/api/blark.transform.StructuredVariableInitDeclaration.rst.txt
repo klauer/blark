@@ -1,0 +1,48 @@
+﻿blark.transform.StructuredVariableInitDeclaration
+=================================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StructuredVariableInitDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``structured_var_init_decl``
+
+   .. code::
+
+     structured_var_init_decl: var1_list ":" initialized_structure
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StructuredVariableInitDeclaration.__init__
+       ~StructuredVariableInitDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StructuredVariableInitDeclaration.meta
+       ~StructuredVariableInitDeclaration.variables
+       ~StructuredVariableInitDeclaration.init
+   

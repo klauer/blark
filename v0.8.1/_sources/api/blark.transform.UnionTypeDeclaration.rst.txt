@@ -1,0 +1,48 @@
+﻿blark.transform.UnionTypeDeclaration
+====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: UnionTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``union_type_declaration``
+
+   .. code::
+
+     union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~UnionTypeDeclaration.__init__
+       ~UnionTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~UnionTypeDeclaration.meta
+       ~UnionTypeDeclaration.name
+       ~UnionTypeDeclaration.declarations
+   

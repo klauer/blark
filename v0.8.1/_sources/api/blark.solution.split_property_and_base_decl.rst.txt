@@ -1,0 +1,6 @@
+﻿blark.solution.split\_property\_and\_base\_decl
+===============================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: split_property_and_base_decl

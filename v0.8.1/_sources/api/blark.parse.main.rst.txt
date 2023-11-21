@@ -1,0 +1,6 @@
+﻿blark.parse.main
+================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: main

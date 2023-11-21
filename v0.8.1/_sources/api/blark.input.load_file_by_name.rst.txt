@@ -1,0 +1,6 @@
+﻿blark.input.load\_file\_by\_name
+================================
+
+.. currentmodule:: blark.input
+
+.. autofunction:: load_file_by_name

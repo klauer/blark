@@ -1,0 +1,6 @@
+﻿blark.apischema\_compat.alternative\_constructor
+================================================
+
+.. currentmodule:: blark.apischema_compat
+
+.. autofunction:: alternative_constructor

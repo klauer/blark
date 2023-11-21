@@ -1,0 +1,51 @@
+﻿blark.transform.DeclaredVariable
+================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: DeclaredVariable
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``var1``
+
+   .. code::
+
+     var1: variable_name [ location ]
+         | variable_name [ incomplete_location ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DeclaredVariable.__init__
+       ~DeclaredVariable.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DeclaredVariable.dereferenced
+       ~DeclaredVariable.meta
+       ~DeclaredVariable.name
+       ~DeclaredVariable.variable
+       ~DeclaredVariable.location
+   

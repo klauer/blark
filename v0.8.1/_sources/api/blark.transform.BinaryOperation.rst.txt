@@ -1,0 +1,112 @@
+﻿blark.transform.BinaryOperation
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: BinaryOperation
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``expression``
+
+   .. code::
+
+     expression: assignment_expression ( ASSIGNMENT assignment_expression )*
+
+   
+   ``add_expression``
+
+   .. code::
+
+     add_expression: expression_term ( ADD_OPERATOR expression_term )*
+
+   
+   ``and_expression``
+
+   .. code::
+
+     and_expression: comparison_expression ( LOGICAL_AND comparison_expression )*
+
+   
+   ``and_then_expression``
+
+   .. code::
+
+     and_then_expression: xor_expression ( LOGICAL_OR xor_expression )*
+
+   
+   ``or_else_expression``
+
+   .. code::
+
+     or_else_expression: and_then_expression ( LOGICAL_AND_THEN and_then_expression )*
+
+   
+   ``assignment_expression``
+
+   .. code::
+
+     assignment_expression: or_else_expression ( LOGICAL_OR_ELSE or_else_expression )*
+
+   
+   ``xor_expression``
+
+   .. code::
+
+     xor_expression: and_expression ( LOGICAL_XOR and_expression )*
+
+   
+   ``comparison_expression``
+
+   .. code::
+
+     comparison_expression: equality_expression ( EQUALS_OP equality_expression )*
+
+   
+   ``equality_expression``
+
+   .. code::
+
+     equality_expression: add_expression ( COMPARE_OP add_expression )*
+
+   
+   ``expression_term``
+
+   .. code::
+
+     expression_term: unary_expression ( MULTIPLY_OPERATOR unary_expression )*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BinaryOperation.__init__
+       ~BinaryOperation.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BinaryOperation.meta
+       ~BinaryOperation.left
+       ~BinaryOperation.op
+       ~BinaryOperation.right
+   

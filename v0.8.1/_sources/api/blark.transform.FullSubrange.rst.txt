@@ -1,0 +1,30 @@
+﻿blark.transform.FullSubrange
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FullSubrange
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FullSubrange.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FullSubrange.meta
+   

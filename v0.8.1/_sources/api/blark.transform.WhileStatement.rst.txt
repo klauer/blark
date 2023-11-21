@@ -1,0 +1,48 @@
+﻿blark.transform.WhileStatement
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: WhileStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``while_statement``
+
+   .. code::
+
+     while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~WhileStatement.__init__
+       ~WhileStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~WhileStatement.meta
+       ~WhileStatement.expression
+       ~WhileStatement.statements
+   

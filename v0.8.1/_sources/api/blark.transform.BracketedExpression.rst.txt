@@ -1,0 +1,47 @@
+﻿blark.transform.BracketedExpression
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: BracketedExpression
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``bracketed_expression``
+
+   .. code::
+
+     bracketed_expression: "[" expression "]"
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BracketedExpression.__init__
+       ~BracketedExpression.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BracketedExpression.meta
+       ~BracketedExpression.expression
+   

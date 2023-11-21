@@ -1,0 +1,34 @@
+﻿blark.html.HighlighterAnnotation
+================================
+
+.. currentmodule:: blark.html
+
+.. autoclass:: HighlighterAnnotation
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~HighlighterAnnotation.__init__
+       ~HighlighterAnnotation.as_string
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~HighlighterAnnotation.name
+       ~HighlighterAnnotation.terminal
+       ~HighlighterAnnotation.is_open_tag
+       ~HighlighterAnnotation.other_tag_pos
+   

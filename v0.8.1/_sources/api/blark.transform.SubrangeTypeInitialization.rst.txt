@@ -1,0 +1,52 @@
+﻿blark.transform.SubrangeTypeInitialization
+==========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SubrangeTypeInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``subrange_spec_init``
+
+   .. code::
+
+     subrange_spec_init: [ indirection_type ] subrange_specification [ ":=" expression ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SubrangeTypeInitialization.__init__
+       ~SubrangeTypeInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SubrangeTypeInitialization.base_type_name
+       ~SubrangeTypeInitialization.full_type_name
+       ~SubrangeTypeInitialization.meta
+       ~SubrangeTypeInitialization.type_info
+       ~SubrangeTypeInitialization.value
+       ~SubrangeTypeInitialization.indirection
+       ~SubrangeTypeInitialization.spec
+   

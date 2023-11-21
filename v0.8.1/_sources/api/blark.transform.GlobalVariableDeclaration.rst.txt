@@ -1,0 +1,52 @@
+﻿blark.transform.GlobalVariableDeclaration
+=========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: GlobalVariableDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``global_var_decl``
+
+   .. code::
+
+     global_var_decl: global_var_spec ":" ( _located_var_spec_init | function_call ) ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GlobalVariableDeclaration.__init__
+       ~GlobalVariableDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GlobalVariableDeclaration.base_type_name
+       ~GlobalVariableDeclaration.full_type_name
+       ~GlobalVariableDeclaration.location
+       ~GlobalVariableDeclaration.meta
+       ~GlobalVariableDeclaration.variables
+       ~GlobalVariableDeclaration.spec
+       ~GlobalVariableDeclaration.init
+   

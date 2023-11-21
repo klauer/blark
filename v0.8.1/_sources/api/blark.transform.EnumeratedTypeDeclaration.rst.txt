@@ -1,0 +1,48 @@
+﻿blark.transform.EnumeratedTypeDeclaration
+=========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: EnumeratedTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``enumerated_type_declaration``
+
+   .. code::
+
+     enumerated_type_declaration: enumerated_type_name ":" enumerated_spec_init
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~EnumeratedTypeDeclaration.__init__
+       ~EnumeratedTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~EnumeratedTypeDeclaration.meta
+       ~EnumeratedTypeDeclaration.name
+       ~EnumeratedTypeDeclaration.init
+   

@@ -1,0 +1,6 @@
+﻿blark.solution.get\_project\_target\_netid
+==========================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_project_target_netid

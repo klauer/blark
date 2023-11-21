@@ -1,0 +1,6 @@
+﻿blark.format.main
+=================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: main
