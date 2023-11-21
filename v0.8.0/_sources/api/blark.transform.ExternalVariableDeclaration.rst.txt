@@ -1,0 +1,48 @@
+﻿blark.transform.ExternalVariableDeclaration
+===========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ExternalVariableDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``external_declaration``
+
+   .. code::
+
+     external_declaration: global_var_name ":" ( simple_specification | subrange_specification | enumerated_specification | array_specification | structure_type_name | function_block_type_name ) ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ExternalVariableDeclaration.__init__
+       ~ExternalVariableDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ExternalVariableDeclaration.meta
+       ~ExternalVariableDeclaration.name
+       ~ExternalVariableDeclaration.spec
+   

@@ -1,0 +1,40 @@
+﻿blark.solution.TcMethod
+=======================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcMethod
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcMethod.__init__
+       ~TcMethod.rewrite_code
+       ~TcMethod.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcMethod.default_source_type
+       ~TcMethod.parent
+       ~TcMethod.source_type
+       ~TcMethod.xml
+       ~TcMethod.name
+       ~TcMethod.guid
+       ~TcMethod.decl
+       ~TcMethod.metadata
+       ~TcMethod.filename
+   

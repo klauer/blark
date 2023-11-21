@@ -1,0 +1,55 @@
+﻿blark.transform.LabeledStatement
+================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: LabeledStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``labeled_statement``
+
+   .. code::
+
+     labeled_statement.1: LABEL ":" _statement
+
+   
+   ``end_of_statement_list_label``
+
+   .. code::
+
+     end_of_statement_list_label: LABEL ":"
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~LabeledStatement.__init__
+       ~LabeledStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~LabeledStatement.meta
+       ~LabeledStatement.statement
+       ~LabeledStatement.label
+   

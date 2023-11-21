@@ -1,0 +1,24 @@
+﻿blark.transform.\_FlagHelper
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: _FlagHelper
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~_FlagHelper.from_lark
+   
+   
+
+   
+   
+   

@@ -1,0 +1,40 @@
+﻿blark.transform.\_BracketedArrayInitialization
+==============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: _BracketedArrayInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``bracketed_array_initialization``
+
+   .. code::
+
+     array_initialization: "[" array_initial_element ( "," array_initial_element )* "]" -> bracketed_array_initialization
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~_BracketedArrayInitialization.__init__
+       ~_BracketedArrayInitialization.from_lark
+   
+   
+
+   
+   
+   

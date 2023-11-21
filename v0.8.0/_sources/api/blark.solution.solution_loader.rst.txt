@@ -1,0 +1,6 @@
+﻿blark.solution.solution\_loader
+===============================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: solution_loader

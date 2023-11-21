@@ -1,0 +1,48 @@
+﻿blark.transform.JumpStatement
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: JumpStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``jmp_statement``
+
+   .. code::
+
+     jmp_statement: "JMP"i LABEL ";"+
+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~JumpStatement.__init__
+       ~JumpStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~JumpStatement.meta
+       ~JumpStatement.label
+   

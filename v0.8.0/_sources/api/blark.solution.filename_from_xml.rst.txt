@@ -1,0 +1,6 @@
+﻿blark.solution.filename\_from\_xml
+==================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: filename_from_xml

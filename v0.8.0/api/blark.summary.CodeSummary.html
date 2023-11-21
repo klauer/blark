@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.summary.CodeSummary &mdash; blark  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.summary.DataTypeSummary" href="blark.summary.DataTypeSummary.html" />
+    <link rel="prev" title="blark.summary.ActionSummary" href="blark.summary.ActionSummary.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.ActionSummary.html">blark.summary.ActionSummary</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.summary.CodeSummary</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.summary.CodeSummary"><code class="docutils literal notranslate"><span class="pre">CodeSummary</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.DataTypeSummary.html">blark.summary.DataTypeSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.DeclarationSummary.html">blark.summary.DeclarationSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.FunctionBlockSummary.html">blark.summary.FunctionBlockSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.FunctionSummary.html">blark.summary.FunctionSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.GlobalVariableSummary.html">blark.summary.GlobalVariableSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.InterfaceSummary.html">blark.summary.InterfaceSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.LinkableItems.html">blark.summary.LinkableItems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.MethodSummary.html">blark.summary.MethodSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.ProgramSummary.html">blark.summary.ProgramSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.PropertyGetSetSummary.html">blark.summary.PropertyGetSetSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.PropertySummary.html">blark.summary.PropertySummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.Summary.html">blark.summary.Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.get_linkable_declarations.html">blark.summary.get_linkable_declarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.path_to_file_and_line.html">blark.summary.path_to_file_and_line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.summary.text_outline.html">blark.summary.text_outline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.summary.CodeSummary</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.summary.CodeSummary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-summary-codesummary">
+<h1>blark.summary.CodeSummary<a class="headerlink" href="#blark-summary-codesummary" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.summary.</span></span><span class="sig-name descname"><span class="pre">CodeSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">functions:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.FunctionSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_blocks:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.FunctionBlockSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_types:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.DataTypeSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">programs:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.ProgramSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">globals:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.GlobalVariableSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interfaces:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.InterfaceSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Summary representation of a set of code - functions, function blocks, etc.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.__init__" title="blark.summary.CodeSummary.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([functions, function_blocks, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.append" title="blark.summary.CodeSummary.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a>(other[, namespace])</p></td>
+<td><p>In-place add code summary information from another instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.find" title="blark.summary.CodeSummary.find"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find</span></code></a>(name)</p></td>
+<td><p>Find a declaration or other item by its qualified name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.find_code_object_by_dotted_name" title="blark.summary.CodeSummary.find_code_object_by_dotted_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_code_object_by_dotted_name</span></code></a>(name)</p></td>
+<td><p>Given a qualified code object name, find its Summary object(s).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.find_path" title="blark.summary.CodeSummary.find_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_path</span></code></a>(name[, allow_partial])</p></td>
+<td><p>Given a qualified variable name, find the path of CodeSummary objects top-down.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.from_parse_results" title="blark.summary.CodeSummary.from_parse_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_parse_results</span></code></a>(all_parsed_items[, squash])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.get_all_items_by_name" title="blark.summary.CodeSummary.get_all_items_by_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_items_by_name</span></code></a>(name)</p></td>
+<td><p>Get any code item (function, data type, global variable, etc.) by name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.get_item_by_name" title="blark.summary.CodeSummary.get_item_by_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_item_by_name</span></code></a>(name)</p></td>
+<td><p>Get a single code item (function, data type, global variable, etc.) by name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.squash" title="blark.summary.CodeSummary.squash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">squash</span></code></a>()</p></td>
+<td><p>Squash derived interfaces/etc to include base summaries.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.functions" title="blark.summary.CodeSummary.functions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">functions</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.function_blocks" title="blark.summary.CodeSummary.function_blocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">function_blocks</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.data_types" title="blark.summary.CodeSummary.data_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_types</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.programs" title="blark.summary.CodeSummary.programs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">programs</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.globals" title="blark.summary.CodeSummary.globals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">globals</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.summary.CodeSummary.interfaces" title="blark.summary.CodeSummary.interfaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interfaces</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.functions">
+<span class="sig-name descname"><span class="pre">functions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.functions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.function_blocks">
+<span class="sig-name descname"><span class="pre">function_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.function_blocks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.data_types">
+<span class="sig-name descname"><span class="pre">data_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.data_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.programs">
+<span class="sig-name descname"><span class="pre">programs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.programs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.globals">
+<span class="sig-name descname"><span class="pre">globals</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.globals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.interfaces">
+<span class="sig-name descname"><span class="pre">interfaces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#blark.summary.CodeSummary.interfaces" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.find">
+<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DeclarationSummary.html#blark.summary.DeclarationSummary" title="blark.summary.DeclarationSummary"><span class="pre">DeclarationSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.MethodSummary.html#blark.summary.MethodSummary" title="blark.summary.MethodSummary"><span class="pre">MethodSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertySummary.html#blark.summary.PropertySummary" title="blark.summary.PropertySummary"><span class="pre">PropertySummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ActionSummary.html#blark.summary.ActionSummary" title="blark.summary.ActionSummary"><span class="pre">ActionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertyGetSetSummary.html#blark.summary.PropertyGetSetSummary" title="blark.summary.PropertyGetSetSummary"><span class="pre">PropertyGetSetSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.find"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.find" title="Link to this definition"></a></dt>
+<dd><p>Find a declaration or other item by its qualified name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.find_path">
+<span class="sig-name descname"><span class="pre">find_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_partial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DeclarationSummary.html#blark.summary.DeclarationSummary" title="blark.summary.DeclarationSummary"><span class="pre">DeclarationSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.MethodSummary.html#blark.summary.MethodSummary" title="blark.summary.MethodSummary"><span class="pre">MethodSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertySummary.html#blark.summary.PropertySummary" title="blark.summary.PropertySummary"><span class="pre">PropertySummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ActionSummary.html#blark.summary.ActionSummary" title="blark.summary.ActionSummary"><span class="pre">ActionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertyGetSetSummary.html#blark.summary.PropertyGetSetSummary" title="blark.summary.PropertyGetSetSummary"><span class="pre">PropertyGetSetSummary</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.find_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.find_path" title="Link to this definition"></a></dt>
+<dd><p>Given a qualified variable name, find the path of CodeSummary objects top-down.</p>
+<p>For example, a variable declared in a function block would return a
+list containing the FunctionBlockSummary and then the
+DeclarationSummary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The qualified (“dotted”) variable name to find.</p>
+</dd>
+<dt><strong>allow_partial</strong><span class="classifier">bool, optional</span></dt><dd><p>If an attribute is missing along the way, return the partial
+path that was found.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>list of CodeSummaryType or None</dt><dd><p>The full path to the given object.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.find_code_object_by_dotted_name">
+<span class="sig-name descname"><span class="pre">find_code_object_by_dotted_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DeclarationSummary.html#blark.summary.DeclarationSummary" title="blark.summary.DeclarationSummary"><span class="pre">DeclarationSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.MethodSummary.html#blark.summary.MethodSummary" title="blark.summary.MethodSummary"><span class="pre">MethodSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertySummary.html#blark.summary.PropertySummary" title="blark.summary.PropertySummary"><span class="pre">PropertySummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ActionSummary.html#blark.summary.ActionSummary" title="blark.summary.ActionSummary"><span class="pre">ActionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.PropertyGetSetSummary.html#blark.summary.PropertyGetSetSummary" title="blark.summary.PropertyGetSetSummary"><span class="pre">PropertyGetSetSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.find_code_object_by_dotted_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.find_code_object_by_dotted_name" title="Link to this definition"></a></dt>
+<dd><p>Given a qualified code object name, find its Summary object(s).</p>
+<p>This works to find CodeSummary objects such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FB_Block</span><span class="o">.</span><span class="n">ActionName</span>
+<span class="n">FB_Block</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">get</span>
+<span class="n">FB_Block</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">set</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.get_all_items_by_name">
+<span class="sig-name descname"><span class="pre">get_all_items_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.12)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.get_all_items_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.get_all_items_by_name" title="Link to this definition"></a></dt>
+<dd><p>Get any code item (function, data type, global variable, etc.) by name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.get_item_by_name">
+<span class="sig-name descname"><span class="pre">get_item_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><span class="pre">FunctionSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><span class="pre">FunctionBlockSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><span class="pre">DataTypeSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><span class="pre">ProgramSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><span class="pre">InterfaceSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><span class="pre">GlobalVariableSummary</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.get_item_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.get_item_by_name" title="Link to this definition"></a></dt>
+<dd><p>Get a single code item (function, data type, global variable, etc.) by name.</p>
+<p>Does not handle scenarios where names are shadowed by other
+declarations.  The first one found will take precedence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#blark.summary.CodeSummary" title="blark.summary.CodeSummary"><span class="pre">CodeSummary</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.append"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.append" title="Link to this definition"></a></dt>
+<dd><p>In-place add code summary information from another instance.</p>
+<p>New entries take precedence over old ones.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.from_parse_results">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_parsed_items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.parse.ParseResult.html#blark.parse.ParseResult" title="blark.parse.ParseResult"><span class="pre">ParseResult</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blark.parse.ParseResult.html#blark.parse.ParseResult" title="blark.parse.ParseResult"><span class="pre">ParseResult</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#blark.summary.CodeSummary" title="blark.summary.CodeSummary"><span class="pre">CodeSummary</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.from_parse_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.from_parse_results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.squash">
+<span class="sig-name descname"><span class="pre">squash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/summary.html#CodeSummary.squash"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.summary.CodeSummary.squash" title="Link to this definition"></a></dt>
+<dd><p>Squash derived interfaces/etc to include base summaries.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.summary.CodeSummary.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">functions:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.FunctionSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_blocks:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.FunctionBlockSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_types:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.DataTypeSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">programs:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.ProgramSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">globals:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.GlobalVariableSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interfaces:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~blark.summary.InterfaceSummary]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#blark.summary.CodeSummary.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.summary.ActionSummary.html" class="btn btn-neutral float-left" title="blark.summary.ActionSummary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.summary.DataTypeSummary.html" class="btn btn-neutral float-right" title="blark.summary.DataTypeSummary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

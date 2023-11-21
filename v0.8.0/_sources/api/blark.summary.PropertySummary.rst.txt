@@ -1,0 +1,38 @@
+﻿blark.summary.PropertySummary
+=============================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: PropertySummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~PropertySummary.__init__
+       ~PropertySummary.from_property
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~PropertySummary.name
+       ~PropertySummary.getter
+       ~PropertySummary.setter
+       ~PropertySummary.source_code
+       ~PropertySummary.comments
+       ~PropertySummary.pragmas
+       ~PropertySummary.filename
+       ~PropertySummary.meta
+   

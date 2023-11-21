@@ -1,0 +1,42 @@
+﻿blark.sphinxdomain.BlarkDomain
+==============================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: BlarkDomain
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkDomain.clear_doc
+       ~BlarkDomain.find_obj
+       ~BlarkDomain.resolve_xref
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkDomain.dangling_warnings
+       ~BlarkDomain.data_version
+       ~BlarkDomain.directives
+       ~BlarkDomain.enumerable_nodes
+       ~BlarkDomain.indices
+       ~BlarkDomain.initial_data
+       ~BlarkDomain.label
+       ~BlarkDomain.name
+       ~BlarkDomain.object_types
+       ~BlarkDomain.roles
+       ~BlarkDomain.data
+   

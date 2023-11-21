@@ -1,0 +1,49 @@
+﻿blark.transform.Integer
+=======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Integer
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``integer_literal``
+
+   .. code::
+
+     integer_literal: [ INTEGER_TYPE_NAME "#" ] any_integer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Integer.__init__
+       ~Integer.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Integer.base
+       ~Integer.meta
+       ~Integer.type_name
+       ~Integer.value
+   

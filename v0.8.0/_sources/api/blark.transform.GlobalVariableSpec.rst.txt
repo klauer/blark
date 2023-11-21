@@ -1,0 +1,49 @@
+﻿blark.transform.GlobalVariableSpec
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: GlobalVariableSpec
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``global_var_spec``
+
+   .. code::
+
+     global_var_spec: global_var_list
+                    | global_var_name (location | incomplete_location)
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GlobalVariableSpec.__init__
+       ~GlobalVariableSpec.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GlobalVariableSpec.meta
+       ~GlobalVariableSpec.variables
+       ~GlobalVariableSpec.location
+   

@@ -1,0 +1,48 @@
+﻿blark.transform.SubrangeTypeDeclaration
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SubrangeTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``subrange_type_declaration``
+
+   .. code::
+
+     subrange_type_declaration: subrange_type_name ":" subrange_spec_init
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SubrangeTypeDeclaration.__init__
+       ~SubrangeTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SubrangeTypeDeclaration.meta
+       ~SubrangeTypeDeclaration.name
+       ~SubrangeTypeDeclaration.init
+   

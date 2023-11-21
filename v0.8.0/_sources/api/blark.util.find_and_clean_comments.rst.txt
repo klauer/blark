@@ -1,0 +1,6 @@
+﻿blark.util.find\_and\_clean\_comments
+=====================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: find_and_clean_comments

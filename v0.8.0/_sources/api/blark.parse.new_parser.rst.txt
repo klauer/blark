@@ -1,0 +1,6 @@
+﻿blark.parse.new\_parser
+=======================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: new_parser

@@ -1,0 +1,48 @@
+﻿blark.transform.BinaryInteger
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: BinaryInteger
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``binary_integer``
+
+   .. code::
+
+     ?any_integer: "2#" BIT_STRING             -> binary_integer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BinaryInteger.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BinaryInteger.base
+       ~BinaryInteger.meta
+       ~BinaryInteger.type_name
+       ~BinaryInteger.value
+   

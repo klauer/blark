@@ -1,0 +1,32 @@
+﻿blark.summary.LinkableItems
+===========================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: LinkableItems
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~LinkableItems.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~LinkableItems.input
+       ~LinkableItems.output
+       ~LinkableItems.memory
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.DateTime
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: DateTime
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``date_and_time``
+
+   .. code::
+
+     date_and_time: ( "DATE_AND_TIME"i | "DT"i ) "#" _date_literal "-" _daytime
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DateTime.__init__
+       ~DateTime.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DateTime.meta
+       ~DateTime.value
+       ~DateTime.date
+       ~DateTime.time
+   

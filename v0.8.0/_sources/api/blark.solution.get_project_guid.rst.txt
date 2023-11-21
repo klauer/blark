@@ -1,0 +1,6 @@
+﻿blark.solution.get\_project\_guid
+=================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_project_guid

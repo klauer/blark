@@ -1,0 +1,6 @@
+﻿blark.format.determine\_output\_filename
+========================================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: determine_output_filename

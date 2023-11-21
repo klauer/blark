@@ -1,0 +1,6 @@
+﻿blark.summary.path\_to\_file\_and\_line
+=======================================
+
+.. currentmodule:: blark.summary
+
+.. autofunction:: path_to_file_and_line

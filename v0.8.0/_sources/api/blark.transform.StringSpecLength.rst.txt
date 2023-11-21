@@ -1,0 +1,47 @@
+﻿blark.transform.StringSpecLength
+================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StringSpecLength
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``string_spec_length``
+
+   .. code::
+
+     string_spec_length: parenthesized_expression
+                       | bracketed_expression
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StringSpecLength.__init__
+       ~StringSpecLength.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StringSpecLength.length
+   

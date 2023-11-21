@@ -1,0 +1,6 @@
+﻿blark.format.get\_reformatted\_code\_blocks
+===========================================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: get_reformatted_code_blocks

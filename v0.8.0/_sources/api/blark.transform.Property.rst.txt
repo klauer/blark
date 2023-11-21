@@ -1,0 +1,51 @@
+﻿blark.transform.Property
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Property
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_block_property_declaration``
+
+   .. code::
+
+     function_block_property_declaration: "PROPERTY"i [ access_specifier ] DOTTED_IDENTIFIER [ ":" property_return_type ] ";"* property_var_declaration* [ function_block_body ] "END_PROPERTY"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Property.__init__
+       ~Property.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Property.meta
+       ~Property.access
+       ~Property.name
+       ~Property.return_type
+       ~Property.declarations
+       ~Property.body
+   

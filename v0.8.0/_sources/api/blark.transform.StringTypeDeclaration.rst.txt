@@ -1,0 +1,50 @@
+﻿blark.transform.StringTypeDeclaration
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StringTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``string_type_declaration``
+
+   .. code::
+
+     string_type_declaration: string_type_name ":" string_type_specification [ ":=" string_literal ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StringTypeDeclaration.__init__
+       ~StringTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StringTypeDeclaration.meta
+       ~StringTypeDeclaration.type_name
+       ~StringTypeDeclaration.name
+       ~StringTypeDeclaration.string_type
+       ~StringTypeDeclaration.value
+   

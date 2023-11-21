@@ -1,0 +1,43 @@
+﻿blark.summary.ProgramSummary
+============================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: ProgramSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ProgramSummary.__init__
+       ~ProgramSummary.from_program
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ProgramSummary.declarations_by_block
+       ~ProgramSummary.implementation
+       ~ProgramSummary.name
+       ~ProgramSummary.source_code
+       ~ProgramSummary.item
+       ~ProgramSummary.declarations
+       ~ProgramSummary.actions
+       ~ProgramSummary.methods
+       ~ProgramSummary.properties
+       ~ProgramSummary.comments
+       ~ProgramSummary.pragmas
+       ~ProgramSummary.filename
+       ~ProgramSummary.meta
+   

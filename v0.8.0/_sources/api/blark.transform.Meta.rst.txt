@@ -1,0 +1,44 @@
+﻿blark.transform.Meta
+====================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Meta
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Meta.__init__
+       ~Meta.from_lark
+       ~Meta.get_comments_and_pragmas
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Meta.attribute_pragmas
+       ~Meta.column
+       ~Meta.container_column
+       ~Meta.container_end_column
+       ~Meta.container_end_line
+       ~Meta.container_line
+       ~Meta.empty
+       ~Meta.end_column
+       ~Meta.end_line
+       ~Meta.end_pos
+       ~Meta.line
+       ~Meta.start_pos
+       ~Meta.comments
+   

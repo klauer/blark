@@ -1,0 +1,55 @@
+﻿blark.transform.Lduration
+=========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Lduration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``lduration``
+
+   .. code::
+
+     lduration: ( "LTIME"i | "LT"i ) "#" [ MINUS ] _linterval
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Lduration.__init__
+       ~Lduration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Lduration.days
+       ~Lduration.hours
+       ~Lduration.meta
+       ~Lduration.microseconds
+       ~Lduration.milliseconds
+       ~Lduration.minutes
+       ~Lduration.nanoseconds
+       ~Lduration.negative
+       ~Lduration.seconds
+       ~Lduration.value
+   

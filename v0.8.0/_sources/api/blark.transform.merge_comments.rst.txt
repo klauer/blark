@@ -1,0 +1,6 @@
+﻿blark.transform.merge\_comments
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autofunction:: merge_comments

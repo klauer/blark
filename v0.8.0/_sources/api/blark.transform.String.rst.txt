@@ -1,0 +1,48 @@
+﻿blark.transform.String
+======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: String
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``string_literal``
+
+   .. code::
+
+     string_literal: SINGLE_BYTE_CHARACTER_STRING
+                   | DOUBLE_BYTE_CHARACTER_STRING
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~String.__init__
+       ~String.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~String.meta
+       ~String.value
+   

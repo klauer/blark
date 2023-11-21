@@ -1,0 +1,6 @@
+﻿blark.solution.UnsupportedSourceFileError
+=========================================
+
+.. currentmodule:: blark.solution
+
+.. autoexception:: UnsupportedSourceFileError

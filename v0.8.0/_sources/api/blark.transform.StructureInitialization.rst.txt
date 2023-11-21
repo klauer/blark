@@ -1,0 +1,47 @@
+﻿blark.transform.StructureInitialization
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StructureInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``structure_initialization``
+
+   .. code::
+
+     structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StructureInitialization.__init__
+       ~StructureInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StructureInitialization.meta
+       ~StructureInitialization.elements
+   

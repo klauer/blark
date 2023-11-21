@@ -1,0 +1,44 @@
+﻿blark.summary.InterfaceSummary
+==============================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: InterfaceSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~InterfaceSummary.__init__
+       ~InterfaceSummary.from_interface
+       ~InterfaceSummary.squash_base_extends
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InterfaceSummary.declarations_by_block
+       ~InterfaceSummary.name
+       ~InterfaceSummary.source_code
+       ~InterfaceSummary.item
+       ~InterfaceSummary.extends
+       ~InterfaceSummary.squashed
+       ~InterfaceSummary.declarations
+       ~InterfaceSummary.methods
+       ~InterfaceSummary.properties
+       ~InterfaceSummary.comments
+       ~InterfaceSummary.pragmas
+       ~InterfaceSummary.filename
+       ~InterfaceSummary.meta
+   

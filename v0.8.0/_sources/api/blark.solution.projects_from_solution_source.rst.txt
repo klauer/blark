@@ -1,0 +1,6 @@
+﻿blark.solution.projects\_from\_solution\_source
+===============================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: projects_from_solution_source

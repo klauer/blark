@@ -1,0 +1,49 @@
+﻿blark.transform.SetStatement
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SetStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``set_statement``
+
+   .. code::
+
+     set_statement: _variable SET_ASSIGNMENT expression ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SetStatement.__init__
+       ~SetStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SetStatement.meta
+       ~SetStatement.variable
+       ~SetStatement.op
+       ~SetStatement.expression
+   

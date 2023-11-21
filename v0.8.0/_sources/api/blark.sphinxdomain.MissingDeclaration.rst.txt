@@ -1,0 +1,33 @@
+﻿blark.sphinxdomain.MissingDeclaration
+=====================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: MissingDeclaration
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~MissingDeclaration.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~MissingDeclaration.name
+       ~MissingDeclaration.declarations
+       ~MissingDeclaration.declarations_by_block
+       ~MissingDeclaration.source_code
+   

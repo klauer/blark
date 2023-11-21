@@ -1,0 +1,25 @@
+﻿blark.transform.VariableLocationPrefix
+======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableLocationPrefix
+
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableLocationPrefix.input
+       ~VariableLocationPrefix.output
+       ~VariableLocationPrefix.memory
+   

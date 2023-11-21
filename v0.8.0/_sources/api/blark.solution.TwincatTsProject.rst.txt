@@ -1,0 +1,37 @@
+﻿blark.solution.TwincatTsProject
+===============================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TwincatTsProject
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TwincatTsProject.__init__
+       ~TwincatTsProject.from_filename
+       ~TwincatTsProject.from_xml
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TwincatTsProject.file_extension
+       ~TwincatTsProject.plcs_by_name
+       ~TwincatTsProject.guid
+       ~TwincatTsProject.netid
+       ~TwincatTsProject.path
+       ~TwincatTsProject.plcs
+   

@@ -1,0 +1,47 @@
+﻿blark.transform.Implements
+==========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Implements
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``implements``
+
+   .. code::
+
+     implements: "IMPLEMENTS"i DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Implements.__init__
+       ~Implements.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Implements.meta
+       ~Implements.interfaces
+   

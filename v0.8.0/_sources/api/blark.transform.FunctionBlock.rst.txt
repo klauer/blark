@@ -1,0 +1,52 @@
+﻿blark.transform.FunctionBlock
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionBlock
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_block_type_declaration``
+
+   .. code::
+
+     function_block_type_declaration: FUNCTION_BLOCK [ access_specifier ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionBlock.__init__
+       ~FunctionBlock.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionBlock.meta
+       ~FunctionBlock.name
+       ~FunctionBlock.access
+       ~FunctionBlock.extends
+       ~FunctionBlock.implements
+       ~FunctionBlock.declarations
+       ~FunctionBlock.body
+   

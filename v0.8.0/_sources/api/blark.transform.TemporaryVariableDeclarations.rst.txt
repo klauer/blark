@@ -1,0 +1,49 @@
+﻿blark.transform.TemporaryVariableDeclarations
+=============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TemporaryVariableDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``temp_var_decls``
+
+   .. code::
+
+     temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TemporaryVariableDeclarations.__init__
+       ~TemporaryVariableDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TemporaryVariableDeclarations.attribute_pragmas
+       ~TemporaryVariableDeclarations.block_header
+       ~TemporaryVariableDeclarations.meta
+       ~TemporaryVariableDeclarations.items
+   

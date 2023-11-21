@@ -1,0 +1,52 @@
+﻿blark.transform.FunctionCall
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionCall
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_call``
+
+   .. code::
+
+     function_call: symbolic_variable "(" [ param_assignment ( "," param_assignment )* ","? ] ")" DEREFERENCED?
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionCall.__init__
+       ~FunctionCall.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionCall.base_type_name
+       ~FunctionCall.full_type_name
+       ~FunctionCall.meta
+       ~FunctionCall.value
+       ~FunctionCall.name
+       ~FunctionCall.parameters
+       ~FunctionCall.dereferenced
+   

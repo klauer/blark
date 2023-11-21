@@ -1,0 +1,58 @@
+﻿blark.transform.StringTypeInitialization
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StringTypeInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``single_byte_string_spec``
+
+   .. code::
+
+     single_byte_string_spec: STRING [ string_spec_length ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
+
+   
+   ``double_byte_string_spec``
+
+   .. code::
+
+     double_byte_string_spec: WSTRING [ string_spec_length ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StringTypeInitialization.__init__
+       ~StringTypeInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StringTypeInitialization.base_type_name
+       ~StringTypeInitialization.full_type_name
+       ~StringTypeInitialization.meta
+       ~StringTypeInitialization.type_info
+       ~StringTypeInitialization.spec
+       ~StringTypeInitialization.value
+   

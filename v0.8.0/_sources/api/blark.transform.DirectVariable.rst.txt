@@ -1,0 +1,50 @@
+﻿blark.transform.DirectVariable
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: DirectVariable
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``direct_variable``
+
+   .. code::
+
+     direct_variable: "%" LOCATION_PREFIX [ SIZE_PREFIX ] INTEGER ( "." INTEGER )*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DirectVariable.__init__
+       ~DirectVariable.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DirectVariable.bits
+       ~DirectVariable.meta
+       ~DirectVariable.location_prefix
+       ~DirectVariable.location
+       ~DirectVariable.size_prefix
+   

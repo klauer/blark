@@ -1,0 +1,46 @@
+﻿blark.transform.ReturnStatement
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ReturnStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``return_statement``
+
+   .. code::
+
+     return_statement.1: "RETURN"i ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ReturnStatement.__init__
+       ~ReturnStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ReturnStatement.meta
+   

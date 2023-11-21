@@ -1,0 +1,31 @@
+﻿blark.transform.Boolean
+=======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Boolean
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Boolean.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Boolean.meta
+       ~Boolean.value
+   

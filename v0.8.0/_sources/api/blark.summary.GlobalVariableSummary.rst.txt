@@ -1,0 +1,41 @@
+﻿blark.summary.GlobalVariableSummary
+===================================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: GlobalVariableSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GlobalVariableSummary.__init__
+       ~GlobalVariableSummary.from_globals
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GlobalVariableSummary.declarations_by_block
+       ~GlobalVariableSummary.qualified_only
+       ~GlobalVariableSummary.name
+       ~GlobalVariableSummary.item
+       ~GlobalVariableSummary.source_code
+       ~GlobalVariableSummary.type
+       ~GlobalVariableSummary.declarations
+       ~GlobalVariableSummary.comments
+       ~GlobalVariableSummary.pragmas
+       ~GlobalVariableSummary.filename
+       ~GlobalVariableSummary.meta
+   

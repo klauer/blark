@@ -1,0 +1,6 @@
+﻿blark.util.try\_paths
+=====================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: try_paths

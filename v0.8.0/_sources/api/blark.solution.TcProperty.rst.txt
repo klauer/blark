@@ -1,0 +1,42 @@
+﻿blark.solution.TcProperty
+=========================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcProperty
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcProperty.__init__
+       ~TcProperty.rewrite_code
+       ~TcProperty.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcProperty.default_source_type
+       ~TcProperty.get
+       ~TcProperty.parent
+       ~TcProperty.set
+       ~TcProperty.source_type
+       ~TcProperty.xml
+       ~TcProperty.name
+       ~TcProperty.guid
+       ~TcProperty.decl
+       ~TcProperty.metadata
+       ~TcProperty.filename
+   

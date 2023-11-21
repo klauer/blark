@@ -1,0 +1,6 @@
+﻿blark.parse.parse\_source\_code
+===============================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: parse_source_code

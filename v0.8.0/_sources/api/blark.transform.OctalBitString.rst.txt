@@ -1,0 +1,48 @@
+﻿blark.transform.OctalBitString
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: OctalBitString
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``octal_bit_string_literal``
+
+   .. code::
+
+     | [ BIT_STRING_TYPE_NAME "#" ] "8#" OCTAL_STRING  -> octal_bit_string_literal
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~OctalBitString.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~OctalBitString.base
+       ~OctalBitString.meta
+       ~OctalBitString.type_name
+       ~OctalBitString.value
+   
