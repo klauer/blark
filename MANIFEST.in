@@ -1,5 +1,7 @@
 include versioneer.py
 include requirements.txt
+include requirements-dev.txt
+include requirements-doc.txt
 include README.md
 include LICENSE
 include blark/_version.py

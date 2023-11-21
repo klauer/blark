@@ -62,7 +62,7 @@ setup(
         ]
     },
     package_data={
-        "blark": ["blark/iec.lark", "blark/iec.grammar"],
+        "blark": ["blark/iec.lark"],
     },
     include_package_data=True,
     python_requires=">=3.6",
