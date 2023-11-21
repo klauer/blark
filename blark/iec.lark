@@ -287,7 +287,7 @@ indirection_type: REFERENCE_TO
                 | REFERENCE_TO POINTER_TO+
 pointer_type: POINTER_TO+
 
-simple_spec_init: [ indirection_type ] simple_specification [ ":=" expression ]
+simple_spec_init: ( simple_specification | indirect_simple_specification ) [ ":=" expression ]
 
 simple_specification: elementary_type_name
                     | simple_type_name
@@ -532,7 +532,12 @@ string_type_specification: (STRING | WSTRING) [ string_spec_length ]
 // B.1.5.1
 ?derived_function_name: IDENTIFIER
 
-indirect_simple_specification: [ indirection_type ] simple_specification
+indirect_simple_specification: [ indirection_type ] simple_specification [ input_param_args ]
+
+input_param_args: "(" [ input_param_assignment ( "," input_param_assignment )* ","? ] ")"
+
+input_param_assignment: variable_name ":=" [ expression ]
+                      | expression
 
 function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
 
