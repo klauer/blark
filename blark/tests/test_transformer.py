@@ -362,6 +362,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("expression", "_directoryFileList.Item(_i).ToString()"),
         param("expression", "_directoryFileList.Item(_i)^.ToString()"),
         param("simple_type_declaration", "TypeName : INT"),
+        param("simple_type_declaration", "TypeName, TypeName2 : INT"),
         param("simple_type_declaration", "TypeName : INT := 5"),
         param("simple_type_declaration", "TypeName : INT := 5 + 1 * (2)"),
         param("simple_type_declaration", "TypeName : REFERENCE TO INT"),

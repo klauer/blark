@@ -280,7 +280,7 @@ _type_declaration: array_type_declaration
                  | subrange_type_declaration
                  | enumerated_type_declaration
 
-simple_type_declaration: simple_type_name [ extends ] ":" simple_spec_init
+simple_type_declaration: simple_type_name ("," simple_type_name)* [ extends ] ":" simple_spec_init
 
 indirection_type: REFERENCE_TO
                 | POINTER_TO+
