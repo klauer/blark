@@ -310,7 +310,7 @@ enumerated_spec_init: [ indirection_type ] enumerated_specification [ ":=" enume
 enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ ENUM_DATA_TYPE_NAME ]
                         | enumerated_type_name
 
-enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" integer_or_constant ]
+enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" function_call | integer_or_constant ]
 
 ?integer_or_constant: integer_literal
                     | DOTTED_IDENTIFIER
@@ -353,7 +353,7 @@ structure_element_declaration: structure_element_name [ incomplete_location ] ":
 
 union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
-union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+union_type_declaration: structure_type_name_declaration [ extends ] ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 
