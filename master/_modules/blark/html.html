@@ -1,22 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>blark.html &mdash; blark  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
   
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -81,22 +81,22 @@
              
   <h1>Source code for blark.html</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Syntax-highlighted HTML file writer.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">import</span> <span class="nn">lark</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lark</span>
 
-<span class="kn">from</span> <span class="nn">.output</span> <span class="kn">import</span> <span class="n">OutputBlock</span><span class="p">,</span> <span class="n">register_output_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputBlock</span><span class="p">,</span> <span class="n">register_output_handler</span>
 
 
 <div class="viewcode-block" id="HighlighterAnnotation">
 <a class="viewcode-back" href="../../api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">HighlighterAnnotation</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HighlighterAnnotation</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A single HTML tag annotation which applies to a position range of source code.&quot;&quot;&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -104,12 +104,12 @@
     <span class="n">is_open_tag</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">other_tag_pos</span><span class="p">:</span> <span class="nb">int</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
 
 <div class="viewcode-block" id="HighlighterAnnotation.as_string">
 <a class="viewcode-back" href="../../api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation.as_string">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;span&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;span&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># some options here?</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_open_tag</span><span class="p">:</span>
             <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;/</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
@@ -124,7 +124,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_add_annotation_pair</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_add_annotation_pair</span><span class="p">(</span>
     <span class="n">annotations</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]],</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">start_pos</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -167,7 +167,7 @@
 
 <div class="viewcode-block" id="get_annotations">
 <a class="viewcode-back" href="../../api/blark.html.get_annotations.html#blark.html.get_annotations">[docs]</a>
-<span class="k">def</span> <span class="nf">get_annotations</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_annotations</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get annotations for syntax elements in the given parse tree.&quot;&quot;&quot;</span>
     <span class="n">annotations</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span>
         <span class="nb">list</span>
@@ -198,11 +198,11 @@
 
 <div class="viewcode-block" id="apply_annotations_to_code">
 <a class="viewcode-back" href="../../api/blark.html.apply_annotations_to_code.html#blark.html.apply_annotations_to_code">[docs]</a>
-<span class="k">def</span> <span class="nf">apply_annotations_to_code</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_annotations_to_code</span><span class="p">(</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">annotations</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">annotate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">annotate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">annotations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="p">[])):</span>
@@ -222,20 +222,20 @@
 <div class="viewcode-block" id="HtmlWriter">
 <a class="viewcode-back" href="../../api/blark.html.HtmlWriter.html#blark.html.HtmlWriter">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">HtmlWriter</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HtmlWriter</span><span class="p">:</span>
     <span class="n">user</span><span class="p">:</span> <span class="n">Any</span>
     <span class="n">source_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
     <span class="n">block</span><span class="p">:</span> <span class="n">OutputBlock</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">source_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">source_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The source code associated with the block.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">source_code</span>
 
 <div class="viewcode-block" id="HtmlWriter.to_html">
 <a class="viewcode-back" href="../../api/blark.html.HtmlWriter.html#blark.html.HtmlWriter.to_html">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_html</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_html</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;HTML tag-annotated source code.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -257,7 +257,7 @@
 <div class="viewcode-block" id="HtmlWriter.save">
 <a class="viewcode-back" href="../../api/blark.html.HtmlWriter.html#blark.html.HtmlWriter.save">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
         <span class="n">user</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">source_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
         <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">],</span>
@@ -273,7 +273,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_register</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_register</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register the HTML output file handlers.&quot;&quot;&quot;</span>
     <span class="n">register_output_handler</span><span class="p">(</span><span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
     <span class="n">register_output_handler</span><span class="p">(</span><span class="s2">&quot;.htm&quot;</span><span class="p">,</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
@@ -287,7 +287,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ken Lauer.</p>
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

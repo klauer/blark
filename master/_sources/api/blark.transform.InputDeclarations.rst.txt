@@ -17,7 +17,7 @@
 
    .. code::
 
-     input_declarations: "VAR_INPUT"i [ variable_attributes ] _var_input_body "END_VAR"i ";"*
+     input_declarations: _VAR_INPUT [ variable_attributes ] _var_input_body _END_VAR ";"*
 
    
    

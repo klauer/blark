@@ -17,7 +17,7 @@
 
    .. code::
 
-     continue_statement.1: "CONTINUE"i ";"+
+     continue_statement.1: _CONTINUE ";"+
 
    
    

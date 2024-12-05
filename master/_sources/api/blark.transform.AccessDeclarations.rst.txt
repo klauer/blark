@@ -17,7 +17,7 @@
 
    .. code::
 
-     program_access_decls: "VAR_ACCESS"i (program_access_decl ";"+)+ "END_VAR"i ";"*
+     program_access_decls: _VAR_ACCESS (program_access_decl ";"+)+ _END_VAR ";"*
 
    
    

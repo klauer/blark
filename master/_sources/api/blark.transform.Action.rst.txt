@@ -17,7 +17,7 @@
 
    .. code::
 
-     action: "ACTION"i action_name ":" [ function_block_body ] "END_ACTION"i ";"*
+     action: _ACTION action_name ":" [ function_block_body ] _END_ACTION ";"*
 
    
    

@@ -17,7 +17,7 @@
 
    .. code::
 
-     enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" integer_or_constant ]
+     enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" integer_constant_or_func ]
 
    
    

@@ -17,7 +17,7 @@
 
    .. code::
 
-     union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+     union_type_declaration: structure_type_name_declaration [ extends ] ":" _UNION ( union_element_declaration ";"+ )* _END_UNION ";"*
 
    
    
@@ -44,5 +44,6 @@
    
        ~UnionTypeDeclaration.meta
        ~UnionTypeDeclaration.name
+       ~UnionTypeDeclaration.extends
        ~UnionTypeDeclaration.declarations
    

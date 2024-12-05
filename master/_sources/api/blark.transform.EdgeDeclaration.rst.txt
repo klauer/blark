@@ -17,7 +17,7 @@
 
    .. code::
 
-     edge_declaration: var1_list ":" "BOOL"i ( R_EDGE | F_EDGE )
+     edge_declaration: var1_list ":" _BOOL ( R_EDGE | F_EDGE )
 
    
    

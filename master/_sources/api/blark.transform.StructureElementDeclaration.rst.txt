@@ -17,7 +17,7 @@
 
    .. code::
 
-     structure_element_declaration: structure_element_name [ incomplete_location ] ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init | function_call )
+     structure_element_declaration: var1_list ":" ( initialized_structure | array_spec_init | simple_spec_init | subrange_spec_init | enumerated_spec_init | function_call )
 
    
    
@@ -47,7 +47,5 @@
        ~StructureElementDeclaration.meta
        ~StructureElementDeclaration.value
        ~StructureElementDeclaration.variables
-       ~StructureElementDeclaration.name
-       ~StructureElementDeclaration.location
        ~StructureElementDeclaration.init
    

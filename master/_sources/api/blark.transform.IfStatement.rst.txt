@@ -17,7 +17,7 @@
 
    .. code::
 
-     if_statement: "IF"i expression "THEN"i [ statement_list ] ( else_if_clause )* [ else_clause ] "END_IF"i ";"*
+     if_statement: _IF expression _THEN [ statement_list ] ( else_if_clause )* [ else_clause ] _END_IF ";"*
 
    
    

@@ -17,7 +17,7 @@
 
    .. code::
 
-     case_statement: "CASE"i expression "OF"i case_elements [ else_clause ] "END_CASE"i ";"*
+     case_statement: _CASE expression _OF case_elements [ else_clause ] _END_CASE ";"*
 
    
    

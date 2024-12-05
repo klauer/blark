@@ -17,8 +17,7 @@
 
    .. code::
 
-     jmp_statement: "JMP"i LABEL ";"+
-
+     jmp_statement: _JMP LABEL ";"+
 
    
    

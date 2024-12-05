@@ -17,7 +17,7 @@
 
    .. code::
 
-     input_output_declarations: "VAR_IN_OUT"i [ variable_attributes ] var_body "END_VAR"i ";"*
+     input_output_declarations: _VAR_IN_OUT [ variable_attributes ] var_body _END_VAR ";"*
 
    
    

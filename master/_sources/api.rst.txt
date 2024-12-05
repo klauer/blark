@@ -334,7 +334,6 @@ blark.transform
     blark.transform.StringTypeDeclaration
     blark.transform.StringTypeInitialization
     blark.transform.StringTypeSpecification
-    blark.transform.StringVariableInitDeclaration
     blark.transform.StructureElementDeclaration
     blark.transform.StructureElementInitialization
     blark.transform.StructureInitialization
