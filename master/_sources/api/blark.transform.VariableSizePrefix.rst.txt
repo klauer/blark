@@ -10,6 +10,59 @@
 
    
    
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableSizePrefix.encode
+       ~VariableSizePrefix.replace
+       ~VariableSizePrefix.split
+       ~VariableSizePrefix.rsplit
+       ~VariableSizePrefix.join
+       ~VariableSizePrefix.capitalize
+       ~VariableSizePrefix.casefold
+       ~VariableSizePrefix.title
+       ~VariableSizePrefix.center
+       ~VariableSizePrefix.count
+       ~VariableSizePrefix.expandtabs
+       ~VariableSizePrefix.find
+       ~VariableSizePrefix.partition
+       ~VariableSizePrefix.index
+       ~VariableSizePrefix.ljust
+       ~VariableSizePrefix.lower
+       ~VariableSizePrefix.lstrip
+       ~VariableSizePrefix.rfind
+       ~VariableSizePrefix.rindex
+       ~VariableSizePrefix.rjust
+       ~VariableSizePrefix.rstrip
+       ~VariableSizePrefix.rpartition
+       ~VariableSizePrefix.splitlines
+       ~VariableSizePrefix.strip
+       ~VariableSizePrefix.swapcase
+       ~VariableSizePrefix.translate
+       ~VariableSizePrefix.upper
+       ~VariableSizePrefix.startswith
+       ~VariableSizePrefix.endswith
+       ~VariableSizePrefix.removeprefix
+       ~VariableSizePrefix.removesuffix
+       ~VariableSizePrefix.isascii
+       ~VariableSizePrefix.islower
+       ~VariableSizePrefix.isupper
+       ~VariableSizePrefix.istitle
+       ~VariableSizePrefix.isspace
+       ~VariableSizePrefix.isdecimal
+       ~VariableSizePrefix.isdigit
+       ~VariableSizePrefix.isnumeric
+       ~VariableSizePrefix.isalpha
+       ~VariableSizePrefix.isalnum
+       ~VariableSizePrefix.isidentifier
+       ~VariableSizePrefix.isprintable
+       ~VariableSizePrefix.zfill
+       ~VariableSizePrefix.format
+       ~VariableSizePrefix.format_map
+       ~VariableSizePrefix.maketrans
+   
    
 
    
