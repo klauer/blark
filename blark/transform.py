@@ -1954,8 +1954,7 @@ class StructureElementDeclaration:
         iValue1 AT %I* : INT := 5;
         sValue1 : STRING[10] := 'test';
     """
-    name: lark.Token
-    location: Optional[IncompleteLocation]
+    variables: List[DeclaredVariable]
     init: Union[
         StructureInitialization,
         ArrayTypeInitialization,
@@ -1967,11 +1966,6 @@ class StructureElementDeclaration:
         FunctionCall,
     ]
     meta: Optional[Meta] = meta_field()
-
-    @property
-    def variables(self) -> List[str]:
-        """API compat: list of variable names."""
-        return [self.name]
 
     @property
     def value(self) -> str:
@@ -4583,6 +4577,10 @@ class GrammarTransformer(lark.visitors.Transformer_InPlaceRecursive):
 
     @_annotator_method_wrapper
     def var1_list(self, *items: DeclaredVariable) -> List[DeclaredVariable]:
+        return list(items)
+
+    @_annotator_method_wrapper
+    def struct_var1_list(self, *items: DeclaredVariable) -> List[DeclaredVariable]:
         return list(items)
 
     @_annotator_method_wrapper
