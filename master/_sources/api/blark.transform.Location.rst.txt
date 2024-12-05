@@ -17,7 +17,7 @@
 
    .. code::
 
-     location: "AT"i direct_variable
+     location: _AT direct_variable
 
    
    

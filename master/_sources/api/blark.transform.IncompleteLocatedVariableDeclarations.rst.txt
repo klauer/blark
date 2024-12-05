@@ -17,7 +17,7 @@
 
    .. code::
 
-     incomplete_located_var_declarations: "VAR"i [ variable_attributes ] incomplete_located_var_decl* "END_VAR"i ";"*
+     incomplete_located_var_declarations: _VAR [ variable_attributes ] incomplete_located_var_decl* _END_VAR ";"*
 
    
    

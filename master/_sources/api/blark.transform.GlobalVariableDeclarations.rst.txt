@@ -17,7 +17,7 @@
 
    .. code::
 
-     global_var_declarations: "VAR_GLOBAL"i [ global_variable_attributes ] global_var_body_item* "END_VAR"i ";"*
+     global_var_declarations: _VAR_GLOBAL [ global_variable_attributes ] global_var_body_item* _END_VAR ";"*
 
    
    

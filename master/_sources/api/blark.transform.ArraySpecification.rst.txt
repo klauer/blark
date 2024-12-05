@@ -17,7 +17,7 @@
 
    .. code::
 
-     array_specification: "ARRAY"i "[" subrange ( "," subrange )* "]" "OF"i _array_spec_type
+     array_specification: _ARRAY "[" subrange ( "," subrange )* "]" _OF _array_spec_type
 
    
    

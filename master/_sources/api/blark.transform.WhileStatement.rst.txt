@@ -17,7 +17,7 @@
 
    .. code::
 
-     while_statement: "WHILE"i expression "DO"i statement_list "END_WHILE"i ";"*
+     while_statement: _WHILE expression _DO statement_list _END_WHILE ";"*
 
    
    

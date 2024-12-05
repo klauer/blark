@@ -17,7 +17,7 @@
 
    .. code::
 
-     exit_statement.1: "EXIT"i ";"+
+     exit_statement.1: _EXIT ";"+
 
    
    

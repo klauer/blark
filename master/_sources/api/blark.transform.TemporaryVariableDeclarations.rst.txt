@@ -17,7 +17,7 @@
 
    .. code::
 
-     temp_var_decls: "VAR_TEMP"i var_body "END_VAR"i ";"*
+     temp_var_decls: _VAR_TEMP var_body _END_VAR ";"*
 
    
    
