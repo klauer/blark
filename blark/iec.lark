@@ -353,7 +353,7 @@ structure_element_declaration: structure_element_name [ incomplete_location ] ":
 
 union_element_declaration: structure_element_name ":" ( array_specification | simple_specification | indirect_simple_specification | subrange_specification | enumerated_specification )
 
-union_type_declaration: structure_type_name_declaration ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
+union_type_declaration: structure_type_name_declaration [ extends ] ":" "UNION"i ( union_element_declaration ";"+ )* "END_UNION"i ";"*
 
 structure_initialization: "(" structure_element_initialization ( "," structure_element_initialization )* ")"
 

@@ -1,0 +1,6 @@
+TYPE THING EXTENDS THING_BASE:
+UNION
+	{attribute 'hide' := 'true'}
+	As_THING_BASE : THING_BASE;
+END_UNION
+END_TYPE

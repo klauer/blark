@@ -26,7 +26,7 @@ jobs:
       deploy_version: ${{ steps.version.outputs.built_docs_version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: 'recursive'
@@ -64,7 +64,7 @@ jobs:
       run: |
         mkdir $HOME/logs
 
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 

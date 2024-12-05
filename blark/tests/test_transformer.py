@@ -1895,7 +1895,6 @@ def test_uncovered_grammar():
         "MODULO",
         "MULTIPLY_WITH",
         "MULTI_LINE_COMMENT",
-        "NUMERIC_TYPE_NAME",
         "PERSISTENT",
         "PLUS",
         "PRAGMA",

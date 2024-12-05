@@ -2058,13 +2058,19 @@ class UnionTypeDeclaration:
         END_UNION
     """
     name: lark.Token
+    extends: Optional[Extends]
     declarations: List[UnionElementDeclaration]
     meta: Optional[Meta] = meta_field()
 
     @staticmethod
-    def from_lark(name: lark.Token, *decls: UnionElementDeclaration):
+    def from_lark(
+        name: lark.Token,
+        extends: Optional[Extends],
+        *decls: UnionElementDeclaration
+    ):
         return UnionTypeDeclaration(
             name=name,
+            extends=extends,
             declarations=list(decls),
         )
 
@@ -2078,9 +2084,11 @@ class UnionTypeDeclaration:
                 )
             )
 
+        definition = join_if(self.name, " ", self.extends)
+
         return "\n".join(
             line for line in (
-                f"{self.name} :",
+                f"{definition} :",
                 "UNION",
                 decls,
                 "END_UNION",
