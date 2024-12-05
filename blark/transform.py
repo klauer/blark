@@ -1444,7 +1444,7 @@ class EnumeratedValue:
     # TODO: coverage?
     type_name: Optional[lark.Token]
     name: lark.Token
-    value: Optional[Union[Integer, lark.Token]]
+    value: Optional[Union[Integer, FunctionCall, lark.Token]]
     meta: Optional[Meta] = meta_field()
 
     def __str__(self) -> str:
