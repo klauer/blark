@@ -17,7 +17,7 @@
 
    .. code::
 
-     function_var_declarations: "VAR"i [ variable_attributes ] var_body "END_VAR"i ";"*
+     function_var_declarations: _VAR [ variable_attributes ] var_body _END_VAR ";"*
 
    
    

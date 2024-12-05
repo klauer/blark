@@ -1,22 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>blark.solution &mdash; blark  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
   
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -103,27 +103,27 @@
 <span class="sd">    .tsproj   TwinCAT project</span>
 <span class="sd">    .plcproj  TwinCAT PLC project</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">codecs</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Generator</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">codecs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">lxml</span>
-<span class="kn">import</span> <span class="nn">lxml.etree</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lxml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lxml.etree</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">.input</span> <span class="kn">import</span> <span class="p">(</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceLine</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.input</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceLine</span><span class="p">,</span>
                     <span class="n">register_input_handler</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.output</span> <span class="kn">import</span> <span class="n">OutputBlock</span><span class="p">,</span> <span class="n">register_output_handler</span>
-<span class="kn">from</span> <span class="nn">.typing</span> <span class="kn">import</span> <span class="n">ContainsBlarkCode</span><span class="p">,</span> <span class="n">Self</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">AnyPath</span><span class="p">,</span> <span class="n">Identifier</span><span class="p">,</span> <span class="n">SourceType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputBlock</span><span class="p">,</span> <span class="n">register_output_handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContainsBlarkCode</span><span class="p">,</span> <span class="n">Self</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnyPath</span><span class="p">,</span> <span class="n">Identifier</span><span class="p">,</span> <span class="n">SourceType</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -157,14 +157,14 @@
 
 <div class="viewcode-block" id="SolutionLoaderError">
 <a class="viewcode-back" href="../../api/blark.solution.SolutionLoaderError.html#blark.solution.SolutionLoaderError">[docs]</a>
-<span class="k">class</span> <span class="nc">SolutionLoaderError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SolutionLoaderError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Solution loader-related exception base class.&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="UnsupportedSourceFileError">
 <a class="viewcode-back" href="../../api/blark.solution.UnsupportedSourceFileError.html#blark.solution.UnsupportedSourceFileError">[docs]</a>
-<span class="k">class</span> <span class="nc">UnsupportedSourceFileError</span><span class="p">(</span><span class="n">SolutionLoaderError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnsupportedSourceFileError</span><span class="p">(</span><span class="n">SolutionLoaderError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Unsupported project file.</span>
 
@@ -177,7 +177,7 @@
 
 <div class="viewcode-block" id="UnsupportedSourceFileError.__init__">
 <a class="viewcode-back" href="../../api/blark.solution.UnsupportedSourceFileError.html#blark.solution.UnsupportedSourceFileError.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 </div>
@@ -187,7 +187,7 @@
 <div class="viewcode-block" id="strip_xml_namespace">
 <a class="viewcode-back" href="../../api/blark.solution.strip_xml_namespace.html#blark.solution.strip_xml_namespace">[docs]</a>
 <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2048</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">strip_xml_namespace</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">strip_xml_namespace</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip off {{namespace}} from: {{namespace}}tag.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">QName</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span><span class="o">.</span><span class="n">localname</span></div>
 
@@ -195,7 +195,7 @@
 
 <div class="viewcode-block" id="split_property_and_base_decl">
 <a class="viewcode-back" href="../../api/blark.solution.split_property_and_base_decl.html#blark.solution.split_property_and_base_decl">[docs]</a>
-<span class="k">def</span> <span class="nf">split_property_and_base_decl</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_property_and_base_decl</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
     <span class="n">base_decl</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
@@ -209,7 +209,7 @@
 
 <div class="viewcode-block" id="strip_implicit_lines">
 <a class="viewcode-back" href="../../api/blark.solution.strip_implicit_lines.html#blark.solution.strip_implicit_lines">[docs]</a>
-<span class="k">def</span> <span class="nf">strip_implicit_lines</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source_type</span><span class="p">:</span> <span class="n">SourceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">strip_implicit_lines</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source_type</span><span class="p">:</span> <span class="n">SourceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip off (e.g.) END_FUNCTION_BLOCK the provided code.&quot;&quot;&quot;</span>
     <span class="n">implicit_end</span> <span class="o">=</span> <span class="n">source_type</span><span class="o">.</span><span class="n">get_implicit_block_end</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">implicit_end</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">code</span><span class="p">:</span>
@@ -232,7 +232,7 @@
 
 <div class="viewcode-block" id="parse_xml_file">
 <a class="viewcode-back" href="../../api/blark.solution.parse_xml_file.html#blark.solution.parse_xml_file">[docs]</a>
-<span class="k">def</span> <span class="nf">parse_xml_file</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_xml_file</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a given XML file with lxml.etree.parse.&quot;&quot;&quot;</span>
     <span class="n">fn</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">fix_case_insensitive_path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
 
@@ -245,7 +245,7 @@
 
 <div class="viewcode-block" id="parse_xml_contents">
 <a class="viewcode-back" href="../../api/blark.solution.parse_xml_contents.html#blark.solution.parse_xml_contents">[docs]</a>
-<span class="k">def</span> <span class="nf">parse_xml_contents</span><span class="p">(</span><span class="n">contents</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_xml_contents</span><span class="p">(</span><span class="n">contents</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the given XML contents with lxml.etree.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">contents</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
@@ -255,7 +255,7 @@
 
 <div class="viewcode-block" id="projects_from_solution_source">
 <a class="viewcode-back" href="../../api/blark.solution.projects_from_solution_source.html#blark.solution.projects_from_solution_source">[docs]</a>
-<span class="k">def</span> <span class="nf">projects_from_solution_source</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">projects_from_solution_source</span><span class="p">(</span>
     <span class="n">solution_source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
     <span class="n">root</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
     <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
@@ -297,7 +297,7 @@
 
 <div class="viewcode-block" id="filename_from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.filename_from_xml.html#blark.solution.filename_from_xml">[docs]</a>
-<span class="k">def</span> <span class="nf">filename_from_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">filename_from_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]:</span>
     <span class="k">if</span> <span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 
@@ -320,7 +320,7 @@
 
 <div class="viewcode-block" id="get_child_text">
 <a class="viewcode-back" href="../../api/blark.solution.get_child_text.html#blark.solution.get_child_text">[docs]</a>
-<span class="k">def</span> <span class="nf">get_child_text</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_child_text</span><span class="p">(</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
     <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -338,7 +338,7 @@
 
 <div class="viewcode-block" id="get_child_located_text">
 <a class="viewcode-back" href="../../api/blark.solution.get_child_located_text.html#blark.solution.get_child_located_text">[docs]</a>
-<span class="k">def</span> <span class="nf">get_child_located_text</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_child_located_text</span><span class="p">(</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
     <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -361,7 +361,7 @@
 <div class="viewcode-block" id="LocatedString">
 <a class="viewcode-back" href="../../api/blark.solution.LocatedString.html#blark.solution.LocatedString">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">LocatedString</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LocatedString</span><span class="p">:</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
     <span class="n">lineno</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -369,7 +369,7 @@
 
 <div class="viewcode-block" id="LocatedString.to_lines">
 <a class="viewcode-back" href="../../api/blark.solution.LocatedString.html#blark.solution.LocatedString.to_lines">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceLine</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceLine</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">BlarkSourceLine</span><span class="o">.</span><span class="n">from_code</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">first_lineno</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
@@ -382,7 +382,7 @@
 <div class="viewcode-block" id="TcDeclImpl">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcDeclImpl</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcDeclImpl</span><span class="p">:</span>
     <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
     <span class="n">source_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SourceType</span><span class="p">]</span>
@@ -393,7 +393,7 @@
 
 <div class="viewcode-block" id="TcDeclImpl.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">contents</span> <span class="o">=</span> <span class="n">strip_implicit_lines</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="p">)</span>
 
@@ -414,7 +414,7 @@
 
 <div class="viewcode-block" id="TcDeclImpl.declaration_to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl.declaration_to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">declaration_to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">declaration_to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -433,7 +433,7 @@
 
 <div class="viewcode-block" id="TcDeclImpl.implementation_to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl.implementation_to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">implementation_to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">implementation_to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -458,7 +458,7 @@
 
 <div class="viewcode-block" id="TcDeclImpl.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">part</span>
             <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">declaration_to_blark</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation_to_blark</span><span class="p">())</span>
@@ -466,7 +466,7 @@
         <span class="p">]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">decl</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Declaration&quot;</span><span class="p">)</span>
             <span class="n">decl</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">CDATA</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -482,7 +482,7 @@
 <div class="viewcode-block" id="TcDeclImpl.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl.from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -491,9 +491,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="n">declaration</span> <span class="o">=</span> <span class="n">get_child_located_text</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="s2">&quot;Declaration&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">declaration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">source_type</span><span class="p">,</span> <span class="n">identifier</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">find_pou_type_and_identifier</span><span class="p">(</span>
-                <span class="n">declaration</span><span class="o">.</span><span class="n">value</span>
-            <span class="p">)</span>
+            <span class="n">source_type</span><span class="p">,</span> <span class="n">identifier</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">find_pou_type_and_identifier_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">source_type</span><span class="p">,</span> <span class="n">identifier</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
@@ -506,7 +504,7 @@
             <span class="n">implementation</span><span class="o">=</span><span class="n">get_child_located_text</span><span class="p">(</span>
                 <span class="n">xml</span><span class="p">,</span> <span class="s2">&quot;Implementation/ST&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span>
             <span class="p">),</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">),</span>
             <span class="n">source_type</span><span class="o">=</span><span class="n">source_type</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -516,7 +514,7 @@
 
 <div class="viewcode-block" id="get_tcplc_from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.get_tcplc_from_xml.html#blark.solution.get_tcplc_from_xml">[docs]</a>
-<span class="k">def</span> <span class="nf">get_tcplc_from_xml</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tcplc_from_xml</span><span class="p">(</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">]:</span>
     <span class="k">try</span><span class="p">:</span>
@@ -528,7 +526,7 @@
 
 <div class="viewcode-block" id="get_code_object_from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.get_code_object_from_xml.html#blark.solution.get_code_object_from_xml">[docs]</a>
-<span class="k">def</span> <span class="nf">get_code_object_from_xml</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_code_object_from_xml</span><span class="p">(</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">TcSource</span><span class="p">]],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">]]:</span>
     <span class="n">tcplc_object</span> <span class="o">=</span> <span class="n">get_tcplc_from_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
@@ -553,7 +551,7 @@
 <div class="viewcode-block" id="TcSource">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcSource</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcSource</span><span class="p">:</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># TODO: set in subclass</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">guid</span><span class="p">:</span> <span class="nb">str</span>
@@ -574,7 +572,7 @@
 
 <div class="viewcode-block" id="TcSource.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Rewriting code not yet supported for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
@@ -582,7 +580,7 @@
 
 <div class="viewcode-block" id="TcSource.to_file_contents">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.to_file_contents">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
         <span class="n">parent_to_file_contents</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;to_file_contents&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">parent_to_file_contents</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># If we have a parent, we can&#39;t serialize just part of the file.</span>
@@ -595,7 +593,7 @@
 
 <div class="viewcode-block" id="TcSource.to_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.to_xml">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
         <span class="n">md</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
         <span class="n">plc_obj</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;TcPlcObject&quot;</span><span class="p">)</span>
         <span class="n">plc_obj</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;Version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -607,7 +605,7 @@
         <span class="k">return</span> <span class="n">plc_obj</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">):</span>
         <span class="n">primary</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         <span class="n">primary</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;Id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">guid</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -616,7 +614,7 @@
 <div class="viewcode-block" id="TcSource.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.from_xml">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TwincatSourceCodeItem</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -670,7 +668,7 @@
 <div class="viewcode-block" id="TcSource.from_contents">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.from_contents">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_contents</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_contents</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">contents</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -686,7 +684,7 @@
 <div class="viewcode-block" id="TcSource.from_filename">
 <a class="viewcode-back" href="../../api/blark.solution.TcSource.html#blark.solution.TcSource.from_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_filename</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_filename</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TcSource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -701,14 +699,14 @@
 <div class="viewcode-block" id="TcDUT">
 <a class="viewcode-back" href="../../api/blark.solution.TcDUT.html#blark.solution.TcDUT">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcDUT</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcDUT</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DUT&quot;</span>
     <span class="n">file_extension</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;.TcDUT&quot;</span>
     <span class="n">default_source_type</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">SourceType</span><span class="p">]</span> <span class="o">=</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">dut</span>
 
 <div class="viewcode-block" id="TcDUT.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcDUT.html#blark.solution.TcDUT.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">contents</span> <span class="o">=</span> <span class="n">strip_implicit_lines</span><span class="p">(</span>
             <span class="n">contents</span><span class="p">,</span>
             <span class="n">source_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source_type</span><span class="p">,</span>
@@ -719,7 +717,7 @@
 
 <div class="viewcode-block" id="TcDUT.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcDUT.html#blark.solution.TcDUT.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
@@ -742,21 +740,21 @@
 <div class="viewcode-block" id="TcGVL">
 <a class="viewcode-back" href="../../api/blark.solution.TcGVL.html#blark.solution.TcGVL">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcGVL</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcGVL</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;GVL&quot;</span>
     <span class="n">file_extension</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;.TcGVL&quot;</span>
     <span class="n">default_source_type</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">SourceType</span><span class="p">]</span> <span class="o">=</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">var_global</span>
 
 <div class="viewcode-block" id="TcGVL.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcGVL.html#blark.solution.TcGVL.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="c1"># TODO: need to not save the implicit end line</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">rewrite_code</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TcGVL.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcGVL.html#blark.solution.TcGVL.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
@@ -778,7 +776,7 @@
 <div class="viewcode-block" id="TcIO">
 <a class="viewcode-back" href="../../api/blark.solution.TcIO.html#blark.solution.TcIO">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcIO</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcIO</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TcIO file - for INTERFACE definitions.&quot;&quot;&quot;</span>
 
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Itf&quot;</span>
@@ -789,7 +787,7 @@
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span>
     <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="n">get_code_object_from_xml</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
@@ -805,7 +803,7 @@
 
 <div class="viewcode-block" id="TcIO.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcIO.html#blark.solution.TcIO.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No source type set?&quot;</span><span class="p">)</span>
 
@@ -839,7 +837,7 @@
         <span class="p">]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_serialize</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">(</span><span class="n">TcUnknownXml</span><span class="p">,</span> <span class="n">TcExtraInfo</span><span class="p">)):</span>
@@ -852,7 +850,7 @@
 <div class="viewcode-block" id="TcIO.create_source_child_from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcIO.html#blark.solution.TcIO.create_source_child_from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">create_source_child_from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_source_child_from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">child</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">TcSource</span><span class="p">,</span>
@@ -874,18 +872,18 @@
 <div class="viewcode-block" id="TcTTO">
 <a class="viewcode-back" href="../../api/blark.solution.TcTTO.html#blark.solution.TcTTO">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcTTO</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcTTO</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Task&quot;</span>
     <span class="n">file_extension</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;.TcTTO&quot;</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="TcTTO.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcTTO.html#blark.solution.TcTTO.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">primary</span><span class="o">.</span><span class="n">getparent</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">primary</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span></div>
 
 
@@ -897,12 +895,12 @@
 <div class="viewcode-block" id="TcPOU">
 <a class="viewcode-back" href="../../api/blark.solution.TcPOU.html#blark.solution.TcPOU">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcPOU</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcPOU</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;POU&quot;</span>
     <span class="n">file_extension</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;.TcPOU&quot;</span>
     <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">POUPart</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -918,7 +916,7 @@
         <span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">parts_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportedPOUPart</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parts_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportedPOUPart</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">part</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">part</span>
             <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span>
@@ -927,7 +925,7 @@
 
 <div class="viewcode-block" id="TcPOU.get_child_by_identifier">
 <a class="viewcode-back" href="../../api/blark.solution.TcPOU.html#blark.solution.TcPOU.get_child_by_identifier">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_child_by_identifier</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_child_by_identifier</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">SupportedPOUPart</span><span class="p">,</span> <span class="n">TcDeclImpl</span><span class="p">]:</span>
         <span class="n">ident</span> <span class="o">=</span> <span class="n">Identifier</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
@@ -950,7 +948,7 @@
 
 <div class="viewcode-block" id="TcPOU.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcPOU.html#blark.solution.TcPOU.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="c1"># TODO: need to not save the implicit end line</span>
         <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_child_by_identifier</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">part</span><span class="o">.</span><span class="n">rewrite_code</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span></div>
@@ -958,7 +956,7 @@
 
 <div class="viewcode-block" id="TcPOU.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcPOU.html#blark.solution.TcPOU.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No source type set?&quot;</span><span class="p">)</span>
 
@@ -992,7 +990,7 @@
         <span class="p">]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_serialize</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">(</span><span class="n">TcUnknownXml</span><span class="p">,</span> <span class="n">TcExtraInfo</span><span class="p">)):</span>
@@ -1005,7 +1003,7 @@
 <div class="viewcode-block" id="TcPOU.create_source_child_from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcPOU.html#blark.solution.TcPOU.create_source_child_from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">create_source_child_from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_source_child_from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">child</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">TcSource</span><span class="p">,</span>
@@ -1027,17 +1025,17 @@
 <div class="viewcode-block" id="TcSourceChild">
 <a class="viewcode-back" href="../../api/blark.solution.TcSourceChild.html#blark.solution.TcSourceChild">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcSourceChild</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcSourceChild</span><span class="p">(</span><span class="n">TcSource</span><span class="p">):</span>
     <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TcSource</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_serialize</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{})</span>
 
 <div class="viewcode-block" id="TcSourceChild.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcSourceChild.html#blark.solution.TcSourceChild.from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1063,18 +1061,18 @@
 <div class="viewcode-block" id="TcMethod">
 <a class="viewcode-back" href="../../api/blark.solution.TcMethod.html#blark.solution.TcMethod">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcMethod</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcMethod</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Method&quot;</span>
 
 <div class="viewcode-block" id="TcMethod.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcMethod.html#blark.solution.TcMethod.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">rewrite_code</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TcMethod.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcMethod.html#blark.solution.TcMethod.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">declaration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">to_blark</span><span class="p">()</span>
@@ -1089,12 +1087,12 @@
 <div class="viewcode-block" id="TcAction">
 <a class="viewcode-back" href="../../api/blark.solution.TcAction.html#blark.solution.TcAction">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcAction</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcAction</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Action&quot;</span>
 
 <div class="viewcode-block" id="TcAction.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcAction.html#blark.solution.TcAction.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="c1"># TODO: need to not save the implicit end line</span>
         <span class="c1"># self.decl.implementation.value = contents</span>
         <span class="n">ident</span> <span class="o">=</span> <span class="n">Identifier</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
@@ -1104,7 +1102,7 @@
 
 <div class="viewcode-block" id="TcAction.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcAction.html#blark.solution.TcAction.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">implementation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
@@ -1131,13 +1129,13 @@
 <div class="viewcode-block" id="TcProperty">
 <a class="viewcode-back" href="../../api/blark.solution.TcProperty.html#blark.solution.TcProperty">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcProperty</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcProperty</span><span class="p">(</span><span class="n">TcSourceChild</span><span class="p">):</span>
     <span class="n">_tag</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Property&quot;</span>
 
     <span class="n">get</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TcDeclImpl</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="nb">set</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TcDeclImpl</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -1162,7 +1160,7 @@
 
 <div class="viewcode-block" id="TcProperty.rewrite_code">
 <a class="viewcode-back" href="../../api/blark.solution.TcProperty.html#blark.solution.TcProperty.rewrite_code">[docs]</a>
-    <span class="k">def</span> <span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rewrite_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">ident</span> <span class="o">=</span> <span class="n">Identifier</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
         <span class="n">get_or_set</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TcDeclImpl</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ident</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">get_or_set</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1185,7 +1183,7 @@
 
 <div class="viewcode-block" id="TcProperty.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcProperty.html#blark.solution.TcProperty.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkCompositeSourceItem</span><span class="p">,</span> <span class="n">BlarkSourceItem</span><span class="p">]]:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">base_decl</span><span class="p">:</span> <span class="n">BlarkSourceItem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="o">.</span><span class="n">to_blark</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
@@ -1196,7 +1194,11 @@
         <span class="n">property_ident</span> <span class="o">=</span> <span class="n">Identifier</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">base_decl</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
 
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">get_or_set</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;get&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">)):</span>
+        <span class="n">get_set</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;get&quot;</span><span class="p">,</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">property_get</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">property_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">get_or_set</span><span class="p">,</span> <span class="n">source_type</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">get_set</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">continue</span>
 
@@ -1209,7 +1211,7 @@
                             <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">property_ident</span><span class="o">.</span><span class="n">parts</span><span class="p">,</span> <span class="n">get_or_set</span><span class="p">],</span>
                             <span class="n">decl_impl</span><span class="o">=</span><span class="s2">&quot;declaration&quot;</span><span class="p">,</span>
                         <span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="n">SourceType</span><span class="o">.</span><span class="n">property</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="n">source_type</span><span class="p">,</span>
                         <span class="n">lines</span><span class="o">=</span><span class="n">base_decl</span><span class="o">.</span><span class="n">lines</span> <span class="o">+</span> <span class="n">decl</span><span class="o">.</span><span class="n">lines</span><span class="p">,</span>
                         <span class="n">grammar_rule</span><span class="o">=</span><span class="n">SourceType</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">get_grammar_rule</span><span class="p">(),</span>
                         <span class="n">implicit_end</span><span class="o">=</span><span class="s2">&quot;END_PROPERTY&quot;</span><span class="p">,</span>
@@ -1225,7 +1227,7 @@
                             <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">property_ident</span><span class="o">.</span><span class="n">parts</span><span class="p">,</span> <span class="n">get_or_set</span><span class="p">],</span>
                             <span class="n">decl_impl</span><span class="o">=</span><span class="s2">&quot;implementation&quot;</span><span class="p">,</span>
                         <span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="n">SourceType</span><span class="o">.</span><span class="n">property</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="n">source_type</span><span class="p">,</span>
                         <span class="n">lines</span><span class="o">=</span><span class="n">impl</span><span class="o">.</span><span class="n">lines</span><span class="p">,</span>
                         <span class="n">grammar_rule</span><span class="o">=</span><span class="n">SourceType</span><span class="o">.</span><span class="n">statement_list</span><span class="o">.</span><span class="n">get_grammar_rule</span><span class="p">(),</span>
                         <span class="n">implicit_end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -1236,7 +1238,7 @@
         <span class="k">return</span> <span class="n">parts</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_serialize</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">get</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Get&quot;</span><span class="p">)</span>
@@ -1255,7 +1257,7 @@
 <div class="viewcode-block" id="TcExtraInfo">
 <a class="viewcode-back" href="../../api/blark.solution.TcExtraInfo.html#blark.solution.TcExtraInfo">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcExtraInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcExtraInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extra information in the project XML such as Line IDs.</span>
 
@@ -1269,12 +1271,12 @@
 <div class="viewcode-block" id="TcExtraInfo.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TcExtraInfo.html#blark.solution.TcExtraInfo.from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">TcSource</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">,</span> <span class="n">xml</span><span class="o">=</span><span class="n">xml</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">),</span> <span class="n">xml</span><span class="o">=</span><span class="n">xml</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span></div>
 </div>
 
 
@@ -1282,14 +1284,14 @@
 <div class="viewcode-block" id="TcUnknownXml">
 <a class="viewcode-back" href="../../api/blark.solution.TcUnknownXml.html#blark.solution.TcUnknownXml">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TcUnknownXml</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TcUnknownXml</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A currently unsupported block of XML in the project.&quot;&quot;&quot;</span>
     <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span>
     <span class="n">parent</span><span class="p">:</span> <span class="n">TcSource</span>
 
 <div class="viewcode-block" id="TcUnknownXml.to_blark">
 <a class="viewcode-back" href="../../api/blark.solution.TcUnknownXml.html#blark.solution.TcUnknownXml.to_blark">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_blark</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 </div>
 
@@ -1298,7 +1300,7 @@
 <div class="viewcode-block" id="TwincatSourceCodeItem">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatSourceCodeItem.html#blark.solution.TwincatSourceCodeItem">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TwincatSourceCodeItem</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwincatSourceCodeItem</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper for all TwinCAT project source code files.</span>
 
@@ -1327,7 +1329,7 @@
 
 <div class="viewcode-block" id="TwincatSourceCodeItem.to_file_contents">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatSourceCodeItem.html#blark.solution.TwincatSourceCodeItem.to_file_contents">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;No contents to save (file not found on host for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_path</span><span class="si">}</span><span class="s2">)&quot;</span>
@@ -1339,7 +1341,7 @@
 
 <div class="viewcode-block" id="TwincatSourceCodeItem.save_to">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatSourceCodeItem.html#blark.solution.TwincatSourceCodeItem.save_to">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_file_contents</span><span class="p">(</span><span class="n">delimiter</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8-sig&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span></div>
@@ -1348,7 +1350,7 @@
 <div class="viewcode-block" id="TwincatSourceCodeItem.from_compile_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatSourceCodeItem.html#blark.solution.TwincatSourceCodeItem.from_compile_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_compile_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_compile_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TwincatPlcProject</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1426,7 +1428,7 @@
 <div class="viewcode-block" id="DependencyVersion">
 <a class="viewcode-back" href="../../api/blark.solution.DependencyVersion.html#blark.solution.DependencyVersion">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">DependencyVersion</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DependencyVersion</span><span class="p">:</span>
     <span class="c1">#: Dependency name.</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="c1">#: Dependency version.</span>
@@ -1439,7 +1441,7 @@
 <div class="viewcode-block" id="DependencyVersion.from_string">
 <a class="viewcode-back" href="../../api/blark.solution.DependencyVersion.html#blark.solution.DependencyVersion.from_string">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_string</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_string</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1461,7 +1463,7 @@
 <div class="viewcode-block" id="DependencyInformation">
 <a class="viewcode-back" href="../../api/blark.solution.DependencyInformation.html#blark.solution.DependencyInformation">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">DependencyInformation</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DependencyInformation</span><span class="p">:</span>
     <span class="c1">#: The dependency name.</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="c1">#: The default version information.</span>
@@ -1472,7 +1474,7 @@
 <div class="viewcode-block" id="DependencyInformation.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.DependencyInformation.html#blark.solution.DependencyInformation.from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">references</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">],</span>
         <span class="n">resolutions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">],</span>
@@ -1523,7 +1525,7 @@
 <div class="viewcode-block" id="TwincatPlcProject">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TwincatPlcProject</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwincatPlcProject</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A TwinCAT PLC project.</span>
 
@@ -1547,7 +1549,7 @@
 <div class="viewcode-block" id="TwincatPlcProject.from_standalone_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject.from_standalone_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_standalone_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_standalone_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">tsproj_or_xti_xml</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">],</span>
         <span class="n">plcproj_xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
@@ -1606,14 +1608,14 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The project name.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TwincatPlcProject.from_filename">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject.from_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_filename</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_filename</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
@@ -1635,7 +1637,7 @@
 <div class="viewcode-block" id="TwincatPlcProject.from_xti_filename">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject.from_xti_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xti_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">xti_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xti_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">xti_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load a .plcproj from its XTI contents.</span>
 
@@ -1662,7 +1664,7 @@
 <div class="viewcode-block" id="TwincatPlcProject.from_project_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject.from_project_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_project_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_project_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">xml</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">root</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
@@ -1713,7 +1715,7 @@
 
 <div class="viewcode-block" id="get_project_guid">
 <a class="viewcode-back" href="../../api/blark.solution.get_project_guid.html#blark.solution.get_project_guid">[docs]</a>
-<span class="k">def</span> <span class="nf">get_project_guid</span><span class="p">(</span><span class="n">element</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_guid</span><span class="p">(</span><span class="n">element</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a project target GUID from its xml.</span>
 
@@ -1736,7 +1738,7 @@
 
 <div class="viewcode-block" id="get_project_target_netid">
 <a class="viewcode-back" href="../../api/blark.solution.get_project_target_netid.html#blark.solution.get_project_target_netid">[docs]</a>
-<span class="k">def</span> <span class="nf">get_project_target_netid</span><span class="p">(</span><span class="n">element</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_target_netid</span><span class="p">(</span><span class="n">element</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a project target AMS Net ID from its xml.</span>
 
@@ -1760,7 +1762,7 @@
 <div class="viewcode-block" id="TwincatTsProject">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatTsProject.html#blark.solution.TwincatTsProject">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TwincatTsProject</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwincatTsProject</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Container for a loaded TwinCAT tsproj project.</span>
 
@@ -1779,7 +1781,7 @@
     <span class="n">plcs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TwincatPlcProject</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">plcs_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TwincatPlcProject</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plcs_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TwincatPlcProject</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A dictionary of PLCs by name.</span>
 
@@ -1792,7 +1794,7 @@
 <div class="viewcode-block" id="TwincatTsProject.from_xml">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatTsProject.html#blark.solution.TwincatTsProject.from_xml">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_xml</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xml</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">tsproj</span><span class="p">:</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
         <span class="n">root</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
@@ -1826,7 +1828,7 @@
 <div class="viewcode-block" id="TwincatTsProject.from_filename">
 <a class="viewcode-back" href="../../api/blark.solution.TwincatTsProject.html#blark.solution.TwincatTsProject.from_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load a tsproj project from its filename.</span>
 
@@ -1848,7 +1850,7 @@
 <div class="viewcode-block" id="Project">
 <a class="viewcode-back" href="../../api/blark.solution.Project.html#blark.solution.Project">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">Project</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Project</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A stub container for a TwinCAT project (.tsproj) file.</span>
 
@@ -1872,7 +1874,7 @@
 <div class="viewcode-block" id="Project.from_filename">
 <a class="viewcode-back" href="../../api/blark.solution.Project.html#blark.solution.Project.from_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a stub project loader from the given filename.</span>
 
@@ -1907,7 +1909,7 @@
 
 <div class="viewcode-block" id="Project.load">
 <a class="viewcode-back" href="../../api/blark.solution.Project.html#blark.solution.Project.load">[docs]</a>
-    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TwincatTsProject</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TwincatTsProject</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the project into a `TwincatTsProject`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span>
@@ -1929,7 +1931,7 @@
 <div class="viewcode-block" id="Solution">
 <a class="viewcode-back" href="../../api/blark.solution.Solution.html#blark.solution.Solution">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Solution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A container for a TwinCAT/Visual Studio solution (.sln).&quot;&quot;&quot;</span>
 
     <span class="n">file_extension</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;.sln&quot;</span>
@@ -1938,13 +1940,13 @@
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">projects_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Project</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">projects_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Project</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">project</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">project</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">projects</span><span class="p">}</span>
 
 <div class="viewcode-block" id="Solution.from_projects">
 <a class="viewcode-back" href="../../api/blark.solution.Solution.html#blark.solution.Solution.from_projects">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_projects</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_projects</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">root</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
         <span class="n">projects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
@@ -1959,7 +1961,7 @@
 <div class="viewcode-block" id="Solution.from_contents">
 <a class="viewcode-back" href="../../api/blark.solution.Solution.html#blark.solution.Solution.from_contents">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_contents</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_contents</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
         <span class="n">solution_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">root</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
@@ -1975,7 +1977,7 @@
 <div class="viewcode-block" id="Solution.from_filename">
 <a class="viewcode-back" href="../../api/blark.solution.Solution.html#blark.solution.Solution.from_filename">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_filename</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">solution_source</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -1990,7 +1992,7 @@
 
 <div class="viewcode-block" id="make_solution_from_files">
 <a class="viewcode-back" href="../../api/blark.solution.make_solution_from_files.html#blark.solution.make_solution_from_files">[docs]</a>
-<span class="k">def</span> <span class="nf">make_solution_from_files</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Solution</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_solution_from_files</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Solution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    From a TwinCAT solution (.sln) or .tsproj, get a Solution instance.</span>
 
@@ -2008,7 +2010,7 @@
 
 <div class="viewcode-block" id="twincat_file_loader">
 <a class="viewcode-back" href="../../api/blark.solution.twincat_file_loader.html#blark.solution.twincat_file_loader">[docs]</a>
-<span class="k">def</span> <span class="nf">twincat_file_loader</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">twincat_file_loader</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkCompositeSourceItem</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2040,7 +2042,7 @@
 
 <div class="viewcode-block" id="get_blark_input_from_solution">
 <a class="viewcode-back" href="../../api/blark.solution.get_blark_input_from_solution.html#blark.solution.get_blark_input_from_solution">[docs]</a>
-<span class="k">def</span> <span class="nf">get_blark_input_from_solution</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_blark_input_from_solution</span><span class="p">(</span>
     <span class="n">solution</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkCompositeSourceItem</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2071,7 +2073,7 @@
 
 <div class="viewcode-block" id="project_loader">
 <a class="viewcode-back" href="../../api/blark.solution.project_loader.html#blark.solution.project_loader">[docs]</a>
-<span class="k">def</span> <span class="nf">project_loader</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project_loader</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkCompositeSourceItem</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2093,7 +2095,7 @@
 
 <div class="viewcode-block" id="solution_loader">
 <a class="viewcode-back" href="../../api/blark.solution.solution_loader.html#blark.solution.solution_loader">[docs]</a>
-<span class="k">def</span> <span class="nf">solution_loader</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">solution_loader</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BlarkSourceItem</span><span class="p">,</span> <span class="n">BlarkCompositeSourceItem</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2115,7 +2117,7 @@
 
 <div class="viewcode-block" id="twincat_file_writer">
 <a class="viewcode-back" href="../../api/blark.solution.twincat_file_writer.html#blark.solution.twincat_file_writer">[docs]</a>
-<span class="k">def</span> <span class="nf">twincat_file_writer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">twincat_file_writer</span><span class="p">(</span>
     <span class="n">user</span><span class="p">:</span> <span class="n">TcHandlers</span><span class="p">,</span>
     <span class="n">source_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
     <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">],</span>
@@ -2185,7 +2187,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ken Lauer.</p>
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -17,7 +17,7 @@
 
    .. code::
 
-     data_type_declaration: "TYPE"i [ access_specifier ] [ _type_declaration ] ";"* "END_TYPE"i ";"*
+     data_type_declaration: _TYPE [ access_specifier ] [ _type_declaration ] ";"* _END_TYPE ";"*
 
    
    

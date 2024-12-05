@@ -17,7 +17,7 @@
 
    .. code::
 
-     external_var_declarations: "VAR_EXTERNAL"i [ variable_attributes ] external_declaration* "END_VAR"i ";"*
+     external_var_declarations: _VAR_EXTERNAL [ variable_attributes ] external_declaration* _END_VAR ";"*
 
    
    

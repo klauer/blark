@@ -27,6 +27,7 @@
 
    
        ~PropertyGetSetSummary.implementation
+       ~PropertyGetSetSummary.implementation_source
        ~PropertyGetSetSummary.name
        ~PropertyGetSetSummary.item
        ~PropertyGetSetSummary.source_code

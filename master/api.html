@@ -1,23 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>API &mdash; blark  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -330,7 +330,6 @@
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeDeclaration.html">blark.transform.StringTypeDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeInitialization.html">blark.transform.StringTypeInitialization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeSpecification.html">blark.transform.StringTypeSpecification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringVariableInitDeclaration.html">blark.transform.StringVariableInitDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureElementDeclaration.html">blark.transform.StructureElementDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureElementInitialization.html">blark.transform.StructureElementInitialization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureInitialization.html">blark.transform.StructureInitialization</a></li>
@@ -386,8 +385,10 @@
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.Identifier.html">blark.util.Identifier</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.SourceType.html">blark.util.SourceType</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_and_clean_comments.html">blark.util.find_and_clean_comments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier.html">blark.util.find_pou_type_and_identifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_plain.html">blark.util.find_pou_type_and_identifier_plain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_xml.html">blark.util.find_pou_type_and_identifier_xml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.fix_case_insensitive_path.html">blark.util.fix_case_insensitive_path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_case_insensitive.html">blark.util.get_case_insensitive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_file_sha256.html">blark.util.get_file_sha256</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_grammar_for_rule.html">blark.util.get_grammar_for_rule</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_grammar_source.html">blark.util.get_grammar_source</a></li>
@@ -1012,7 +1013,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ExtendedSourceCode.html#blark.transform.ExtendedSourceCode" title="blark.transform.ExtendedSourceCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExtendedSourceCode</span></code></a>(items[, ...])</p></td>
 <td><p>Top-level source code item - extended to include the possibility of standalone implementation details (i.e., statement lists).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Extends.html#blark.transform.Extends" title="blark.transform.Extends"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Extends</span></code></a>(name[, meta])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Extends.html#blark.transform.Extends" title="blark.transform.Extends"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Extends</span></code></a>(interfaces[, meta])</p></td>
 <td><p>The &quot;EXTENDS&quot; portion of a function block, interface, structure, etc.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ExternalVariableDeclaration.html#blark.transform.ExternalVariableDeclaration" title="blark.transform.ExternalVariableDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExternalVariableDeclaration</span></code></a>(...)</p></td>
@@ -1249,133 +1250,130 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StringTypeSpecification.html#blark.transform.StringTypeSpecification" title="blark.transform.StringTypeSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringTypeSpecification</span></code></a>(...)</p></td>
 <td><p>Specification of a string type.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StringVariableInitDeclaration.html#blark.transform.StringVariableInitDeclaration" title="blark.transform.StringVariableInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringVariableInitDeclaration</span></code></a>(...)</p></td>
-<td><p>A declaration of one or more variables using single/double byte strings, with an optinoal initialization value.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureElementDeclaration.html#blark.transform.StructureElementDeclaration" title="blark.transform.StructureElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementDeclaration</span></code></a>(...)</p></td>
+<td><p>Declaration line of a structure, typically with a single variable name.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureElementDeclaration.html#blark.transform.StructureElementDeclaration" title="blark.transform.StructureElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementDeclaration</span></code></a>(...)</p></td>
-<td><p>Declaration of a single element of a structure.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureElementInitialization.html#blark.transform.StructureElementInitialization" title="blark.transform.StructureElementInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementInitialization</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureElementInitialization.html#blark.transform.StructureElementInitialization" title="blark.transform.StructureElementInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementInitialization</span></code></a>(...)</p></td>
 <td><p>An initialization (default) value for a structure element.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureInitialization.html#blark.transform.StructureInitialization" title="blark.transform.StructureInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureInitialization</span></code></a>(elements)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureInitialization.html#blark.transform.StructureInitialization" title="blark.transform.StructureInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureInitialization</span></code></a>(elements)</p></td>
 <td><p>A structure initialization (i.e., default values) of one or more elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureTypeDeclaration.html#blark.transform.StructureTypeDeclaration" title="blark.transform.StructureTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureTypeDeclaration</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureTypeDeclaration.html#blark.transform.StructureTypeDeclaration" title="blark.transform.StructureTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureTypeDeclaration</span></code></a>(...)</p></td>
 <td><p>Full structure type declaration, as part of a TYPE.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructuredVariableInitDeclaration.html#blark.transform.StructuredVariableInitDeclaration" title="blark.transform.StructuredVariableInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructuredVariableInitDeclaration</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructuredVariableInitDeclaration.html#blark.transform.StructuredVariableInitDeclaration" title="blark.transform.StructuredVariableInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructuredVariableInitDeclaration</span></code></a>(...)</p></td>
 <td><p>A declaration of one or more variables using a named initialized structure.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Subrange.html#blark.transform.Subrange" title="blark.transform.Subrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Subrange</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Subrange.html#blark.transform.Subrange" title="blark.transform.Subrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Subrange</span></code></a>()</p></td>
 <td><p>Subrange base class.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubrangeSpecification.html#blark.transform.SubrangeSpecification" title="blark.transform.SubrangeSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeSpecification</span></code></a>(type_name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubrangeSpecification.html#blark.transform.SubrangeSpecification" title="blark.transform.SubrangeSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeSpecification</span></code></a>(type_name)</p></td>
 <td><p>A subrange specification.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeDeclaration.html#blark.transform.SubrangeTypeDeclaration" title="blark.transform.SubrangeTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeDeclaration</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeDeclaration.html#blark.transform.SubrangeTypeDeclaration" title="blark.transform.SubrangeTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeDeclaration</span></code></a>(...)</p></td>
 <td><p>A subrange type declaration.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeInitialization.html#blark.transform.SubrangeTypeInitialization" title="blark.transform.SubrangeTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeInitialization</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeInitialization.html#blark.transform.SubrangeTypeInitialization" title="blark.transform.SubrangeTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeInitialization</span></code></a>(...)</p></td>
 <td><p>A subrange type initialization.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubscriptList.html#blark.transform.SubscriptList" title="blark.transform.SubscriptList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubscriptList</span></code></a>(subscripts, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubscriptList.html#blark.transform.SubscriptList" title="blark.transform.SubscriptList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubscriptList</span></code></a>(subscripts, ...)</p></td>
 <td><p>A list of subscripts.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TemporaryVariableDeclarations.html#blark.transform.TemporaryVariableDeclarations" title="blark.transform.TemporaryVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TemporaryVariableDeclarations</span></code></a>(items)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TemporaryVariableDeclarations.html#blark.transform.TemporaryVariableDeclarations" title="blark.transform.TemporaryVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TemporaryVariableDeclarations</span></code></a>(items)</p></td>
 <td><p>Temporary variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR_TEMP</span></code>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TimeOfDay.html#blark.transform.TimeOfDay" title="blark.transform.TimeOfDay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TimeOfDay</span></code></a>(hour, minute[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TimeOfDay.html#blark.transform.TimeOfDay" title="blark.transform.TimeOfDay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TimeOfDay</span></code></a>(hour, minute[, ...])</p></td>
 <td><p>Time of day literal value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeInformation.html#blark.transform.TypeInformation" title="blark.transform.TypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInformation</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeInformation.html#blark.transform.TypeInformation" title="blark.transform.TypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInformation</span></code></a>(...)</p></td>
 <td><p>Type information derived from a specification or initialization.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeInitialization.html#blark.transform.TypeInitialization" title="blark.transform.TypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitialization</span></code></a>(spec, value)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeInitialization.html#blark.transform.TypeInitialization" title="blark.transform.TypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitialization</span></code></a>(spec, value)</p></td>
 <td><p>A simple initialization specification of a type name.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeInitializationBase.html#blark.transform.TypeInitializationBase" title="blark.transform.TypeInitializationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitializationBase</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeInitializationBase.html#blark.transform.TypeInitializationBase" title="blark.transform.TypeInitializationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitializationBase</span></code></a>()</p></td>
 <td><p>Base class for type initializations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeSpecificationBase.html#blark.transform.TypeSpecificationBase" title="blark.transform.TypeSpecificationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeSpecificationBase</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeSpecificationBase.html#blark.transform.TypeSpecificationBase" title="blark.transform.TypeSpecificationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeSpecificationBase</span></code></a>()</p></td>
 <td><p>Base class for a specification of a type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnaryOperation.html#blark.transform.UnaryOperation" title="blark.transform.UnaryOperation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnaryOperation</span></code></a>(op, expr[, meta])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnaryOperation.html#blark.transform.UnaryOperation" title="blark.transform.UnaryOperation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnaryOperation</span></code></a>(op, expr[, meta])</p></td>
 <td><p>A unary - single operand - operation: <code class="docutils literal notranslate"><span class="pre">NOT</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>, or <code class="docutils literal notranslate"><span class="pre">+</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnionElementDeclaration.html#blark.transform.UnionElementDeclaration" title="blark.transform.UnionElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionElementDeclaration</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnionElementDeclaration.html#blark.transform.UnionElementDeclaration" title="blark.transform.UnionElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionElementDeclaration</span></code></a>(...)</p></td>
 <td><p>Declaration of a single element of a union.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnionTypeDeclaration.html#blark.transform.UnionTypeDeclaration" title="blark.transform.UnionTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionTypeDeclaration</span></code></a>(name, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnionTypeDeclaration.html#blark.transform.UnionTypeDeclaration" title="blark.transform.UnionTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionTypeDeclaration</span></code></a>(name, ...)</p></td>
 <td><p>A full declaration of a UNION type, as part of a TYPE/END_TYPE block.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnresolvedTypeInformation.html#blark.transform.UnresolvedTypeInformation" title="blark.transform.UnresolvedTypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnresolvedTypeInformation</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnresolvedTypeInformation.html#blark.transform.UnresolvedTypeInformation" title="blark.transform.UnresolvedTypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnresolvedTypeInformation</span></code></a>(...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Variable.html#blark.transform.Variable" title="blark.transform.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Variable</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Variable.html#blark.transform.Variable" title="blark.transform.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Variable</span></code></a>()</p></td>
 <td><p>Variable base class.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableAttributes.html#blark.transform.VariableAttributes" title="blark.transform.VariableAttributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableAttributes</span></code></a>(value)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableAttributes.html#blark.transform.VariableAttributes" title="blark.transform.VariableAttributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableAttributes</span></code></a>(value)</p></td>
 <td><p>An enumeration.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarationBlock.html#blark.transform.VariableDeclarationBlock" title="blark.transform.VariableDeclarationBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarationBlock</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarationBlock.html#blark.transform.VariableDeclarationBlock" title="blark.transform.VariableDeclarationBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarationBlock</span></code></a>()</p></td>
 <td><p>Base class for variable declaration blocks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarations.html#blark.transform.VariableDeclarations" title="blark.transform.VariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarations</span></code></a>(attrs, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarations.html#blark.transform.VariableDeclarations" title="blark.transform.VariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarations</span></code></a>(attrs, ...)</p></td>
 <td><p>Variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableLocationPrefix.html#blark.transform.VariableLocationPrefix" title="blark.transform.VariableLocationPrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableLocationPrefix</span></code></a>(value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableLocationPrefix.html#blark.transform.VariableLocationPrefix" title="blark.transform.VariableLocationPrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableLocationPrefix</span></code></a>(value)</p></td>
 <td><p>An enumeration.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableOneInitDeclaration.html#blark.transform.VariableOneInitDeclaration" title="blark.transform.VariableOneInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableOneInitDeclaration</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableOneInitDeclaration.html#blark.transform.VariableOneInitDeclaration" title="blark.transform.VariableOneInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableOneInitDeclaration</span></code></a>(...)</p></td>
 <td><p>A declaration of one or more variables with a type, subrange, or enumerated type initialization.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableSizePrefix.html#blark.transform.VariableSizePrefix" title="blark.transform.VariableSizePrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableSizePrefix</span></code></a>(value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableSizePrefix.html#blark.transform.VariableSizePrefix" title="blark.transform.VariableSizePrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableSizePrefix</span></code></a>(value)</p></td>
 <td><p>Size prefix, used in locations (e.g., <code class="docutils literal notranslate"><span class="pre">%IX1.1</span></code> has a bit prefix).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.WhileStatement.html#blark.transform.WhileStatement" title="blark.transform.WhileStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.WhileStatement</span></code></a>(expression, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.WhileStatement.html#blark.transform.WhileStatement" title="blark.transform.WhileStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.WhileStatement</span></code></a>(expression, ...)</p></td>
 <td><p>A beginning conditional loop statement, <code class="docutils literal notranslate"><span class="pre">WHILE</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._ArrayInitialElementCount.html#blark.transform._ArrayInitialElementCount" title="blark.transform._ArrayInitialElementCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._ArrayInitialElementCount</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._ArrayInitialElementCount.html#blark.transform._ArrayInitialElementCount" title="blark.transform._ArrayInitialElementCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._ArrayInitialElementCount</span></code></a>()</p></td>
 <td><p>An internal handler for array initial elements with repeat count values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._BareArrayInitialization.html#blark.transform._BareArrayInitialization" title="blark.transform._BareArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BareArrayInitialization</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._BareArrayInitialization.html#blark.transform._BareArrayInitialization" title="blark.transform._BareArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BareArrayInitialization</span></code></a>()</p></td>
 <td><p>Internal handler for array initialization, without brackets</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._BracketedArrayInitialization.html#blark.transform._BracketedArrayInitialization" title="blark.transform._BracketedArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BracketedArrayInitialization</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._BracketedArrayInitialization.html#blark.transform._BracketedArrayInitialization" title="blark.transform._BracketedArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BracketedArrayInitialization</span></code></a>()</p></td>
 <td><p>Internal handler for array initialization with brackets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._FlagHelper.html#blark.transform._FlagHelper" title="blark.transform._FlagHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._FlagHelper</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._FlagHelper.html#blark.transform._FlagHelper" title="blark.transform._FlagHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._FlagHelper</span></code></a>()</p></td>
 <td><p>A helper base class which translates tokens to <code class="docutils literal notranslate"><span class="pre">enum.Flag</span></code> instances.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._GenericInit.html#blark.transform._GenericInit" title="blark.transform._GenericInit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._GenericInit</span></code></a>(base_type_name, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._GenericInit.html#blark.transform._GenericInit" title="blark.transform._GenericInit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._GenericInit</span></code></a>(base_type_name, ...)</p></td>
 <td><p>API compat to give a valid init attribute.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.configure_formatting.html#blark.transform.configure_formatting" title="blark.transform.configure_formatting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.configure_formatting</span></code></a>(settings)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.configure_formatting.html#blark.transform.configure_formatting" title="blark.transform.configure_formatting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.configure_formatting</span></code></a>(settings)</p></td>
 <td><p>Override the default code formatting settings.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.get_grammar_for_class.html#blark.transform.get_grammar_for_class" title="blark.transform.get_grammar_for_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.get_grammar_for_class</span></code></a>(cls)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.get_grammar_for_class.html#blark.transform.get_grammar_for_class" title="blark.transform.get_grammar_for_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.get_grammar_for_class</span></code></a>(cls)</p></td>
 <td><p>Given a class, get blark's <code class="docutils literal notranslate"><span class="pre">iec.lark</span></code> associated grammar definition(s).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.indent.html#blark.transform.indent" title="blark.transform.indent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent</span></code></a>(value[, prefix])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.indent.html#blark.transform.indent" title="blark.transform.indent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent</span></code></a>(value[, prefix])</p></td>
 <td><p>Stringified and indented {value}.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.indent_if.html#blark.transform.indent_if" title="blark.transform.indent_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent_if</span></code></a>(value[, prefix])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.indent_if.html#blark.transform.indent_if" title="blark.transform.indent_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent_if</span></code></a>(value[, prefix])</p></td>
 <td><p>Stringified and indented {value} if not None.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.join_if.html#blark.transform.join_if" title="blark.transform.join_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.join_if</span></code></a>(value1, delimiter, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.join_if.html#blark.transform.join_if" title="blark.transform.join_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.join_if</span></code></a>(value1, delimiter, ...)</p></td>
 <td><p>'{value1}{delimiter}{value2} if value1 and value2, otherwise just {value1} or {value2}.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.merge_comments.html#blark.transform.merge_comments" title="blark.transform.merge_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.merge_comments</span></code></a>(source, comments)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.merge_comments.html#blark.transform.merge_comments" title="blark.transform.merge_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.merge_comments</span></code></a>(source, comments)</p></td>
 <td><p>Take the transformed tree and annotate comments back into meta information.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.meta_field.html#blark.transform.meta_field" title="blark.transform.meta_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.meta_field</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.meta_field.html#blark.transform.meta_field" title="blark.transform.meta_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.meta_field</span></code></a>()</p></td>
 <td><p>Create the Meta field for the dataclass magic.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.multiline_code_block.html#blark.transform.multiline_code_block" title="blark.transform.multiline_code_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.multiline_code_block</span></code></a>(block)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.multiline_code_block.html#blark.transform.multiline_code_block" title="blark.transform.multiline_code_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.multiline_code_block</span></code></a>(block)</p></td>
 <td><p>Multiline code block with lax beginning/end newlines.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.transform.html#blark.transform.transform" title="blark.transform.transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.transform</span></code></a>(source_code, tree)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.transform.html#blark.transform.transform" title="blark.transform.transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.transform</span></code></a>(source_code, tree)</p></td>
 <td><p>Transform a <code class="docutils literal notranslate"><span class="pre">lark.Tree</span></code> into dataclasses.</p></td>
 </tr>
 </tbody>
@@ -1413,11 +1411,17 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.find_and_clean_comments.html#blark.util.find_and_clean_comments" title="blark.util.find_and_clean_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_and_clean_comments</span></code></a>(text, *)</p></td>
 <td><p>Clean nested multiline comments from <code class="docutils literal notranslate"><span class="pre">text</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier.html#blark.util.find_pou_type_and_identifier" title="blark.util.find_pou_type_and_identifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_pou_type_and_identifier</span></code></a>(code)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_plain.html#blark.util.find_pou_type_and_identifier_plain" title="blark.util.find_pou_type_and_identifier_plain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_pou_type_and_identifier_plain</span></code></a>(code)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.fix_case_insensitive_path.html#blark.util.fix_case_insensitive_path" title="blark.util.fix_case_insensitive_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.fix_case_insensitive_path</span></code></a>(path)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_xml.html#blark.util.find_pou_type_and_identifier_xml" title="blark.util.find_pou_type_and_identifier_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_pou_type_and_identifier_xml</span></code></a>(xml)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.fix_case_insensitive_path.html#blark.util.fix_case_insensitive_path" title="blark.util.fix_case_insensitive_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.fix_case_insensitive_path</span></code></a>(path)</p></td>
 <td><p>Match a path in a case-insensitive manner.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.get_case_insensitive.html#blark.util.get_case_insensitive" title="blark.util.get_case_insensitive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_case_insensitive</span></code></a>(dct, key[, ...])</p></td>
+<td><p>Get case-insensitive key from a dictionary, with default.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.get_file_sha256.html#blark.util.get_file_sha256" title="blark.util.get_file_sha256"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_file_sha256</span></code></a>(filename)</p></td>
 <td><p>Hash a file's contents with the SHA-256 algorithm.</p></td>
@@ -1477,7 +1481,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ken Lauer.</p>
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

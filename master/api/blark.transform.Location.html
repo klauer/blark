@@ -1,23 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>blark.transform.Location &mdash; blark  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -187,7 +187,6 @@
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeDeclaration.html">blark.transform.StringTypeDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeInitialization.html">blark.transform.StringTypeInitialization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeSpecification.html">blark.transform.StringTypeSpecification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="blark.transform.StringVariableInitDeclaration.html">blark.transform.StringVariableInitDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureElementDeclaration.html">blark.transform.StructureElementDeclaration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureElementInitialization.html">blark.transform.StructureElementInitialization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureInitialization.html">blark.transform.StructureInitialization</a></li>
@@ -271,13 +270,13 @@
 <h1>blark.transform.Location<a class="headerlink" href="#blark-transform-location" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="blark.transform.Location">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.transform.</span></span><span class="sig-name descname"><span class="pre">Location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.VariableLocationPrefix.html#blark.transform.VariableLocationPrefix" title="blark.transform.VariableLocationPrefix"><span class="pre">VariableLocationPrefix</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.VariableSizePrefix.html#blark.transform.VariableSizePrefix" title="blark.transform.VariableSizePrefix"><span class="pre">VariableSizePrefix</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.Meta.html#blark.transform.Meta" title="blark.transform.Meta"><span class="pre">Meta</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/transform.html#Location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.transform.Location" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.transform.</span></span><span class="sig-name descname"><span class="pre">Location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.VariableLocationPrefix.html#blark.transform.VariableLocationPrefix" title="blark.transform.VariableLocationPrefix"><span class="pre">VariableLocationPrefix</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.VariableSizePrefix.html#blark.transform.VariableSizePrefix" title="blark.transform.VariableSizePrefix"><span class="pre">VariableSizePrefix</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.Meta.html#blark.transform.Meta" title="blark.transform.Meta"><span class="pre">Meta</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/transform.html#Location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.transform.Location" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="blark.transform.DirectVariable.html#blark.transform.DirectVariable" title="blark.transform.DirectVariable"><code class="xref py py-class docutils literal notranslate"><span class="pre">DirectVariable</span></code></a></p>
 <p>A located direct variable. (e.g., <code class="docutils literal notranslate"><span class="pre">AT</span> <span class="pre">%IX1.1</span></code>)</p>
 <p class="rubric">Lark grammar</p>
 <p>This class is used by the following grammar rules:</p>
 <p><code class="docutils literal notranslate"><span class="pre">location</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">location</span><span class="p">:</span> <span class="s2">&quot;AT&quot;</span><span class="n">i</span> <span class="n">direct_variable</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">location</span><span class="p">:</span> <span class="n">_AT</span> <span class="n">direct_variable</span>
 </pre></div>
 </div>
 <p class="rubric">Methods</p>
@@ -328,7 +327,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ken Lauer.</p>
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -25,6 +25,19 @@
 
    
    
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GlobalVariableAttributes.from_lark
+       ~GlobalVariableAttributes.conjugate
+       ~GlobalVariableAttributes.bit_length
+       ~GlobalVariableAttributes.bit_count
+       ~GlobalVariableAttributes.to_bytes
+       ~GlobalVariableAttributes.from_bytes
+       ~GlobalVariableAttributes.as_integer_ratio
+   
    
 
    
@@ -34,6 +47,10 @@
    .. autosummary::
 
    
+       ~GlobalVariableAttributes.real
+       ~GlobalVariableAttributes.imag
+       ~GlobalVariableAttributes.numerator
+       ~GlobalVariableAttributes.denominator
        ~GlobalVariableAttributes.constant
        ~GlobalVariableAttributes.retain
        ~GlobalVariableAttributes.non_retain

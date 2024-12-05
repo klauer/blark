@@ -17,7 +17,7 @@
 
    .. code::
 
-     return_statement.1: "RETURN"i ";"+
+     return_statement.1: _RETURN ";"+
 
    
    

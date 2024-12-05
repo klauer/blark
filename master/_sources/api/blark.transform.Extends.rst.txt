@@ -17,7 +17,7 @@
 
    .. code::
 
-     extends: "EXTENDS"i DOTTED_IDENTIFIER
+     extends: _EXTENDS DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
    
    
@@ -43,5 +43,5 @@
 
    
        ~Extends.meta
-       ~Extends.name
+       ~Extends.interfaces
    

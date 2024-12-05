@@ -29,6 +29,7 @@
    
        ~MethodSummary.declarations_by_block
        ~MethodSummary.implementation
+       ~MethodSummary.implementation_source
        ~MethodSummary.name
        ~MethodSummary.item
        ~MethodSummary.return_type

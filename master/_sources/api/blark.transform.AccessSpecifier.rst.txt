@@ -25,6 +25,19 @@
 
    
    
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~AccessSpecifier.from_lark
+       ~AccessSpecifier.conjugate
+       ~AccessSpecifier.bit_length
+       ~AccessSpecifier.bit_count
+       ~AccessSpecifier.to_bytes
+       ~AccessSpecifier.from_bytes
+       ~AccessSpecifier.as_integer_ratio
+   
    
 
    
@@ -34,6 +47,10 @@
    .. autosummary::
 
    
+       ~AccessSpecifier.real
+       ~AccessSpecifier.imag
+       ~AccessSpecifier.numerator
+       ~AccessSpecifier.denominator
        ~AccessSpecifier.public
        ~AccessSpecifier.private
        ~AccessSpecifier.abstract

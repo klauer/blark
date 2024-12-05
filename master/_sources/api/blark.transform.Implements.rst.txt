@@ -17,7 +17,7 @@
 
    .. code::
 
-     implements: "IMPLEMENTS"i DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
+     implements: _IMPLEMENTS DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
    
    

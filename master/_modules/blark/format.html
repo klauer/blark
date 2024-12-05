@@ -1,22 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>blark.format &mdash; blark  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
   
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -84,19 +84,19 @@
 <span class="sd">`blark format` is a command-line utility to parse and print formatted TwinCAT3</span>
 <span class="sd">source code files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">blark</span> <span class="kn">import</span> <span class="n">output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">blark</span><span class="w"> </span><span class="kn">import</span> <span class="n">output</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tf</span>
-<span class="kn">from</span> <span class="nn">.output</span> <span class="kn">import</span> <span class="n">OutputBlock</span>
-<span class="kn">from</span> <span class="nn">.parse</span> <span class="kn">import</span> <span class="n">ParseResult</span>
-<span class="kn">from</span> <span class="nn">.parse</span> <span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">parse_main</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">AnyPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputBlock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParseResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">parse_main</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnyPath</span>
 
 <span class="n">DESCRIPTION</span> <span class="o">=</span> <span class="vm">__doc__</span>
 
@@ -105,7 +105,7 @@
 
 <div class="viewcode-block" id="build_arg_parser">
 <a class="viewcode-back" href="../../api/blark.format.build_arg_parser.html#blark.format.build_arg_parser">[docs]</a>
-<span class="k">def</span> <span class="nf">build_arg_parser</span><span class="p">(</span><span class="n">argparser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_arg_parser</span><span class="p">(</span><span class="n">argparser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">argparser</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">argparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
 
@@ -171,7 +171,7 @@
 
 <div class="viewcode-block" id="reformat_code">
 <a class="viewcode-back" href="../../api/blark.format.reformat_code.html#blark.format.reformat_code">[docs]</a>
-<span class="k">def</span> <span class="nf">reformat_code</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reformat_code</span><span class="p">(</span>
     <span class="n">code</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">SourceCode</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reformat the code with the provided settings.&quot;&quot;&quot;</span>
@@ -184,7 +184,7 @@
 
 <div class="viewcode-block" id="dump_source_to_console">
 <a class="viewcode-back" href="../../api/blark.format.dump_source_to_console.html#blark.format.dump_source_to_console">[docs]</a>
-<span class="k">def</span> <span class="nf">dump_source_to_console</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_source_to_console</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Output the given source to the console.</span>
 
@@ -204,7 +204,7 @@
 
 <div class="viewcode-block" id="write_source_to_file">
 <a class="viewcode-back" href="../../api/blark.format.write_source_to_file.html#blark.format.write_source_to_file">[docs]</a>
-<span class="k">def</span> <span class="nf">write_source_to_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_source_to_file</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
@@ -242,7 +242,7 @@
 
 <div class="viewcode-block" id="determine_output_filename">
 <a class="viewcode-back" href="../../api/blark.format.determine_output_filename.html#blark.format.determine_output_filename">[docs]</a>
-<span class="k">def</span> <span class="nf">determine_output_filename</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">determine_output_filename</span><span class="p">(</span>
     <span class="n">input_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
     <span class="n">write_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
@@ -273,7 +273,7 @@
 
 <div class="viewcode-block" id="get_reformatted_code_blocks">
 <a class="viewcode-back" href="../../api/blark.format.get_reformatted_code_blocks.html#blark.format.get_reformatted_code_blocks">[docs]</a>
-<span class="k">def</span> <span class="nf">get_reformatted_code_blocks</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_reformatted_code_blocks</span><span class="p">(</span>
     <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParseResult</span><span class="p">],</span>
     <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -333,7 +333,7 @@
 
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../api/blark.format.main.html#blark.format.main">[docs]</a>
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">AnyPath</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -359,7 +359,7 @@
     <span class="p">)</span>
     <span class="n">tf</span><span class="o">.</span><span class="n">configure_formatting</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">group_by_user_loader</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ParseResult</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">group_by_user_loader</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ParseResult</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Group all ParseResults by their loader (or &quot;user&quot; defined wrapper.)</span>
 
@@ -443,7 +443,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ken Lauer.</p>
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

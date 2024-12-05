@@ -17,7 +17,7 @@
 
    .. code::
 
-     function_block_method_declaration: "METHOD"i [ access_specifier ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] "END_METHOD"i ";"*
+     function_block_method_declaration: _METHOD [ access_specifier ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] _END_METHOD ";"*
 
    
    

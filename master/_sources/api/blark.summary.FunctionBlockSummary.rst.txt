@@ -30,6 +30,7 @@
    
        ~FunctionBlockSummary.declarations_by_block
        ~FunctionBlockSummary.implementation
+       ~FunctionBlockSummary.implementation_source
        ~FunctionBlockSummary.name
        ~FunctionBlockSummary.source_code
        ~FunctionBlockSummary.item

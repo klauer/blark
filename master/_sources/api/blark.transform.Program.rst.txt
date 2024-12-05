@@ -17,7 +17,7 @@
 
    .. code::
 
-     program_declaration: "PROGRAM"i program_type_name program_var_declarations [ function_block_body ] "END_PROGRAM"i ";"*
+     program_declaration: _PROGRAM program_type_name program_var_declarations [ function_block_body ] _END_PROGRAM ";"*
 
    
    

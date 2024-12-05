@@ -17,7 +17,7 @@
 
    .. code::
 
-     function_block_property_declaration: "PROPERTY"i [ access_specifier ] DOTTED_IDENTIFIER [ ":" property_return_type ] ";"* property_var_declaration* [ function_block_body ] "END_PROPERTY"i ";"*
+     function_block_property_declaration: _PROPERTY [ access_specifier ] DOTTED_IDENTIFIER [ ":" property_return_type ] [ access_specifier ] ";"* property_var_declaration* [ function_block_body ] _END_PROPERTY ";"*
 
    
    
@@ -46,6 +46,7 @@
        ~Property.access
        ~Property.name
        ~Property.return_type
+       ~Property.access_override
        ~Property.declarations
        ~Property.body
    

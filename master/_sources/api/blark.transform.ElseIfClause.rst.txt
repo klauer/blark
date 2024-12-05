@@ -17,7 +17,7 @@
 
    .. code::
 
-     else_if_clause: "ELSIF"i expression "THEN"i [ statement_list ]
+     else_if_clause: _ELSIF expression _THEN [ statement_list ]
 
    
    

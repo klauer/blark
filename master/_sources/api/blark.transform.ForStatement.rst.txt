@@ -17,7 +17,7 @@
 
    .. code::
 
-     for_statement: "FOR"i control_variable ":=" _for_list "DO"i statement_list "END_FOR"i ";"*
+     for_statement: _FOR control_variable ":=" _for_list _DO statement_list _END_FOR ";"*
 
    
    

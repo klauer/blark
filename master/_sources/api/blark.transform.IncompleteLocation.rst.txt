@@ -17,7 +17,7 @@
 
    .. code::
 
-     incomplete_location: "AT"i /\%(I|Q|M)\*/
+     incomplete_location: _AT /\%(I|Q|M)\*/
 
    
    

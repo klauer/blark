@@ -17,7 +17,7 @@
 
    .. code::
 
-     var_inst_declaration: "VAR_INST"i [ variable_attributes ] var_body "END_VAR"i ";"*
+     var_inst_declaration: _VAR_INST [ variable_attributes ] var_body _END_VAR ";"*
 
    
    

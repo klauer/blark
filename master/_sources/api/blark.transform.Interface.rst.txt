@@ -17,7 +17,7 @@
 
    .. code::
 
-     interface_declaration: "INTERFACE"i IDENTIFIER [ extends ] interface_var_declaration* "END_INTERFACE"i ";"*
+     interface_declaration: _INTERFACE IDENTIFIER [ extends ] interface_var_declaration* _END_INTERFACE? ";"*
 
    
    

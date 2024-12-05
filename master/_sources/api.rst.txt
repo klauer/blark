@@ -334,7 +334,6 @@ blark.transform
     blark.transform.StringTypeDeclaration
     blark.transform.StringTypeInitialization
     blark.transform.StringTypeSpecification
-    blark.transform.StringVariableInitDeclaration
     blark.transform.StructureElementDeclaration
     blark.transform.StructureElementInitialization
     blark.transform.StructureInitialization
@@ -398,8 +397,10 @@ blark.util
     blark.util.Identifier
     blark.util.SourceType
     blark.util.find_and_clean_comments
-    blark.util.find_pou_type_and_identifier
+    blark.util.find_pou_type_and_identifier_plain
+    blark.util.find_pou_type_and_identifier_xml
     blark.util.fix_case_insensitive_path
+    blark.util.get_case_insensitive
     blark.util.get_file_sha256
     blark.util.get_grammar_for_rule
     blark.util.get_grammar_source

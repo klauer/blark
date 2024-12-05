@@ -17,7 +17,7 @@
 
    .. code::
 
-     structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] "STRUCT"i ( structure_element_declaration ";"+ )* "END_STRUCT"i
+     structure_type_declaration: structure_type_name_declaration [ extends ] ":" [ indirection_type ] _STRUCT ";"* ( structure_element_declaration ";"+ )* _END_STRUCT
 
    
    

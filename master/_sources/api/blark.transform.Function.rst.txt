@@ -17,7 +17,7 @@
 
    .. code::
 
-     function_declaration: "FUNCTION"i [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] "END_FUNCTION"i ";"*
+     function_declaration: _FUNCTION [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] _END_FUNCTION ";"*
 
    
    

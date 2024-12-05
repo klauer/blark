@@ -1,0 +1,6 @@
+﻿blark.util.find\_pou\_type\_and\_identifier\_xml
+================================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: find_pou_type_and_identifier_xml

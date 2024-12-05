@@ -17,7 +17,7 @@
 
    .. code::
 
-     static_var_declarations: "VAR_STAT"i [ variable_attributes ] var_body "END_VAR"i ";"*
+     static_var_declarations: _VAR_STAT [ variable_attributes ] var_body _END_VAR ";"*
 
    
    

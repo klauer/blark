@@ -17,7 +17,7 @@
 
    .. code::
 
-     else_clause: "ELSE"i [ statement_list ]
+     else_clause: _ELSE [ statement_list ]
 
    
    

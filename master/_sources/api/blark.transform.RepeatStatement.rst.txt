@@ -17,7 +17,7 @@
 
    .. code::
 
-     repeat_statement: "REPEAT"i statement_list "UNTIL"i expression "END_REPEAT"i ";"*
+     repeat_statement: _REPEAT statement_list _UNTIL expression _END_REPEAT ";"*
 
    
    

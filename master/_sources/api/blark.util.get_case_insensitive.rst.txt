@@ -1,0 +1,6 @@
+﻿blark.util.get\_case\_insensitive
+=================================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: get_case_insensitive

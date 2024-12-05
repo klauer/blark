@@ -29,6 +29,7 @@
    
        ~ProgramSummary.declarations_by_block
        ~ProgramSummary.implementation
+       ~ProgramSummary.implementation_source
        ~ProgramSummary.name
        ~ProgramSummary.source_code
        ~ProgramSummary.item

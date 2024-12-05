@@ -49,7 +49,6 @@
        ~GrammarTransformer.date_and_time
        ~GrammarTransformer.direct_variable
        ~GrammarTransformer.double_byte_string_spec
-       ~GrammarTransformer.double_byte_string_var_declaration
        ~GrammarTransformer.duration
        ~GrammarTransformer.edge_declaration
        ~GrammarTransformer.else_clause
@@ -137,13 +136,13 @@
        ~GrammarTransformer.simple_specification
        ~GrammarTransformer.simple_type_declaration
        ~GrammarTransformer.single_byte_string_spec
-       ~GrammarTransformer.single_byte_string_var_declaration
        ~GrammarTransformer.statement_list
        ~GrammarTransformer.static_var_declarations
        ~GrammarTransformer.string_literal
        ~GrammarTransformer.string_spec_length
        ~GrammarTransformer.string_type_declaration
        ~GrammarTransformer.string_type_specification
+       ~GrammarTransformer.struct_var1_list
        ~GrammarTransformer.structure_element_declaration
        ~GrammarTransformer.structure_element_initialization
        ~GrammarTransformer.structure_initialization

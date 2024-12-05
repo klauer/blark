@@ -29,6 +29,7 @@
    
        ~FunctionSummary.declarations_by_block
        ~FunctionSummary.implementation
+       ~FunctionSummary.implementation_source
        ~FunctionSummary.name
        ~FunctionSummary.item
        ~FunctionSummary.return_type
