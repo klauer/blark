@@ -402,10 +402,10 @@ F_EDGE: "F_EDGE"i
 
 ?fb_name: IDENTIFIER
 
-VAR_ATTRIB: "RETAIN"i
-          | "NON_RETAIN"i
-          | "PERSISTENT"i
-          | "CONSTANT"i
+VAR_ATTRIB: /(?<=\s)RETAIN(?=\s)/i
+          | /(?<=\s)NON_RETAIN(?=\s)/i
+          | /(?<=\s)PERSISTENT(?=\s)/i
+          | /(?<=\s)CONSTANT(?=\s)/i
 
 variable_attributes: VAR_ATTRIB+
 

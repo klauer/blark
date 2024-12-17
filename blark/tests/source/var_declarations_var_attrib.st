@@ -1,0 +1,8 @@
+PROGRAM Test
+VAR CONSTANT
+    RetainInt: INT;
+END_VAR
+VAR RETAIN
+    constantInt: INT;
+END_VAR
+END_PROGRAM
