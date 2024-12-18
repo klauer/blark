@@ -1873,7 +1873,8 @@ def test_uncovered_grammar():
         if not rule[0].startswith("_") and check_opts(rule)
     )
     terminals = set(term[0] for term in grammar.grammar.term_defs)
-    unused = (rules | terminals) - Statistics.rules_seen
+    underscore_terminals = set(term for term in terminals if term.startswith("_"))
+    unused = (rules | terminals) - Statistics.rules_seen - underscore_terminals
     print("Uncovered grammar:")
     for name in sorted(unused):
         print(name)
