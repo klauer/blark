@@ -836,12 +836,12 @@ end_of_statement_list_label: LABEL ":"
 
 jmp_statement: _JMP LABEL ";"+
 
-// ** Keyword section ** 
+// ** Keyword section **
 //
 // All keywords defined here must be:
 // * Named exactly as the IEC keyword in upper-case.
 // * Prefixed with underscore to not be captured during the transformer stage.
-// * Regular expressions with a suffix of 'i' for case insensitivity. (i.e., //i). 
+// * Regular expressions with a suffix of 'i' for case insensitivity. (i.e., //i).
 // * Prefixed and suffixed with '\b', indicating word boundary handling. Without it,
 //   (b)lark may ignore whitespace much more than we want it to.
 // * Kept in sorted order
