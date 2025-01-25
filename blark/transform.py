@@ -1924,7 +1924,7 @@ class StructureTypeDeclaration:
             body = "\n".join(
                 (
                     "STRUCT",
-                    indent("\n".join(str(decl) for decl in self.declarations)),
+                    indent("\n".join(f"{decl};" for decl in self.declarations)),
                     "END_STRUCT",
                 )
             )
@@ -1940,23 +1940,25 @@ class StructureTypeDeclaration:
 @_rule_handler("structure_element_declaration", comments=True)
 class StructureElementDeclaration:
     """
-    Declaration of a single element of a structure.
+    Declaration line of a structure, typically with a single variable name.
+
+    Excludes the trailing semicolon.
 
     Examples::
 
-        iValue : INT := 3 + 4;
-        stTest : ST_Testing := (1, 2);
-        eValue : E_Test := E_Test.ABC;
-        arrValue : ARRAY [1..2] OF INT := [1, 2];
-        arrValue1 : INT (1..2);
-        arrValue1 : (Value1 := 1) INT;
-        sValue : STRING := 'abc';
-        iValue1 AT %I* : INT := 5;
-        sValue1 : STRING[10] := 'test';
+        iValue : INT := 3 + 4
+        stTest : ST_Testing := (1, 2)
+        eValue : E_Test := E_Test.ABC
+        arrValue : ARRAY [1..2] OF INT := [1, 2]
+        arrValue1 : INT (1..2)
+        arrValue1 : (Value1 := 1) INT
+        sValue : STRING := 'abc'
+        iValue1 AT %I* : INT := 5
+        sValue1 : STRING[10] := 'test'
+        Timer1, Timer2, Timer3 : library.TPUDO
     """
     variables: List[DeclaredVariable]
     init: Union[
-        StructureInitialization,
         ArrayTypeInitialization,
         StringTypeInitialization,
         TypeInitialization,
@@ -1970,27 +1972,21 @@ class StructureElementDeclaration:
     @property
     def value(self) -> str:
         """The initialization value, if applicable."""
-        if isinstance(self.init, StructureInitialization):
-            return str(self.init)
         return str(self.init.value)
 
     @property
     def base_type_name(self) -> Union[lark.Token, str]:
         """The base type name."""
-        if isinstance(self.init, StructureInitialization):
-            return self.name
         return self.init.base_type_name
 
     @property
-    def full_type_name(self) -> lark.Token:
+    def full_type_name(self) -> Union[lark.Token, str]:
         """The full type name."""
-        if isinstance(self.init, StructureInitialization):
-            return self.name
         return self.init.full_type_name
 
     def __str__(self) -> str:
         variables = ", ".join(str(var) for var in self.variables)
-        return f"{variables} : {self.init};"
+        return f"{variables} : {self.init}"
 
 
 UnionElementSpecification = Union[
