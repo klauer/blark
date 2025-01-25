@@ -1989,8 +1989,8 @@ class StructureElementDeclaration:
         return self.init.full_type_name
 
     def __str__(self) -> str:
-        name_and_location = join_if(self.name, " ", self.location)
-        return f"{name_and_location} : {self.init};"
+        variables = ", ".join(str(var) for var in self.variables)
+        return f"{variables} : {self.init};"
 
 
 UnionElementSpecification = Union[
