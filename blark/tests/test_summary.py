@@ -237,7 +237,7 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
             DeclarationCheck(
                 name="I_EcatMaster1",
                 base_type="AMSNETID",
-                location="input",
+                location="%I*",
                 comments=[
                     "{attribute 'naming' := 'omit'}",
                     "(* AMS Net ID used for FB_EcatDiag, among others *)"

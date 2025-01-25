@@ -178,7 +178,7 @@ class DeclarationSummary(Summary):
                 result[var.name] = DeclarationSummary(
                     name=str(var.name),
                     item=item,
-                    location=str(var.location) if var.location else None,
+                    location=str(var.location).replace("AT ", "") if var.location else None,
                     block=block_header,
                     type=item.full_type_name,  # TODO -> get_type_summary?
                     base_type=item.base_type_name,
