@@ -392,6 +392,7 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("var1_init_decl", "stVar1, stVar2 : TypeName := Value"),
         param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2)"),
         param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1"),
+        param("structure_element_declaration", "Name1, Name2 : INT"),
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
