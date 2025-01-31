@@ -174,18 +174,19 @@ class DeclarationSummary(Summary):
         result = {}
 
         if isinstance(item, tf.StructureElementDeclaration):
-            result[item.name] = DeclarationSummary(
-                name=str(item.name),
-                item=item,
-                location=item.location.name if item.location else None,
-                block=block_header,
-                type=item.full_type_name,  # TODO -> get_type_summary?
-                base_type=item.base_type_name,
-                value=str(item.value),
-                parent=parent.name if parent is not None else "",
-                filename=filename,
-                **Summary.get_meta_kwargs(item.meta),
-            )
+            for var in item.variables:
+                result[var.name] = DeclarationSummary(
+                    name=str(var.name),
+                    item=item,
+                    location=str(var.location).replace("AT ", "") if var.location else None,
+                    block=block_header,
+                    type=item.full_type_name,  # TODO -> get_type_summary?
+                    base_type=item.base_type_name,
+                    value=str(item.value),
+                    parent=parent.name if parent is not None else "",
+                    filename=filename,
+                    **Summary.get_meta_kwargs(item.meta),
+                )
         elif isinstance(item, tf.UnionElementDeclaration):
             result[item.name] = DeclarationSummary(
                 name=str(item.name),
