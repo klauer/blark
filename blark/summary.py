@@ -528,6 +528,7 @@ class FunctionBlockSummary(Summary):
     def __getitem__(
         self, key: str
     ) -> Union[DeclarationSummary, MethodSummary, PropertySummary, ActionSummary]:
+        key = key.strip(":;")
         if key in self.declarations:
             return self.declarations[key]
         for item in self.actions + self.methods + self.properties:
@@ -1185,6 +1186,10 @@ class CodeSummary:
                 ...
 
             match.implementation = impl
+
+            match.meta.comments.extend(parsed.comments)
+            # todo: inject parsed.source_code into match.meta for handling noqa: comments
+            #       that way, we can check from the statements whether a noqa comment was found
 
         context = []
 
