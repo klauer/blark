@@ -366,7 +366,7 @@ class TcDeclImpl:
             implementation=get_child_located_text(
                 xml, "Implementation/ST", filename=filename
             ),
-            metadata=xml.attrib,
+            metadata=dict(xml.attrib),
             source_type=source_type,
             filename=filename,
         )
@@ -1020,7 +1020,7 @@ class TcExtraInfo:
         xml: lxml.etree.Element,
         parent: TcSource,
     ) -> Self:
-        return cls(metadata=xml.attrib, xml=xml, parent=parent)
+        return cls(metadata=dict(xml.attrib), xml=xml, parent=parent)
 
 
 @dataclasses.dataclass
