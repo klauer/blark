@@ -188,7 +188,7 @@ class DeclarationSummary(Summary):
                     **Summary.get_meta_kwargs(item.meta),
                 )
         elif isinstance(item, tf.UnionElementDeclaration):
-            result[item.name] = DeclarationSummary(
+            result[str(item.name)] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=None,
@@ -239,7 +239,7 @@ class DeclarationSummary(Summary):
             init = str(getattr(item.spec, "init", None))
             type_ = getattr(init, "full_type_name", str(item.spec))
             base_type = getattr(init, "base_type_name", str(item.spec))
-            result[item.name] = DeclarationSummary(
+            result[str(item.name)] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=location,
@@ -310,6 +310,7 @@ class ActionSummary(Summary):
     item: tf.Action
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
 
     def __getitem__(self, key: str) -> None:
         raise KeyError(f"{key}: Actions do not contain declarations")
@@ -365,6 +366,7 @@ class MethodSummary(Summary):
     return_type: Optional[str]
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -410,6 +412,7 @@ class PropertyGetSetSummary(Summary):
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
 
     def __getitem__(self, key: str) -> DeclarationSummary:
         return self.declarations[key]
@@ -472,6 +475,7 @@ class FunctionSummary(Summary):
     return_type: Optional[str]
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
@@ -520,6 +524,7 @@ class FunctionBlockSummary(Summary):
     extends: Optional[str]
     squashed: bool
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -861,6 +866,7 @@ class ProgramSummary(Summary):
     source_code: str
     item: tf.Program
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -1188,8 +1194,7 @@ class CodeSummary:
             match.implementation = impl
 
             match.meta.comments.extend(parsed.comments)
-            # todo: inject parsed.source_code into match.meta for handling noqa: comments
-            #       that way, we can check from the statements whether a noqa comment was found
+            match.implementation_source = parsed.source_code
 
         context = []
 
@@ -1227,7 +1232,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.function_blocks[item.name] = summary
+                    result.function_blocks[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.Function):
                     summary = FunctionSummary.from_function(
@@ -1235,7 +1240,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.functions[item.name] = summary
+                    result.functions[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.DataTypeDeclaration):
                     if isinstance(
@@ -1283,7 +1288,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.globals[item.name] = summary
+                    result.globals[str(item.name)] = summary
                     # for global_var in summary.declarations.values():
                     #     if not qualified_only:
                     #         result.globals[global_var.name] = summary
@@ -1295,7 +1300,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.programs[item.name] = summary
+                    result.programs[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.Interface):
                     summary = InterfaceSummary.from_interface(
@@ -1303,7 +1308,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.interfaces[item.name] = summary
+                    result.interfaces[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.StatementList):
                     if parsed.item.type != SourceType.action:
