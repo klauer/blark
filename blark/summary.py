@@ -166,7 +166,7 @@ class DeclarationSummary(Summary):
         cls,
         item: Union[tf.InitDeclaration, tf.StructureElementDeclaration, tf.UnionElementDeclaration],
         parent: Optional[
-            Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
+            Union[tf.Function, tf.Method, tf.FunctionBlock, tf.Property, tf.StructureTypeDeclaration]
         ] = None,
         block_header: str = "unknown",
         filename: Optional[pathlib.Path] = None,
@@ -287,7 +287,7 @@ class DeclarationSummary(Summary):
     def from_block(
         cls,
         block: tf.VariableDeclarationBlock,
-        parent: Union[tf.Function, tf.Method, tf.FunctionBlock],
+        parent: Union[tf.Function, tf.Method, tf.FunctionBlock, tf.Property],
         filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
@@ -445,7 +445,7 @@ class PropertySummary(Summary):
             source_code = str(property)
 
         # TODO: this is broken at the moment
-        return PropertySummary(
+        summary = PropertySummary(
             name=str(property.name),
             getter=PropertyGetSetSummary(
                 name=str(property.name),
@@ -465,6 +465,13 @@ class PropertySummary(Summary):
             filename=filename,
             **Summary.get_meta_kwargs(property.meta),
         )
+
+        for decl in property.declarations:
+            decl_summary = DeclarationSummary.from_block(decl, parent=property, filename=filename)
+            summary.getter.declarations.update(decl_summary)
+            summary.setter.declarations.update(decl_summary)
+
+        return summary
 
 
 @dataclass

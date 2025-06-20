@@ -3266,12 +3266,13 @@ class Property:
         access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[LocatedVariableSpecInit],
+        access_: Optional[AccessSpecifier],
         *args
     ) -> Property:
         *declarations, body = args
         return Property(
             name=name,
-            access=access,
+            access=access or access_,
             return_type=return_type,
             declarations=list(declarations),
             body=body,
