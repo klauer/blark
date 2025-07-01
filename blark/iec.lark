@@ -572,7 +572,7 @@ ACCESS_SPECIFIER: _ABSTRACT
                 | _INTERNAL
                 | _FINAL
 access_specifier: ACCESS_SPECIFIER+
-extends: _EXTENDS DOTTED_IDENTIFIER
+extends: _EXTENDS DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 implements: _IMPLEMENTS DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
 
 function_block_type_declaration: FUNCTION_BLOCK [ access_specifier ] derived_function_block_name [ extends ] [ implements ] fb_var_declaration* [ function_block_body ] END_FUNCTION_BLOCK ";"*
@@ -649,7 +649,7 @@ program_access_decl: access_name ":" symbolic_variable ":" non_generic_type_name
                           | external_var_declarations
                           | var_declarations
 
-interface_declaration: _INTERFACE IDENTIFIER [ extends ] interface_var_declaration* _END_INTERFACE ";"*
+interface_declaration: _INTERFACE IDENTIFIER [ extends ] interface_var_declaration* _END_INTERFACE? ";"*
 
 // B.2.1, B.3.1
 LOGICAL_OR: _OR

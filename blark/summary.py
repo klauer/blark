@@ -528,7 +528,7 @@ class FunctionBlockSummary(Summary):
     name: str
     source_code: str
     item: tf.FunctionBlock
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool
     implementation: Optional[tf.StatementList] = None
     implementation_source: Optional[str] = None
@@ -570,7 +570,7 @@ class FunctionBlockSummary(Summary):
             item=fb,
             source_code=source_code,
             filename=filename,
-            extends=fb.extends.name if fb.extends else None,
+            extends=fb.extends.interfaces if fb.extends else None,
             squashed=False,
             **Summary.get_meta_kwargs(fb.meta),
         )
@@ -582,32 +582,42 @@ class FunctionBlockSummary(Summary):
 
         return summary
 
+
     def squash_base_extends(
         self, function_blocks: Dict[str, FunctionBlockSummary]
     ) -> FunctionBlockSummary:
         """Squash the "EXTENDS" function block into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = function_blocks.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[FunctionBlockSummary] = [
+            function_blocks.get(str(ext), None)
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(function_blocks)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(function_blocks)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
-        actions = list(extends_from.actions) + self.actions
-        methods = list(extends_from.methods) + self.methods
-        properties = list(extends_from.properties) + self.properties
+        actions = [a for fb in extends_from for a in fb.actions] + self.actions
+        methods = [m for fb in extends_from for m in fb.methods] + self.methods
+        properties = [p for fb in extends_from for p in fb.properties] + self.properties
         return FunctionBlockSummary(
             name=self.name,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,
@@ -625,7 +635,7 @@ class InterfaceSummary(Summary):
     name: str
     source_code: str
     item: tf.Interface
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -666,7 +676,7 @@ class InterfaceSummary(Summary):
             item=itf,
             source_code=source_code,
             filename=filename,
-            extends=itf.extends.name if itf.extends else None,
+            extends=itf.extends.interfaces if itf.extends else None,
             squashed=False,
             **Summary.get_meta_kwargs(itf.meta),
         )
@@ -682,27 +692,36 @@ class InterfaceSummary(Summary):
         self, interfaces: Dict[str, InterfaceSummary]
     ) -> InterfaceSummary:
         """Squash the "EXTENDS" INTERFACE into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = interfaces.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[InterfaceSummary] = [
+            interfaces.get(str(ext), None)
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(interfaces)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(interfaces)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
-        methods = list(extends_from.methods) + self.methods
-        properties = list(extends_from.properties) + self.properties
+        methods = [m for fb in extends_from for m in fb.methods] + self.methods
+        properties = [p for fb in extends_from for p in fb.properties] + self.properties
         return InterfaceSummary(
             name=self.name,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,
@@ -720,7 +739,7 @@ class DataTypeSummary(Summary):
     item: tf.TypeDeclarationItem
     source_code: str
     type: str
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool = False
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
@@ -744,7 +763,7 @@ class DataTypeSummary(Summary):
             source_code = str(dtype)
 
         if isinstance(dtype, tf.StructureTypeDeclaration):
-            extends = dtype.extends.name if dtype.extends else None
+            extends = dtype.extends.interfaces if dtype.extends else None
         else:
             extends = None
 
@@ -787,26 +806,35 @@ class DataTypeSummary(Summary):
         self, data_types: Dict[str, DataTypeSummary]
     ) -> DataTypeSummary:
         """Squash the "EXTENDS" function block into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = data_types.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[DataTypeSummary] = [
+            data_types.get(str(ext), None)
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(data_types)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(data_types)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
         return DataTypeSummary(
             name=self.name,
             type=self.type,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,

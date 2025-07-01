@@ -2874,13 +2874,20 @@ class Extends:
 
         EXTENDS stName
         EXTENDS FB_Name
+        EXTENDS FB_Name, FB_Name2
     """
 
-    name: lark.Token
+    interfaces: List[lark.Token]
     meta: Optional[Meta] = meta_field()
 
+    @staticmethod
+    def from_lark(
+        *interfaces: lark.Token,
+    ) -> Extends:
+        return Extends(interfaces=list(interfaces))
+
     def __str__(self) -> str:
-        return f"EXTENDS {self.name}"
+        return "EXTENDS " + ", ".join(self.interfaces)
 
 
 @dataclass
