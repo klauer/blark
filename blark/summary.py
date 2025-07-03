@@ -12,7 +12,7 @@ import lark
 from . import transform as tf
 from .parse import ParseResult
 from .typing import Literal
-from .util import Identifier, SourceType
+from .util import Identifier, SourceType, get_case_insensitive
 
 LocationType = Literal["input", "output", "memory"]
 
@@ -591,7 +591,7 @@ class FunctionBlockSummary(Summary):
             return self
 
         extends_from: list[FunctionBlockSummary] = [
-            function_blocks.get(str(ext), None)
+            get_case_insensitive(function_blocks, str(ext))
             for ext in self.extends
         ]
         extends_from = [
@@ -696,7 +696,7 @@ class InterfaceSummary(Summary):
             return self
 
         extends_from: list[InterfaceSummary] = [
-            interfaces.get(str(ext), None)
+            get_case_insensitive(interfaces, str(ext))
             for ext in self.extends
         ]
         extends_from = [
@@ -810,7 +810,7 @@ class DataTypeSummary(Summary):
             return self
 
         extends_from: list[DataTypeSummary] = [
-            data_types.get(str(ext), None)
+            get_case_insensitive(data_types, str(ext))
             for ext in self.extends
         ]
         extends_from = [

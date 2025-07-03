@@ -128,6 +128,17 @@ class Identifier:
         )
 
 
+def get_case_insensitive(dct: dict[str, Any], key: str, default=None):
+    """Get case-insensitive key from a dictionary, with default. Useful because TwinCAT is
+    case-insensitive."""
+    if key in dct:
+        return dct[key]
+    for k, v in dct.items():
+        if k.lower() == key.lower():
+            return v
+    return default
+
+
 def get_source_code(fn: AnyPath, *, encoding: str = "utf-8") -> str:
     """
     Get source code from the given file.
