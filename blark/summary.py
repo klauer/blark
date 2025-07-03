@@ -1314,7 +1314,22 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    pou.properties.append(summary)
+                    # property getters and setters are separate parse results, and must
+                    # therefore be consolidated here
+                    existing = next(
+                        (prop for prop in pou.properties if prop.name == summary.name),
+                        None
+                    )
+                    if existing is not None:
+                        if parsed.item.type == SourceType.property_get:
+                            existing.getter = summary.getter
+                        elif parsed.item.type == SourceType.property_set:
+                            existing.setter = summary.setter
+                        else:
+                            raise TypeError(f"Unsupported property summary: {parsed.item.type}")
+                    else:
+                        # add new property
+                        pou.properties.append(summary)
                     push_context(summary)
                 elif isinstance(item, tf.GlobalVariableDeclarations):
                     clear_context()

@@ -948,7 +948,11 @@ class TcProperty(TcSourceChild):
         property_ident = Identifier.from_string(base_decl.identifier)
 
         parts = []
-        for get_or_set, obj in (("get", self.get), ("set", self.set)):
+        get_set = [
+            ("get", SourceType.property_get, self.get),
+            ("set", SourceType.property_set, self.set),
+        ]
+        for get_or_set, source_type, obj in get_set:
             if obj is None:
                 continue
 
@@ -961,7 +965,7 @@ class TcProperty(TcSourceChild):
                             parts=[*property_ident.parts, get_or_set],
                             decl_impl="declaration",
                         ).to_string(),
-                        type=SourceType.property,
+                        type=source_type,
                         lines=base_decl.lines + decl.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
@@ -977,7 +981,7 @@ class TcProperty(TcSourceChild):
                             parts=[*property_ident.parts, get_or_set],
                             decl_impl="implementation",
                         ).to_string(),
-                        type=SourceType.property,
+                        type=source_type,
                         lines=impl.lines,
                         grammar_rule=SourceType.statement_list.get_grammar_rule(),
                         implicit_end="",
