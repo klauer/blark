@@ -1278,16 +1278,12 @@ class CodeSummary:
                     result.functions[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.DataTypeDeclaration):
-                    if isinstance(
+                    summary = DataTypeSummary.from_data_type(
                         item.declaration,
-                        (tf.StructureTypeDeclaration, tf.UnionTypeDeclaration)
-                    ):
-                        summary = DataTypeSummary.from_data_type(
-                            item.declaration,
-                            source_code=get_code_by_meta(parsed, item.declaration.meta),
-                            filename=parsed.filename,
-                        )
-                        result.data_types[item.declaration.name] = summary
+                        source_code=get_code_by_meta(parsed, item.declaration.meta),
+                        filename=parsed.filename,
+                    )
+                    result.data_types[item.declaration.name] = summary
                     clear_context()
                 elif isinstance(item, tf.Method):
                     pou = get_pou_context()
