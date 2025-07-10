@@ -2,9 +2,8 @@ import pathlib
 
 import pytest
 
-from blark.util import SourceType
-
 from ..parse import parse, parse_source_code, summarize
+from ..util import SourceType
 from . import conftest
 
 TEST_PATH = pathlib.Path(__file__).parent
@@ -97,3 +96,37 @@ must_fail = pytest.mark.xfail(reason="Bad input", strict=True)
 def test_rule_smoke(grammar, name, value):
     result = conftest.get_grammar(start=name).parse(value)
     print(f"rule {name} value {value!r} into {result}")
+
+
+@pytest.mark.parametrize(
+    ("code", "expected_snippets"),
+    [
+        pytest.param(
+            """\
+(*
+123456789012345678
+*)
+// comment
+{pragma}
+VAR_GLOBAL
+    dummy : BOOL;
+END_VAR
+""",
+            [
+                "(*\n123456789012345678\n*)",
+                "// comment",
+                "{pragma}",
+            ],
+            id="issue_109",
+        ),
+    ],
+)
+def test_comment_parsing(code: str, expected_snippets: list[str]):
+    result = parse_source_code(code)
+
+    print(result.comments)
+
+    snippets = [
+        result.source_code[token.start_pos: token.end_pos] for token in result.comments
+    ]
+    assert snippets == expected_snippets
