@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Union
 from .input import (BlarkCompositeSourceItem, BlarkSourceItem,
                     register_input_handler)
 from .output import OutputBlock, register_output_handler
-from .util import AnyPath, SourceType, find_pou_type_and_identifier
+from .util import AnyPath, SourceType, find_pou_type_and_identifier_plain
 
 
 @dataclasses.dataclass
@@ -40,7 +40,7 @@ class PlainFileLoader:
         with open(filename, "rt") as fp:
             contents = fp.read()
 
-        source_type, identifier = find_pou_type_and_identifier(contents)
+        source_type, identifier = find_pou_type_and_identifier_plain(contents)
         # if source_type is None:
         #     return []
         source_type = SourceType.general

@@ -224,11 +224,12 @@ def python_debug_session(namespace: Dict[str, Any], message: str):
         embed()
 
 
-def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optional[str]]:
+def find_pou_type_and_identifier_plain(code: str) -> tuple[Optional[SourceType], Optional[str]]:
     types = {source.name for source in SourceType}
     clean_code = remove_all_comments(code)
     for line in clean_code.splitlines():
-        parts = line.lstrip().split()
+        # split line on non-word and non-dot characters
+        parts = re.split(r"[^\w.]+", line.lstrip())
         if parts and parts[0].lower() in types:
             source_type = SourceType[parts[0].lower()]
             identifier = None
@@ -245,6 +246,28 @@ def find_pou_type_and_identifier(code: str) -> tuple[Optional[SourceType], Optio
                         break
             return source_type, identifier
     return None, None
+
+
+def find_pou_type_and_identifier_xml(
+    xml: lxml.etree.Element
+) -> tuple[Optional[SourceType], Optional[str]]:
+    tag_source_type_map = {
+        "Get": SourceType.property_get,
+        "Set": SourceType.property_set,
+        "Itf": SourceType.interface,
+        "GVL": SourceType.var_global,
+    }
+
+    if xml.tag in tag_source_type_map:
+        source_type = tag_source_type_map[xml.tag]
+    elif xml.tag == "POU":
+        # POU may be function block or function (or maybe others)
+        # so we figure it out the 'old fashioned' way
+        source_type, _ = find_pou_type_and_identifier_plain(xml.xpath("Declaration")[0].text)
+    else:
+        source_type = SourceType[xml.tag.lower()]
+
+    return source_type, xml.attrib.get("Name")
 
 
 def remove_all_comments(text: str, *, replace_char: str = " ") -> str:

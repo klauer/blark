@@ -351,9 +351,7 @@ class TcDeclImpl:
     ) -> Self:
         declaration = get_child_located_text(xml, "Declaration", filename=filename)
         if declaration is not None:
-            source_type, identifier = util.find_pou_type_and_identifier(
-                declaration.value
-            )
+            source_type, identifier = util.find_pou_type_and_identifier_xml(xml)
         else:
             source_type, identifier = None, None
 

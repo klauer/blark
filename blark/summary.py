@@ -370,7 +370,7 @@ class MethodSummary(Summary):
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -415,7 +415,7 @@ class PropertyGetSetSummary(Summary):
     implementation_source: Optional[str] = None
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
 
 @dataclass
@@ -486,7 +486,7 @@ class FunctionSummary(Summary):
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -540,11 +540,11 @@ class FunctionBlockSummary(Summary):
     def __getitem__(
         self, key: str
     ) -> Union[DeclarationSummary, MethodSummary, PropertySummary, ActionSummary]:
-        key = key.strip(":;")
-        if key in self.declarations:
-            return self.declarations[key]
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
         for item in self.actions + self.methods + self.properties:
-            if item.name == key:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -647,10 +647,11 @@ class InterfaceSummary(Summary):
     def __getitem__(
         self, key: str
     ) -> Union[DeclarationSummary, MethodSummary, PropertySummary]:
-        if key in self.declarations:
-            return self.declarations[key]
-        for item in self.methods + self.properties:
-            if item.name == key:
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
+        for item in self.actions + self.methods + self.properties:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -744,7 +745,7 @@ class DataTypeSummary(Summary):
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -853,7 +854,7 @@ class GlobalVariableSummary(Summary):
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -908,10 +909,11 @@ class ProgramSummary(Summary):
     properties: List[PropertySummary] = field(default_factory=list)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        if key in self.declarations:
-            return self.declarations[key]
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
         for item in self.actions + self.methods + self.properties:
-            if item.name == key:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -1129,10 +1131,9 @@ class CodeSummary:
             self.data_types,
         ):
             # Very inefficient, be warned
-            try:
-                yield dct[name]
-            except KeyError:
-                ...
+            decl = get_case_insensitive(dct, name)
+            if decl is not None:
+                yield decl
 
     def get_item_by_name(self, name: str) -> Optional[TopLevelCodeSummaryType]:
         """
