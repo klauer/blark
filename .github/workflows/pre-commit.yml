@@ -8,74 +8,74 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Configure the matcher to annotate the diff
-      run: |
-        # Ref: https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md
-        cat > "$HOME/flake8_problem_matcher.json" <<'EOF'
-        {
-            "problemMatcher": [
-                {
-                    "owner": "flake8_error",
-                    "severity": "error",
-                    "pattern": [
-                        {
-                            "regexp": "^(.+):(\\d+):(\\d+): (E\\d+) (.+)$",
-                            "file": 1,
-                            "line": 2,
-                            "column": 3,
-                            "code": 4,
-                            "message": 5
-                        }
-                    ]
-                },
-                {
-                    "owner": "flake8_warning",
-                    "severity": "warning",
-                    "pattern": [
-                        {
-                            "regexp": "^(.+):(\\d+):(\\d+): (W\\d+) (.+)$",
-                            "file": 1,
-                            "line": 2,
-                            "column": 3,
-                            "code": 4,
-                            "message": 5
-                        }
-                    ]
-                }
-            ]
-        }
-        EOF
-        echo "::add-matcher::$HOME/flake8_problem_matcher.json"
+      - name: Configure the matcher to annotate the diff
+        run: |
+          # Ref: https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md
+          cat > "$HOME/flake8_problem_matcher.json" <<'EOF'
+          {
+              "problemMatcher": [
+                  {
+                      "owner": "flake8_error",
+                      "severity": "error",
+                      "pattern": [
+                          {
+                              "regexp": "^(.+):(\\d+):(\\d+): (E\\d+) (.+)$",
+                              "file": 1,
+                              "line": 2,
+                              "column": 3,
+                              "code": 4,
+                              "message": 5
+                          }
+                      ]
+                  },
+                  {
+                      "owner": "flake8_warning",
+                      "severity": "warning",
+                      "pattern": [
+                          {
+                              "regexp": "^(.+):(\\d+):(\\d+): (W\\d+) (.+)$",
+                              "file": 1,
+                              "line": 2,
+                              "column": 3,
+                              "code": 4,
+                              "message": 5
+                          }
+                      ]
+                  }
+              ]
+          }
+          EOF
+          echo "::add-matcher::$HOME/flake8_problem_matcher.json"
 
-    - name: Install pre-commit
-      run: |
-        python -m pip install pre-commit
+      - name: Install pre-commit
+        run: |
+          python -m pip install pre-commit
 
-    - name: List Python package versions
-      run: |
-        python -m pip freeze --local
+      - name: List Python package versions
+        run: |
+          python -m pip freeze --local
 
-    - name: Check for pre-commit configuration
-      run: |
-        if [ ! -f ".pre-commit-config.yaml" ]; then
-          echo "::error::No pre-commit configuration found!"
-          exit 1
-        fi
+      - name: Check for pre-commit configuration
+        run: |
+          if [ ! -f ".pre-commit-config.yaml" ]; then
+            echo "::error::No pre-commit configuration found!"
+            exit 1
+          fi
 
-    - name: Switch to temporary branch
-      run: |
-        # This is to avoid no-commit-to-branch from failing us when this is run
-        # on master.
-        git checkout -b _pre_commit_check_branch
+      - name: Switch to temporary branch
+        run: |
+          # This is to avoid no-commit-to-branch from failing us when this is run
+          # on master.
+          git checkout -b _pre_commit_check_branch
 
-    - name: Check pre-commit usage
-      run: |
-        pre-commit run \
-          --show-diff-on-failure \
-          --color=always \
-          --all-files
+      - name: Check pre-commit usage
+        run: |
+          pre-commit run \
+            --show-diff-on-failure \
+            --color=always \
+            --all-files
