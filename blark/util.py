@@ -363,7 +363,7 @@ def find_and_clean_comments(
         end_line: int,
         end_col: int,
     ) -> lark.Token:
-        block = text[start_pos:end_pos + 1]
+        block = text[start_pos:end_pos]
 
         if block.startswith("//"):
             type_ = "SINGLE_LINE_COMMENT"
@@ -424,7 +424,7 @@ def find_and_clean_comments(
                             start_pos,
                             start_line,
                             start_col,
-                            pos,
+                            pos + 1,
                             lineno,
                             colno + 1,
                         )
@@ -452,9 +452,9 @@ def find_and_clean_comments(
                             start_pos,
                             start_line,
                             start_col,
-                            pos + 1,  # two character ending
+                            pos + 2,  # two character ending
                             lineno,
-                            colno + 1,  # two character ending
+                            colno + 2,  # two character ending
                         )
                     )
                 skip = 1
@@ -466,7 +466,7 @@ def find_and_clean_comments(
                         pos,
                         lineno,
                         colno,
-                        pos + (len(lines[lineno]) - colno - 1),
+                        pos + (len(lines[lineno]) - colno),
                         lineno,
                         len(lines[lineno]),
                     )
