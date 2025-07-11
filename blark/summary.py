@@ -166,7 +166,13 @@ class DeclarationSummary(Summary):
         cls,
         item: Union[tf.InitDeclaration, tf.StructureElementDeclaration, tf.UnionElementDeclaration],
         parent: Optional[
-            Union[tf.Function, tf.Method, tf.FunctionBlock, tf.Property, tf.StructureTypeDeclaration]
+            Union[
+                tf.Function,
+                tf.Method,
+                tf.FunctionBlock,
+                tf.Property,
+                tf.StructureTypeDeclaration,
+            ]
         ] = None,
         block_header: str = "unknown",
         filename: Optional[pathlib.Path] = None,
@@ -582,7 +588,6 @@ class FunctionBlockSummary(Summary):
 
         return summary
 
-
     def squash_base_extends(
         self, function_blocks: Dict[str, FunctionBlockSummary]
     ) -> FunctionBlockSummary:
@@ -650,7 +655,7 @@ class InterfaceSummary(Summary):
         decl = get_case_insensitive(self.declarations, key)
         if decl is not None:
             return decl
-        for item in self.actions + self.methods + self.properties:
+        for item in self.methods + self.properties:
             if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
