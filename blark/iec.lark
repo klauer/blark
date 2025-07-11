@@ -36,11 +36,11 @@ _library_element_declaration: data_type_declaration
 IDENTIFIER: /[A-Za-z_][A-Za-z0-9_]*/i
 
 // B.1.2
-constant: time_literal
-        | numeric_literal
-        | string_literal
-        | bit_string_literal
-        | boolean_literal
+constant.1: time_literal
+          | numeric_literal
+          | string_literal
+          | bit_string_literal
+          | boolean_literal
 
 // B.1.2.1
 BIT_STRING: /(1|0)(_?(1|0))*/
