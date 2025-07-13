@@ -430,7 +430,6 @@ edge_declaration: var1_list ":" _BOOL ( R_EDGE | F_EDGE )
 
 ?var_init_decl: array_var_init_decl
               | structured_var_init_decl
-              | string_var_declaration
               | var1_init_decl
               | fb_decl
 
@@ -499,19 +498,12 @@ location: _AT direct_variable
 
 global_var_list: global_var_name ( "," global_var_name )*
 
-?string_var_declaration: single_byte_string_var_declaration
-                       | double_byte_string_var_declaration
-
-single_byte_string_var_declaration: var1_list ":" single_byte_string_spec
-
 bracketed_expression: "[" expression "]"
 
 string_spec_length: parenthesized_expression
                   | bracketed_expression
 
 single_byte_string_spec: STRING [ string_spec_length ] [ ":=" SINGLE_BYTE_CHARACTER_STRING ]
-
-double_byte_string_var_declaration: var1_list ":" double_byte_string_spec
 
 double_byte_string_spec: WSTRING [ string_spec_length ] [ ":=" DOUBLE_BYTE_CHARACTER_STRING ]
 
