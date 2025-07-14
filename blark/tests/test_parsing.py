@@ -1,5 +1,6 @@
 import pathlib
 
+import lark
 import pytest
 
 from ..parse import parse, parse_source_code, summarize
@@ -130,3 +131,31 @@ def test_comment_parsing(code: str, expected_snippets: list[str]):
         result.source_code[token.start_pos: token.end_pos] for token in result.comments
     ]
     assert snippets == expected_snippets
+
+
+def tree_contains_token(tree, token):
+    """
+    Checks whether the given lark tree contains the given token, either as a node
+    or as a leaf.
+    """
+    return any((
+        tree.data == token,
+        token in tree.children,
+        any(tree_contains_token(child, token)
+            for child in tree.children
+            if isinstance(child, lark.Tree))))
+
+
+@pytest.mark.parametrize(
+    "start_rule, code, token_type, token_value",
+    [
+        pytest.param("unary_expression", "TRUE", "RULE", "constant"),
+        pytest.param("unary_expression", "TRUE", "TRUE_VALUE", "TRUE"),
+        pytest.param("unary_expression", "FALSE", "RULE", "constant"),
+        pytest.param("unary_expression", "FALSE", "FALSE_VALUE", "FALSE"),
+    ],
+)
+def test_key_token(start_rule: str, code: str, token_type: str, token_value: str):
+    """Test whether the parse tree contains the key token."""
+    result = conftest.get_grammar(start=start_rule).parse(code)
+    assert tree_contains_token(result, lark.Token(token_type, token_value))
