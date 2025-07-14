@@ -351,9 +351,7 @@ class TcDeclImpl:
     ) -> Self:
         declaration = get_child_located_text(xml, "Declaration", filename=filename)
         if declaration is not None:
-            source_type, identifier = util.find_pou_type_and_identifier(
-                declaration.value
-            )
+            source_type, identifier = util.find_pou_type_and_identifier_xml(xml)
         else:
             source_type, identifier = None, None
 
@@ -366,7 +364,7 @@ class TcDeclImpl:
             implementation=get_child_located_text(
                 xml, "Implementation/ST", filename=filename
             ),
-            metadata=xml.attrib,
+            metadata=dict(xml.attrib),
             source_type=source_type,
             filename=filename,
         )
@@ -948,7 +946,11 @@ class TcProperty(TcSourceChild):
         property_ident = Identifier.from_string(base_decl.identifier)
 
         parts = []
-        for get_or_set, obj in (("get", self.get), ("set", self.set)):
+        get_set = [
+            ("get", SourceType.property_get, self.get),
+            ("set", SourceType.property_set, self.set),
+        ]
+        for get_or_set, source_type, obj in get_set:
             if obj is None:
                 continue
 
@@ -961,7 +963,7 @@ class TcProperty(TcSourceChild):
                             parts=[*property_ident.parts, get_or_set],
                             decl_impl="declaration",
                         ).to_string(),
-                        type=SourceType.property,
+                        type=source_type,
                         lines=base_decl.lines + decl.lines,
                         grammar_rule=SourceType.property.get_grammar_rule(),
                         implicit_end="END_PROPERTY",
@@ -977,7 +979,7 @@ class TcProperty(TcSourceChild):
                             parts=[*property_ident.parts, get_or_set],
                             decl_impl="implementation",
                         ).to_string(),
-                        type=SourceType.property,
+                        type=source_type,
                         lines=impl.lines,
                         grammar_rule=SourceType.statement_list.get_grammar_rule(),
                         implicit_end="",
@@ -1020,7 +1022,7 @@ class TcExtraInfo:
         xml: lxml.etree.Element,
         parent: TcSource,
     ) -> Self:
-        return cls(metadata=xml.attrib, xml=xml, parent=parent)
+        return cls(metadata=dict(xml.attrib), xml=xml, parent=parent)
 
 
 @dataclasses.dataclass

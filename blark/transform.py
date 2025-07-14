@@ -2836,13 +2836,20 @@ class Extends:
 
         EXTENDS stName
         EXTENDS FB_Name
+        EXTENDS FB_Name, FB_Name2
     """
 
-    name: lark.Token
+    interfaces: List[lark.Token]
     meta: Optional[Meta] = meta_field()
 
+    @staticmethod
+    def from_lark(
+        *interfaces: lark.Token,
+    ) -> Extends:
+        return Extends(interfaces=list(interfaces))
+
     def __str__(self) -> str:
-        return f"EXTENDS {self.name}"
+        return "EXTENDS " + ", ".join(self.interfaces)
 
 
 @dataclass
@@ -3228,12 +3235,13 @@ class Property:
         access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[LocatedVariableSpecInit],
+        access_: Optional[AccessSpecifier],
         *args
     ) -> Property:
         *declarations, body = args
         return Property(
             name=name,
-            access=access,
+            access=access or access_,
             return_type=return_type,
             declarations=list(declarations),
             body=body,
