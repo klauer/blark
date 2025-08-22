@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import textwrap
 from typing import List, Optional
 
 import lark
@@ -1870,6 +1871,33 @@ def test_statement_priority(statement: str, cls: type):
 def test_labeled_statements_roundtrip(statements: str, labels: List[str]):
     transformed = roundtrip_rule("statement_list", statements)
     assert isinstance(transformed, tf.StatementList)
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        pytest.param(
+            """\
+            FUNCTION_BLOCK fbName
+            VAR;
+            END_VAR
+            END_FUNCTION_BLOCK
+            """,
+            """\
+            FUNCTION_BLOCK fbName
+            VAR
+            END_VAR
+            END_FUNCTION_BLOCK
+            """,
+            id="pr111-var-semicolon"
+        )
+    ]
+)
+def test_extra_semicolons(source: str, expected: str) -> None:
+    parsed = parse_source_code(source)
+    tf_source = parsed.transform()
+    transformed = tf_source.items[0]
+    assert str(transformed).strip() == textwrap.dedent(expected).strip()
 
 
 @pytest.mark.skipif(
