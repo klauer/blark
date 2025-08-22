@@ -1,0 +1,50 @@
+﻿blark.transform.TimeOfDay
+=========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TimeOfDay
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``time_of_day``
+
+   .. code::
+
+     time_of_day: ("TIME_OF_DAY"i | "TOD"i) "#" _daytime
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TimeOfDay.__init__
+       ~TimeOfDay.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TimeOfDay.meta
+       ~TimeOfDay.second
+       ~TimeOfDay.value
+       ~TimeOfDay.hour
+       ~TimeOfDay.minute
+   

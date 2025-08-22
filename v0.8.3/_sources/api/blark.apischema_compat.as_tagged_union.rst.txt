@@ -1,0 +1,6 @@
+﻿blark.apischema\_compat.as\_tagged\_union
+=========================================
+
+.. currentmodule:: blark.apischema_compat
+
+.. autofunction:: as_tagged_union

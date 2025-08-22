@@ -1,0 +1,23 @@
+﻿blark.transform.FunctionBlockDeclaration
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionBlockDeclaration
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   

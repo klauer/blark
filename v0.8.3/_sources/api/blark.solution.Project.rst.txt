@@ -1,0 +1,37 @@
+﻿blark.solution.Project
+======================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: Project
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Project.__init__
+       ~Project.from_filename
+       ~Project.load
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Project.loaded
+       ~Project.name
+       ~Project.saved_path
+       ~Project.local_path
+       ~Project.guid
+       ~Project.solution_guid
+   

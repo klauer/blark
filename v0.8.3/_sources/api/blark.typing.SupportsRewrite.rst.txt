@@ -1,0 +1,25 @@
+﻿blark.typing.SupportsRewrite
+============================
+
+.. currentmodule:: blark.typing
+
+.. autoclass:: SupportsRewrite
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SupportsRewrite.__init__
+       ~SupportsRewrite.rewrite_code
+   
+   
+
+   
+   
+   

@@ -1,0 +1,58 @@
+﻿blark.transform.VariableAttributes
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableAttributes
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``variable_attributes``
+
+   .. code::
+
+     variable_attributes: VAR_ATTRIB+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableAttributes.from_lark
+       ~VariableAttributes.conjugate
+       ~VariableAttributes.bit_length
+       ~VariableAttributes.bit_count
+       ~VariableAttributes.to_bytes
+       ~VariableAttributes.from_bytes
+       ~VariableAttributes.as_integer_ratio
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableAttributes.real
+       ~VariableAttributes.imag
+       ~VariableAttributes.numerator
+       ~VariableAttributes.denominator
+       ~VariableAttributes.constant
+       ~VariableAttributes.retain
+       ~VariableAttributes.non_retain
+       ~VariableAttributes.persistent
+   

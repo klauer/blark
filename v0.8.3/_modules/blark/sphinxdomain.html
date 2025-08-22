@@ -1,0 +1,860 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.sphinxdomain &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">blark.sphinxdomain</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for blark.sphinxdomain</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span>
+                    <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">docutils.parsers.rst.directives</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rst_directives</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sphinx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sphinx.application</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sphinx.environment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">docutils</span><span class="w"> </span><span class="kn">import</span> <span class="n">nodes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx</span><span class="w"> </span><span class="kn">import</span> <span class="n">addnodes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.directives</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObjectDescription</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.domains</span><span class="w"> </span><span class="kn">import</span> <span class="n">Domain</span><span class="p">,</span> <span class="n">Index</span><span class="p">,</span> <span class="n">ObjType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.locale</span><span class="w"> </span><span class="kn">import</span> <span class="n">_</span> <span class="k">as</span> <span class="n">l_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.roles</span><span class="w"> </span><span class="kn">import</span> <span class="n">XRefRole</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.util.docfields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">GroupedField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.util.nodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_refnode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.util.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptionSpec</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse</span><span class="p">,</span> <span class="n">summary</span><span class="p">,</span> <span class="n">util</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">sphinx.builders</span><span class="w"> </span><span class="kn">import</span> <span class="n">Builder</span>
+
+
+<span class="n">MODULE_PATH</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+<span class="n">STATIC_PATH</span> <span class="o">=</span> <span class="n">MODULE_PATH</span> <span class="o">/</span> <span class="s2">&quot;docs&quot;</span>
+<span class="n">DEFAULT_CSS_FILE</span> <span class="o">=</span> <span class="n">STATIC_PATH</span> <span class="o">/</span> <span class="s2">&quot;blark_default.css&quot;</span>
+
+
+<div class="viewcode-block" id="BlarkSphinxCache">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkSphinxCache.html#blark.sphinxdomain.BlarkSphinxCache">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlarkSphinxCache</span><span class="p">:</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">summary</span><span class="o">.</span><span class="n">CodeSummary</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
+    <span class="p">)</span>
+    <span class="n">_instance_</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">BlarkSphinxCache</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BlarkSphinxCache.instance">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkSphinxCache.html#blark.sphinxdomain.BlarkSphinxCache.instance">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">instance</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">BlarkSphinxCache</span><span class="p">,</span> <span class="s2">&quot;_instance_&quot;</span><span class="p">):</span>
+            <span class="n">BlarkSphinxCache</span><span class="o">.</span><span class="n">_instance_</span> <span class="o">=</span> <span class="n">BlarkSphinxCache</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">BlarkSphinxCache</span><span class="o">.</span><span class="n">_instance_</span></div>
+
+
+<div class="viewcode-block" id="BlarkSphinxCache.find_by_name">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkSphinxCache.html#blark.sphinxdomain.BlarkSphinxCache.find_by_name">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">summary</span><span class="o">.</span><span class="n">CodeSummaryType</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BlarkSphinxCache.configure">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkSphinxCache.html#blark.sphinxdomain.BlarkSphinxCache.configure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">parse_verbose</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">parse</span><span class="o">.</span><span class="n">ParseResult</span><span class="p">]:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">parse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;-&gt; </span><span class="si">%s</span><span class="s2">: </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">blark_projects</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Loading </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">parsed</span> <span class="o">=</span> <span class="n">parse_verbose</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parsed </span><span class="si">%s</span><span class="s2"> into </span><span class="si">%d</span><span class="s2"> objects&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">parsed</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">CodeSummary</span><span class="o">.</span><span class="n">from_parse_results</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BlarkDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirective.html#blark.sphinxdomain.BlarkDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlarkDirective</span><span class="p">(</span><span class="n">ObjectDescription</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+    <span class="c1"># From SphinxRole:</span>
+    <span class="c1">#: The role name actually used in the document.</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1">#: A string containing the entire interpreted text input.</span>
+    <span class="n">rawtext</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1">#: The interpreted text content.</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1">#: The line number where the interpreted text begins.</span>
+    <span class="n">lineno</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: The ``docutils.parsers.rst.states.Inliner`` object.</span>
+    <span class="c1"># inliner: Inliner</span>
+    <span class="c1">#: A dictionary of directive options for customization (&quot;role&quot; directive).</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">Dict</span>
+    <span class="c1">#: A list of strings, the directive content for customization (&quot;role&quot; directive).</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+    <span class="c1"># From ObjectDescription:</span>
+    <span class="n">doc_field_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Field</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">objtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">indexnode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">index</span><span class="p">()</span>
+
+    <span class="c1"># Customizing ObjectDescription:</span>
+    <span class="n">has_content</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">required_arguments</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">optional_arguments</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">final_argument_whitespace</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">doc_field_types</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">option_spec</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">OptionSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;noblocks&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">flag</span><span class="p">,</span>
+        <span class="s2">&quot;nolinks&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">flag</span><span class="p">,</span>
+        <span class="s2">&quot;nosource&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">flag</span><span class="p">,</span>
+        <span class="s2">&quot;noindex&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">flag</span><span class="p">,</span>
+        <span class="s2">&quot;noindexentry&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">flag</span><span class="p">,</span>
+        <span class="s2">&quot;canonical&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">unchanged</span><span class="p">,</span>
+        <span class="s2">&quot;annotation&quot;</span><span class="p">:</span> <span class="n">rst_directives</span><span class="o">.</span><span class="n">unchanged</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="declaration_to_signature">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.declaration_to_signature.html#blark.sphinxdomain.declaration_to_signature">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">declaration_to_signature</span><span class="p">(</span>
+    <span class="n">signode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span><span class="p">,</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">sphinx</span><span class="o">.</span><span class="n">environment</span><span class="o">.</span><span class="n">BuildEnvironment</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">qualified_name</span><span class="p">]</span>
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;docname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">docname</span>
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;qualified_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">qualified_name</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">domaindata</span><span class="p">[</span><span class="s2">&quot;bk&quot;</span><span class="p">][</span><span class="s2">&quot;declaration&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">qualified_name</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">signode</span>
+        <span class="p">)</span>
+    <span class="k">yield</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_name</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_punctuation</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot; : &quot;</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">pending_xref</span><span class="p">(</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">base_type</span><span class="p">,</span> <span class="n">nodes</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">type</span><span class="p">),</span> <span class="n">refdomain</span><span class="o">=</span><span class="s2">&quot;bk&quot;</span><span class="p">,</span>
+        <span class="n">reftype</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">reftarget</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">base_type</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="declaration_to_content">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.declaration_to_content.html#blark.sphinxdomain.declaration_to_content">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">declaration_to_content</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">paragraph</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">paragraph</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Default: &quot;</span><span class="p">)</span>
+        <span class="n">default</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">literal_strong</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">default</span>
+
+    <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">location</span><span class="p">:</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">paragraph</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Linkable </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">location_type</span><span class="si">}</span><span class="s2">: &quot;</span>
+        <span class="p">)</span>
+        <span class="n">location</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">literal_strong</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">location</span>
+
+    <span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">comments</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">nodes</span><span class="o">.</span><span class="n">paragraph</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">remove_comment_characters</span><span class="p">(</span><span class="n">comment</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="declarations_to_block">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.declarations_to_block.html#blark.sphinxdomain.declarations_to_block">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">declarations_to_block</span><span class="p">(</span>
+    <span class="n">declarations</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">sphinx</span><span class="o">.</span><span class="n">environment</span><span class="o">.</span><span class="n">BuildEnvironment</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="c1"># These nodes translate into the following in html:</span>
+    <span class="c1"># desc -&gt; dl</span>
+    <span class="c1"># desc_signature -&gt; dt</span>
+    <span class="c1"># desc_content -&gt; dd</span>
+    <span class="c1"># So:</span>
+    <span class="c1">#  desc</span>
+    <span class="c1">#  -&gt; desc_signature</span>
+    <span class="c1">#      -&gt; desc_sig_name, desc_sig_punctuation, etc.</span>
+    <span class="c1">#  -&gt; desc_content</span>
+    <span class="c1">#      -&gt; paragraph, etc.</span>
+    <span class="k">for</span> <span class="n">decl</span> <span class="ow">in</span> <span class="n">declarations</span><span class="p">:</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;declaration&quot;</span><span class="p">])</span>
+        <span class="n">signode</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span><span class="p">()</span>
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">declaration_to_signature</span><span class="p">(</span><span class="n">signode</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+
+        <span class="n">decl_info</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_content</span><span class="p">()</span>
+        <span class="n">decl_info</span> <span class="o">+=</span> <span class="n">declaration_to_content</span><span class="p">(</span><span class="n">decl</span><span class="p">)</span>
+
+        <span class="n">desc</span> <span class="o">+=</span> <span class="n">signode</span>
+        <span class="n">desc</span> <span class="o">+=</span> <span class="n">decl_info</span>
+
+        <span class="k">yield</span> <span class="n">desc</span></div>
+
+
+
+<div class="viewcode-block" id="DeclarationDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.DeclarationDirective.html#blark.sphinxdomain.DeclarationDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DeclarationDirective</span><span class="p">(</span><span class="n">BlarkDirective</span><span class="p">):</span>
+    <span class="n">block_header</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span>
+
+<div class="viewcode-block" id="DeclarationDirective.handle_signature">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.DeclarationDirective.html#blark.sphinxdomain.DeclarationDirective.handle_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_signature</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sig</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">signode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="c1"># def transform_content(self, contentnode: addnodes.desc_content) -&gt; None:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="p">[</span><span class="s2">&quot;bk:function&quot;</span><span class="p">]</span>
+        <span class="n">variable</span> <span class="o">=</span> <span class="n">sig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">declarations</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">declaration_to_signature</span><span class="p">(</span><span class="n">signode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sig</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="DeclarationDirective.transform_content">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.DeclarationDirective.html#blark.sphinxdomain.DeclarationDirective.transform_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contentnode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_content</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">contentnode</span> <span class="o">+=</span> <span class="n">declaration_to_content</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="VariableBlockDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.VariableBlockDirective.html#blark.sphinxdomain.VariableBlockDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VariableBlockDirective</span><span class="p">(</span><span class="n">BlarkDirective</span><span class="p">):</span>
+    <span class="n">block_header</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">declarations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="VariableBlockDirective.handle_signature">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.VariableBlockDirective.html#blark.sphinxdomain.VariableBlockDirective.handle_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_signature</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">signode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_header</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bk:function&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declarations</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_name</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declarations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">declarations_by_block</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_header</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_name</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">block_header</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;variable_block&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_header</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">signode</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;variable_block&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_header</span><span class="p">,</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="VariableBlockDirective.transform_content">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.VariableBlockDirective.html#blark.sphinxdomain.VariableBlockDirective.transform_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contentnode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_content</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bk:function&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">declarations</span><span class="p">:</span>
+            <span class="n">contentnode</span> <span class="o">+=</span> <span class="n">declarations_to_block</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">declarations</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_table_from_lists</span><span class="p">(</span>
+    <span class="n">table_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">Node</span><span class="p">]],</span>
+    <span class="n">col_widths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">header_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">stub_columns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nodes</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a docutils table from a list of elements.&quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">table</span><span class="p">()</span>
+    <span class="n">tgroup</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">tgroup</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">col_widths</span><span class="p">))</span>
+    <span class="n">table</span> <span class="o">+=</span> <span class="n">tgroup</span>
+    <span class="k">for</span> <span class="n">col_width</span> <span class="ow">in</span> <span class="n">col_widths</span><span class="p">:</span>
+        <span class="n">colspec</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">colspec</span><span class="p">(</span><span class="n">colwidth</span><span class="o">=</span><span class="n">col_width</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stub_columns</span><span class="p">:</span>
+            <span class="n">colspec</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;stub&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">stub_columns</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">tgroup</span> <span class="o">+=</span> <span class="n">colspec</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_row</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">nodes</span><span class="o">.</span><span class="n">row</span><span class="p">:</span>
+        <span class="n">row_node</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">row</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">entry</span><span class="p">()</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="n">cell</span>
+            <span class="n">row_node</span> <span class="o">+=</span> <span class="n">entry</span>
+        <span class="k">return</span> <span class="n">row_node</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_to_row</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">header_rows</span><span class="p">:</span>
+        <span class="n">thead</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">thead</span><span class="p">()</span>
+        <span class="n">thead</span> <span class="o">+=</span> <span class="n">rows</span><span class="p">[:</span><span class="n">header_rows</span><span class="p">]</span>
+        <span class="n">tgroup</span> <span class="o">+=</span> <span class="n">thead</span>
+
+    <span class="n">tbody</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">tbody</span><span class="p">()</span>
+    <span class="n">tbody</span> <span class="o">+=</span> <span class="n">rows</span><span class="p">[</span><span class="n">header_rows</span><span class="p">:]</span>
+    <span class="n">tgroup</span> <span class="o">+=</span> <span class="n">tbody</span>
+    <span class="k">return</span> <span class="n">table</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_link_table</span><span class="p">(</span>
+    <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">decls</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">summary</span><span class="o">.</span><span class="n">DeclarationSummary</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nodes</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decl_items</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">Node</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">decl</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">decls</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">decl</span><span class="p">:</span> <span class="n">decl</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">paragraph</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">paragraph</span><span class="p">()</span>
+            <span class="n">paragraph</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">pending_xref</span><span class="p">(</span>
+                <span class="n">decl</span><span class="o">.</span><span class="n">qualified_name</span><span class="p">,</span>
+                <span class="n">nodes</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">decl</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                <span class="n">refdomain</span><span class="o">=</span><span class="s2">&quot;bk&quot;</span><span class="p">,</span>
+                <span class="n">reftype</span><span class="o">=</span><span class="s2">&quot;declaration&quot;</span><span class="p">,</span>
+                <span class="n">reftarget</span><span class="o">=</span><span class="n">decl</span><span class="o">.</span><span class="n">qualified_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="p">[</span><span class="n">paragraph</span><span class="p">,</span> <span class="n">nodes</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">decl</span><span class="o">.</span><span class="n">location</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">_build_table_from_lists</span><span class="p">(</span>
+        <span class="n">table_data</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">nodes</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Link&quot;</span><span class="p">)],</span>
+            <span class="o">*</span><span class="n">decl_items</span><span class="p">()</span>
+        <span class="p">],</span>
+        <span class="n">col_widths</span><span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span>
+        <span class="n">header_rows</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="MissingDeclaration">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.MissingDeclaration.html#blark.sphinxdomain.MissingDeclaration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MissingDeclaration</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">declarations</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">declarations_by_block</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">source_code</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="MissingDeclaration.__init__">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.MissingDeclaration.html#blark.sphinxdomain.MissingDeclaration.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declarations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declarations_by_block</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(Missing item: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BlarkDirectiveWithDeclarations">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlarkDirectiveWithDeclarations</span><span class="p">(</span><span class="n">BlarkDirective</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">summary</span><span class="o">.</span><span class="n">FunctionSummary</span><span class="p">,</span>
+        <span class="n">summary</span><span class="o">.</span><span class="n">FunctionBlockSummary</span><span class="p">,</span>
+        <span class="n">MissingDeclaration</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">doc_field_types</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">GroupedField</span><span class="p">(</span>
+            <span class="s2">&quot;declaration&quot;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;VAR&quot;</span><span class="p">),</span>
+            <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;declaration&quot;</span><span class="p">,</span> <span class="p">),</span>
+            <span class="n">rolename</span><span class="o">=</span><span class="s2">&quot;declaration&quot;</span><span class="p">,</span>
+            <span class="n">can_collapse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="c1"># GroupedField(</span>
+        <span class="c1">#     &quot;variable_block&quot;,</span>
+        <span class="c1">#     label=l_(&quot;VAR&quot;),</span>
+        <span class="c1">#     names=(&quot;variable_block&quot;, &quot;var&quot;, ),</span>
+        <span class="c1">#     rolename=&quot;variable_block&quot;,</span>
+        <span class="c1">#     typerolename=&quot;variable_block&quot;,</span>
+        <span class="c1">#     typenames=(&quot;variable_block&quot;, &quot;var&quot;),</span>
+        <span class="c1">#     can_collapse=True,</span>
+        <span class="c1"># ),</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="BlarkDirectiveWithDeclarations.handle_signature">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations.handle_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_signature</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sig</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">signode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform a signature/object into RST nodes.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">BlarkSphinxCache</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">find_by_name</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">MissingDeclaration</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;Could not find object: </span><span class="si">%r</span><span class="s2"> (signatures unsupported)&quot;</span><span class="p">,</span> <span class="n">sig</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Code object not found: </span><span class="si">{</span><span class="n">sig</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="p">[</span><span class="s2">&quot;bk:function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
+
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">sig</span><span class="p">]</span>
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;docname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">docname</span>
+        <span class="n">signode</span><span class="p">[</span><span class="s2">&quot;qualified_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sig</span>
+        <span class="n">domain_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">domaindata</span><span class="p">[</span><span class="s2">&quot;bk&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">signature_prefix</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+        <span class="n">domain_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signode</span><span class="p">)</span>
+        <span class="n">sig_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature_prefix</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_annotation</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sig_prefix</span><span class="p">),</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">sig_prefix</span><span class="p">)</span>
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">paramlist</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_parameterlist</span><span class="p">(</span><span class="s2">&quot;paramlist&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;VAR_INPUT&quot;</span><span class="p">,</span> <span class="s2">&quot;VAR_IN_OUT&quot;</span><span class="p">,</span> <span class="s2">&quot;VAR_OUTPUT&quot;</span><span class="p">,</span> <span class="s2">&quot;STRUCT&quot;</span><span class="p">):</span>
+            <span class="n">decls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">declarations_by_block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">decl</span> <span class="ow">in</span> <span class="n">decls</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_parameter</span><span class="p">()</span>
+                <span class="c1"># node += addnodes.desc_sig_operator(&#39;&#39;, &#39;*&#39;)</span>
+                <span class="n">node</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_type</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">decl</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+                <span class="n">node</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_space</span><span class="p">()</span>
+                <span class="n">node</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_name</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">block</span> <span class="o">==</span> <span class="s2">&quot;VAR_OUTPUT&quot;</span><span class="p">:</span>
+                    <span class="n">node</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_punctuation</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;=&gt;&quot;</span><span class="p">)</span>
+
+                <span class="n">paramlist</span> <span class="o">+=</span> <span class="n">node</span>
+
+        <span class="n">signode</span> <span class="o">+=</span> <span class="n">paramlist</span>
+
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;return_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">signode</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_returns</span><span class="p">()</span>
+            <span class="n">signode</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_type</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">return_type</span><span class="p">)</span>
+
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sig</span><span class="p">,</span> <span class="n">prefix</span></div>
+
+
+<div class="viewcode-block" id="BlarkDirectiveWithDeclarations.before_content">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations.before_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">before_content</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="p">[</span><span class="s1">&#39;bk:obj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_links</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the linkable inputs/outputs as sphinx nodes.&quot;&quot;&quot;</span>
+        <span class="n">linkable</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">get_linkable_declarations</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">declarations</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="s2">&quot;memory&quot;</span><span class="p">):</span>
+            <span class="n">decls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">linkable</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="n">decls</span><span class="p">:</span>
+                <span class="n">block_desc</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;linkable&quot;</span><span class="p">])</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Inputs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;Outputs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;memory&quot;</span><span class="p">:</span> <span class="s2">&quot;Memory&quot;</span><span class="p">,</span>
+                <span class="p">}[</span><span class="n">attr</span><span class="p">]</span>
+                <span class="n">sig</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_signature</span><span class="p">(</span>
+                    <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;linkable_</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                    <span class="n">ids</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">._linkable_</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">_&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">sig</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_name</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Linkable </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">block_desc</span> <span class="o">+=</span> <span class="n">sig</span>
+
+                <span class="n">block_desc</span> <span class="o">+=</span> <span class="n">_to_link_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">decls</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">block_desc</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_basic_variable_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the usual input/output variable blocks as sphinx nodes.&quot;&quot;&quot;</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;VAR_INPUT&quot;</span><span class="p">,</span> <span class="s2">&quot;VAR_IN_OUT&quot;</span><span class="p">,</span> <span class="s2">&quot;VAR_OUTPUT&quot;</span><span class="p">,</span> <span class="s2">&quot;VAR_GLOBAL&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">summary</span><span class="o">.</span><span class="n">ProgramSummary</span><span class="p">):</span>
+            <span class="n">blocks</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;VAR&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+            <span class="n">decls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">declarations_by_block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">decls</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">block_desc</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc</span><span class="p">()</span>
+            <span class="n">block_desc</span> <span class="o">+=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_name</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;variable_block&quot;</span><span class="p">,</span> <span class="n">block</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">block_contents</span> <span class="o">=</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_content</span><span class="p">()</span>
+            <span class="n">block_contents</span> <span class="o">+=</span> <span class="n">declarations_to_block</span><span class="p">(</span><span class="n">decls</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+
+            <span class="n">block_desc</span> <span class="o">+=</span> <span class="n">block_contents</span>
+            <span class="k">yield</span> <span class="n">block_desc</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">container</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the usual input/output variable blocks as sphinx nodes.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">nodes</span><span class="o">.</span><span class="n">container</span><span class="p">(</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">literal_block</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">source_code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">source_code</span><span class="p">),</span>
+            <span class="n">classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;plc_source&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="BlarkDirectiveWithDeclarations.transform_content">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations.transform_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contentnode</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_content</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;nolinks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+            <span class="n">contentnode</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_links</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;noblocks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+            <span class="n">contentnode</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_basic_variable_blocks</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;nosource&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+            <span class="n">contentnode</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;noindexentry&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_index_entries</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_index_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indexnode</span><span class="p">[</span><span class="s2">&quot;entries&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">linkable</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">get_linkable_declarations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">declarations</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="s2">&quot;memory&quot;</span><span class="p">):</span>
+            <span class="n">decls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">linkable</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">for</span> <span class="n">decl</span> <span class="ow">in</span> <span class="n">decls</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indexnode</span><span class="p">[</span><span class="s2">&quot;entries&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decl</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                     <span class="n">decl</span><span class="o">.</span><span class="n">qualified_name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="BlarkDirectiveWithDeclarations.get_signature_prefix">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations.get_signature_prefix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_signature_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">nodes</span><span class="o">.</span><span class="n">Node</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">addnodes</span><span class="o">.</span><span class="n">desc_sig_keyword</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">signature_prefix</span><span class="p">),</span>
+        <span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FunctionDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.FunctionDirective.html#blark.sphinxdomain.FunctionDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionDirective</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">FunctionSummary</span>
+    <span class="n">signature_prefix</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FUNCTION&quot;</span>
+    <span class="n">doc_field_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="o">.</span><span class="n">doc_field_types</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
+        <span class="n">Field</span><span class="p">(</span>
+            <span class="s2">&quot;returntype&quot;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;Return type&quot;</span><span class="p">),</span>
+            <span class="n">has_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;rtype&quot;</span><span class="p">,),</span>
+            <span class="n">bodyrolename</span><span class="o">=</span><span class="s2">&quot;obj&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="FunctionBlockDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.FunctionBlockDirective.html#blark.sphinxdomain.FunctionBlockDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionBlockDirective</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">FunctionBlockSummary</span>
+    <span class="n">signature_prefix</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FUNCTION_BLOCK&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="TypeDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.TypeDirective.html#blark.sphinxdomain.TypeDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeDirective</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">DataTypeSummary</span>
+    <span class="n">signature_prefix</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;TYPE&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ProgramDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.ProgramDirective.html#blark.sphinxdomain.ProgramDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProgramDirective</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">ProgramSummary</span>
+    <span class="n">signature_prefix</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;PROGRAM&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="GvlDirective">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.GvlDirective.html#blark.sphinxdomain.GvlDirective">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GvlDirective</span><span class="p">(</span><span class="n">BlarkDirectiveWithDeclarations</span><span class="p">):</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">summary</span><span class="o">.</span><span class="n">GlobalVariableSummary</span>
+    <span class="n">signature_prefix</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;GVL&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="BlarkXRefRole">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkXRefRole.html#blark.sphinxdomain.BlarkXRefRole">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlarkXRefRole</span><span class="p">(</span><span class="n">XRefRole</span><span class="p">):</span>
+<div class="viewcode-block" id="BlarkXRefRole.process_link">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkXRefRole.html#blark.sphinxdomain.BlarkXRefRole.process_link">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">refnode</span><span class="p">,</span> <span class="n">has_explicit_title</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">refnode</span><span class="p">[</span><span class="s2">&quot;bk:scope&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">ref_context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bk:scope&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_explicit_title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>  <span class="c1"># only has a meaning for the target</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span>  <span class="c1"># only has a meaning for the title</span>
+            <span class="c1"># if the first character is a tilde, don&#39;t display the module/class</span>
+            <span class="c1"># parts of the contents</span>
+            <span class="k">if</span> <span class="n">title</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span>
+                <span class="n">dot</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">dot</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">[</span><span class="n">dot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">title</span><span class="p">,</span> <span class="n">target</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BlarkDomain">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDomain.html#blark.sphinxdomain.BlarkDomain">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlarkDomain</span><span class="p">(</span><span class="n">Domain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Blark IEC61131-3 language domain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;bk&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Blark&quot;</span>
+    <span class="n">object_types</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ObjType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;declaration&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;declaration&quot;</span><span class="p">),</span> <span class="s2">&quot;declaration&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">),</span> <span class="n">l_</span><span class="p">(</span><span class="s2">&quot;func&quot;</span><span class="p">)),</span>
+        <span class="s2">&quot;function_block&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;functionblock&quot;</span><span class="p">),</span> <span class="n">l_</span><span class="p">(</span><span class="s2">&quot;function_block&quot;</span><span class="p">),</span> <span class="n">l_</span><span class="p">(</span><span class="s2">&quot;fb&quot;</span><span class="p">)),</span>
+        <span class="s2">&quot;gvl&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;gvl&quot;</span><span class="p">),</span> <span class="s2">&quot;global_variable_list&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;module&quot;</span><span class="p">),</span> <span class="s2">&quot;mod&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;program&quot;</span><span class="p">),</span> <span class="p">),</span>
+        <span class="s2">&quot;source_code&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;source_code&quot;</span><span class="p">),</span> <span class="s2">&quot;plc_source&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">),</span> <span class="s2">&quot;type&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;variable_block&quot;</span><span class="p">:</span> <span class="n">ObjType</span><span class="p">(</span><span class="n">l_</span><span class="p">(</span><span class="s2">&quot;variable_block&quot;</span><span class="p">),</span> <span class="s2">&quot;var&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">directives</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">BlarkDirective</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;declaration&quot;</span><span class="p">:</span> <span class="n">DeclarationDirective</span><span class="p">,</span>
+        <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="n">FunctionDirective</span><span class="p">,</span>
+        <span class="s2">&quot;function_block&quot;</span><span class="p">:</span> <span class="n">FunctionBlockDirective</span><span class="p">,</span>
+        <span class="s2">&quot;gvl&quot;</span><span class="p">:</span> <span class="n">GvlDirective</span><span class="p">,</span>
+        <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="n">ProgramDirective</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">TypeDirective</span><span class="p">,</span>
+        <span class="s2">&quot;variable_block&quot;</span><span class="p">:</span> <span class="n">VariableBlockDirective</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">roles</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BlarkXRefRole</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;declaration&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(),</span>
+        <span class="s2">&quot;fb&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(</span><span class="n">fix_parens</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(</span><span class="n">fix_parens</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;function_block&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(</span><span class="n">fix_parens</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;gvl&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(</span><span class="n">fix_parens</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;mod&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(),</span>
+        <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(</span><span class="n">fix_parens</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">BlarkXRefRole</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="n">initial_data</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;declaration&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;function_block&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;gvl&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="p">}</span>
+    <span class="n">indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># BlarkModuleIndex,</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="BlarkDomain.find_obj">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDomain.html#blark.sphinxdomain.BlarkDomain.find_obj">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_obj</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rolename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="n">nodes</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span>
+        <span class="n">targetstring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">for</span> <span class="n">typename</span><span class="p">,</span> <span class="n">objtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">rolename</span> <span class="ow">in</span> <span class="n">objtype</span><span class="o">.</span><span class="n">roles</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="c1"># TODO: scoping?</span>
+        <span class="c1"># parent_obj = self.env.ref_context.get(&quot;bk:function&quot;, None)</span>
+        <span class="c1"># print(&quot;scope&quot;, parent_obj, rolename, node)</span>
+        <span class="n">domaindata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">domaindata</span><span class="p">[</span><span class="s2">&quot;bk&quot;</span><span class="p">][</span><span class="n">typename</span><span class="p">]</span>
+        <span class="c1"># print(&quot;scope&quot;, rolename, node, list(domaindata))</span>
+        <span class="k">return</span> <span class="n">domaindata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">targetstring</span><span class="p">,</span> <span class="p">[])</span></div>
+
+
+<div class="viewcode-block" id="BlarkDomain.resolve_xref">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDomain.html#blark.sphinxdomain.BlarkDomain.resolve_xref">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_xref</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">environment</span><span class="o">.</span><span class="n">BuildEnvironment</span><span class="p">,</span>
+        <span class="n">fromdocname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">builder</span><span class="p">:</span> <span class="n">Builder</span><span class="p">,</span>
+        <span class="n">typ</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="n">addnodes</span><span class="o">.</span><span class="n">pending_xref</span><span class="p">,</span>
+        <span class="n">contnode</span><span class="p">:</span> <span class="n">nodes</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nodes</span><span class="o">.</span><span class="n">reference</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_obj</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No target found for cross-reference: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="s2">&quot;qualified_name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;More than one target found for cross-reference &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">options</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">make_refnode</span><span class="p">(</span>
+            <span class="n">builder</span><span class="p">,</span>
+            <span class="n">fromdocname</span><span class="p">,</span>
+            <span class="k">match</span><span class="p">[</span><span class="s2">&quot;docname&quot;</span><span class="p">],</span>
+            <span class="k">match</span><span class="p">[</span><span class="s2">&quot;qualified_name&quot;</span><span class="p">],</span>
+            <span class="n">contnode</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BlarkDomain.clear_doc">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.BlarkDomain.html#blark.sphinxdomain.BlarkDomain.clear_doc">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">methods</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">domaindata</span><span class="p">[</span><span class="s2">&quot;bk&quot;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">to_delete</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">method</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">methods</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">method</span><span class="p">[</span><span class="s2">&quot;docname&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">docname</span><span class="p">:</span>
+                        <span class="n">to_delete</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">to_delete</span><span class="p">:</span>
+                    <span class="n">methods</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_initialize_domain</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback function for &#39;config-inited&#39;.&quot;&quot;&quot;</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">BlarkSphinxCache</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="setup">
+<a class="viewcode-back" href="../../api/blark.sphinxdomain.setup.html#blark.sphinxdomain.setup">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">sphinx</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">Sphinx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># These are the configuration settings in ``conf.py``:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">add_config_value</span><span class="p">(</span><span class="s2">&quot;blark_projects&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="s2">&quot;html&quot;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">add_config_value</span><span class="p">(</span><span class="s2">&quot;blark_signature_show_type&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">add_domain</span><span class="p">(</span><span class="n">BlarkDomain</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;config-inited&quot;</span><span class="p">,</span> <span class="n">_initialize_domain</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

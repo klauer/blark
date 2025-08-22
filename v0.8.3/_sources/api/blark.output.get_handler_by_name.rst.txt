@@ -1,0 +1,6 @@
+﻿blark.output.get\_handler\_by\_name
+===================================
+
+.. currentmodule:: blark.output
+
+.. autofunction:: get_handler_by_name

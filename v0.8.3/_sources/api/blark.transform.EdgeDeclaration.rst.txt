@@ -1,0 +1,49 @@
+﻿blark.transform.EdgeDeclaration
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: EdgeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``edge_declaration``
+
+   .. code::
+
+     edge_declaration: var1_list ":" _BOOL ( R_EDGE | F_EDGE )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~EdgeDeclaration.__init__
+       ~EdgeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~EdgeDeclaration.meta
+       ~EdgeDeclaration.variables
+       ~EdgeDeclaration.edge
+       ~EdgeDeclaration.init
+   

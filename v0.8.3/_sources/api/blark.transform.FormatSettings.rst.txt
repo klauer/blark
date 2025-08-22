@@ -1,0 +1,30 @@
+﻿blark.transform.FormatSettings
+==============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FormatSettings
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FormatSettings.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FormatSettings.indent
+   

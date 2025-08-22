@@ -1,0 +1,35 @@
+﻿blark.html.HtmlWriter
+=====================
+
+.. currentmodule:: blark.html
+
+.. autoclass:: HtmlWriter
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~HtmlWriter.__init__
+       ~HtmlWriter.save
+       ~HtmlWriter.to_html
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~HtmlWriter.source_code
+       ~HtmlWriter.user
+       ~HtmlWriter.source_filename
+       ~HtmlWriter.block
+   

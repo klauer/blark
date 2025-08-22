@@ -1,0 +1,6 @@
+﻿blark.solution.make\_solution\_from\_files
+==========================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: make_solution_from_files

@@ -1,0 +1,39 @@
+﻿blark.summary.PropertyGetSetSummary
+===================================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: PropertyGetSetSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~PropertyGetSetSummary.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~PropertyGetSetSummary.implementation
+       ~PropertyGetSetSummary.implementation_source
+       ~PropertyGetSetSummary.name
+       ~PropertyGetSetSummary.item
+       ~PropertyGetSetSummary.source_code
+       ~PropertyGetSetSummary.declarations
+       ~PropertyGetSetSummary.comments
+       ~PropertyGetSetSummary.pragmas
+       ~PropertyGetSetSummary.filename
+       ~PropertyGetSetSummary.meta
+   

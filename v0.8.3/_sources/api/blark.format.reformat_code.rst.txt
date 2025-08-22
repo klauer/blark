@@ -1,0 +1,6 @@
+﻿blark.format.reformat\_code
+===========================
+
+.. currentmodule:: blark.format
+
+.. autofunction:: reformat_code

@@ -1,0 +1,6 @@
+﻿blark.util.simplify\_brackets
+=============================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: simplify_brackets

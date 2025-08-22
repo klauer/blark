@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.html.HtmlWriter &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.html.apply_annotations_to_code" href="blark.html.apply_annotations_to_code.html" />
+    <link rel="prev" title="blark.html.HighlighterAnnotation" href="blark.html.HighlighterAnnotation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-html">blark.html</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.html.HighlighterAnnotation.html">blark.html.HighlighterAnnotation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.html.HtmlWriter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.html.HtmlWriter"><code class="docutils literal notranslate"><span class="pre">HtmlWriter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.html.apply_annotations_to_code.html">blark.html.apply_annotations_to_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.html.get_annotations.html">blark.html.get_annotations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.html.HtmlWriter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.html.HtmlWriter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-html-htmlwriter">
+<h1>blark.html.HtmlWriter<a class="headerlink" href="#blark-html-htmlwriter" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.html.</span></span><span class="sig-name descname"><span class="pre">HtmlWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Any'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[pathlib.Path]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'OutputBlock'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/html.html#HtmlWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.html.HtmlWriter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.__init__" title="blark.html.HtmlWriter.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(user, source_filename, block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.save" title="blark.html.HtmlWriter.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(user, source_filename, parts)</p></td>
+<td><p>Convert the source code block to HTML and return it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.to_html" title="blark.html.HtmlWriter.to_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_html</span></code></a>()</p></td>
+<td><p>HTML tag-annotated source code.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.source_code" title="blark.html.HtmlWriter.source_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source_code</span></code></a></p></td>
+<td><p>The source code associated with the block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.user" title="blark.html.HtmlWriter.user"><code class="xref py py-obj docutils literal notranslate"><span class="pre">user</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.source_filename" title="blark.html.HtmlWriter.source_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source_filename</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.html.HtmlWriter.block" title="blark.html.HtmlWriter.block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">block</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.user">
+<span class="sig-name descname"><span class="pre">user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></em><a class="headerlink" href="#blark.html.HtmlWriter.user" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.source_filename">
+<span class="sig-name descname"><span class="pre">source_filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#blark.html.HtmlWriter.source_filename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.block">
+<span class="sig-name descname"><span class="pre">block</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="blark.output.OutputBlock.html#blark.output.OutputBlock" title="blark.output.OutputBlock"><span class="pre">OutputBlock</span></a></em><a class="headerlink" href="#blark.html.HtmlWriter.block" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.source_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_code</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#blark.html.HtmlWriter.source_code" title="Link to this definition"></a></dt>
+<dd><p>The source code associated with the block.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.to_html">
+<span class="sig-name descname"><span class="pre">to_html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/blark/html.html#HtmlWriter.to_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.html.HtmlWriter.to_html" title="Link to this definition"></a></dt>
+<dd><p>HTML tag-annotated source code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.save">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blark.output.OutputBlock.html#blark.output.OutputBlock" title="blark.output.OutputBlock"><span class="pre">OutputBlock</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/blark/html.html#HtmlWriter.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.html.HtmlWriter.save" title="Link to this definition"></a></dt>
+<dd><p>Convert the source code block to HTML and return it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.html.HtmlWriter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.output.OutputBlock.html#blark.output.OutputBlock" title="blark.output.OutputBlock"><span class="pre">OutputBlock</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#blark.html.HtmlWriter.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.html.HighlighterAnnotation.html" class="btn btn-neutral float-left" title="blark.html.HighlighterAnnotation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.html.apply_annotations_to_code.html" class="btn btn-neutral float-right" title="blark.html.apply_annotations_to_code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

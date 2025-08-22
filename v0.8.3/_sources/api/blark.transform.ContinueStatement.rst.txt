@@ -1,0 +1,46 @@
+﻿blark.transform.ContinueStatement
+=================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ContinueStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``continue_statement``
+
+   .. code::
+
+     continue_statement.1: _CONTINUE ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ContinueStatement.__init__
+       ~ContinueStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ContinueStatement.meta
+   

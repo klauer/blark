@@ -1,0 +1,6 @@
+﻿blark.input.register\_input\_handler
+====================================
+
+.. currentmodule:: blark.input
+
+.. autofunction:: register_input_handler

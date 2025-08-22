@@ -1,0 +1,50 @@
+﻿blark.transform.MethodInstanceVariableDeclarations
+==================================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: MethodInstanceVariableDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``var_inst_declaration``
+
+   .. code::
+
+     var_inst_declaration: _VAR_INST [ variable_attributes ] var_body _END_VAR ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~MethodInstanceVariableDeclarations.__init__
+       ~MethodInstanceVariableDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~MethodInstanceVariableDeclarations.attribute_pragmas
+       ~MethodInstanceVariableDeclarations.block_header
+       ~MethodInstanceVariableDeclarations.meta
+       ~MethodInstanceVariableDeclarations.attrs
+       ~MethodInstanceVariableDeclarations.items
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.EnumeratedValue
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: EnumeratedValue
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``enumerated_value``
+
+   .. code::
+
+     enumerated_value: [ enumerated_type_name "#" ] DOTTED_IDENTIFIER [ ":=" integer_constant_or_func ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~EnumeratedValue.__init__
+       ~EnumeratedValue.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~EnumeratedValue.meta
+       ~EnumeratedValue.type_name
+       ~EnumeratedValue.name
+       ~EnumeratedValue.value
+   

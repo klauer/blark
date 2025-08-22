@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.solution.SolutionLoaderError &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.solution.TcAction" href="blark.solution.TcAction.html" />
+    <link rel="prev" title="blark.solution.Solution" href="blark.solution.Solution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.DependencyInformation.html">blark.solution.DependencyInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.DependencyVersion.html">blark.solution.DependencyVersion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.LocatedString.html">blark.solution.LocatedString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.Project.html">blark.solution.Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.Solution.html">blark.solution.Solution</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.solution.SolutionLoaderError</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.solution.SolutionLoaderError"><code class="docutils literal notranslate"><span class="pre">SolutionLoaderError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcAction.html">blark.solution.TcAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcDUT.html">blark.solution.TcDUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcDeclImpl.html">blark.solution.TcDeclImpl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcExtraInfo.html">blark.solution.TcExtraInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcGVL.html">blark.solution.TcGVL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcIO.html">blark.solution.TcIO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcMethod.html">blark.solution.TcMethod</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcPOU.html">blark.solution.TcPOU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcProperty.html">blark.solution.TcProperty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcSource.html">blark.solution.TcSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcSourceChild.html">blark.solution.TcSourceChild</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcTTO.html">blark.solution.TcTTO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TcUnknownXml.html">blark.solution.TcUnknownXml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TwincatPlcProject.html">blark.solution.TwincatPlcProject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TwincatSourceCodeItem.html">blark.solution.TwincatSourceCodeItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.TwincatTsProject.html">blark.solution.TwincatTsProject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.UnsupportedSourceFileError.html">blark.solution.UnsupportedSourceFileError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.filename_from_xml.html">blark.solution.filename_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_blark_input_from_solution.html">blark.solution.get_blark_input_from_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_child_located_text.html">blark.solution.get_child_located_text</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_child_text.html">blark.solution.get_child_text</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_code_object_from_xml.html">blark.solution.get_code_object_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_project_guid.html">blark.solution.get_project_guid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_project_target_netid.html">blark.solution.get_project_target_netid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.get_tcplc_from_xml.html">blark.solution.get_tcplc_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.make_solution_from_files.html">blark.solution.make_solution_from_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.parse_xml_contents.html">blark.solution.parse_xml_contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.parse_xml_file.html">blark.solution.parse_xml_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.project_loader.html">blark.solution.project_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.projects_from_solution_source.html">blark.solution.projects_from_solution_source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.solution_loader.html">blark.solution.solution_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.split_property_and_base_decl.html">blark.solution.split_property_and_base_decl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.strip_implicit_lines.html">blark.solution.strip_implicit_lines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.strip_xml_namespace.html">blark.solution.strip_xml_namespace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.twincat_file_loader.html">blark.solution.twincat_file_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.solution.twincat_file_writer.html">blark.solution.twincat_file_writer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.solution.SolutionLoaderError</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.solution.SolutionLoaderError.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-solution-solutionloadererror">
+<h1>blark.solution.SolutionLoaderError<a class="headerlink" href="#blark-solution-solutionloadererror" title="Link to this heading"></a></h1>
+<dl class="py exception">
+<dt class="sig sig-object py" id="blark.solution.SolutionLoaderError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.solution.</span></span><span class="sig-name descname"><span class="pre">SolutionLoaderError</span></span><a class="reference internal" href="../_modules/blark/solution.html#SolutionLoaderError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.solution.SolutionLoaderError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Solution loader-related exception base class.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.solution.Solution.html" class="btn btn-neutral float-left" title="blark.solution.Solution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.solution.TcAction.html" class="btn btn-neutral float-right" title="blark.solution.TcAction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

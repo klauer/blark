@@ -1,0 +1,6 @@
+﻿blark.summary.get\_linkable\_declarations
+=========================================
+
+.. currentmodule:: blark.summary
+
+.. autofunction:: get_linkable_declarations

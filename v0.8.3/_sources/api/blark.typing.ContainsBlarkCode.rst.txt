@@ -1,0 +1,25 @@
+﻿blark.typing.ContainsBlarkCode
+==============================
+
+.. currentmodule:: blark.typing
+
+.. autoclass:: ContainsBlarkCode
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ContainsBlarkCode.__init__
+       ~ContainsBlarkCode.to_blark
+   
+   
+
+   
+   
+   

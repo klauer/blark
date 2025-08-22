@@ -1,0 +1,50 @@
+﻿blark.transform.IfStatement
+===========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: IfStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``if_statement``
+
+   .. code::
+
+     if_statement: _IF expression _THEN [ statement_list ] ( else_if_clause )* [ else_clause ] _END_IF ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~IfStatement.__init__
+       ~IfStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~IfStatement.meta
+       ~IfStatement.if_expression
+       ~IfStatement.statements
+       ~IfStatement.else_ifs
+       ~IfStatement.else_clause
+   

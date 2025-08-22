@@ -1,0 +1,32 @@
+﻿blark.transform.ArrayInitialization
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ArrayInitialization
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ArrayInitialization.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ArrayInitialization.brackets
+       ~ArrayInitialization.meta
+       ~ArrayInitialization.elements
+   

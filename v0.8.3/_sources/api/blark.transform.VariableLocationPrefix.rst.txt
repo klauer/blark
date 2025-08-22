@@ -1,0 +1,78 @@
+﻿blark.transform.VariableLocationPrefix
+======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableLocationPrefix
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~VariableLocationPrefix.encode
+       ~VariableLocationPrefix.replace
+       ~VariableLocationPrefix.split
+       ~VariableLocationPrefix.rsplit
+       ~VariableLocationPrefix.join
+       ~VariableLocationPrefix.capitalize
+       ~VariableLocationPrefix.casefold
+       ~VariableLocationPrefix.title
+       ~VariableLocationPrefix.center
+       ~VariableLocationPrefix.count
+       ~VariableLocationPrefix.expandtabs
+       ~VariableLocationPrefix.find
+       ~VariableLocationPrefix.partition
+       ~VariableLocationPrefix.index
+       ~VariableLocationPrefix.ljust
+       ~VariableLocationPrefix.lower
+       ~VariableLocationPrefix.lstrip
+       ~VariableLocationPrefix.rfind
+       ~VariableLocationPrefix.rindex
+       ~VariableLocationPrefix.rjust
+       ~VariableLocationPrefix.rstrip
+       ~VariableLocationPrefix.rpartition
+       ~VariableLocationPrefix.splitlines
+       ~VariableLocationPrefix.strip
+       ~VariableLocationPrefix.swapcase
+       ~VariableLocationPrefix.translate
+       ~VariableLocationPrefix.upper
+       ~VariableLocationPrefix.startswith
+       ~VariableLocationPrefix.endswith
+       ~VariableLocationPrefix.removeprefix
+       ~VariableLocationPrefix.removesuffix
+       ~VariableLocationPrefix.isascii
+       ~VariableLocationPrefix.islower
+       ~VariableLocationPrefix.isupper
+       ~VariableLocationPrefix.istitle
+       ~VariableLocationPrefix.isspace
+       ~VariableLocationPrefix.isdecimal
+       ~VariableLocationPrefix.isdigit
+       ~VariableLocationPrefix.isnumeric
+       ~VariableLocationPrefix.isalpha
+       ~VariableLocationPrefix.isalnum
+       ~VariableLocationPrefix.isidentifier
+       ~VariableLocationPrefix.isprintable
+       ~VariableLocationPrefix.zfill
+       ~VariableLocationPrefix.format
+       ~VariableLocationPrefix.format_map
+       ~VariableLocationPrefix.maketrans
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableLocationPrefix.input
+       ~VariableLocationPrefix.output
+       ~VariableLocationPrefix.memory
+   

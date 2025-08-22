@@ -1,0 +1,42 @@
+﻿blark.parse.ParseResult
+=======================
+
+.. currentmodule:: blark.parse
+
+.. autoclass:: ParseResult
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ParseResult.__init__
+       ~ParseResult.dump_source
+       ~ParseResult.transform
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ParseResult.exception
+       ~ParseResult.filename
+       ~ParseResult.identifier
+       ~ParseResult.line_map
+       ~ParseResult.parent
+       ~ParseResult.transformed
+       ~ParseResult.tree
+       ~ParseResult.source_code
+       ~ParseResult.item
+       ~ParseResult.processed_source_code
+       ~ParseResult.comments
+   

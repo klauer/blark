@@ -1,0 +1,51 @@
+﻿blark.transform.ForStatement
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ForStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``for_statement``
+
+   .. code::
+
+     for_statement: _FOR control_variable ":=" _for_list _DO statement_list _END_FOR ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ForStatement.__init__
+       ~ForStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ForStatement.meta
+       ~ForStatement.control
+       ~ForStatement.from_
+       ~ForStatement.to
+       ~ForStatement.step
+       ~ForStatement.statements
+   

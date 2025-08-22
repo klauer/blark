@@ -1,0 +1,31 @@
+﻿blark.transform.TypeInitializationBase
+======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TypeInitializationBase
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TypeInitializationBase.base_type_name
+       ~TypeInitializationBase.full_type_name
+       ~TypeInitializationBase.type_info
+   

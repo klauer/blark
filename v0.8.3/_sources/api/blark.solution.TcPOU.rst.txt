@@ -1,0 +1,45 @@
+﻿blark.solution.TcPOU
+====================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcPOU
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcPOU.__init__
+       ~TcPOU.create_source_child_from_xml
+       ~TcPOU.get_child_by_identifier
+       ~TcPOU.rewrite_code
+       ~TcPOU.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcPOU.default_source_type
+       ~TcPOU.file_extension
+       ~TcPOU.parts_by_name
+       ~TcPOU.source_type
+       ~TcPOU.xml
+       ~TcPOU.parts
+       ~TcPOU.name
+       ~TcPOU.guid
+       ~TcPOU.decl
+       ~TcPOU.metadata
+       ~TcPOU.filename
+       ~TcPOU.parent
+   

@@ -1,0 +1,6 @@
+﻿blark.util.maybe\_add\_brackets
+===============================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: maybe_add_brackets

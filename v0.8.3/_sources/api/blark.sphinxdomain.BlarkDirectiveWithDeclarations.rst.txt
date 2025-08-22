@@ -1,0 +1,50 @@
+﻿blark.sphinxdomain.BlarkDirectiveWithDeclarations
+=================================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: BlarkDirectiveWithDeclarations
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkDirectiveWithDeclarations.before_content
+       ~BlarkDirectiveWithDeclarations.get_signature_prefix
+       ~BlarkDirectiveWithDeclarations.handle_signature
+       ~BlarkDirectiveWithDeclarations.transform_content
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkDirectiveWithDeclarations.config
+       ~BlarkDirectiveWithDeclarations.doc_field_types
+       ~BlarkDirectiveWithDeclarations.domain
+       ~BlarkDirectiveWithDeclarations.env
+       ~BlarkDirectiveWithDeclarations.final_argument_whitespace
+       ~BlarkDirectiveWithDeclarations.has_content
+       ~BlarkDirectiveWithDeclarations.indexnode
+       ~BlarkDirectiveWithDeclarations.objtype
+       ~BlarkDirectiveWithDeclarations.option_spec
+       ~BlarkDirectiveWithDeclarations.optional_arguments
+       ~BlarkDirectiveWithDeclarations.required_arguments
+       ~BlarkDirectiveWithDeclarations.obj
+       ~BlarkDirectiveWithDeclarations.name
+       ~BlarkDirectiveWithDeclarations.rawtext
+       ~BlarkDirectiveWithDeclarations.text
+       ~BlarkDirectiveWithDeclarations.lineno
+       ~BlarkDirectiveWithDeclarations.options
+       ~BlarkDirectiveWithDeclarations.content
+   

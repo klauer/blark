@@ -1,0 +1,52 @@
+﻿blark.transform.SimpleSpecification
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SimpleSpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``simple_specification``
+
+   .. code::
+
+     simple_specification: elementary_type_name
+                         | simple_type_name
+                         | DOTTED_IDENTIFIER
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SimpleSpecification.__init__
+       ~SimpleSpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SimpleSpecification.base_type_name
+       ~SimpleSpecification.full_type_name
+       ~SimpleSpecification.meta
+       ~SimpleSpecification.type_info
+       ~SimpleSpecification.type
+   

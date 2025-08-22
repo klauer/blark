@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.sphinxdomain.BlarkDomain &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.sphinxdomain.BlarkSphinxCache" href="blark.sphinxdomain.BlarkSphinxCache.html" />
+    <link rel="prev" title="blark.sphinxdomain.BlarkDirectiveWithDeclarations" href="blark.sphinxdomain.BlarkDirectiveWithDeclarations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.BlarkDirective.html">blark.sphinxdomain.BlarkDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.BlarkDirectiveWithDeclarations.html">blark.sphinxdomain.BlarkDirectiveWithDeclarations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.sphinxdomain.BlarkDomain</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain"><code class="docutils literal notranslate"><span class="pre">BlarkDomain</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.BlarkSphinxCache.html">blark.sphinxdomain.BlarkSphinxCache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.BlarkXRefRole.html">blark.sphinxdomain.BlarkXRefRole</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.DeclarationDirective.html">blark.sphinxdomain.DeclarationDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.FunctionBlockDirective.html">blark.sphinxdomain.FunctionBlockDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.FunctionDirective.html">blark.sphinxdomain.FunctionDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.GvlDirective.html">blark.sphinxdomain.GvlDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.MissingDeclaration.html">blark.sphinxdomain.MissingDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.ProgramDirective.html">blark.sphinxdomain.ProgramDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.TypeDirective.html">blark.sphinxdomain.TypeDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.VariableBlockDirective.html">blark.sphinxdomain.VariableBlockDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.declaration_to_content.html">blark.sphinxdomain.declaration_to_content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.declaration_to_signature.html">blark.sphinxdomain.declaration_to_signature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.declarations_to_block.html">blark.sphinxdomain.declarations_to_block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.sphinxdomain.setup.html">blark.sphinxdomain.setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.sphinxdomain.BlarkDomain</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.sphinxdomain.BlarkDomain.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-sphinxdomain-blarkdomain">
+<h1>blark.sphinxdomain.BlarkDomain<a class="headerlink" href="#blark-sphinxdomain-blarkdomain" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.sphinxdomain.</span></span><span class="sig-name descname"><span class="pre">BlarkDomain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BuildEnvironment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/sphinxdomain.html#BlarkDomain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Domain</span></code></p>
+<p>Blark IEC61131-3 language domain.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.clear_doc" title="blark.sphinxdomain.BlarkDomain.clear_doc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_doc</span></code></a>(docname)</p></td>
+<td><p>Remove traces of a document in the domain-specific inventories.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.find_obj" title="blark.sphinxdomain.BlarkDomain.find_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_obj</span></code></a>(rolename, node, targetstring)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.resolve_xref" title="blark.sphinxdomain.BlarkDomain.resolve_xref"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_xref</span></code></a>(env, fromdocname, builder, typ, ...)</p></td>
+<td><p>Resolve the pending_xref <em>node</em> with the given <em>typ</em> and <em>target</em>.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dangling_warnings</span></code></p></td>
+<td><p>role name -&gt; a warning message if reference is missing</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_version</span></code></p></td>
+<td><p>data version, bump this when the format of <code class="xref any docutils literal notranslate"><span class="pre">self.data</span></code> changes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.directives" title="blark.sphinxdomain.BlarkDomain.directives"><code class="xref py py-obj docutils literal notranslate"><span class="pre">directives</span></code></a></p></td>
+<td><p>directive name -&gt; directive class</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">enumerable_nodes</span></code></p></td>
+<td><p>node_class -&gt; (enum_node_type, title_getter)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.indices" title="blark.sphinxdomain.BlarkDomain.indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices</span></code></a></p></td>
+<td><p>a list of Index subclasses</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.initial_data" title="blark.sphinxdomain.BlarkDomain.initial_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initial_data</span></code></a></p></td>
+<td><p>data value for a fresh environment</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.label" title="blark.sphinxdomain.BlarkDomain.label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">label</span></code></a></p></td>
+<td><p>domain label: longer, more descriptive (used in messages)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.name" title="blark.sphinxdomain.BlarkDomain.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<td><p>domain name: should be short, but unique</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.object_types" title="blark.sphinxdomain.BlarkDomain.object_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">object_types</span></code></a></p></td>
+<td><p>type (usually directive) name -&gt; ObjType instance</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#blark.sphinxdomain.BlarkDomain.roles" title="blark.sphinxdomain.BlarkDomain.roles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roles</span></code></a></p></td>
+<td><p>role name -&gt; role callable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></p></td>
+<td><p>data value</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bk'</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.name" title="Link to this definition"></a></dt>
+<dd><p>domain name: should be short, but unique</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.label">
+<span class="sig-name descname"><span class="pre">label</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Blark'</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.label" title="Link to this definition"></a></dt>
+<dd><p>domain label: longer, more descriptive (used in messages)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.object_types">
+<span class="sig-name descname"><span class="pre">object_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ObjType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'declaration':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'function':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'function_block':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'gvl':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'module':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'program':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'source_code':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'type':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;,</span> <span class="pre">'variable_block':</span> <span class="pre">&lt;sphinx.domains.ObjType</span> <span class="pre">object&gt;}</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.object_types" title="Link to this definition"></a></dt>
+<dd><p>type (usually directive) name -&gt; ObjType instance</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.directives">
+<span class="sig-name descname"><span class="pre">directives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blark.sphinxdomain.BlarkDirective.html#blark.sphinxdomain.BlarkDirective" title="blark.sphinxdomain.BlarkDirective"><span class="pre">BlarkDirective</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'declaration':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.DeclarationDirective'&gt;,</span> <span class="pre">'function':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.FunctionDirective'&gt;,</span> <span class="pre">'function_block':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.FunctionBlockDirective'&gt;,</span> <span class="pre">'gvl':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.GvlDirective'&gt;,</span> <span class="pre">'program':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.ProgramDirective'&gt;,</span> <span class="pre">'type':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.TypeDirective'&gt;,</span> <span class="pre">'variable_block':</span> <span class="pre">&lt;class</span> <span class="pre">'blark.sphinxdomain.VariableBlockDirective'&gt;}</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.directives" title="Link to this definition"></a></dt>
+<dd><p>directive name -&gt; directive class</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.roles">
+<span class="sig-name descname"><span class="pre">roles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="blark.sphinxdomain.BlarkXRefRole.html#blark.sphinxdomain.BlarkXRefRole" title="blark.sphinxdomain.BlarkXRefRole"><span class="pre">BlarkXRefRole</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'declaration':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'fb':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'function':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'function_block':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'gvl':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'mod':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'program':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;,</span> <span class="pre">'type':</span> <span class="pre">&lt;blark.sphinxdomain.BlarkXRefRole</span> <span class="pre">object&gt;}</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.roles" title="Link to this definition"></a></dt>
+<dd><p>role name -&gt; role callable</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.initial_data">
+<span class="sig-name descname"><span class="pre">initial_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'action':</span> <span class="pre">{},</span> <span class="pre">'declaration':</span> <span class="pre">{},</span> <span class="pre">'function':</span> <span class="pre">{},</span> <span class="pre">'function_block':</span> <span class="pre">{},</span> <span class="pre">'gvl':</span> <span class="pre">{},</span> <span class="pre">'method':</span> <span class="pre">{},</span> <span class="pre">'module':</span> <span class="pre">{},</span> <span class="pre">'program':</span> <span class="pre">{},</span> <span class="pre">'type':</span> <span class="pre">{}}</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.initial_data" title="Link to this definition"></a></dt>
+<dd><p>data value for a fresh environment</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.indices">
+<span class="sig-name descname"><span class="pre">indices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Index</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.indices" title="Link to this definition"></a></dt>
+<dd><p>a list of Index subclasses</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.find_obj">
+<span class="sig-name descname"><span class="pre">find_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rolename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targetstring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/sphinxdomain.html#BlarkDomain.find_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.find_obj" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.resolve_xref">
+<span class="sig-name descname"><span class="pre">resolve_xref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">sphinx.environment.BuildEnvironment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fromdocname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Builder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">addnodes.pending_xref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contnode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">nodes.Element</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">nodes.reference</span></span></span><a class="reference internal" href="../_modules/blark/sphinxdomain.html#BlarkDomain.resolve_xref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.resolve_xref" title="Link to this definition"></a></dt>
+<dd><p>Resolve the pending_xref <em>node</em> with the given <em>typ</em> and <em>target</em>.</p>
+<p>This method should return a new node, to replace the xref node,
+containing the <em>contnode</em> which is the markup content of the
+cross-reference.</p>
+<p>If no resolution can be found, None can be returned; the xref node will
+then given to the <a href="#id1"><span class="problematic" id="id2">:event:`missing-reference`</span></a> event, and if that yields no
+resolution, replaced by <em>contnode</em>.</p>
+<p>The method can also raise <code class="xref py py-exc docutils literal notranslate"><span class="pre">sphinx.environment.NoUri</span></code> to suppress
+the <a href="#id3"><span class="problematic" id="id4">:event:`missing-reference`</span></a> event being emitted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.sphinxdomain.BlarkDomain.clear_doc">
+<span class="sig-name descname"><span class="pre">clear_doc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/blark/sphinxdomain.html#BlarkDomain.clear_doc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.sphinxdomain.BlarkDomain.clear_doc" title="Link to this definition"></a></dt>
+<dd><p>Remove traces of a document in the domain-specific inventories.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.sphinxdomain.BlarkDirectiveWithDeclarations.html" class="btn btn-neutral float-left" title="blark.sphinxdomain.BlarkDirectiveWithDeclarations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.sphinxdomain.BlarkSphinxCache.html" class="btn btn-neutral float-right" title="blark.sphinxdomain.BlarkSphinxCache" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

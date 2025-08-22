@@ -1,0 +1,48 @@
+﻿blark.transform.HexInteger
+==========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: HexInteger
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``hex_integer``
+
+   .. code::
+
+     | "16#" HEX_STRING            -> hex_integer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~HexInteger.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~HexInteger.base
+       ~HexInteger.meta
+       ~HexInteger.type_name
+       ~HexInteger.value
+   

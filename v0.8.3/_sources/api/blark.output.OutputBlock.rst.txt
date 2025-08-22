@@ -1,0 +1,32 @@
+﻿blark.output.OutputBlock
+========================
+
+.. currentmodule:: blark.output
+
+.. autoclass:: OutputBlock
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~OutputBlock.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~OutputBlock.origin
+       ~OutputBlock.code
+       ~OutputBlock.metadata
+   

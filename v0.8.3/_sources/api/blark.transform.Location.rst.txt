@@ -1,0 +1,49 @@
+﻿blark.transform.Location
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Location
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``location``
+
+   .. code::
+
+     location: _AT direct_variable
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Location.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Location.bits
+       ~Location.meta
+       ~Location.location_prefix
+       ~Location.location
+       ~Location.size_prefix
+   

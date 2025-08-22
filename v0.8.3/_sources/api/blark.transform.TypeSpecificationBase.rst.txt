@@ -1,0 +1,31 @@
+﻿blark.transform.TypeSpecificationBase
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TypeSpecificationBase
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TypeSpecificationBase.base_type_name
+       ~TypeSpecificationBase.full_type_name
+       ~TypeSpecificationBase.type_info
+   

@@ -1,0 +1,40 @@
+﻿blark.solution.TwincatSourceCodeItem
+====================================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TwincatSourceCodeItem
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TwincatSourceCodeItem.__init__
+       ~TwincatSourceCodeItem.from_compile_xml
+       ~TwincatSourceCodeItem.save_to
+       ~TwincatSourceCodeItem.to_file_contents
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TwincatSourceCodeItem.guid
+       ~TwincatSourceCodeItem.parent
+       ~TwincatSourceCodeItem.saved_path
+       ~TwincatSourceCodeItem.local_path
+       ~TwincatSourceCodeItem.subtype
+       ~TwincatSourceCodeItem.link_always
+       ~TwincatSourceCodeItem.raw_contents
+       ~TwincatSourceCodeItem.contents
+   

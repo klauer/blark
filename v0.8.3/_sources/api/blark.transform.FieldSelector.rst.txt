@@ -1,0 +1,48 @@
+﻿blark.transform.FieldSelector
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FieldSelector
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``field_selector``
+
+   .. code::
+
+     field_selector: [ DEREFERENCED ] "." ( variable_name | INTEGER )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FieldSelector.__init__
+       ~FieldSelector.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FieldSelector.meta
+       ~FieldSelector.field
+       ~FieldSelector.dereferenced
+   

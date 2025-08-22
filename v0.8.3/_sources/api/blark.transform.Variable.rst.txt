@@ -1,0 +1,23 @@
+﻿blark.transform.Variable
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Variable
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   

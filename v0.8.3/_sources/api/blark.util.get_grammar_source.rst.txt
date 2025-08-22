@@ -1,0 +1,6 @@
+﻿blark.util.get\_grammar\_source
+===============================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: get_grammar_source

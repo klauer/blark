@@ -1,0 +1,32 @@
+﻿blark.transform.VariableDeclarationBlock
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: VariableDeclarationBlock
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~VariableDeclarationBlock.attribute_pragmas
+       ~VariableDeclarationBlock.block_header
+       ~VariableDeclarationBlock.items
+       ~VariableDeclarationBlock.meta
+   

@@ -1,0 +1,59 @@
+﻿blark.transform.GlobalVariableAttributes
+========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: GlobalVariableAttributes
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``global_variable_attributes``
+
+   .. code::
+
+     global_variable_attributes: GLOBAL_VAR_ATTRIB+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~GlobalVariableAttributes.from_lark
+       ~GlobalVariableAttributes.conjugate
+       ~GlobalVariableAttributes.bit_length
+       ~GlobalVariableAttributes.bit_count
+       ~GlobalVariableAttributes.to_bytes
+       ~GlobalVariableAttributes.from_bytes
+       ~GlobalVariableAttributes.as_integer_ratio
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GlobalVariableAttributes.real
+       ~GlobalVariableAttributes.imag
+       ~GlobalVariableAttributes.numerator
+       ~GlobalVariableAttributes.denominator
+       ~GlobalVariableAttributes.constant
+       ~GlobalVariableAttributes.retain
+       ~GlobalVariableAttributes.non_retain
+       ~GlobalVariableAttributes.persistent
+       ~GlobalVariableAttributes.internal
+   

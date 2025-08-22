@@ -1,0 +1,49 @@
+﻿blark.transform.SimpleTypeDeclaration
+=====================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: SimpleTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``simple_type_declaration``
+
+   .. code::
+
+     simple_type_declaration: simple_type_name [ extends ] ":" simple_spec_init
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SimpleTypeDeclaration.__init__
+       ~SimpleTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~SimpleTypeDeclaration.meta
+       ~SimpleTypeDeclaration.name
+       ~SimpleTypeDeclaration.extends
+       ~SimpleTypeDeclaration.init
+   

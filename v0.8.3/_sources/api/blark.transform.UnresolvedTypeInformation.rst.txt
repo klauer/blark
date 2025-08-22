@@ -1,0 +1,32 @@
+﻿blark.transform.UnresolvedTypeInformation
+=========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: UnresolvedTypeInformation
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~UnresolvedTypeInformation.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~UnresolvedTypeInformation.base_type_name
+       ~UnresolvedTypeInformation.full_type_name
+       ~UnresolvedTypeInformation.context
+   

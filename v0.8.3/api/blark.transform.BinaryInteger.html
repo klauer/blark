@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.transform.BinaryInteger &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.transform.BinaryOperation" href="blark.transform.BinaryOperation.html" />
+    <link rel="prev" title="blark.transform.BinaryBitString" href="blark.transform.BinaryBitString.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.AccessDeclaration.html">blark.transform.AccessDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.AccessDeclarations.html">blark.transform.AccessDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.AccessSpecifier.html">blark.transform.AccessSpecifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Action.html">blark.transform.Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArrayInitialElement.html">blark.transform.ArrayInitialElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArrayInitialization.html">blark.transform.ArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArraySpecification.html">blark.transform.ArraySpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArrayTypeDeclaration.html">blark.transform.ArrayTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArrayTypeInitialization.html">blark.transform.ArrayTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ArrayVariableInitDeclaration.html">blark.transform.ArrayVariableInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.AssignmentStatement.html">blark.transform.AssignmentStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.BinaryBitString.html">blark.transform.BinaryBitString</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.transform.BinaryInteger</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.transform.BinaryInteger"><code class="docutils literal notranslate"><span class="pre">BinaryInteger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.BinaryOperation.html">blark.transform.BinaryOperation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.BitString.html">blark.transform.BitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Boolean.html">blark.transform.Boolean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.BracketedExpression.html">blark.transform.BracketedExpression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.CaseElement.html">blark.transform.CaseElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.CaseStatement.html">blark.transform.CaseStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ChainedFunctionCall.html">blark.transform.ChainedFunctionCall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ChainedFunctionCallStatement.html">blark.transform.ChainedFunctionCallStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ContinueStatement.html">blark.transform.ContinueStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.DataType.html">blark.transform.DataType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.DataTypeDeclaration.html">blark.transform.DataTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Date.html">blark.transform.Date</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.DateTime.html">blark.transform.DateTime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.DeclaredVariable.html">blark.transform.DeclaredVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.DirectVariable.html">blark.transform.DirectVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Duration.html">blark.transform.Duration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.EdgeDeclaration.html">blark.transform.EdgeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ElseClause.html">blark.transform.ElseClause</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ElseIfClause.html">blark.transform.ElseIfClause</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.EnumeratedSpecification.html">blark.transform.EnumeratedSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.EnumeratedTypeDeclaration.html">blark.transform.EnumeratedTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.EnumeratedTypeInitialization.html">blark.transform.EnumeratedTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.EnumeratedValue.html">blark.transform.EnumeratedValue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ExitStatement.html">blark.transform.ExitStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Expression.html">blark.transform.Expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ExtendedSourceCode.html">blark.transform.ExtendedSourceCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Extends.html">blark.transform.Extends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ExternalVariableDeclaration.html">blark.transform.ExternalVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ExternalVariableDeclarations.html">blark.transform.ExternalVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FieldSelector.html">blark.transform.FieldSelector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ForStatement.html">blark.transform.ForStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FormatSettings.html">blark.transform.FormatSettings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FullSubrange.html">blark.transform.FullSubrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Function.html">blark.transform.Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionBlock.html">blark.transform.FunctionBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionBlockDeclaration.html">blark.transform.FunctionBlockDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionBlockInvocationDeclaration.html">blark.transform.FunctionBlockInvocationDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionBlockNameDeclaration.html">blark.transform.FunctionBlockNameDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionCall.html">blark.transform.FunctionCall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionCallStatement.html">blark.transform.FunctionCallStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.FunctionVariableDeclarations.html">blark.transform.FunctionVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.GlobalVariableAttributes.html">blark.transform.GlobalVariableAttributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.GlobalVariableDeclaration.html">blark.transform.GlobalVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.GlobalVariableDeclarations.html">blark.transform.GlobalVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.GlobalVariableSpec.html">blark.transform.GlobalVariableSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.GrammarTransformer.html">blark.transform.GrammarTransformer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.HexBitString.html">blark.transform.HexBitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.HexInteger.html">blark.transform.HexInteger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IfStatement.html">blark.transform.IfStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Implements.html">blark.transform.Implements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IncompleteLocatedVariableDeclaration.html">blark.transform.IncompleteLocatedVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IncompleteLocatedVariableDeclarations.html">blark.transform.IncompleteLocatedVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IncompleteLocation.html">blark.transform.IncompleteLocation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IndirectSimpleSpecification.html">blark.transform.IndirectSimpleSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.IndirectionType.html">blark.transform.IndirectionType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.InitDeclaration.html">blark.transform.InitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.InitializedStructure.html">blark.transform.InitializedStructure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.InputDeclarations.html">blark.transform.InputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.InputOutputDeclarations.html">blark.transform.InputOutputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.InputParameterAssignment.html">blark.transform.InputParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Integer.html">blark.transform.Integer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Interface.html">blark.transform.Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.JumpStatement.html">blark.transform.JumpStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.LabeledStatement.html">blark.transform.LabeledStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Ldate.html">blark.transform.Ldate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.LdateTime.html">blark.transform.LdateTime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Lduration.html">blark.transform.Lduration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Literal.html">blark.transform.Literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.LocatedVariableDeclaration.html">blark.transform.LocatedVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.LocatedVariableDeclarations.html">blark.transform.LocatedVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Location.html">blark.transform.Location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.LtimeOfDay.html">blark.transform.LtimeOfDay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Meta.html">blark.transform.Meta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Method.html">blark.transform.Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.MethodInstanceVariableDeclarations.html">blark.transform.MethodInstanceVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.MultiElementVariable.html">blark.transform.MultiElementVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.NoOpStatement.html">blark.transform.NoOpStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ObjectInitializerArray.html">blark.transform.ObjectInitializerArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.OctalBitString.html">blark.transform.OctalBitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.OctalInteger.html">blark.transform.OctalInteger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.OutputDeclarations.html">blark.transform.OutputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.OutputParameterAssignment.html">blark.transform.OutputParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ParameterAssignment.html">blark.transform.ParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ParenthesizedExpression.html">blark.transform.ParenthesizedExpression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.PartialSubrange.html">blark.transform.PartialSubrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Program.html">blark.transform.Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Property.html">blark.transform.Property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Real.html">blark.transform.Real</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ReferenceAssignmentStatement.html">blark.transform.ReferenceAssignmentStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.RepeatStatement.html">blark.transform.RepeatStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ResetStatement.html">blark.transform.ResetStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.ReturnStatement.html">blark.transform.ReturnStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SetStatement.html">blark.transform.SetStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SimpleSpecification.html">blark.transform.SimpleSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SimpleTypeDeclaration.html">blark.transform.SimpleTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SimpleVariable.html">blark.transform.SimpleVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SourceCode.html">blark.transform.SourceCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Statement.html">blark.transform.Statement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StatementList.html">blark.transform.StatementList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StaticDeclarations.html">blark.transform.StaticDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.String.html">blark.transform.String</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StringSpecLength.html">blark.transform.StringSpecLength</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeDeclaration.html">blark.transform.StringTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeInitialization.html">blark.transform.StringTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StringTypeSpecification.html">blark.transform.StringTypeSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureElementDeclaration.html">blark.transform.StructureElementDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureElementInitialization.html">blark.transform.StructureElementInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureInitialization.html">blark.transform.StructureInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StructureTypeDeclaration.html">blark.transform.StructureTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.StructuredVariableInitDeclaration.html">blark.transform.StructuredVariableInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Subrange.html">blark.transform.Subrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SubrangeSpecification.html">blark.transform.SubrangeSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SubrangeTypeDeclaration.html">blark.transform.SubrangeTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SubrangeTypeInitialization.html">blark.transform.SubrangeTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.SubscriptList.html">blark.transform.SubscriptList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TemporaryVariableDeclarations.html">blark.transform.TemporaryVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TimeOfDay.html">blark.transform.TimeOfDay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TypeInformation.html">blark.transform.TypeInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TypeInitialization.html">blark.transform.TypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TypeInitializationBase.html">blark.transform.TypeInitializationBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.TypeSpecificationBase.html">blark.transform.TypeSpecificationBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.UnaryOperation.html">blark.transform.UnaryOperation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.UnionElementDeclaration.html">blark.transform.UnionElementDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.UnionTypeDeclaration.html">blark.transform.UnionTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.UnresolvedTypeInformation.html">blark.transform.UnresolvedTypeInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.Variable.html">blark.transform.Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableAttributes.html">blark.transform.VariableAttributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableDeclarationBlock.html">blark.transform.VariableDeclarationBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableDeclarations.html">blark.transform.VariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableLocationPrefix.html">blark.transform.VariableLocationPrefix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableOneInitDeclaration.html">blark.transform.VariableOneInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.VariableSizePrefix.html">blark.transform.VariableSizePrefix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.WhileStatement.html">blark.transform.WhileStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform._ArrayInitialElementCount.html">blark.transform._ArrayInitialElementCount</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform._BareArrayInitialization.html">blark.transform._BareArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform._BracketedArrayInitialization.html">blark.transform._BracketedArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform._FlagHelper.html">blark.transform._FlagHelper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform._GenericInit.html">blark.transform._GenericInit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.configure_formatting.html">blark.transform.configure_formatting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.get_grammar_for_class.html">blark.transform.get_grammar_for_class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.indent.html">blark.transform.indent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.indent_if.html">blark.transform.indent_if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.join_if.html">blark.transform.join_if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.merge_comments.html">blark.transform.merge_comments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.meta_field.html">blark.transform.meta_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.multiline_code_block.html">blark.transform.multiline_code_block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.transform.transform.html">blark.transform.transform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.transform.BinaryInteger</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.transform.BinaryInteger.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-transform-binaryinteger">
+<h1>blark.transform.BinaryInteger<a class="headerlink" href="#blark-transform-binaryinteger" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blark.transform.BinaryInteger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blark.transform.</span></span><span class="sig-name descname"><span class="pre">BinaryInteger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'lark.Token'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[lark.Token]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[Meta]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/blark/transform.html#BinaryInteger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.transform.BinaryInteger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="blark.transform.Integer.html#blark.transform.Integer" title="blark.transform.Integer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Integer</span></code></a></p>
+<p class="rubric">Lark grammar</p>
+<p>This class is used by the following grammar rules:</p>
+<p><code class="docutils literal notranslate"><span class="pre">binary_integer</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?any_integer: &quot;2#&quot; BIT_STRING             -&gt; binary_integer
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.transform.BinaryInteger.__init__" title="blark.transform.BinaryInteger.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(value[, type_name, meta])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#blark.transform.BinaryInteger.base" title="blark.transform.BinaryInteger.base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type_name</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">value</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blark.transform.BinaryInteger.base">
+<span class="sig-name descname"><span class="pre">base</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.ClassVar" title="(in Python v3.13)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#blark.transform.BinaryInteger.base" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blark.transform.BinaryInteger.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Token" title="(in Lark)"><span class="pre">Token</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blark.transform.Meta.html#blark.transform.Meta" title="blark.transform.Meta"><span class="pre">Meta</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#blark.transform.BinaryInteger.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.transform.BinaryBitString.html" class="btn btn-neutral float-left" title="blark.transform.BinaryBitString" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.transform.BinaryOperation.html" class="btn btn-neutral float-right" title="blark.transform.BinaryOperation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

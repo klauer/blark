@@ -1,0 +1,33 @@
+﻿blark.transform.\_GenericInit
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: _GenericInit
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~_GenericInit.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~_GenericInit.base_type_name
+       ~_GenericInit.full_type_name
+       ~_GenericInit.repr
+       ~_GenericInit.value
+   

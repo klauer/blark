@@ -1,0 +1,6 @@
+﻿blark.parse.dump\_json
+======================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: dump_json

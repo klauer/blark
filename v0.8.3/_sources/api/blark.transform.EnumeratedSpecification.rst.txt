@@ -1,0 +1,52 @@
+﻿blark.transform.EnumeratedSpecification
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: EnumeratedSpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``enumerated_specification``
+
+   .. code::
+
+     enumerated_specification: "(" enumerated_value ( "," enumerated_value )* ")" [ ENUM_DATA_TYPE_NAME ]
+                             | enumerated_type_name
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~EnumeratedSpecification.__init__
+       ~EnumeratedSpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~EnumeratedSpecification.base_type_name
+       ~EnumeratedSpecification.full_type_name
+       ~EnumeratedSpecification.meta
+       ~EnumeratedSpecification.type_info
+       ~EnumeratedSpecification.values
+       ~EnumeratedSpecification.type_name
+   

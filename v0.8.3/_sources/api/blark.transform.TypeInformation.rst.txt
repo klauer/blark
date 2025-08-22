@@ -1,0 +1,34 @@
+﻿blark.transform.TypeInformation
+===============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: TypeInformation
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TypeInformation.__init__
+       ~TypeInformation.from_init
+       ~TypeInformation.from_spec
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TypeInformation.base_type_name
+       ~TypeInformation.full_type_name
+       ~TypeInformation.context
+   

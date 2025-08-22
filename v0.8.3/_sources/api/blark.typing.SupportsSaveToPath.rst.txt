@@ -1,0 +1,25 @@
+﻿blark.typing.SupportsSaveToPath
+===============================
+
+.. currentmodule:: blark.typing
+
+.. autoclass:: SupportsSaveToPath
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SupportsSaveToPath.__init__
+       ~SupportsSaveToPath.save_to
+   
+   
+
+   
+   
+   

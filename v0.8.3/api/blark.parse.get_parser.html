@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blark.parse.get_parser &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="blark.parse.main" href="blark.parse.main.html" />
+    <link rel="prev" title="blark.parse.dump_json" href="blark.parse.dump_json.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-apischema-compat">blark.apischema_compat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-dependency-store">blark.dependency_store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-format">blark.format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-html">blark.html</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-input">blark.input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-main">blark.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-output">blark.output</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#blark-parse">blark.parse</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.BlarkStartingRule.html">blark.parse.BlarkStartingRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.ParseResult.html">blark.parse.ParseResult</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.build_arg_parser.html">blark.parse.build_arg_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.dump_json.html">blark.parse.dump_json</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">blark.parse.get_parser</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#blark.parse.get_parser"><code class="docutils literal notranslate"><span class="pre">get_parser()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.main.html">blark.parse.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.new_parser.html">blark.parse.new_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.parse.html">blark.parse.parse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.parse_item.html">blark.parse.parse_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.parse_project.html">blark.parse.parse_project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.parse_single_file.html">blark.parse.parse_single_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.parse_source_code.html">blark.parse.parse_source_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blark.parse.summarize.html">blark.parse.summarize</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-plain">blark.plain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-solution">blark.solution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-sphinxdomain">blark.sphinxdomain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-summary">blark.summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-transform">blark.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-typing">blark.typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#blark-util">blark.util</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">blark.parse.get_parser</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/blark.parse.get_parser.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="blark-parse-get-parser">
+<h1>blark.parse.get_parser<a class="headerlink" href="#blark-parse-get-parser" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="blark.parse.get_parser">
+<span class="sig-prename descclassname"><span class="pre">blark.parse.</span></span><span class="sig-name descname"><span class="pre">get_parser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://lark-parser.readthedocs.io/en/stable/classes.html#lark.Lark" title="(in Lark)"><span class="pre">Lark</span></a></span></span><a class="reference internal" href="../_modules/blark/parse.html#get_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blark.parse.get_parser" title="Link to this definition"></a></dt>
+<dd><p>Get a cached lark.Lark parser for TwinCAT flavor IEC61131-3 code.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="blark.parse.dump_json.html" class="btn btn-neutral float-left" title="blark.parse.dump_json" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blark.parse.main.html" class="btn btn-neutral float-right" title="blark.parse.main" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sphinx API Docs" href="sphinx.html" />
+    <link rel="prev" title="blark" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-grammar">The Grammar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#capabilities">Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#works-in-progress">Works-in-progress</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quickstart-pip-virtualenv-with-venv">Quickstart (pip / virtualenv with venv)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quickstart-conda">Quickstart (Conda)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#development-install">Development install</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sample-runs">Sample runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-test-cases">Adding Test Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#related-similar-or-alternative-projects">Related, Similar, or Alternative Projects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
+<section id="the-grammar">
+<h2>The Grammar<a class="headerlink" href="#the-grammar" title="Link to this heading"></a></h2>
+<p>The <a class="reference external" href="blark/iec.lark">grammar</a> uses Lark’s Earley parser algorithm.</p>
+<p>The grammar itself is not perfect. It may not reliably parse your source
+code or produce useful Python instances just yet.</p>
+<p>See <a class="reference external" href="https://github.com/klauer/blark/issues">issues</a> for further
+details.</p>
+<p>As a fun side project, blark isn’t at the top of my priority list. For
+an idea of where the project is going, see the issues list.</p>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/lark-parser/lark">lark</a> (for grammar-based
+parsing)</p></li>
+<li><p><a class="reference external" href="https://github.com/lxml/lxml">lxml</a> (for parsing TwinCAT
+projects)</p></li>
+</ul>
+</section>
+<section id="capabilities">
+<h2>Capabilities<a class="headerlink" href="#capabilities" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>TwinCAT source code file parsing (<code class="docutils literal notranslate"><span class="pre">*.TcPOU</span></code> and others)</p></li>
+<li><p>TwinCAT project and solution loading</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lark.Tree</span></code> generation of any supported source code</p></li>
+<li><p>Python dataclasses of supported source code, with introspection and
+code refactoring</p></li>
+</ul>
+<section id="works-in-progress">
+<h3>Works-in-progress<a class="headerlink" href="#works-in-progress" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Sphinx API documentation generation (a new Sphinx domain)</p></li>
+<li><p>Code reformatting</p></li>
+<li><p>“Dependency store” - recursively parse and inspect project
+dependencies</p></li>
+<li><p>Summary generation - a layer on top of dataclasses to summarize
+source code details</p></li>
+<li><p>Rewriting source code directly in TwinCAT source code files</p></li>
+</ul>
+</section>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>Installation is quick with Pip.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>blark
+</pre></div>
+</div>
+<section id="quickstart-pip-virtualenv-with-venv">
+<h3>Quickstart (pip / virtualenv with venv)<a class="headerlink" href="#quickstart-pip-virtualenv-with-venv" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Set up an environment using venv:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>blark_venv
+$<span class="w"> </span><span class="nb">source</span><span class="w"> </span>blark_venv/bin/activate
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install the library with pip:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>blark
+</pre></div>
+</div>
+</section>
+<section id="quickstart-conda">
+<h3>Quickstart (Conda)<a class="headerlink" href="#quickstart-conda" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Set up an environment using conda:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>blark-env<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10<span class="w"> </span>pip<span class="w"> </span>blark
+$<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>blark-env
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install the library from conda:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>blark
+</pre></div>
+</div>
+</section>
+<section id="development-install">
+<h3>Development install<a class="headerlink" href="#development-install" title="Link to this heading"></a></h3>
+<p>If you run into issues or wish to run an unreleased version of blark,
+you may install directly from this repository like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/klauer/blark
+</pre></div>
+</div>
+</section>
+</section>
+<section id="sample-runs">
+<h2>Sample runs<a class="headerlink" href="#sample-runs" title="Link to this heading"></a></h2>
+<p>Run the parser or experimental formatter utility. Current supported file
+types include those from TwinCAT3 projects ( <code class="docutils literal notranslate"><span class="pre">.tsproj</span></code>, <code class="docutils literal notranslate"><span class="pre">.sln</span></code>,
+<code class="docutils literal notranslate"><span class="pre">.TcPOU</span></code>, <code class="docutils literal notranslate"><span class="pre">.TcGVL</span></code>) and plain-text <code class="docutils literal notranslate"><span class="pre">.st</span></code> files.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>blark<span class="w"> </span>parse<span class="w"> </span>--print-tree<span class="w"> </span>blark/tests/POUs/F_SetStateParams.TcPOU
+function_declaration
+<span class="w">  </span>None
+<span class="w">  </span>F_SetStateParams
+<span class="w">  </span>indirect_simple_specification
+<span class="w">    </span>None
+<span class="w">    </span>simple_specification<span class="w">        </span>BOOL
+<span class="w">  </span>input_declarations
+<span class="w">    </span>None
+<span class="w">    </span>var1_init_decl
+<span class="w">      </span>var1_list
+...<span class="w"> </span><span class="o">(</span>clipped<span class="o">)</span><span class="w"> </span>...
+</pre></div>
+</div>
+<p>To interact with the Python dataclasses directly, make sure IPython is
+installed first and then try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ blark parse --interactive blark/tests/POUs/F_SetStateParams.TcPOU
+# Assuming IPython is installed, the following prompt will come up:
+
+In [1]: results[0].identifier
+Out[1]: &#39;F_SetStateParams/declaration&#39;
+
+In [2]: results[1].identifier
+Out[2]: &#39;F_SetStateParams/implementation&#39;
+</pre></div>
+</div>
+<p>Dump out a parsed and reformatted set of source code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>blark<span class="w"> </span>format<span class="w"> </span>blark/tests/source/array_of_objects.st
+<span class="o">{</span>attribute<span class="w"> </span><span class="s1">&#39;hide&#39;</span><span class="o">}</span>
+METHOD<span class="w"> </span>prv_Detection<span class="w"> </span>:<span class="w"> </span>BOOL
+<span class="w">    </span>VAR_IN_OUT
+<span class="w">        </span>currentChannel<span class="w"> </span>:<span class="w"> </span>ARRAY<span class="w"> </span><span class="o">[</span>APhase..CPhase<span class="o">]</span><span class="w"> </span>OF<span class="w"> </span>class_baseVector<span class="o">(</span>SIZEOF<span class="o">(</span>vector_t<span class="o">)</span>,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="w">    </span>END_VAR
+END_METHOD
+</pre></div>
+</div>
+<p>blark supports rewriting TwinCAT source code files directly as well:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>blark<span class="w"> </span>format<span class="w"> </span>blark/tests/POUs/F_SetStateParams.TcPOU
+
+&lt;TcPlcObject<span class="w"> </span><span class="nv">Version</span><span class="o">=</span><span class="s2">&quot;1.1.0.1&quot;</span><span class="w"> </span><span class="nv">ProductVersion</span><span class="o">=</span><span class="s2">&quot;3.1.4024.0&quot;</span>&gt;
+<span class="w">  </span>&lt;POU<span class="w"> </span><span class="nv">Name</span><span class="o">=</span><span class="s2">&quot;F_SetStateParams&quot;</span><span class="w"> </span><span class="nv">Id</span><span class="o">=</span><span class="s2">&quot;{f9611d23-4bb5-422d-9f11-2cc94e61fc9e}&quot;</span><span class="w"> </span><span class="nv">SpecialFunc</span><span class="o">=</span><span class="s2">&quot;None&quot;</span>&gt;
+<span class="w">    </span>&lt;Declaration&gt;&lt;!<span class="o">[</span>CDATA<span class="o">[</span>FUNCTION<span class="w"> </span>F_SetStateParams<span class="w"> </span>:<span class="w"> </span>BOOL
+<span class="w">    </span>VAR_INPUT
+<span class="w">        </span>nStateRef<span class="w"> </span>:<span class="w"> </span>UDINT<span class="p">;</span>
+<span class="w">        </span>rPosition<span class="w"> </span>:<span class="w"> </span>REAL<span class="p">;</span>
+<span class="w">        </span>rTolerance<span class="w"> </span>:<span class="w"> </span>REAL<span class="p">;</span>
+<span class="w">        </span>stBeamParams<span class="w"> </span>:<span class="w"> </span>ST_BeamParams<span class="p">;</span>
+
+...<span class="w"> </span><span class="o">(</span>clipped<span class="o">)</span><span class="w"> </span>...
+</pre></div>
+</div>
+<p>It is also possible to parse the source code into a tokenized
+<code class="docutils literal notranslate"><span class="pre">SourceCode</span></code> tree which supports code introspection and rewriting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">blark</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">parsed</span> <span class="o">=</span> <span class="n">blark</span><span class="o">.</span><span class="n">parse_source_code</span><span class="p">(</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">   ...: PROGRAM ProgramName</span>
+<span class="s2">   ...:     VAR_INPUT</span>
+<span class="s2">   ...:         iValue : INT;</span>
+<span class="s2">   ...:     END_VAR</span>
+<span class="s2">   ...:     VAR_ACCESS</span>
+<span class="s2">   ...:         AccessName : SymbolicVariable : TypeName READ_WRITE;</span>
+<span class="s2">   ...:     END_VAR</span>
+<span class="s2">   ...:     iValue := iValue + 1;</span>
+<span class="s2">   ...: END_PROGRAM</span>
+<span class="s2">   ...: &quot;&quot;&quot;</span>
+   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
+
+<span class="c1"># Access the lark Tree here:</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">parsed</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">data</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">Token</span><span class="p">(</span><span class="s1">&#39;RULE&#39;</span><span class="p">,</span> <span class="s1">&#39;iec_source&#39;</span><span class="p">)</span>
+
+<span class="c1"># Or the transformed information:</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">transformed</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">program</span> <span class="o">=</span> <span class="n">transformed</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">program</span><span class="o">.</span><span class="n">declarations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">Token</span><span class="p">(</span><span class="s1">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s1">&#39;iValue&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The supported starting grammar rules for the reusable parser include:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;iec_source&quot;</span>
+<span class="s2">&quot;action&quot;</span>
+<span class="s2">&quot;data_type_declaration&quot;</span>
+<span class="s2">&quot;function_block_method_declaration&quot;</span>
+<span class="s2">&quot;function_block_property_declaration&quot;</span>
+<span class="s2">&quot;function_block_type_declaration&quot;</span>
+<span class="s2">&quot;function_declaration&quot;</span>
+<span class="s2">&quot;global_var_declarations&quot;</span>
+<span class="s2">&quot;program_declaration&quot;</span>
+<span class="s2">&quot;statement_list&quot;</span>
+</pre></div>
+</div>
+<p>Other starting rules remain possible for advanced users, however a new
+parser must be created in that scenario and transformations are not
+supported.</p>
+<p>Additionally, please note that you should avoid creating parsers
+on-the-fly as there is a startup cost to re-parsing the grammar. Utilize
+the provided parser from <code class="docutils literal notranslate"><span class="pre">blark.get_parser()</span></code> whenever possible.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">blark</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">blark</span><span class="o">.</span><span class="n">new_parser</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;any_integer&quot;</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">Tree</span><span class="p">(</span><span class="s1">&#39;hex_integer&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">Token</span><span class="p">(</span><span class="s1">&#39;HEX_STRING&#39;</span><span class="p">,</span> <span class="s1">&#39;1010&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-test-cases">
+<h2>Adding Test Cases<a class="headerlink" href="#adding-test-cases" title="Link to this heading"></a></h2>
+<p>Presently, test cases are provided in two forms. Within the
+<code class="docutils literal notranslate"><span class="pre">blark/tests/</span></code> directory there are <code class="docutils literal notranslate"><span class="pre">POUs/</span></code> and <code class="docutils literal notranslate"><span class="pre">source/</span></code>
+directories.</p>
+<p>TwinCAT source code files belong in <code class="docutils literal notranslate"><span class="pre">blark/tests/POUs</span></code>. Plain-text
+source code files (e.g., <code class="docutils literal notranslate"><span class="pre">.st</span></code> files) belong in
+<code class="docutils literal notranslate"><span class="pre">blark/tests/source</span></code>.</p>
+<p>Feel free to contribute your own test cases and we’ll do our best to
+ensure that blark parses them (and continues to parse them) without
+issue.</p>
+</section>
+<section id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading"></a></h2>
+<p>Originally based on Volker Birk’s IEC 61131-3 grammar
+<a class="reference external" href="https://fdik.org/iec2xml/">iec2xml</a> (GitHub fork
+<a class="reference external" href="https://github.com/klauer/iec2xml">here</a>) and <a class="reference external" href="https://www.researchgate.net/publication/228971719_A_syntactic_specification_for_the_programming_languages_of_the_IEC_61131-3_standard">A Syntactic
+Specification for the Programming Languages of theIEC 61131-3
+Standard</a>
+by Flor Narciso et al. Many aspects of the grammar have been added to,
+modified, and in cases entirely rewritten to better support lark
+grammars and transformers.</p>
+<p>Special thanks to the blark contributors:</p>
+<ul class="simple">
+<li><p>&#64;engineerjoe440</p></li>
+</ul>
+</section>
+<section id="related-similar-or-alternative-projects">
+<h2>Related, Similar, or Alternative Projects<a class="headerlink" href="#related-similar-or-alternative-projects" title="Link to this heading"></a></h2>
+<p>There are a number of similar, or related projects that are available.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/nucleron/matiec">“MATIEC”</a> - another IEC
+61131-3 Structured Text parser which supports IEC 61131-3 second
+edition, without classes, namespaces and other fancy features. An
+updated version is also <a class="reference external" href="https://github.com/sm1820/matiec">available on
+Github</a></p></li>
+<li><p><a class="reference external" href="https://github.com/thiagoralves/OpenPLC_v3">OpenPLC Runtime Version
+3</a> - As stated by the
+project: &gt; OpenPLC is an open-source Programmable Logic Controller
+that is based on easy to use software. Our focus is to provide a low
+cost industrial solution for automation and research. OpenPLC has
+been used in many research papers as a framework for industrial cyber
+security research, given that it is the only controller to provide
+the entire source code.</p></li>
+<li><p><a class="reference external" href="https://github.com/PLC-lang/rusty">RuSTy</a>
+<a class="reference external" href="https://plc-lang.github.io/rusty/intro_1.html">documentation</a> -
+Structured text compiler written in Rust. As stated by the project: &gt;
+RuSTy is a structured text (ST) compiler written in Rust. RuSTy
+utilizes the LLVM framework to compile eventually to native code.</p></li>
+<li><p><a class="reference external" href="https://github.com/jubnzv/iec-checker">IEC Checker</a> - Static
+analysis tool for IEC 61131-3 logic. As described by the maintainer:
+&gt; iec-checker has the ability to parse ST source code and dump AST
+and CFG to JSON format, so you can process it with your language of
+choice.</p></li>
+<li><p><a class="reference external" href="https://github.com/Roald87/TcBlack">TcBlack</a> - Python black-like
+code formatter for TwinCAT code.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="blark" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sphinx.html" class="btn btn-neutral float-right" title="Sphinx API Docs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+﻿blark.transform.StructureElementInitialization
+==============================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: StructureElementInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``structure_element_initialization``
+
+   .. code::
+
+     structure_element_initialization: constant
+                                     | structure_element_name ":=" ( constant | expression | enumerated_value | array_initialization | structure_initialization )
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~StructureElementInitialization.__init__
+       ~StructureElementInitialization.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~StructureElementInitialization.meta
+       ~StructureElementInitialization.name
+       ~StructureElementInitialization.value
+   

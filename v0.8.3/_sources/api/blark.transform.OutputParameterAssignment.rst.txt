@@ -1,0 +1,49 @@
+﻿blark.transform.OutputParameterAssignment
+=========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: OutputParameterAssignment
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``output_parameter_assignment``
+
+   .. code::
+
+     param_assignment: [ LOGICAL_NOT ] variable_name "=>" [ expression ] -> output_parameter_assignment
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~OutputParameterAssignment.__init__
+       ~OutputParameterAssignment.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~OutputParameterAssignment.inverted
+       ~OutputParameterAssignment.meta
+       ~OutputParameterAssignment.name
+       ~OutputParameterAssignment.value
+   

@@ -1,0 +1,1504 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; blark  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="blark.apischema_compat.alternative_constructor" href="api/blark.apischema_compat.alternative_constructor.html" />
+    <link rel="prev" title="Sphinx API Docs" href="sphinx.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            blark
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sphinx.html">Sphinx API Docs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#blark-apischema-compat">blark.apischema_compat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.apischema_compat.alternative_constructor.html">blark.apischema_compat.alternative_constructor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.apischema_compat.as_tagged_union.html">blark.apischema_compat.as_tagged_union</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.apischema_compat.get_all_subclasses.html">blark.apischema_compat.get_all_subclasses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.apischema_compat.token_deserializer.html">blark.apischema_compat.token_deserializer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.apischema_compat.token_serializer.html">blark.apischema_compat.token_serializer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-config">blark.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-dependency-store">blark.dependency_store</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.DependencyStore.html">blark.dependency_store.DependencyStore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.DependencyStoreConfig.html">blark.dependency_store.DependencyStoreConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.DependencyStoreLibrary.html">blark.dependency_store.DependencyStoreLibrary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.PlcProjectMetadata.html">blark.dependency_store.PlcProjectMetadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.get_dependency_store.html">blark.dependency_store.get_dependency_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.dependency_store.load_projects.html">blark.dependency_store.load_projects</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-format">blark.format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.build_arg_parser.html">blark.format.build_arg_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.determine_output_filename.html">blark.format.determine_output_filename</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.dump_source_to_console.html">blark.format.dump_source_to_console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.get_reformatted_code_blocks.html">blark.format.get_reformatted_code_blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.main.html">blark.format.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.reformat_code.html">blark.format.reformat_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.format.write_source_to_file.html">blark.format.write_source_to_file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-html">blark.html</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.HighlighterAnnotation.html">blark.html.HighlighterAnnotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.HtmlWriter.html">blark.html.HtmlWriter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.apply_annotations_to_code.html">blark.html.apply_annotations_to_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.get_annotations.html">blark.html.get_annotations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-input">blark.input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.BlarkCompositeSourceItem.html">blark.input.BlarkCompositeSourceItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.BlarkSourceItem.html">blark.input.BlarkSourceItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.BlarkSourceLine.html">blark.input.BlarkSourceLine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.UnsupportedFileFormatError.html">blark.input.UnsupportedFileFormatError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.load_file_by_name.html">blark.input.load_file_by_name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.input.register_input_handler.html">blark.input.register_input_handler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-main">blark.main</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.main.main.html">blark.main.main</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-output">blark.output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.output.OutputBlock.html">blark.output.OutputBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.output.get_handler_by_name.html">blark.output.get_handler_by_name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.output.register_output_handler.html">blark.output.register_output_handler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-parse">blark.parse</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.BlarkStartingRule.html">blark.parse.BlarkStartingRule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.ParseResult.html">blark.parse.ParseResult</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.build_arg_parser.html">blark.parse.build_arg_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.dump_json.html">blark.parse.dump_json</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.get_parser.html">blark.parse.get_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.main.html">blark.parse.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.new_parser.html">blark.parse.new_parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.parse.html">blark.parse.parse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.parse_item.html">blark.parse.parse_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.parse_project.html">blark.parse.parse_project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.parse_single_file.html">blark.parse.parse_single_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.parse_source_code.html">blark.parse.parse_source_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.parse.summarize.html">blark.parse.summarize</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-plain">blark.plain</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.plain.PlainFileLoader.html">blark.plain.PlainFileLoader</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-solution">blark.solution</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.DependencyInformation.html">blark.solution.DependencyInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.DependencyVersion.html">blark.solution.DependencyVersion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.LocatedString.html">blark.solution.LocatedString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.Project.html">blark.solution.Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.Solution.html">blark.solution.Solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.SolutionLoaderError.html">blark.solution.SolutionLoaderError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcAction.html">blark.solution.TcAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcDUT.html">blark.solution.TcDUT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcDeclImpl.html">blark.solution.TcDeclImpl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcExtraInfo.html">blark.solution.TcExtraInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcGVL.html">blark.solution.TcGVL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcIO.html">blark.solution.TcIO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcMethod.html">blark.solution.TcMethod</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcPOU.html">blark.solution.TcPOU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcProperty.html">blark.solution.TcProperty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcSource.html">blark.solution.TcSource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcSourceChild.html">blark.solution.TcSourceChild</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcTTO.html">blark.solution.TcTTO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TcUnknownXml.html">blark.solution.TcUnknownXml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TwincatPlcProject.html">blark.solution.TwincatPlcProject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TwincatSourceCodeItem.html">blark.solution.TwincatSourceCodeItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.TwincatTsProject.html">blark.solution.TwincatTsProject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.UnsupportedSourceFileError.html">blark.solution.UnsupportedSourceFileError</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.filename_from_xml.html">blark.solution.filename_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_blark_input_from_solution.html">blark.solution.get_blark_input_from_solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_child_located_text.html">blark.solution.get_child_located_text</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_child_text.html">blark.solution.get_child_text</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_code_object_from_xml.html">blark.solution.get_code_object_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_project_guid.html">blark.solution.get_project_guid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_project_target_netid.html">blark.solution.get_project_target_netid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.get_tcplc_from_xml.html">blark.solution.get_tcplc_from_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.make_solution_from_files.html">blark.solution.make_solution_from_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.parse_xml_contents.html">blark.solution.parse_xml_contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.parse_xml_file.html">blark.solution.parse_xml_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.project_loader.html">blark.solution.project_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.projects_from_solution_source.html">blark.solution.projects_from_solution_source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.solution_loader.html">blark.solution.solution_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.split_property_and_base_decl.html">blark.solution.split_property_and_base_decl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.strip_implicit_lines.html">blark.solution.strip_implicit_lines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.strip_xml_namespace.html">blark.solution.strip_xml_namespace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.twincat_file_loader.html">blark.solution.twincat_file_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.solution.twincat_file_writer.html">blark.solution.twincat_file_writer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-sphinxdomain">blark.sphinxdomain</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.BlarkDirective.html">blark.sphinxdomain.BlarkDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html">blark.sphinxdomain.BlarkDirectiveWithDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.BlarkDomain.html">blark.sphinxdomain.BlarkDomain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.BlarkSphinxCache.html">blark.sphinxdomain.BlarkSphinxCache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.BlarkXRefRole.html">blark.sphinxdomain.BlarkXRefRole</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.DeclarationDirective.html">blark.sphinxdomain.DeclarationDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.FunctionBlockDirective.html">blark.sphinxdomain.FunctionBlockDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.FunctionDirective.html">blark.sphinxdomain.FunctionDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.GvlDirective.html">blark.sphinxdomain.GvlDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.MissingDeclaration.html">blark.sphinxdomain.MissingDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.ProgramDirective.html">blark.sphinxdomain.ProgramDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.TypeDirective.html">blark.sphinxdomain.TypeDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.VariableBlockDirective.html">blark.sphinxdomain.VariableBlockDirective</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.declaration_to_content.html">blark.sphinxdomain.declaration_to_content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.declaration_to_signature.html">blark.sphinxdomain.declaration_to_signature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.declarations_to_block.html">blark.sphinxdomain.declarations_to_block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.sphinxdomain.setup.html">blark.sphinxdomain.setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-summary">blark.summary</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.ActionSummary.html">blark.summary.ActionSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.CodeSummary.html">blark.summary.CodeSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.DataTypeSummary.html">blark.summary.DataTypeSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.DeclarationSummary.html">blark.summary.DeclarationSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.FunctionBlockSummary.html">blark.summary.FunctionBlockSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.FunctionSummary.html">blark.summary.FunctionSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.GlobalVariableSummary.html">blark.summary.GlobalVariableSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.InterfaceSummary.html">blark.summary.InterfaceSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.LinkableItems.html">blark.summary.LinkableItems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.MethodSummary.html">blark.summary.MethodSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.ProgramSummary.html">blark.summary.ProgramSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.PropertyGetSetSummary.html">blark.summary.PropertyGetSetSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.PropertySummary.html">blark.summary.PropertySummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.Summary.html">blark.summary.Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.get_linkable_declarations.html">blark.summary.get_linkable_declarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.path_to_file_and_line.html">blark.summary.path_to_file_and_line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.summary.text_outline.html">blark.summary.text_outline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-transform">blark.transform</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.AccessDeclaration.html">blark.transform.AccessDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.AccessDeclarations.html">blark.transform.AccessDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.AccessSpecifier.html">blark.transform.AccessSpecifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Action.html">blark.transform.Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArrayInitialElement.html">blark.transform.ArrayInitialElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArrayInitialization.html">blark.transform.ArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArraySpecification.html">blark.transform.ArraySpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArrayTypeDeclaration.html">blark.transform.ArrayTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArrayTypeInitialization.html">blark.transform.ArrayTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ArrayVariableInitDeclaration.html">blark.transform.ArrayVariableInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.AssignmentStatement.html">blark.transform.AssignmentStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.BinaryBitString.html">blark.transform.BinaryBitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.BinaryInteger.html">blark.transform.BinaryInteger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.BinaryOperation.html">blark.transform.BinaryOperation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.BitString.html">blark.transform.BitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Boolean.html">blark.transform.Boolean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.BracketedExpression.html">blark.transform.BracketedExpression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.CaseElement.html">blark.transform.CaseElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.CaseStatement.html">blark.transform.CaseStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ChainedFunctionCall.html">blark.transform.ChainedFunctionCall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ChainedFunctionCallStatement.html">blark.transform.ChainedFunctionCallStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ContinueStatement.html">blark.transform.ContinueStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.DataType.html">blark.transform.DataType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.DataTypeDeclaration.html">blark.transform.DataTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Date.html">blark.transform.Date</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.DateTime.html">blark.transform.DateTime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.DeclaredVariable.html">blark.transform.DeclaredVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.DirectVariable.html">blark.transform.DirectVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Duration.html">blark.transform.Duration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.EdgeDeclaration.html">blark.transform.EdgeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ElseClause.html">blark.transform.ElseClause</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ElseIfClause.html">blark.transform.ElseIfClause</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.EnumeratedSpecification.html">blark.transform.EnumeratedSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.EnumeratedTypeDeclaration.html">blark.transform.EnumeratedTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.EnumeratedTypeInitialization.html">blark.transform.EnumeratedTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.EnumeratedValue.html">blark.transform.EnumeratedValue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ExitStatement.html">blark.transform.ExitStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Expression.html">blark.transform.Expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ExtendedSourceCode.html">blark.transform.ExtendedSourceCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Extends.html">blark.transform.Extends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ExternalVariableDeclaration.html">blark.transform.ExternalVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ExternalVariableDeclarations.html">blark.transform.ExternalVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FieldSelector.html">blark.transform.FieldSelector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ForStatement.html">blark.transform.ForStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FormatSettings.html">blark.transform.FormatSettings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FullSubrange.html">blark.transform.FullSubrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Function.html">blark.transform.Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionBlock.html">blark.transform.FunctionBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionBlockDeclaration.html">blark.transform.FunctionBlockDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionBlockInvocationDeclaration.html">blark.transform.FunctionBlockInvocationDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionBlockNameDeclaration.html">blark.transform.FunctionBlockNameDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionCall.html">blark.transform.FunctionCall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionCallStatement.html">blark.transform.FunctionCallStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.FunctionVariableDeclarations.html">blark.transform.FunctionVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.GlobalVariableAttributes.html">blark.transform.GlobalVariableAttributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.GlobalVariableDeclaration.html">blark.transform.GlobalVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.GlobalVariableDeclarations.html">blark.transform.GlobalVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.GlobalVariableSpec.html">blark.transform.GlobalVariableSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.GrammarTransformer.html">blark.transform.GrammarTransformer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.HexBitString.html">blark.transform.HexBitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.HexInteger.html">blark.transform.HexInteger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IfStatement.html">blark.transform.IfStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Implements.html">blark.transform.Implements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IncompleteLocatedVariableDeclaration.html">blark.transform.IncompleteLocatedVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IncompleteLocatedVariableDeclarations.html">blark.transform.IncompleteLocatedVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IncompleteLocation.html">blark.transform.IncompleteLocation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IndirectSimpleSpecification.html">blark.transform.IndirectSimpleSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.IndirectionType.html">blark.transform.IndirectionType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.InitDeclaration.html">blark.transform.InitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.InitializedStructure.html">blark.transform.InitializedStructure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.InputDeclarations.html">blark.transform.InputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.InputOutputDeclarations.html">blark.transform.InputOutputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.InputParameterAssignment.html">blark.transform.InputParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Integer.html">blark.transform.Integer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Interface.html">blark.transform.Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.JumpStatement.html">blark.transform.JumpStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.LabeledStatement.html">blark.transform.LabeledStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Ldate.html">blark.transform.Ldate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.LdateTime.html">blark.transform.LdateTime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Lduration.html">blark.transform.Lduration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Literal.html">blark.transform.Literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.LocatedVariableDeclaration.html">blark.transform.LocatedVariableDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.LocatedVariableDeclarations.html">blark.transform.LocatedVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Location.html">blark.transform.Location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.LtimeOfDay.html">blark.transform.LtimeOfDay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Meta.html">blark.transform.Meta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Method.html">blark.transform.Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.MethodInstanceVariableDeclarations.html">blark.transform.MethodInstanceVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.MultiElementVariable.html">blark.transform.MultiElementVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.NoOpStatement.html">blark.transform.NoOpStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ObjectInitializerArray.html">blark.transform.ObjectInitializerArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.OctalBitString.html">blark.transform.OctalBitString</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.OctalInteger.html">blark.transform.OctalInteger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.OutputDeclarations.html">blark.transform.OutputDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.OutputParameterAssignment.html">blark.transform.OutputParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ParameterAssignment.html">blark.transform.ParameterAssignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ParenthesizedExpression.html">blark.transform.ParenthesizedExpression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.PartialSubrange.html">blark.transform.PartialSubrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Program.html">blark.transform.Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Property.html">blark.transform.Property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Real.html">blark.transform.Real</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ReferenceAssignmentStatement.html">blark.transform.ReferenceAssignmentStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.RepeatStatement.html">blark.transform.RepeatStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ResetStatement.html">blark.transform.ResetStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.ReturnStatement.html">blark.transform.ReturnStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SetStatement.html">blark.transform.SetStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SimpleSpecification.html">blark.transform.SimpleSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SimpleTypeDeclaration.html">blark.transform.SimpleTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SimpleVariable.html">blark.transform.SimpleVariable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SourceCode.html">blark.transform.SourceCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Statement.html">blark.transform.Statement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StatementList.html">blark.transform.StatementList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StaticDeclarations.html">blark.transform.StaticDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.String.html">blark.transform.String</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringSpecLength.html">blark.transform.StringSpecLength</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeDeclaration.html">blark.transform.StringTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeInitialization.html">blark.transform.StringTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StringTypeSpecification.html">blark.transform.StringTypeSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureElementDeclaration.html">blark.transform.StructureElementDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureElementInitialization.html">blark.transform.StructureElementInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureInitialization.html">blark.transform.StructureInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructureTypeDeclaration.html">blark.transform.StructureTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.StructuredVariableInitDeclaration.html">blark.transform.StructuredVariableInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Subrange.html">blark.transform.Subrange</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SubrangeSpecification.html">blark.transform.SubrangeSpecification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SubrangeTypeDeclaration.html">blark.transform.SubrangeTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SubrangeTypeInitialization.html">blark.transform.SubrangeTypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.SubscriptList.html">blark.transform.SubscriptList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TemporaryVariableDeclarations.html">blark.transform.TemporaryVariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TimeOfDay.html">blark.transform.TimeOfDay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TypeInformation.html">blark.transform.TypeInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TypeInitialization.html">blark.transform.TypeInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TypeInitializationBase.html">blark.transform.TypeInitializationBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.TypeSpecificationBase.html">blark.transform.TypeSpecificationBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.UnaryOperation.html">blark.transform.UnaryOperation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.UnionElementDeclaration.html">blark.transform.UnionElementDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.UnionTypeDeclaration.html">blark.transform.UnionTypeDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.UnresolvedTypeInformation.html">blark.transform.UnresolvedTypeInformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.Variable.html">blark.transform.Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableAttributes.html">blark.transform.VariableAttributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableDeclarationBlock.html">blark.transform.VariableDeclarationBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableDeclarations.html">blark.transform.VariableDeclarations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableLocationPrefix.html">blark.transform.VariableLocationPrefix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableOneInitDeclaration.html">blark.transform.VariableOneInitDeclaration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.VariableSizePrefix.html">blark.transform.VariableSizePrefix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.WhileStatement.html">blark.transform.WhileStatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform._ArrayInitialElementCount.html">blark.transform._ArrayInitialElementCount</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform._BareArrayInitialization.html">blark.transform._BareArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform._BracketedArrayInitialization.html">blark.transform._BracketedArrayInitialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform._FlagHelper.html">blark.transform._FlagHelper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform._GenericInit.html">blark.transform._GenericInit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.configure_formatting.html">blark.transform.configure_formatting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.get_grammar_for_class.html">blark.transform.get_grammar_for_class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.indent.html">blark.transform.indent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.indent_if.html">blark.transform.indent_if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.join_if.html">blark.transform.join_if</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.merge_comments.html">blark.transform.merge_comments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.meta_field.html">blark.transform.meta_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.multiline_code_block.html">blark.transform.multiline_code_block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.transform.transform.html">blark.transform.transform</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-typing">blark.typing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.typing.ContainsBlarkCode.html">blark.typing.ContainsBlarkCode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.typing.SupportsRewrite.html">blark.typing.SupportsRewrite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.typing.SupportsSaveToPath.html">blark.typing.SupportsSaveToPath</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.typing.SupportsWrite.html">blark.typing.SupportsWrite</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#blark-util">blark.util</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.Identifier.html">blark.util.Identifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.SourceType.html">blark.util.SourceType</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_and_clean_comments.html">blark.util.find_and_clean_comments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_plain.html">blark.util.find_pou_type_and_identifier_plain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_xml.html">blark.util.find_pou_type_and_identifier_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.fix_case_insensitive_path.html">blark.util.fix_case_insensitive_path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_case_insensitive.html">blark.util.get_case_insensitive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_file_sha256.html">blark.util.get_file_sha256</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_grammar_for_rule.html">blark.util.get_grammar_for_rule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_grammar_source.html">blark.util.get_grammar_source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.get_source_code.html">blark.util.get_source_code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.indent_inner.html">blark.util.indent_inner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.maybe_add_brackets.html">blark.util.maybe_add_brackets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.python_debug_session.html">blark.util.python_debug_session</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.rebuild_lark_tree_with_line_map.html">blark.util.rebuild_lark_tree_with_line_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.recursively_remove_keys.html">blark.util.recursively_remove_keys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.remove_all_comments.html">blark.util.remove_all_comments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.remove_comment_characters.html">blark.util.remove_comment_characters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.simplify_brackets.html">blark.util.simplify_brackets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.tree_to_xml_source.html">blark.util.tree_to_xml_source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.util.try_paths.html">blark.util.try_paths</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/klauer/blark">GitHub Repository</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blark</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
+<section id="blark-apischema-compat">
+<h2>blark.apischema_compat<a class="headerlink" href="#blark-apischema-compat" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.apischema_compat.alternative_constructor.html#blark.apischema_compat.alternative_constructor" title="blark.apischema_compat.alternative_constructor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.apischema_compat.alternative_constructor</span></code></a>(func)</p></td>
+<td><p>Alternative constructor for a given type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.apischema_compat.as_tagged_union.html#blark.apischema_compat.as_tagged_union" title="blark.apischema_compat.as_tagged_union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.apischema_compat.as_tagged_union</span></code></a>(cls)</p></td>
+<td><p>Tagged union decorator, to be used on base class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.apischema_compat.get_all_subclasses.html#blark.apischema_compat.get_all_subclasses" title="blark.apischema_compat.get_all_subclasses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.apischema_compat.get_all_subclasses</span></code></a>(cls)</p></td>
+<td><p>Recursive implementation of type.__subclasses__</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.apischema_compat.token_deserializer.html#blark.apischema_compat.token_deserializer" title="blark.apischema_compat.token_deserializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.apischema_compat.token_deserializer</span></code></a>(parts)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.apischema_compat.token_serializer.html#blark.apischema_compat.token_serializer" title="blark.apischema_compat.token_serializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.apischema_compat.token_serializer</span></code></a>(token)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-config">
+<h2>blark.config<a class="headerlink" href="#blark-config" title="Link to this heading"></a></h2>
+</section>
+<section id="blark-dependency-store">
+<h2>blark.dependency_store<a class="headerlink" href="#blark-dependency-store" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.dependency_store.DependencyStore.html#blark.dependency_store.DependencyStore" title="blark.dependency_store.DependencyStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.DependencyStore</span></code></a>(root)</p></td>
+<td><p>A storage container for dependency configuration and loading.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.dependency_store.DependencyStoreConfig.html#blark.dependency_store.DependencyStoreConfig" title="blark.dependency_store.DependencyStoreConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.DependencyStoreConfig</span></code></a>(...)</p></td>
+<td><p>Dependency store configuration, from <code class="docutils literal notranslate"><span class="pre">config.json</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.dependency_store.DependencyStoreLibrary.html#blark.dependency_store.DependencyStoreLibrary" title="blark.dependency_store.DependencyStoreLibrary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.DependencyStoreLibrary</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.dependency_store.PlcProjectMetadata.html#blark.dependency_store.PlcProjectMetadata" title="blark.dependency_store.PlcProjectMetadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.PlcProjectMetadata</span></code></a>(...)</p></td>
+<td><p>This is a per-PLC project metadata container.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.dependency_store.get_dependency_store.html#blark.dependency_store.get_dependency_store" title="blark.dependency_store.get_dependency_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.get_dependency_store</span></code></a>()</p></td>
+<td><p>Get the global DependencyStore instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.dependency_store.load_projects.html#blark.dependency_store.load_projects" title="blark.dependency_store.load_projects"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.dependency_store.load_projects</span></code></a>(*projects)</p></td>
+<td><p>Load the given projects by filename.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-format">
+<h2>blark.format<a class="headerlink" href="#blark-format" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.format.build_arg_parser.html#blark.format.build_arg_parser" title="blark.format.build_arg_parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.build_arg_parser</span></code></a>([argparser])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.format.determine_output_filename.html#blark.format.determine_output_filename" title="blark.format.determine_output_filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.determine_output_filename</span></code></a>(...)</p></td>
+<td><p>Get an output filename based on the input filename and destination path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.format.dump_source_to_console.html#blark.format.dump_source_to_console" title="blark.format.dump_source_to_console"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.dump_source_to_console</span></code></a>(source)</p></td>
+<td><p>Output the given source to the console.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.format.get_reformatted_code_blocks.html#blark.format.get_reformatted_code_blocks" title="blark.format.get_reformatted_code_blocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.get_reformatted_code_blocks</span></code></a>(results)</p></td>
+<td><p>For each parsed code block, generate an OutputBlock for writing to disk.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.format.main.html#blark.format.main" title="blark.format.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.main</span></code></a>(filename[, verbose, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.format.reformat_code.html#blark.format.reformat_code" title="blark.format.reformat_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.reformat_code</span></code></a>(code)</p></td>
+<td><p>Reformat the code with the provided settings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.format.write_source_to_file.html#blark.format.write_source_to_file" title="blark.format.write_source_to_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.format.write_source_to_file</span></code></a>(filename, ...)</p></td>
+<td><p>Write source code to the given file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-html">
+<h2>blark.html<a class="headerlink" href="#blark-html" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation" title="blark.html.HighlighterAnnotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.HighlighterAnnotation</span></code></a>(name, ...)</p></td>
+<td><p>A single HTML tag annotation which applies to a position range of source code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.HtmlWriter.html#blark.html.HtmlWriter" title="blark.html.HtmlWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.HtmlWriter</span></code></a>(user, source_filename, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.apply_annotations_to_code.html#blark.html.apply_annotations_to_code" title="blark.html.apply_annotations_to_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.apply_annotations_to_code</span></code></a>(code, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.get_annotations.html#blark.html.get_annotations" title="blark.html.get_annotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.get_annotations</span></code></a>(tree)</p></td>
+<td><p>Get annotations for syntax elements in the given parse tree.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-input">
+<h2>blark.input<a class="headerlink" href="#blark-input" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.input.BlarkCompositeSourceItem.html#blark.input.BlarkCompositeSourceItem" title="blark.input.BlarkCompositeSourceItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.BlarkCompositeSourceItem</span></code></a>(...[, user])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.input.BlarkSourceItem.html#blark.input.BlarkSourceItem" title="blark.input.BlarkSourceItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.BlarkSourceItem</span></code></a>(identifier, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.input.BlarkSourceLine.html#blark.input.BlarkSourceLine" title="blark.input.BlarkSourceLine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.BlarkSourceLine</span></code></a>(filename, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.input.UnsupportedFileFormatError.html#blark.input.UnsupportedFileFormatError" title="blark.input.UnsupportedFileFormatError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.UnsupportedFileFormatError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.input.load_file_by_name.html#blark.input.load_file_by_name" title="blark.input.load_file_by_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.load_file_by_name</span></code></a>(filename[, ...])</p></td>
+<td><p>Load a file using blark's file input handlers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.input.register_input_handler.html#blark.input.register_input_handler" title="blark.input.register_input_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.input.register_input_handler</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-main">
+<h2>blark.main<a class="headerlink" href="#blark-main" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.main.main.html#blark.main.main" title="blark.main.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.main.main</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-output">
+<h2>blark.output<a class="headerlink" href="#blark-output" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.output.OutputBlock.html#blark.output.OutputBlock" title="blark.output.OutputBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.output.OutputBlock</span></code></a>(code, metadata, origin)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.output.get_handler_by_name.html#blark.output.get_handler_by_name" title="blark.output.get_handler_by_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.output.get_handler_by_name</span></code></a>(name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.output.register_output_handler.html#blark.output.register_output_handler" title="blark.output.register_output_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.output.register_output_handler</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-parse">
+<h2>blark.parse<a class="headerlink" href="#blark-parse" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.BlarkStartingRule.html#blark.parse.BlarkStartingRule" title="blark.parse.BlarkStartingRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.BlarkStartingRule</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.ParseResult.html#blark.parse.ParseResult" title="blark.parse.ParseResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.ParseResult</span></code></a>(source_code, item, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.build_arg_parser.html#blark.parse.build_arg_parser" title="blark.parse.build_arg_parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.build_arg_parser</span></code></a>([argparser])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.dump_json.html#blark.parse.dump_json" title="blark.parse.dump_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.dump_json</span></code></a>(type_, obj[, ...])</p></td>
+<td><p>Dump object <code class="docutils literal notranslate"><span class="pre">obj</span></code> as type <code class="docutils literal notranslate"><span class="pre">type_</span></code> with apischema and serialize to a string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.get_parser.html#blark.parse.get_parser" title="blark.parse.get_parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.get_parser</span></code></a>()</p></td>
+<td><p>Get a cached lark.Lark parser for TwinCAT flavor IEC61131-3 code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.main.html#blark.parse.main" title="blark.parse.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.main</span></code></a>(filename[, verbose, debug, ...])</p></td>
+<td><p>Parse the given source code/project.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.new_parser.html#blark.parse.new_parser" title="blark.parse.new_parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.new_parser</span></code></a>([start])</p></td>
+<td><p>Get a new parser for TwinCAT flavor IEC61131-3 code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.parse.html#blark.parse.parse" title="blark.parse.parse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.parse</span></code></a>(path[, input_format])</p></td>
+<td><p>Parse the given source code file (or all files from the given project).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.parse_item.html#blark.parse.parse_item" title="blark.parse.parse_item"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.parse_item</span></code></a>(item, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.parse_project.html#blark.parse.parse_project" title="blark.parse.parse_project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.parse_project</span></code></a>(tsproj_project, ...)</p></td>
+<td><p>Parse an entire tsproj project file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.parse_single_file.html#blark.parse.parse_single_file" title="blark.parse.parse_single_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.parse_single_file</span></code></a>(fn, **kwargs)</p></td>
+<td><p>Parse a single source code file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.parse.parse_source_code.html#blark.parse.parse_source_code" title="blark.parse.parse_source_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.parse_source_code</span></code></a>(source_code, *)</p></td>
+<td><p>Parse source code into a <code class="docutils literal notranslate"><span class="pre">ParseResult</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.parse.summarize.html#blark.parse.summarize" title="blark.parse.summarize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.parse.summarize</span></code></a>(parsed[, squash])</p></td>
+<td><p>Get a code summary instance from one or more ParseResult instances.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-plain">
+<h2>blark.plain<a class="headerlink" href="#blark-plain" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.plain.PlainFileLoader.html#blark.plain.PlainFileLoader" title="blark.plain.PlainFileLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.plain.PlainFileLoader</span></code></a>(filename, ...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-solution">
+<h2>blark.solution<a class="headerlink" href="#blark-solution" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.DependencyInformation.html#blark.solution.DependencyInformation" title="blark.solution.DependencyInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.DependencyInformation</span></code></a>(name[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.DependencyVersion.html#blark.solution.DependencyVersion" title="blark.solution.DependencyVersion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.DependencyVersion</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.LocatedString.html#blark.solution.LocatedString" title="blark.solution.LocatedString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.LocatedString</span></code></a>(filename[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.Project.html#blark.solution.Project" title="blark.solution.Project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.Project</span></code></a>(name, saved_path, ...)</p></td>
+<td><p>A stub container for a TwinCAT project (.tsproj) file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.Solution.html#blark.solution.Solution" title="blark.solution.Solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.Solution</span></code></a>(root, projects[, ...])</p></td>
+<td><p>A container for a TwinCAT/Visual Studio solution (.sln).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.SolutionLoaderError.html#blark.solution.SolutionLoaderError" title="blark.solution.SolutionLoaderError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.SolutionLoaderError</span></code></a></p></td>
+<td><p>Solution loader-related exception base class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcAction.html#blark.solution.TcAction" title="blark.solution.TcAction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcAction</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcDUT.html#blark.solution.TcDUT" title="blark.solution.TcDUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcDUT</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcDeclImpl.html#blark.solution.TcDeclImpl" title="blark.solution.TcDeclImpl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcDeclImpl</span></code></a>(identifier, ...[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcExtraInfo.html#blark.solution.TcExtraInfo" title="blark.solution.TcExtraInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcExtraInfo</span></code></a>(metadata, xml, parent)</p></td>
+<td><p>Extra information in the project XML such as Line IDs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcGVL.html#blark.solution.TcGVL" title="blark.solution.TcGVL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcGVL</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcIO.html#blark.solution.TcIO" title="blark.solution.TcIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcIO</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p>TcIO file - for INTERFACE definitions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcMethod.html#blark.solution.TcMethod" title="blark.solution.TcMethod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcMethod</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcPOU.html#blark.solution.TcPOU" title="blark.solution.TcPOU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcPOU</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcProperty.html#blark.solution.TcProperty" title="blark.solution.TcProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcProperty</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcSource.html#blark.solution.TcSource" title="blark.solution.TcSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcSource</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcSourceChild.html#blark.solution.TcSourceChild" title="blark.solution.TcSourceChild"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcSourceChild</span></code></a>(name, guid, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TcTTO.html#blark.solution.TcTTO" title="blark.solution.TcTTO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcTTO</span></code></a>(name, guid, decl, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TcUnknownXml.html#blark.solution.TcUnknownXml" title="blark.solution.TcUnknownXml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TcUnknownXml</span></code></a>(xml, parent)</p></td>
+<td><p>A currently unsupported block of XML in the project.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TwincatPlcProject.html#blark.solution.TwincatPlcProject" title="blark.solution.TwincatPlcProject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TwincatPlcProject</span></code></a>(guid, ...)</p></td>
+<td><p>A TwinCAT PLC project.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.TwincatSourceCodeItem.html#blark.solution.TwincatSourceCodeItem" title="blark.solution.TwincatSourceCodeItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TwincatSourceCodeItem</span></code></a>(...[, ...])</p></td>
+<td><p>A wrapper for all TwinCAT project source code files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.TwincatTsProject.html#blark.solution.TwincatTsProject" title="blark.solution.TwincatTsProject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.TwincatTsProject</span></code></a>(guid, netid, ...)</p></td>
+<td><p>Container for a loaded TwinCAT tsproj project.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.UnsupportedSourceFileError.html#blark.solution.UnsupportedSourceFileError" title="blark.solution.UnsupportedSourceFileError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.UnsupportedSourceFileError</span></code></a>(msg)</p></td>
+<td><p>Unsupported project file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.filename_from_xml.html#blark.solution.filename_from_xml" title="blark.solution.filename_from_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.filename_from_xml</span></code></a>(xml)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.get_blark_input_from_solution.html#blark.solution.get_blark_input_from_solution" title="blark.solution.get_blark_input_from_solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_blark_input_from_solution</span></code></a>(...)</p></td>
+<td><p>Get all blark input from the given solution.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.get_child_located_text.html#blark.solution.get_child_located_text" title="blark.solution.get_child_located_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_child_located_text</span></code></a>(xml, tag)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.get_child_text.html#blark.solution.get_child_text" title="blark.solution.get_child_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_child_text</span></code></a>(xml, tag[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.get_code_object_from_xml.html#blark.solution.get_code_object_from_xml" title="blark.solution.get_code_object_from_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_code_object_from_xml</span></code></a>(xml)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.get_project_guid.html#blark.solution.get_project_guid" title="blark.solution.get_project_guid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_project_guid</span></code></a>(element)</p></td>
+<td><p>Get a project target GUID from its xml.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.get_project_target_netid.html#blark.solution.get_project_target_netid" title="blark.solution.get_project_target_netid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_project_target_netid</span></code></a>(element)</p></td>
+<td><p>Get a project target AMS Net ID from its xml.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.get_tcplc_from_xml.html#blark.solution.get_tcplc_from_xml" title="blark.solution.get_tcplc_from_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.get_tcplc_from_xml</span></code></a>(xml)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.make_solution_from_files.html#blark.solution.make_solution_from_files" title="blark.solution.make_solution_from_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.make_solution_from_files</span></code></a>(filename)</p></td>
+<td><p>From a TwinCAT solution (.sln) or .tsproj, get a Solution instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.parse_xml_contents.html#blark.solution.parse_xml_contents" title="blark.solution.parse_xml_contents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.parse_xml_contents</span></code></a>(contents)</p></td>
+<td><p>Parse the given XML contents with lxml.etree.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.parse_xml_file.html#blark.solution.parse_xml_file" title="blark.solution.parse_xml_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.parse_xml_file</span></code></a>(fn)</p></td>
+<td><p>Parse a given XML file with lxml.etree.parse.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.project_loader.html#blark.solution.project_loader" title="blark.solution.project_loader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.project_loader</span></code></a>(filename)</p></td>
+<td><p>Load a TwinCAT project (.tsproj) file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.projects_from_solution_source.html#blark.solution.projects_from_solution_source" title="blark.solution.projects_from_solution_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.projects_from_solution_source</span></code></a>(...)</p></td>
+<td><p>Find project filenames from the contents of a solution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.solution_loader.html#blark.solution.solution_loader" title="blark.solution.solution_loader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.solution_loader</span></code></a>(filename)</p></td>
+<td><p>Load a TwinCAT solution (.sln) file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.split_property_and_base_decl.html#blark.solution.split_property_and_base_decl" title="blark.solution.split_property_and_base_decl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.split_property_and_base_decl</span></code></a>(code)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.strip_implicit_lines.html#blark.solution.strip_implicit_lines" title="blark.solution.strip_implicit_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.strip_implicit_lines</span></code></a>(code, ...)</p></td>
+<td><p>Strip off (e.g.) END_FUNCTION_BLOCK the provided code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.strip_xml_namespace.html#blark.solution.strip_xml_namespace" title="blark.solution.strip_xml_namespace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.strip_xml_namespace</span></code></a>(tag)</p></td>
+<td><p>Strip off {{namespace}} from: {{namespace}}tag.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.solution.twincat_file_loader.html#blark.solution.twincat_file_loader" title="blark.solution.twincat_file_loader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.twincat_file_loader</span></code></a>(filename)</p></td>
+<td><p>Load a single TwinCAT file based on its extension.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.solution.twincat_file_writer.html#blark.solution.twincat_file_writer" title="blark.solution.twincat_file_writer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.solution.twincat_file_writer</span></code></a>(user, ...)</p></td>
+<td><p>Write source code</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-sphinxdomain">
+<h2>blark.sphinxdomain<a class="headerlink" href="#blark-sphinxdomain" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.BlarkDirective.html#blark.sphinxdomain.BlarkDirective" title="blark.sphinxdomain.BlarkDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.BlarkDirective</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.BlarkDirectiveWithDeclarations.html#blark.sphinxdomain.BlarkDirectiveWithDeclarations" title="blark.sphinxdomain.BlarkDirectiveWithDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.BlarkDirectiveWithDeclarations</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.BlarkDomain.html#blark.sphinxdomain.BlarkDomain" title="blark.sphinxdomain.BlarkDomain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.BlarkDomain</span></code></a>(env)</p></td>
+<td><p>Blark IEC61131-3 language domain.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.BlarkSphinxCache.html#blark.sphinxdomain.BlarkSphinxCache" title="blark.sphinxdomain.BlarkSphinxCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.BlarkSphinxCache</span></code></a>(cache)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.BlarkXRefRole.html#blark.sphinxdomain.BlarkXRefRole" title="blark.sphinxdomain.BlarkXRefRole"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.BlarkXRefRole</span></code></a>([...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.DeclarationDirective.html#blark.sphinxdomain.DeclarationDirective" title="blark.sphinxdomain.DeclarationDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.DeclarationDirective</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.FunctionBlockDirective.html#blark.sphinxdomain.FunctionBlockDirective" title="blark.sphinxdomain.FunctionBlockDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.FunctionBlockDirective</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.FunctionDirective.html#blark.sphinxdomain.FunctionDirective" title="blark.sphinxdomain.FunctionDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.FunctionDirective</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.GvlDirective.html#blark.sphinxdomain.GvlDirective" title="blark.sphinxdomain.GvlDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.GvlDirective</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.MissingDeclaration.html#blark.sphinxdomain.MissingDeclaration" title="blark.sphinxdomain.MissingDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.MissingDeclaration</span></code></a>(name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.ProgramDirective.html#blark.sphinxdomain.ProgramDirective" title="blark.sphinxdomain.ProgramDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.ProgramDirective</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.TypeDirective.html#blark.sphinxdomain.TypeDirective" title="blark.sphinxdomain.TypeDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.TypeDirective</span></code></a>(name, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.VariableBlockDirective.html#blark.sphinxdomain.VariableBlockDirective" title="blark.sphinxdomain.VariableBlockDirective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.VariableBlockDirective</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.declaration_to_content.html#blark.sphinxdomain.declaration_to_content" title="blark.sphinxdomain.declaration_to_content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.declaration_to_content</span></code></a>(obj)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.declaration_to_signature.html#blark.sphinxdomain.declaration_to_signature" title="blark.sphinxdomain.declaration_to_signature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.declaration_to_signature</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.sphinxdomain.declarations_to_block.html#blark.sphinxdomain.declarations_to_block" title="blark.sphinxdomain.declarations_to_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.declarations_to_block</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.sphinxdomain.setup.html#blark.sphinxdomain.setup" title="blark.sphinxdomain.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.sphinxdomain.setup</span></code></a>(app)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-summary">
+<h2>blark.summary<a class="headerlink" href="#blark-summary" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.ActionSummary.html#blark.summary.ActionSummary" title="blark.summary.ActionSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.ActionSummary</span></code></a>(comments, ...[, ...])</p></td>
+<td><p>Summary representation of a single action.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.CodeSummary.html#blark.summary.CodeSummary" title="blark.summary.CodeSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.CodeSummary</span></code></a>(functions, ...)</p></td>
+<td><p>Summary representation of a set of code - functions, function blocks, etc.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.DataTypeSummary.html#blark.summary.DataTypeSummary" title="blark.summary.DataTypeSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.DataTypeSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single data type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.DeclarationSummary.html#blark.summary.DeclarationSummary" title="blark.summary.DeclarationSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.DeclarationSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.FunctionBlockSummary.html#blark.summary.FunctionBlockSummary" title="blark.summary.FunctionBlockSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.FunctionBlockSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single function block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.FunctionSummary.html#blark.summary.FunctionSummary" title="blark.summary.FunctionSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.FunctionSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.GlobalVariableSummary.html#blark.summary.GlobalVariableSummary" title="blark.summary.GlobalVariableSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.GlobalVariableSummary</span></code></a>(...)</p></td>
+<td><p>Summary representation of a VAR_GLOBAL block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.InterfaceSummary.html#blark.summary.InterfaceSummary" title="blark.summary.InterfaceSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.InterfaceSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of an Interfae.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.LinkableItems.html#blark.summary.LinkableItems" title="blark.summary.LinkableItems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.LinkableItems</span></code></a>(input, output, ...)</p></td>
+<td><p>A summary of linkable (located) declarations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.MethodSummary.html#blark.summary.MethodSummary" title="blark.summary.MethodSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.MethodSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.ProgramSummary.html#blark.summary.ProgramSummary" title="blark.summary.ProgramSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.ProgramSummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single program.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.PropertyGetSetSummary.html#blark.summary.PropertyGetSetSummary" title="blark.summary.PropertyGetSetSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.PropertyGetSetSummary</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.PropertySummary.html#blark.summary.PropertySummary" title="blark.summary.PropertySummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.PropertySummary</span></code></a>(comments, ...)</p></td>
+<td><p>Summary representation of a single property.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.Summary.html#blark.summary.Summary" title="blark.summary.Summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.Summary</span></code></a>(comments, pragmas, ...)</p></td>
+<td><p>Base class for summary objects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.get_linkable_declarations.html#blark.summary.get_linkable_declarations" title="blark.summary.get_linkable_declarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.get_linkable_declarations</span></code></a>(...)</p></td>
+<td><p>Get all located/linkable declarations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.summary.path_to_file_and_line.html#blark.summary.path_to_file_and_line" title="blark.summary.path_to_file_and_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.path_to_file_and_line</span></code></a>(path)</p></td>
+<td><p>Get the file/line number context for the summary items.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.summary.text_outline.html#blark.summary.text_outline" title="blark.summary.text_outline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.summary.text_outline</span></code></a>(item)</p></td>
+<td><p>Get a generic multiline string representation of the given object.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-transform">
+<h2>blark.transform<a class="headerlink" href="#blark-transform" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.AccessDeclaration.html#blark.transform.AccessDeclaration" title="blark.transform.AccessDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.AccessDeclaration</span></code></a>(name, ...)</p></td>
+<td><p>A single, named program access declaration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.AccessDeclarations.html#blark.transform.AccessDeclarations" title="blark.transform.AccessDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.AccessDeclarations</span></code></a>(items[, meta])</p></td>
+<td><p>A block of named, program access variable declarations (<code class="docutils literal notranslate"><span class="pre">VAR_ACCESS</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.AccessSpecifier.html#blark.transform.AccessSpecifier" title="blark.transform.AccessSpecifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.AccessSpecifier</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Action.html#blark.transform.Action" title="blark.transform.Action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Action</span></code></a>(name, body[, meta])</p></td>
+<td><p>A full, named action declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ArrayInitialElement.html#blark.transform.ArrayInitialElement" title="blark.transform.ArrayInitialElement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArrayInitialElement</span></code></a>(element)</p></td>
+<td><p>Initial value for an array element (potentialy repeated).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ArrayInitialization.html#blark.transform.ArrayInitialization" title="blark.transform.ArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArrayInitialization</span></code></a>(elements)</p></td>
+<td><p>Array initialization (bare or bracketed).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ArraySpecification.html#blark.transform.ArraySpecification" title="blark.transform.ArraySpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArraySpecification</span></code></a>(...[, meta])</p></td>
+<td><p>An array specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ArrayTypeDeclaration.html#blark.transform.ArrayTypeDeclaration" title="blark.transform.ArrayTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArrayTypeDeclaration</span></code></a>(name, init)</p></td>
+<td><p>Full declaration of an array type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ArrayTypeInitialization.html#blark.transform.ArrayTypeInitialization" title="blark.transform.ArrayTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArrayTypeInitialization</span></code></a>(...)</p></td>
+<td><p>Array specification and optional default (initialization) value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ArrayVariableInitDeclaration.html#blark.transform.ArrayVariableInitDeclaration" title="blark.transform.ArrayVariableInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ArrayVariableInitDeclaration</span></code></a>(...)</p></td>
+<td><p>A declaration of one or more variables with array type initialization and optional default (initialization) value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.AssignmentStatement.html#blark.transform.AssignmentStatement" title="blark.transform.AssignmentStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.AssignmentStatement</span></code></a>(...[, meta])</p></td>
+<td><p>An assignment statement.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.BinaryBitString.html#blark.transform.BinaryBitString" title="blark.transform.BinaryBitString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.BinaryBitString</span></code></a>(type_name, value)</p></td>
+<td><p>Binary bit string literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.BinaryInteger.html#blark.transform.BinaryInteger" title="blark.transform.BinaryInteger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.BinaryInteger</span></code></a>(value[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.BinaryOperation.html#blark.transform.BinaryOperation" title="blark.transform.BinaryOperation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.BinaryOperation</span></code></a>(left, op, right)</p></td>
+<td><p>A binary (i.e., two operand) operation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.BitString.html#blark.transform.BitString" title="blark.transform.BitString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.BitString</span></code></a>(type_name, value)</p></td>
+<td><p>Bit string literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Boolean.html#blark.transform.Boolean" title="blark.transform.Boolean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Boolean</span></code></a>(value[, meta])</p></td>
+<td><p>Boolean literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.BracketedExpression.html#blark.transform.BracketedExpression" title="blark.transform.BracketedExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.BracketedExpression</span></code></a>(expression)</p></td>
+<td><p>An expression with square brackets around it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.CaseElement.html#blark.transform.CaseElement" title="blark.transform.CaseElement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.CaseElement</span></code></a>(matches, statements)</p></td>
+<td><p>A single element of a <code class="docutils literal notranslate"><span class="pre">CASE</span></code> statement block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.CaseStatement.html#blark.transform.CaseStatement" title="blark.transform.CaseStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.CaseStatement</span></code></a>(expression, ...)</p></td>
+<td><p>A switch-like <code class="docutils literal notranslate"><span class="pre">CASE</span></code> statement block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ChainedFunctionCall.html#blark.transform.ChainedFunctionCall" title="blark.transform.ChainedFunctionCall"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ChainedFunctionCall</span></code></a>(invocations)</p></td>
+<td><p>A set of chained function (function block, method, action, etc.) calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ChainedFunctionCallStatement.html#blark.transform.ChainedFunctionCallStatement" title="blark.transform.ChainedFunctionCallStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ChainedFunctionCallStatement</span></code></a>(...)</p></td>
+<td><p>A chained set of function calls as a statement, in a &quot;fluent&quot; style.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ContinueStatement.html#blark.transform.ContinueStatement" title="blark.transform.ContinueStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ContinueStatement</span></code></a>([meta])</p></td>
+<td><p>A statement used to jump to the top of a loop, <code class="docutils literal notranslate"><span class="pre">CONTINUE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.DataType.html#blark.transform.DataType" title="blark.transform.DataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.DataType</span></code></a>(indirection, type_name)</p></td>
+<td><p>A non-generic type name, or a data type name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.DataTypeDeclaration.html#blark.transform.DataTypeDeclaration" title="blark.transform.DataTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.DataTypeDeclaration</span></code></a>(...[, meta])</p></td>
+<td><p>A data type declaration, wrapping the other declaration types with <code class="docutils literal notranslate"><span class="pre">TYPE</span></code>/<code class="docutils literal notranslate"><span class="pre">END_TYPE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Date.html#blark.transform.Date" title="blark.transform.Date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Date</span></code></a>(year, month, day[, meta])</p></td>
+<td><p>Date literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.DateTime.html#blark.transform.DateTime" title="blark.transform.DateTime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.DateTime</span></code></a>(date, time[, meta])</p></td>
+<td><p>Date and time literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.DeclaredVariable.html#blark.transform.DeclaredVariable" title="blark.transform.DeclaredVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.DeclaredVariable</span></code></a>(variable, ...)</p></td>
+<td><p>A single declared variable name and optional [direct or incomplete] location.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.DirectVariable.html#blark.transform.DirectVariable" title="blark.transform.DirectVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.DirectVariable</span></code></a>(...[, bits, meta])</p></td>
+<td><p>Direct variables with I/O linkage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Duration.html#blark.transform.Duration" title="blark.transform.Duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Duration</span></code></a>([days, hours, ...])</p></td>
+<td><p>Duration literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.EdgeDeclaration.html#blark.transform.EdgeDeclaration" title="blark.transform.EdgeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.EdgeDeclaration</span></code></a>(variables, edge)</p></td>
+<td><p>An edge declaration of one or more variables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ElseClause.html#blark.transform.ElseClause" title="blark.transform.ElseClause"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ElseClause</span></code></a>(statements[, meta])</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">ELSE</span></code> part of an <code class="docutils literal notranslate"><span class="pre">IF/ELSIF/ELSE/END_IF</span></code> block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ElseIfClause.html#blark.transform.ElseIfClause" title="blark.transform.ElseIfClause"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ElseIfClause</span></code></a>(if_expression, ...)</p></td>
+<td><p>The else-if <code class="docutils literal notranslate"><span class="pre">ELSIF</span></code> part of an <code class="docutils literal notranslate"><span class="pre">IF/ELSIF/ELSE/END_IF</span></code> block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.EnumeratedSpecification.html#blark.transform.EnumeratedSpecification" title="blark.transform.EnumeratedSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.EnumeratedSpecification</span></code></a>(...)</p></td>
+<td><p>An enumerated specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.EnumeratedTypeDeclaration.html#blark.transform.EnumeratedTypeDeclaration" title="blark.transform.EnumeratedTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.EnumeratedTypeDeclaration</span></code></a>(...)</p></td>
+<td><p>An enumerated type declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.EnumeratedTypeInitialization.html#blark.transform.EnumeratedTypeInitialization" title="blark.transform.EnumeratedTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.EnumeratedTypeInitialization</span></code></a>(...)</p></td>
+<td><p>Enumerated specification with initialization enumerated value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.EnumeratedValue.html#blark.transform.EnumeratedValue" title="blark.transform.EnumeratedValue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.EnumeratedValue</span></code></a>(type_name, ...)</p></td>
+<td><p>An enumerated value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ExitStatement.html#blark.transform.ExitStatement" title="blark.transform.ExitStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExitStatement</span></code></a>([meta])</p></td>
+<td><p>A statement used to exit a loop, <code class="docutils literal notranslate"><span class="pre">EXIT</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Expression.html#blark.transform.Expression" title="blark.transform.Expression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Expression</span></code></a>()</p></td>
+<td><p>Base class for all types of expressions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ExtendedSourceCode.html#blark.transform.ExtendedSourceCode" title="blark.transform.ExtendedSourceCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExtendedSourceCode</span></code></a>(items[, ...])</p></td>
+<td><p>Top-level source code item - extended to include the possibility of standalone implementation details (i.e., statement lists).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Extends.html#blark.transform.Extends" title="blark.transform.Extends"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Extends</span></code></a>(interfaces[, meta])</p></td>
+<td><p>The &quot;EXTENDS&quot; portion of a function block, interface, structure, etc.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ExternalVariableDeclaration.html#blark.transform.ExternalVariableDeclaration" title="blark.transform.ExternalVariableDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExternalVariableDeclaration</span></code></a>(...)</p></td>
+<td><p>A named, external variable declaration inside a variable block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ExternalVariableDeclarations.html#blark.transform.ExternalVariableDeclarations" title="blark.transform.ExternalVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ExternalVariableDeclarations</span></code></a>(...)</p></td>
+<td><p>A block of named, external variable declarations (<code class="docutils literal notranslate"><span class="pre">VAR_EXTERNAL</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.FieldSelector.html#blark.transform.FieldSelector" title="blark.transform.FieldSelector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FieldSelector</span></code></a>(field, ...[, meta])</p></td>
+<td><p>Field - or attribute - selector as part of a multi-element variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ForStatement.html#blark.transform.ForStatement" title="blark.transform.ForStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ForStatement</span></code></a>(control, from_, ...)</p></td>
+<td><p>A loop with a control variable and a start, stop, and (optional) step value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.FormatSettings.html#blark.transform.FormatSettings" title="blark.transform.FormatSettings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FormatSettings</span></code></a>([indent])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.FullSubrange.html#blark.transform.FullSubrange" title="blark.transform.FullSubrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FullSubrange</span></code></a>([meta])</p></td>
+<td><p>A full subrange (i.e., asterisk <code class="docutils literal notranslate"><span class="pre">*</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Function.html#blark.transform.Function" title="blark.transform.Function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Function</span></code></a>(access, name, ...)</p></td>
+<td><p>A full function block type declaration, with nested variable declaration blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.FunctionBlock.html#blark.transform.FunctionBlock" title="blark.transform.FunctionBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionBlock</span></code></a>(name, access, ...)</p></td>
+<td><p>A full function block type declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.FunctionBlockDeclaration.html#blark.transform.FunctionBlockDeclaration" title="blark.transform.FunctionBlockDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionBlockDeclaration</span></code></a>()</p></td>
+<td><p>Base class for declarations of variables using function blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.FunctionBlockInvocationDeclaration.html#blark.transform.FunctionBlockInvocationDeclaration" title="blark.transform.FunctionBlockInvocationDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionBlockInvocationDeclaration</span></code></a>(...)</p></td>
+<td><p>Base class for declarations of variables using function blocks by invocation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.FunctionBlockNameDeclaration.html#blark.transform.FunctionBlockNameDeclaration" title="blark.transform.FunctionBlockNameDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionBlockNameDeclaration</span></code></a>(...)</p></td>
+<td><p>Base class for declarations of variables using function blocks by name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.FunctionCall.html#blark.transform.FunctionCall" title="blark.transform.FunctionCall"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionCall</span></code></a>(name, ...[, meta])</p></td>
+<td><p>A function (function block, method, action, etc.) call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.FunctionCallStatement.html#blark.transform.FunctionCallStatement" title="blark.transform.FunctionCallStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionCallStatement</span></code></a>(name, ...)</p></td>
+<td><p>A function (function block, method, action, etc.) call as a statement.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.FunctionVariableDeclarations.html#blark.transform.FunctionVariableDeclarations" title="blark.transform.FunctionVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.FunctionVariableDeclarations</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.GlobalVariableAttributes.html#blark.transform.GlobalVariableAttributes" title="blark.transform.GlobalVariableAttributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.GlobalVariableAttributes</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.GlobalVariableDeclaration.html#blark.transform.GlobalVariableDeclaration" title="blark.transform.GlobalVariableDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.GlobalVariableDeclaration</span></code></a>(...)</p></td>
+<td><p>A declaration of one or more global variables: name and location specification and initialization type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.GlobalVariableDeclarations.html#blark.transform.GlobalVariableDeclarations" title="blark.transform.GlobalVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.GlobalVariableDeclarations</span></code></a>(...)</p></td>
+<td><p>Global variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR_GLOBAL</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.GlobalVariableSpec.html#blark.transform.GlobalVariableSpec" title="blark.transform.GlobalVariableSpec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.GlobalVariableSpec</span></code></a>(...[, meta])</p></td>
+<td><p>Global variable specification; the part that comes before the initialization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.GrammarTransformer.html#blark.transform.GrammarTransformer" title="blark.transform.GrammarTransformer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.GrammarTransformer</span></code></a>([...])</p></td>
+<td><p>Grammar transformer which takes lark objects and makes a <code class="xref py py-class docutils literal notranslate"><span class="pre">SourceCode</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.HexBitString.html#blark.transform.HexBitString" title="blark.transform.HexBitString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.HexBitString</span></code></a>(type_name, value)</p></td>
+<td><p>Hex bit string literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.HexInteger.html#blark.transform.HexInteger" title="blark.transform.HexInteger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.HexInteger</span></code></a>(value[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.IfStatement.html#blark.transform.IfStatement" title="blark.transform.IfStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IfStatement</span></code></a>(if_expression, ...)</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">IF</span></code> part of an <code class="docutils literal notranslate"><span class="pre">IF/ELSIF/ELSE/END_IF</span></code> block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Implements.html#blark.transform.Implements" title="blark.transform.Implements"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Implements</span></code></a>(interfaces[, meta])</p></td>
+<td><p>The &quot;IMPLEMENTS&quot; portion of a function block, indicating it implements one or more interfaces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.IncompleteLocatedVariableDeclaration.html#blark.transform.IncompleteLocatedVariableDeclaration" title="blark.transform.IncompleteLocatedVariableDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IncompleteLocatedVariableDeclaration</span></code></a>(...)</p></td>
+<td><p>A named, incomplete located variable declaration inside a variable block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.IncompleteLocatedVariableDeclarations.html#blark.transform.IncompleteLocatedVariableDeclarations" title="blark.transform.IncompleteLocatedVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IncompleteLocatedVariableDeclarations</span></code></a>(...)</p></td>
+<td><p>Incomplete located variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.IncompleteLocation.html#blark.transform.IncompleteLocation" title="blark.transform.IncompleteLocation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IncompleteLocation</span></code></a>(value)</p></td>
+<td><p>Incomplete location information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.IndirectSimpleSpecification.html#blark.transform.IndirectSimpleSpecification" title="blark.transform.IndirectSimpleSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IndirectSimpleSpecification</span></code></a>(...)</p></td>
+<td><p>A simple specification with the possibility of indirection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.IndirectionType.html#blark.transform.IndirectionType" title="blark.transform.IndirectionType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.IndirectionType</span></code></a>(...[, meta])</p></td>
+<td><p>Indirect access through a pointer or reference.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.InitDeclaration.html#blark.transform.InitDeclaration" title="blark.transform.InitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.InitDeclaration</span></code></a>()</p></td>
+<td><p>Base class for a declaration of one or more variables with a type initialization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.InitializedStructure.html#blark.transform.InitializedStructure" title="blark.transform.InitializedStructure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.InitializedStructure</span></code></a>(name, init)</p></td>
+<td><p>A named initialized structure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.InputDeclarations.html#blark.transform.InputDeclarations" title="blark.transform.InputDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.InputDeclarations</span></code></a>(attrs, items)</p></td>
+<td><p>A block of named, input variable declarations (<code class="docutils literal notranslate"><span class="pre">VAR_INPUT</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.InputOutputDeclarations.html#blark.transform.InputOutputDeclarations" title="blark.transform.InputOutputDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.InputOutputDeclarations</span></code></a>(...)</p></td>
+<td><p>A block of named, input/output variable declarations (<code class="docutils literal notranslate"><span class="pre">VAR_IN_OUT</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.InputParameterAssignment.html#blark.transform.InputParameterAssignment" title="blark.transform.InputParameterAssignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.InputParameterAssignment</span></code></a>(...)</p></td>
+<td><p>An input parameter in a function call.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Integer.html#blark.transform.Integer" title="blark.transform.Integer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Integer</span></code></a>(value[, type_name, meta])</p></td>
+<td><p>Integer literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Interface.html#blark.transform.Interface" title="blark.transform.Interface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Interface</span></code></a>(name, extends, ...)</p></td>
+<td><p>A full interface declaration, with nested variable declaration blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.JumpStatement.html#blark.transform.JumpStatement" title="blark.transform.JumpStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.JumpStatement</span></code></a>(label[, meta])</p></td>
+<td><p>This is the &quot;goto&quot;-style <code class="docutils literal notranslate"><span class="pre">JMP</span></code>, which points at a label.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.LabeledStatement.html#blark.transform.LabeledStatement" title="blark.transform.LabeledStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.LabeledStatement</span></code></a>(label[, ...])</p></td>
+<td><p>A statement marked with a user-defined label.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Ldate.html#blark.transform.Ldate" title="blark.transform.Ldate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Ldate</span></code></a>(year, month, day[, meta])</p></td>
+<td><p>Long date literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.LdateTime.html#blark.transform.LdateTime" title="blark.transform.LdateTime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.LdateTime</span></code></a>(ldate, ltime[, meta])</p></td>
+<td><p>Long date and time literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Lduration.html#blark.transform.Lduration" title="blark.transform.Lduration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Lduration</span></code></a>([days, hours, ...])</p></td>
+<td><p>Long duration literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Literal.html#blark.transform.Literal" title="blark.transform.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Literal</span></code></a>()</p></td>
+<td><p>Base class for all literal values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.LocatedVariableDeclaration.html#blark.transform.LocatedVariableDeclaration" title="blark.transform.LocatedVariableDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.LocatedVariableDeclaration</span></code></a>(...)</p></td>
+<td><p>Declaration of a variable in a VAR block that is located.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.LocatedVariableDeclarations.html#blark.transform.LocatedVariableDeclarations" title="blark.transform.LocatedVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.LocatedVariableDeclarations</span></code></a>(...)</p></td>
+<td><p>Located variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Location.html#blark.transform.Location" title="blark.transform.Location"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Location</span></code></a>(location_prefix, ...)</p></td>
+<td><p>A located direct variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.LtimeOfDay.html#blark.transform.LtimeOfDay" title="blark.transform.LtimeOfDay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.LtimeOfDay</span></code></a>(hour, minute[, ...])</p></td>
+<td><p>Long time of day literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Meta.html#blark.transform.Meta" title="blark.transform.Meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Meta</span></code></a>(empty, column, ...)</p></td>
+<td><p>Lark-derived meta information in the form of a dataclass.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Method.html#blark.transform.Method" title="blark.transform.Method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Method</span></code></a>(access, name, ...[, meta])</p></td>
+<td><p>A full, named method declaration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.MethodInstanceVariableDeclarations.html#blark.transform.MethodInstanceVariableDeclarations" title="blark.transform.MethodInstanceVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.MethodInstanceVariableDeclarations</span></code></a>(...)</p></td>
+<td><p>Declarations block for instance variables in methods (<code class="docutils literal notranslate"><span class="pre">VAR_INST</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.MultiElementVariable.html#blark.transform.MultiElementVariable" title="blark.transform.MultiElementVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.MultiElementVariable</span></code></a>(name, ...)</p></td>
+<td><p>A multi-element variable - with one or more subscripts and fields.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.NoOpStatement.html#blark.transform.NoOpStatement" title="blark.transform.NoOpStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.NoOpStatement</span></code></a>(variable[, meta])</p></td>
+<td><p>A no-operation statement referring to a variable and nothing else.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ObjectInitializerArray.html#blark.transform.ObjectInitializerArray" title="blark.transform.ObjectInitializerArray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ObjectInitializerArray</span></code></a>(name, ...)</p></td>
+<td><p>Object initialization in array form.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.OctalBitString.html#blark.transform.OctalBitString" title="blark.transform.OctalBitString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.OctalBitString</span></code></a>(type_name, value)</p></td>
+<td><p>Octal bit string literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.OctalInteger.html#blark.transform.OctalInteger" title="blark.transform.OctalInteger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.OctalInteger</span></code></a>(value[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.OutputDeclarations.html#blark.transform.OutputDeclarations" title="blark.transform.OutputDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.OutputDeclarations</span></code></a>(attrs, items)</p></td>
+<td><p>A block of named, output variable declarations (<code class="docutils literal notranslate"><span class="pre">VAR_OUTPUT</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.OutputParameterAssignment.html#blark.transform.OutputParameterAssignment" title="blark.transform.OutputParameterAssignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.OutputParameterAssignment</span></code></a>(...)</p></td>
+<td><p>A named output parameter, which may be inverted.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ParameterAssignment.html#blark.transform.ParameterAssignment" title="blark.transform.ParameterAssignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ParameterAssignment</span></code></a>()</p></td>
+<td><p>Base class for assigned parameters in function calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ParenthesizedExpression.html#blark.transform.ParenthesizedExpression" title="blark.transform.ParenthesizedExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ParenthesizedExpression</span></code></a>(expr)</p></td>
+<td><p>An expression with parentheses around it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.PartialSubrange.html#blark.transform.PartialSubrange" title="blark.transform.PartialSubrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.PartialSubrange</span></code></a>(start, stop)</p></td>
+<td><p>A partial subrange, including a start/stop element index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Program.html#blark.transform.Program" title="blark.transform.Program"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Program</span></code></a>(name, declarations, body)</p></td>
+<td><p>A full program declaration, with nested variable declaration blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Property.html#blark.transform.Property" title="blark.transform.Property"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Property</span></code></a>(access, name, ...)</p></td>
+<td><p>A named property declaration, which may pertain to a <code class="docutils literal notranslate"><span class="pre">get</span></code> or <code class="docutils literal notranslate"><span class="pre">set</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Real.html#blark.transform.Real" title="blark.transform.Real"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Real</span></code></a>(value[, type_name, meta])</p></td>
+<td><p>Floating point (real) literal value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ReferenceAssignmentStatement.html#blark.transform.ReferenceAssignmentStatement" title="blark.transform.ReferenceAssignmentStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ReferenceAssignmentStatement</span></code></a>(...)</p></td>
+<td><p>A reference assignment statement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.RepeatStatement.html#blark.transform.RepeatStatement" title="blark.transform.RepeatStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.RepeatStatement</span></code></a>(statements, ...)</p></td>
+<td><p>An ending conditional loop statement, <code class="docutils literal notranslate"><span class="pre">REPEAT</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.ResetStatement.html#blark.transform.ResetStatement" title="blark.transform.ResetStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ResetStatement</span></code></a>(variable, op, ...)</p></td>
+<td><p>A &quot;reset&quot; statement which conditionally clears a variable to <code class="docutils literal notranslate"><span class="pre">FALSE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.ReturnStatement.html#blark.transform.ReturnStatement" title="blark.transform.ReturnStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.ReturnStatement</span></code></a>([meta])</p></td>
+<td><p>A statement used to return from a function [block], <code class="docutils literal notranslate"><span class="pre">RETURN</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SetStatement.html#blark.transform.SetStatement" title="blark.transform.SetStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SetStatement</span></code></a>(variable, op, ...)</p></td>
+<td><p>A &quot;set&quot; statement which conditionally sets a variable to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SimpleSpecification.html#blark.transform.SimpleSpecification" title="blark.transform.SimpleSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SimpleSpecification</span></code></a>(type[, meta])</p></td>
+<td><p>A simple specification with just a type name (or a string type name).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SimpleTypeDeclaration.html#blark.transform.SimpleTypeDeclaration" title="blark.transform.SimpleTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SimpleTypeDeclaration</span></code></a>(name, ...)</p></td>
+<td><p>A declaration of a simple type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SimpleVariable.html#blark.transform.SimpleVariable" title="blark.transform.SimpleVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SimpleVariable</span></code></a>(name, ...[, meta])</p></td>
+<td><p>A simple, single-element variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SourceCode.html#blark.transform.SourceCode" title="blark.transform.SourceCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SourceCode</span></code></a>(items[, ...])</p></td>
+<td><p>Top-level source code item.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Statement.html#blark.transform.Statement" title="blark.transform.Statement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Statement</span></code></a>()</p></td>
+<td><p>Base class for all statements in a structured text implementation section.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StatementList.html#blark.transform.StatementList" title="blark.transform.StatementList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StatementList</span></code></a>(statements[, meta])</p></td>
+<td><p>A list of statements, making up a structured text implementation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StaticDeclarations.html#blark.transform.StaticDeclarations" title="blark.transform.StaticDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StaticDeclarations</span></code></a>(attrs, items)</p></td>
+<td><p>Static variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR_STAT</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.String.html#blark.transform.String" title="blark.transform.String"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.String</span></code></a>(value[, meta])</p></td>
+<td><p>String literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StringSpecLength.html#blark.transform.StringSpecLength" title="blark.transform.StringSpecLength"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringSpecLength</span></code></a>(length)</p></td>
+<td><p>The length of a defined string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StringTypeDeclaration.html#blark.transform.StringTypeDeclaration" title="blark.transform.StringTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringTypeDeclaration</span></code></a>(name, ...)</p></td>
+<td><p>A string type declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StringTypeInitialization.html#blark.transform.StringTypeInitialization" title="blark.transform.StringTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringTypeInitialization</span></code></a>(...)</p></td>
+<td><p>Single or double-byte string specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StringTypeSpecification.html#blark.transform.StringTypeSpecification" title="blark.transform.StringTypeSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StringTypeSpecification</span></code></a>(...)</p></td>
+<td><p>Specification of a string type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureElementDeclaration.html#blark.transform.StructureElementDeclaration" title="blark.transform.StructureElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementDeclaration</span></code></a>(...)</p></td>
+<td><p>Declaration line of a structure, typically with a single variable name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureElementInitialization.html#blark.transform.StructureElementInitialization" title="blark.transform.StructureElementInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureElementInitialization</span></code></a>(...)</p></td>
+<td><p>An initialization (default) value for a structure element.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructureInitialization.html#blark.transform.StructureInitialization" title="blark.transform.StructureInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureInitialization</span></code></a>(elements)</p></td>
+<td><p>A structure initialization (i.e., default values) of one or more elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.StructureTypeDeclaration.html#blark.transform.StructureTypeDeclaration" title="blark.transform.StructureTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructureTypeDeclaration</span></code></a>(...)</p></td>
+<td><p>Full structure type declaration, as part of a TYPE.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.StructuredVariableInitDeclaration.html#blark.transform.StructuredVariableInitDeclaration" title="blark.transform.StructuredVariableInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.StructuredVariableInitDeclaration</span></code></a>(...)</p></td>
+<td><p>A declaration of one or more variables using a named initialized structure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.Subrange.html#blark.transform.Subrange" title="blark.transform.Subrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Subrange</span></code></a>()</p></td>
+<td><p>Subrange base class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubrangeSpecification.html#blark.transform.SubrangeSpecification" title="blark.transform.SubrangeSpecification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeSpecification</span></code></a>(type_name)</p></td>
+<td><p>A subrange specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeDeclaration.html#blark.transform.SubrangeTypeDeclaration" title="blark.transform.SubrangeTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeDeclaration</span></code></a>(...)</p></td>
+<td><p>A subrange type declaration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.SubrangeTypeInitialization.html#blark.transform.SubrangeTypeInitialization" title="blark.transform.SubrangeTypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubrangeTypeInitialization</span></code></a>(...)</p></td>
+<td><p>A subrange type initialization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.SubscriptList.html#blark.transform.SubscriptList" title="blark.transform.SubscriptList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.SubscriptList</span></code></a>(subscripts, ...)</p></td>
+<td><p>A list of subscripts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TemporaryVariableDeclarations.html#blark.transform.TemporaryVariableDeclarations" title="blark.transform.TemporaryVariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TemporaryVariableDeclarations</span></code></a>(items)</p></td>
+<td><p>Temporary variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR_TEMP</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TimeOfDay.html#blark.transform.TimeOfDay" title="blark.transform.TimeOfDay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TimeOfDay</span></code></a>(hour, minute[, ...])</p></td>
+<td><p>Time of day literal value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeInformation.html#blark.transform.TypeInformation" title="blark.transform.TypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInformation</span></code></a>(...)</p></td>
+<td><p>Type information derived from a specification or initialization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeInitialization.html#blark.transform.TypeInitialization" title="blark.transform.TypeInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitialization</span></code></a>(spec, value)</p></td>
+<td><p>A simple initialization specification of a type name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.TypeInitializationBase.html#blark.transform.TypeInitializationBase" title="blark.transform.TypeInitializationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeInitializationBase</span></code></a>()</p></td>
+<td><p>Base class for type initializations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.TypeSpecificationBase.html#blark.transform.TypeSpecificationBase" title="blark.transform.TypeSpecificationBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.TypeSpecificationBase</span></code></a>()</p></td>
+<td><p>Base class for a specification of a type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnaryOperation.html#blark.transform.UnaryOperation" title="blark.transform.UnaryOperation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnaryOperation</span></code></a>(op, expr[, meta])</p></td>
+<td><p>A unary - single operand - operation: <code class="docutils literal notranslate"><span class="pre">NOT</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>, or <code class="docutils literal notranslate"><span class="pre">+</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnionElementDeclaration.html#blark.transform.UnionElementDeclaration" title="blark.transform.UnionElementDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionElementDeclaration</span></code></a>(...)</p></td>
+<td><p>Declaration of a single element of a union.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.UnionTypeDeclaration.html#blark.transform.UnionTypeDeclaration" title="blark.transform.UnionTypeDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnionTypeDeclaration</span></code></a>(name, ...)</p></td>
+<td><p>A full declaration of a UNION type, as part of a TYPE/END_TYPE block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.UnresolvedTypeInformation.html#blark.transform.UnresolvedTypeInformation" title="blark.transform.UnresolvedTypeInformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.UnresolvedTypeInformation</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.Variable.html#blark.transform.Variable" title="blark.transform.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.Variable</span></code></a>()</p></td>
+<td><p>Variable base class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableAttributes.html#blark.transform.VariableAttributes" title="blark.transform.VariableAttributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableAttributes</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarationBlock.html#blark.transform.VariableDeclarationBlock" title="blark.transform.VariableDeclarationBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarationBlock</span></code></a>()</p></td>
+<td><p>Base class for variable declaration blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableDeclarations.html#blark.transform.VariableDeclarations" title="blark.transform.VariableDeclarations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableDeclarations</span></code></a>(attrs, ...)</p></td>
+<td><p>Variable declarations block (<code class="docutils literal notranslate"><span class="pre">VAR</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableLocationPrefix.html#blark.transform.VariableLocationPrefix" title="blark.transform.VariableLocationPrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableLocationPrefix</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.VariableOneInitDeclaration.html#blark.transform.VariableOneInitDeclaration" title="blark.transform.VariableOneInitDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableOneInitDeclaration</span></code></a>(...)</p></td>
+<td><p>A declaration of one or more variables with a type, subrange, or enumerated type initialization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.VariableSizePrefix.html#blark.transform.VariableSizePrefix" title="blark.transform.VariableSizePrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.VariableSizePrefix</span></code></a>(value)</p></td>
+<td><p>Size prefix, used in locations (e.g., <code class="docutils literal notranslate"><span class="pre">%IX1.1</span></code> has a bit prefix).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.WhileStatement.html#blark.transform.WhileStatement" title="blark.transform.WhileStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.WhileStatement</span></code></a>(expression, ...)</p></td>
+<td><p>A beginning conditional loop statement, <code class="docutils literal notranslate"><span class="pre">WHILE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._ArrayInitialElementCount.html#blark.transform._ArrayInitialElementCount" title="blark.transform._ArrayInitialElementCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._ArrayInitialElementCount</span></code></a>()</p></td>
+<td><p>An internal handler for array initial elements with repeat count values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._BareArrayInitialization.html#blark.transform._BareArrayInitialization" title="blark.transform._BareArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BareArrayInitialization</span></code></a>()</p></td>
+<td><p>Internal handler for array initialization, without brackets</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._BracketedArrayInitialization.html#blark.transform._BracketedArrayInitialization" title="blark.transform._BracketedArrayInitialization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._BracketedArrayInitialization</span></code></a>()</p></td>
+<td><p>Internal handler for array initialization with brackets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform._FlagHelper.html#blark.transform._FlagHelper" title="blark.transform._FlagHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._FlagHelper</span></code></a>()</p></td>
+<td><p>A helper base class which translates tokens to <code class="docutils literal notranslate"><span class="pre">enum.Flag</span></code> instances.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform._GenericInit.html#blark.transform._GenericInit" title="blark.transform._GenericInit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform._GenericInit</span></code></a>(base_type_name, ...)</p></td>
+<td><p>API compat to give a valid init attribute.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.configure_formatting.html#blark.transform.configure_formatting" title="blark.transform.configure_formatting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.configure_formatting</span></code></a>(settings)</p></td>
+<td><p>Override the default code formatting settings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.get_grammar_for_class.html#blark.transform.get_grammar_for_class" title="blark.transform.get_grammar_for_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.get_grammar_for_class</span></code></a>(cls)</p></td>
+<td><p>Given a class, get blark's <code class="docutils literal notranslate"><span class="pre">iec.lark</span></code> associated grammar definition(s).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.indent.html#blark.transform.indent" title="blark.transform.indent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent</span></code></a>(value[, prefix])</p></td>
+<td><p>Stringified and indented {value}.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.indent_if.html#blark.transform.indent_if" title="blark.transform.indent_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.indent_if</span></code></a>(value[, prefix])</p></td>
+<td><p>Stringified and indented {value} if not None.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.join_if.html#blark.transform.join_if" title="blark.transform.join_if"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.join_if</span></code></a>(value1, delimiter, ...)</p></td>
+<td><p>'{value1}{delimiter}{value2} if value1 and value2, otherwise just {value1} or {value2}.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.merge_comments.html#blark.transform.merge_comments" title="blark.transform.merge_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.merge_comments</span></code></a>(source, comments)</p></td>
+<td><p>Take the transformed tree and annotate comments back into meta information.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.meta_field.html#blark.transform.meta_field" title="blark.transform.meta_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.meta_field</span></code></a>()</p></td>
+<td><p>Create the Meta field for the dataclass magic.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.transform.multiline_code_block.html#blark.transform.multiline_code_block" title="blark.transform.multiline_code_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.multiline_code_block</span></code></a>(block)</p></td>
+<td><p>Multiline code block with lax beginning/end newlines.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.transform.transform.html#blark.transform.transform" title="blark.transform.transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.transform.transform</span></code></a>(source_code, tree)</p></td>
+<td><p>Transform a <code class="docutils literal notranslate"><span class="pre">lark.Tree</span></code> into dataclasses.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-typing">
+<h2>blark.typing<a class="headerlink" href="#blark-typing" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.typing.ContainsBlarkCode.html#blark.typing.ContainsBlarkCode" title="blark.typing.ContainsBlarkCode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.typing.ContainsBlarkCode</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Indicates that the given class can emit blark-compatible source items.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.typing.SupportsRewrite.html#blark.typing.SupportsRewrite" title="blark.typing.SupportsRewrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.typing.SupportsRewrite</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.typing.SupportsSaveToPath.html#blark.typing.SupportsSaveToPath" title="blark.typing.SupportsSaveToPath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.typing.SupportsSaveToPath</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.typing.SupportsWrite.html#blark.typing.SupportsWrite" title="blark.typing.SupportsWrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.typing.SupportsWrite</span></code></a>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blark-util">
+<h2>blark.util<a class="headerlink" href="#blark-util" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.Identifier.html#blark.util.Identifier" title="blark.util.Identifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.Identifier</span></code></a>(parts[, decl_impl])</p></td>
+<td><p>A blark convention for giving portions of code unique names.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.SourceType.html#blark.util.SourceType" title="blark.util.SourceType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.SourceType</span></code></a>(value)</p></td>
+<td><p>An enumeration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.find_and_clean_comments.html#blark.util.find_and_clean_comments" title="blark.util.find_and_clean_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_and_clean_comments</span></code></a>(text, *)</p></td>
+<td><p>Clean nested multiline comments from <code class="docutils literal notranslate"><span class="pre">text</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_plain.html#blark.util.find_pou_type_and_identifier_plain" title="blark.util.find_pou_type_and_identifier_plain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_pou_type_and_identifier_plain</span></code></a>(code)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.find_pou_type_and_identifier_xml.html#blark.util.find_pou_type_and_identifier_xml" title="blark.util.find_pou_type_and_identifier_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.find_pou_type_and_identifier_xml</span></code></a>(xml)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.fix_case_insensitive_path.html#blark.util.fix_case_insensitive_path" title="blark.util.fix_case_insensitive_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.fix_case_insensitive_path</span></code></a>(path)</p></td>
+<td><p>Match a path in a case-insensitive manner.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.get_case_insensitive.html#blark.util.get_case_insensitive" title="blark.util.get_case_insensitive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_case_insensitive</span></code></a>(dct, key[, ...])</p></td>
+<td><p>Get case-insensitive key from a dictionary, with default.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.get_file_sha256.html#blark.util.get_file_sha256" title="blark.util.get_file_sha256"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_file_sha256</span></code></a>(filename)</p></td>
+<td><p>Hash a file's contents with the SHA-256 algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.get_grammar_for_rule.html#blark.util.get_grammar_for_rule" title="blark.util.get_grammar_for_rule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_grammar_for_rule</span></code></a>(rule)</p></td>
+<td><p>Get the lark grammar source for the provided rule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.get_grammar_source.html#blark.util.get_grammar_source" title="blark.util.get_grammar_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_grammar_source</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.get_source_code.html#blark.util.get_source_code" title="blark.util.get_source_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.get_source_code</span></code></a>(fn, *[, encoding])</p></td>
+<td><p>Get source code from the given file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.indent_inner.html#blark.util.indent_inner" title="blark.util.indent_inner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.indent_inner</span></code></a>(text, prefix)</p></td>
+<td><p>Indent the inner lines of <code class="docutils literal notranslate"><span class="pre">text</span></code> (not first and last) with <code class="docutils literal notranslate"><span class="pre">prefix</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.maybe_add_brackets.html#blark.util.maybe_add_brackets" title="blark.util.maybe_add_brackets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.maybe_add_brackets</span></code></a>(text[, brackets])</p></td>
+<td><p>Add brackets to <code class="docutils literal notranslate"><span class="pre">text</span></code> if there are no enclosing brackets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.python_debug_session.html#blark.util.python_debug_session" title="blark.util.python_debug_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.python_debug_session</span></code></a>(namespace, ...)</p></td>
+<td><p>Enter an interactive debug session with pdb or IPython, if available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.rebuild_lark_tree_with_line_map.html#blark.util.rebuild_lark_tree_with_line_map" title="blark.util.rebuild_lark_tree_with_line_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.rebuild_lark_tree_with_line_map</span></code></a>(...)</p></td>
+<td><p>Rebuild a given lark tree, adjusting line numbers to match up with the source.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.recursively_remove_keys.html#blark.util.recursively_remove_keys" title="blark.util.recursively_remove_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.recursively_remove_keys</span></code></a>(obj, keys)</p></td>
+<td><p>Remove the provided keys from the JSON object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.remove_all_comments.html#blark.util.remove_all_comments" title="blark.util.remove_all_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.remove_all_comments</span></code></a>(text, *[, ...])</p></td>
+<td><p>Remove all comments and replace them with the provided character.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.remove_comment_characters.html#blark.util.remove_comment_characters" title="blark.util.remove_comment_characters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.remove_comment_characters</span></code></a>(text)</p></td>
+<td><p>Take only the inner contents of a given comment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.simplify_brackets.html#blark.util.simplify_brackets" title="blark.util.simplify_brackets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.simplify_brackets</span></code></a>(text[, brackets])</p></td>
+<td><p>Simplify repeated brackets/parentheses in <code class="docutils literal notranslate"><span class="pre">text</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.util.tree_to_xml_source.html#blark.util.tree_to_xml_source" title="blark.util.tree_to_xml_source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.tree_to_xml_source</span></code></a>(tree[, ...])</p></td>
+<td><p>Return the contents to write for the given XML tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.util.try_paths.html#blark.util.try_paths" title="blark.util.try_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.util.try_paths</span></code></a>(paths)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sphinx.html" class="btn btn-neutral float-left" title="Sphinx API Docs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/blark.apischema_compat.alternative_constructor.html" class="btn btn-neutral float-right" title="blark.apischema_compat.alternative_constructor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ken Lauer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

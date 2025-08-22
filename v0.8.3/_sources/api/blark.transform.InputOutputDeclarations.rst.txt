@@ -1,0 +1,50 @@
+﻿blark.transform.InputOutputDeclarations
+=======================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: InputOutputDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``input_output_declarations``
+
+   .. code::
+
+     input_output_declarations: _VAR_IN_OUT [ variable_attributes ] var_body _END_VAR ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~InputOutputDeclarations.__init__
+       ~InputOutputDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~InputOutputDeclarations.attribute_pragmas
+       ~InputOutputDeclarations.block_header
+       ~InputOutputDeclarations.meta
+       ~InputOutputDeclarations.attrs
+       ~InputOutputDeclarations.items
+   

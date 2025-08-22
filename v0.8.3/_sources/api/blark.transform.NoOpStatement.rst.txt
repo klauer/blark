@@ -1,0 +1,47 @@
+﻿blark.transform.NoOpStatement
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: NoOpStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``no_op_statement``
+
+   .. code::
+
+     no_op_statement: _variable ";"+
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~NoOpStatement.__init__
+       ~NoOpStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~NoOpStatement.meta
+       ~NoOpStatement.variable
+   

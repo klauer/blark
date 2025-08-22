@@ -1,0 +1,52 @@
+﻿blark.transform.BitString
+=========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: BitString
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``bit_string_literal``
+
+   .. code::
+
+     bit_string_literal: [ BIT_STRING_TYPE_NAME "#" ] "2#" BIT_STRING    -> binary_bit_string_literal
+                       | [ BIT_STRING_TYPE_NAME "#" ] "8#" OCTAL_STRING  -> octal_bit_string_literal
+                       | [ BIT_STRING_TYPE_NAME "#" ] "16#" HEX_STRING   -> hex_bit_string_literal
+                       | [ BIT_STRING_TYPE_NAME "#" ] INTEGER
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BitString.__init__
+       ~BitString.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BitString.base
+       ~BitString.meta
+       ~BitString.type_name
+       ~BitString.value
+   

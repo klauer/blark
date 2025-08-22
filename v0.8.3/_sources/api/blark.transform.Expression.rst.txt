@@ -1,0 +1,24 @@
+﻿blark.transform.Expression
+==========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Expression
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Expression.__init__
+   
+   
+
+   
+   
+   

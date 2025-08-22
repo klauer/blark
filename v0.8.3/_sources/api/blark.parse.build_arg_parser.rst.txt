@@ -1,0 +1,6 @@
+﻿blark.parse.build\_arg\_parser
+==============================
+
+.. currentmodule:: blark.parse
+
+.. autofunction:: build_arg_parser

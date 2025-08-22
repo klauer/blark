@@ -1,0 +1,48 @@
+﻿blark.transform.DataTypeDeclaration
+===================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: DataTypeDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``data_type_declaration``
+
+   .. code::
+
+     data_type_declaration: _TYPE [ access_specifier ] [ _type_declaration ] ";"* _END_TYPE ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DataTypeDeclaration.__init__
+       ~DataTypeDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DataTypeDeclaration.meta
+       ~DataTypeDeclaration.declaration
+       ~DataTypeDeclaration.access
+   

@@ -1,0 +1,51 @@
+﻿blark.transform.ArraySpecification
+==================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ArraySpecification
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``array_specification``
+
+   .. code::
+
+     array_specification: _ARRAY "[" subrange ( "," subrange )* "]" _OF _array_spec_type
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ArraySpecification.__init__
+       ~ArraySpecification.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ArraySpecification.base_type_name
+       ~ArraySpecification.full_type_name
+       ~ArraySpecification.meta
+       ~ArraySpecification.type_info
+       ~ArraySpecification.subranges
+       ~ArraySpecification.type
+   

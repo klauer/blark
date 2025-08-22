@@ -1,0 +1,40 @@
+﻿blark.solution.TcAction
+=======================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: TcAction
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~TcAction.__init__
+       ~TcAction.rewrite_code
+       ~TcAction.to_blark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~TcAction.default_source_type
+       ~TcAction.parent
+       ~TcAction.source_type
+       ~TcAction.xml
+       ~TcAction.name
+       ~TcAction.guid
+       ~TcAction.decl
+       ~TcAction.metadata
+       ~TcAction.filename
+   

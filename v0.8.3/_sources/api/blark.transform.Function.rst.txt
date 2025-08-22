@@ -1,0 +1,51 @@
+﻿blark.transform.Function
+========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Function
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_declaration``
+
+   .. code::
+
+     function_declaration: _FUNCTION [ access_specifier ] derived_function_name [ ":" indirect_simple_specification ] ";"* [ function_var_block+ ] [ function_body ] _END_FUNCTION ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Function.__init__
+       ~Function.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Function.meta
+       ~Function.access
+       ~Function.name
+       ~Function.return_type
+       ~Function.declarations
+       ~Function.body
+   

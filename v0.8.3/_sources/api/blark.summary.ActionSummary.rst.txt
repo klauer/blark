@@ -1,0 +1,40 @@
+﻿blark.summary.ActionSummary
+===========================
+
+.. currentmodule:: blark.summary
+
+.. autoclass:: ActionSummary
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ActionSummary.__init__
+       ~ActionSummary.from_action
+       ~ActionSummary.from_statement_list
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ActionSummary.implementation
+       ~ActionSummary.implementation_source
+       ~ActionSummary.name
+       ~ActionSummary.item
+       ~ActionSummary.source_code
+       ~ActionSummary.comments
+       ~ActionSummary.pragmas
+       ~ActionSummary.filename
+       ~ActionSummary.meta
+   

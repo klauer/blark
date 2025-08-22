@@ -1,0 +1,47 @@
+﻿blark.transform.Extends
+=======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Extends
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``extends``
+
+   .. code::
+
+     extends: _EXTENDS DOTTED_IDENTIFIER ("," DOTTED_IDENTIFIER)*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Extends.__init__
+       ~Extends.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Extends.meta
+       ~Extends.interfaces
+   

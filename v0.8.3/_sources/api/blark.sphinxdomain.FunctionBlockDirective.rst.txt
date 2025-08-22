@@ -1,0 +1,47 @@
+﻿blark.sphinxdomain.FunctionBlockDirective
+=========================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: FunctionBlockDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionBlockDirective.config
+       ~FunctionBlockDirective.doc_field_types
+       ~FunctionBlockDirective.domain
+       ~FunctionBlockDirective.env
+       ~FunctionBlockDirective.final_argument_whitespace
+       ~FunctionBlockDirective.has_content
+       ~FunctionBlockDirective.indexnode
+       ~FunctionBlockDirective.objtype
+       ~FunctionBlockDirective.option_spec
+       ~FunctionBlockDirective.optional_arguments
+       ~FunctionBlockDirective.required_arguments
+       ~FunctionBlockDirective.signature_prefix
+       ~FunctionBlockDirective.obj
+       ~FunctionBlockDirective.name
+       ~FunctionBlockDirective.rawtext
+       ~FunctionBlockDirective.text
+       ~FunctionBlockDirective.lineno
+       ~FunctionBlockDirective.options
+       ~FunctionBlockDirective.content
+   

@@ -1,0 +1,49 @@
+﻿blark.transform.CaseStatement
+=============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: CaseStatement
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``case_statement``
+
+   .. code::
+
+     case_statement: _CASE expression _OF case_elements [ else_clause ] _END_CASE ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~CaseStatement.__init__
+       ~CaseStatement.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~CaseStatement.meta
+       ~CaseStatement.expression
+       ~CaseStatement.cases
+       ~CaseStatement.else_clause
+   

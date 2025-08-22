@@ -1,0 +1,49 @@
+﻿blark.transform.FunctionBlockInvocationDeclaration
+==================================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: FunctionBlockInvocationDeclaration
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``fb_invocation_decl``
+
+   .. code::
+
+     | fb_decl_name_list ":" function_call [ ":=" structure_initialization ]            -> fb_invocation_decl
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~FunctionBlockInvocationDeclaration.__init__
+       ~FunctionBlockInvocationDeclaration.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~FunctionBlockInvocationDeclaration.defaults
+       ~FunctionBlockInvocationDeclaration.meta
+       ~FunctionBlockInvocationDeclaration.variables
+       ~FunctionBlockInvocationDeclaration.init
+   

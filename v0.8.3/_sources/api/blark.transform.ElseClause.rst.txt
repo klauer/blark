@@ -1,0 +1,47 @@
+﻿blark.transform.ElseClause
+==========================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ElseClause
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``else_clause``
+
+   .. code::
+
+     else_clause: _ELSE [ statement_list ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ElseClause.__init__
+       ~ElseClause.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ElseClause.meta
+       ~ElseClause.statements
+   

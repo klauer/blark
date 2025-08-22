@@ -1,0 +1,50 @@
+﻿blark.transform.LocatedVariableDeclarations
+===========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: LocatedVariableDeclarations
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``located_var_declarations``
+
+   .. code::
+
+     located_var_declarations: _VAR [ variable_attributes ] located_var_decl* _END_VAR ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~LocatedVariableDeclarations.__init__
+       ~LocatedVariableDeclarations.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~LocatedVariableDeclarations.attribute_pragmas
+       ~LocatedVariableDeclarations.block_header
+       ~LocatedVariableDeclarations.meta
+       ~LocatedVariableDeclarations.attrs
+       ~LocatedVariableDeclarations.items
+   

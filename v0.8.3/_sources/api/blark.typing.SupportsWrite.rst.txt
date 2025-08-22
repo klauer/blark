@@ -1,0 +1,25 @@
+﻿blark.typing.SupportsWrite
+==========================
+
+.. currentmodule:: blark.typing
+
+.. autoclass:: SupportsWrite
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~SupportsWrite.__init__
+       ~SupportsWrite.to_file_contents
+   
+   
+
+   
+   
+   

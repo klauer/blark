@@ -1,0 +1,48 @@
+﻿blark.transform.ElseIfClause
+============================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: ElseIfClause
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``else_if_clause``
+
+   .. code::
+
+     else_if_clause: _ELSIF expression _THEN [ statement_list ]
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~ElseIfClause.__init__
+       ~ElseIfClause.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~ElseIfClause.meta
+       ~ElseIfClause.if_expression
+       ~ElseIfClause.statements
+   

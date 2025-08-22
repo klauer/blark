@@ -1,0 +1,47 @@
+﻿blark.sphinxdomain.GvlDirective
+===============================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: GvlDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~GvlDirective.config
+       ~GvlDirective.doc_field_types
+       ~GvlDirective.domain
+       ~GvlDirective.env
+       ~GvlDirective.final_argument_whitespace
+       ~GvlDirective.has_content
+       ~GvlDirective.indexnode
+       ~GvlDirective.objtype
+       ~GvlDirective.option_spec
+       ~GvlDirective.optional_arguments
+       ~GvlDirective.required_arguments
+       ~GvlDirective.signature_prefix
+       ~GvlDirective.obj
+       ~GvlDirective.name
+       ~GvlDirective.rawtext
+       ~GvlDirective.text
+       ~GvlDirective.lineno
+       ~GvlDirective.options
+       ~GvlDirective.content
+   

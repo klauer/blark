@@ -1,0 +1,40 @@
+﻿blark.transform.\_BareArrayInitialization
+=========================================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: _BareArrayInitialization
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``bare_array_initialization``
+
+   .. code::
+
+     | array_initial_element ( "," array_initial_element )*         -> bare_array_initialization
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~_BareArrayInitialization.__init__
+       ~_BareArrayInitialization.from_lark
+   
+   
+
+   
+   
+   

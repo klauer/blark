@@ -1,0 +1,6 @@
+﻿blark.util.get\_source\_code
+============================
+
+.. currentmodule:: blark.util
+
+.. autofunction:: get_source_code

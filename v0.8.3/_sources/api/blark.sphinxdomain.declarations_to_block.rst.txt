@@ -1,0 +1,6 @@
+﻿blark.sphinxdomain.declarations\_to\_block
+==========================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autofunction:: declarations_to_block

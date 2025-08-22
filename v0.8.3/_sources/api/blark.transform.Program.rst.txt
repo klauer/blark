@@ -1,0 +1,49 @@
+﻿blark.transform.Program
+=======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Program
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``program_declaration``
+
+   .. code::
+
+     program_declaration: _PROGRAM program_type_name program_var_declarations [ function_block_body ] _END_PROGRAM ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Program.__init__
+       ~Program.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Program.meta
+       ~Program.name
+       ~Program.declarations
+       ~Program.body
+   

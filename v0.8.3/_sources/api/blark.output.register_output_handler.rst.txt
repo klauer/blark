@@ -1,0 +1,6 @@
+﻿blark.output.register\_output\_handler
+======================================
+
+.. currentmodule:: blark.output
+
+.. autofunction:: register_output_handler

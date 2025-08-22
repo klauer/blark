@@ -1,0 +1,45 @@
+﻿blark.sphinxdomain.BlarkDirective
+=================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autoclass:: BlarkDirective
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkDirective.config
+       ~BlarkDirective.doc_field_types
+       ~BlarkDirective.domain
+       ~BlarkDirective.env
+       ~BlarkDirective.final_argument_whitespace
+       ~BlarkDirective.has_content
+       ~BlarkDirective.indexnode
+       ~BlarkDirective.objtype
+       ~BlarkDirective.option_spec
+       ~BlarkDirective.optional_arguments
+       ~BlarkDirective.required_arguments
+       ~BlarkDirective.name
+       ~BlarkDirective.rawtext
+       ~BlarkDirective.text
+       ~BlarkDirective.lineno
+       ~BlarkDirective.options
+       ~BlarkDirective.content
+   

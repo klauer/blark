@@ -1,0 +1,6 @@
+﻿blark.sphinxdomain.declaration\_to\_content
+===========================================
+
+.. currentmodule:: blark.sphinxdomain
+
+.. autofunction:: declaration_to_content

@@ -1,0 +1,6 @@
+﻿blark.transform.join\_if
+========================
+
+.. currentmodule:: blark.transform
+
+.. autofunction:: join_if

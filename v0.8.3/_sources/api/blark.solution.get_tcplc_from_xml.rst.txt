@@ -1,0 +1,6 @@
+﻿blark.solution.get\_tcplc\_from\_xml
+====================================
+
+.. currentmodule:: blark.solution
+
+.. autofunction:: get_tcplc_from_xml

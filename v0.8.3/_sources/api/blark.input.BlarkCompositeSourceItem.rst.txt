@@ -1,0 +1,36 @@
+﻿blark.input.BlarkCompositeSourceItem
+====================================
+
+.. currentmodule:: blark.input
+
+.. autoclass:: BlarkCompositeSourceItem
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~BlarkCompositeSourceItem.__init__
+       ~BlarkCompositeSourceItem.get_code_and_line_map
+       ~BlarkCompositeSourceItem.get_filenames
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~BlarkCompositeSourceItem.lines
+       ~BlarkCompositeSourceItem.user
+       ~BlarkCompositeSourceItem.identifier
+       ~BlarkCompositeSourceItem.filename
+       ~BlarkCompositeSourceItem.parts
+   

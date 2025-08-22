@@ -1,0 +1,51 @@
+﻿blark.transform.Method
+======================
+
+.. currentmodule:: blark.transform
+
+.. autoclass:: Method
+
+   
+   
+   
+   .. rubric:: Lark grammar
+
+   This class is used by the following grammar rules:
+
+   
+   ``function_block_method_declaration``
+
+   .. code::
+
+     function_block_method_declaration: _METHOD [ access_specifier ] DOTTED_IDENTIFIER [ ":" method_return_type ] ";"* method_var_declaration* [ function_block_body ] _END_METHOD ";"*
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~Method.__init__
+       ~Method.from_lark
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~Method.meta
+       ~Method.access
+       ~Method.name
+       ~Method.return_type
+       ~Method.declarations
+       ~Method.body
+   

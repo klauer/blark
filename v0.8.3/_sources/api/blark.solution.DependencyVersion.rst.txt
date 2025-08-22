@@ -1,0 +1,34 @@
+﻿blark.solution.DependencyVersion
+================================
+
+.. currentmodule:: blark.solution
+
+.. autoclass:: DependencyVersion
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~DependencyVersion.__init__
+       ~DependencyVersion.from_string
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~DependencyVersion.name
+       ~DependencyVersion.version
+       ~DependencyVersion.vendor
+       ~DependencyVersion.namespace
+   
