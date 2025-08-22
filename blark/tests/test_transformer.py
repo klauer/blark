@@ -59,7 +59,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
 
     print("\n\nTransformed:")
     print(repr(transformed))
-    print("\n\nOr:")
+    print("\n\nAs source code:")
     print(transformed)
     if expected is None:
         expected = value
@@ -1063,6 +1063,24 @@ def test_type_name_roundtrip(rule_name, value):
             END_PROPERTY
             """
         )),
+        param("function_block_property_declaration", tf.multiline_code_block(
+            """
+            {attribute 'monitoring' := 'call'}
+            PROPERTY PRIVATE p_fActValue : LREAL PROTECTED
+                VAR
+                END_VAR
+            END_PROPERTY
+            """
+        )),  # PR #111
+        param("function_block_property_declaration", tf.multiline_code_block(
+            """
+            {attribute 'monitoring' := 'call'}
+            PROPERTY p_fActValue : LREAL PROTECTED
+                VAR
+                END_VAR
+            END_PROPERTY
+            """
+        )),  # PR #111
         param("function_block_property_declaration", tf.multiline_code_block(
             """
             PROPERTY PropertyName : RETURNTYPE
