@@ -2494,7 +2494,7 @@ InitDeclarationType = Union[
     EnumeratedTypeInitialization,
     ArrayTypeInitialization,
     InitializedStructure,
-    _GenericInit,  # StringVariableInitDeclaration, EdgeDeclaration
+    _GenericInit,  # EdgeDeclaration
 ]
 
 
@@ -2566,44 +2566,6 @@ class StructuredVariableInitDeclaration(InitDeclaration):
     variables: List[DeclaredVariable]
     init: InitializedStructure
     meta: Optional[Meta] = meta_field()
-
-
-@dataclass
-@_rule_handler(
-    "single_byte_string_var_declaration",
-    "double_byte_string_var_declaration",
-    comments=True
-)
-class StringVariableInitDeclaration(InitDeclaration):
-    """
-    A declaration of one or more variables using single/double byte strings,
-    with an optinoal initialization value.
-
-    Examples::
-
-        sVar1 : STRING(2_500_000) := 'test1'
-        sVar2, sVar3 : STRING(Param.iLower) := 'test2'
-        sVar4, sVar5 : WSTRING(Param.iLower) := "test3"
-    """
-    variables: List[DeclaredVariable]
-    spec: StringTypeSpecification
-    value: Optional[lark.Token]
-    init: _GenericInit
-    meta: Optional[Meta] = meta_field()
-
-    @staticmethod
-    def from_lark(variables: List[DeclaredVariable], string_info: StringTypeInitialization):
-        return StringVariableInitDeclaration(
-            variables=variables,
-            spec=string_info.spec,
-            value=string_info.value,
-            init=_GenericInit(
-                base_type_name=str(string_info.spec.base_type_name),
-                full_type_name=str(string_info.spec.full_type_name),
-                value=str(string_info.value),
-                repr=join_if(string_info.spec, " := ", string_info.value),
-            )
-        )
 
 
 @dataclass
@@ -3305,7 +3267,6 @@ class Property:
 
 VariableInitDeclaration = Union[
     ArrayVariableInitDeclaration,
-    StringVariableInitDeclaration,
     VariableOneInitDeclaration,
     FunctionBlockDeclaration,
     EdgeDeclaration,
