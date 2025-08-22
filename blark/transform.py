@@ -2836,13 +2836,20 @@ class Extends:
 
         EXTENDS stName
         EXTENDS FB_Name
+        EXTENDS FB_Name, FB_Name2
     """
 
-    name: lark.Token
+    interfaces: List[lark.Token]
     meta: Optional[Meta] = meta_field()
 
+    @staticmethod
+    def from_lark(
+        *interfaces: lark.Token,
+    ) -> Extends:
+        return Extends(interfaces=list(interfaces))
+
     def __str__(self) -> str:
-        return f"EXTENDS {self.name}"
+        return "EXTENDS " + ", ".join(self.interfaces)
 
 
 @dataclass
@@ -3219,6 +3226,7 @@ class Property:
     access: Optional[AccessSpecifier]
     name: lark.Token
     return_type: Optional[LocatedVariableSpecInit]
+    access_override: Optional[AccessSpecifier]
     declarations: List[VariableDeclarationBlock]
     body: Optional[FunctionBody]
     meta: Optional[Meta] = meta_field()
@@ -3228,6 +3236,7 @@ class Property:
         access: Optional[AccessSpecifier],
         name: lark.Token,
         return_type: Optional[LocatedVariableSpecInit],
+        access_override: Optional[AccessSpecifier],
         *args
     ) -> Property:
         *declarations, body = args
@@ -3235,6 +3244,7 @@ class Property:
             name=name,
             access=access,
             return_type=return_type,
+            access_override=access_override,
             declarations=list(declarations),
             body=body,
         )
@@ -3242,6 +3252,7 @@ class Property:
     def __str__(self) -> str:
         access_and_name = join_if(self.access, " ", self.name)
         property = join_if(access_and_name, " : ", self.return_type)
+        property = join_if(property, " ", self.access_override)
         return "\n".join(
             line for line in
             (

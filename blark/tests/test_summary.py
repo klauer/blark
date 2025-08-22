@@ -7,8 +7,9 @@ import pytest
 from .. import transform as tf
 from ..dependency_store import DependencyStore, PlcProjectMetadata
 from ..parse import parse_source_code
-from ..summary import (CodeSummary, DeclarationSummary, FunctionBlockSummary,
-                       MethodSummary, PropertySummary)
+from ..summary import (ActionSummary, CodeSummary, DeclarationSummary,
+                       FunctionBlockSummary, FunctionSummary, MethodSummary,
+                       PropertySummary, text_outline)
 
 
 @dataclass
@@ -21,8 +22,7 @@ class DeclarationCheck:
 
 
 def check_declarations(
-    container: dict[str, DeclarationSummary],
-    checks: list[DeclarationCheck]
+    container: dict[str, DeclarationSummary], checks: list[DeclarationCheck]
 ):
     """
     Check that ``container`` has the listed declarations - and only those.
@@ -63,12 +63,13 @@ def check_declarations(
 def project_a(store: DependencyStore) -> PlcProjectMetadata:
     # This is project a from the git submodule included with the blark test
     # suite
-    proj, = store.get_dependency("project_a")
+    (proj,) = store.get_dependency("project_a")
     return proj
 
 
 def test_project_a_summary(project_a: PlcProjectMetadata):
     summary = project_a.summary
+    print(text_outline(summary))
 
     assert list(summary.function_blocks) == ["FB_ProjectA"]
 
@@ -96,12 +97,13 @@ def test_project_a_summary(project_a: PlcProjectMetadata):
 def project_b(store: DependencyStore) -> PlcProjectMetadata:
     # This is project b from the git submodule included with the blark test
     # suite
-    proj, = store.get_dependency("project_b")
+    (proj,) = store.get_dependency("project_b")
     return proj
 
 
 def test_project_b_summary(project_b: PlcProjectMetadata):
     summary = project_b.summary
+    print(text_outline(summary))
 
     st_projectb = summary.data_types["ST_ProjectB"]
     assert list(st_projectb.declarations) == ["iProjectB"]
@@ -124,12 +126,14 @@ def twincat_general_281(store: DependencyStore) -> PlcProjectMetadata:
     # included with the blark test suite.
     # This is *not* the full version from pcdshub/lcls-twincat-general, but
     # rather a part of it for the purposes of the blark test suite.
-    proj, = store.get_dependency("LCLS_General", "v2.8.1")
+    (proj,) = store.get_dependency("LCLS_General", "v2.8.1")
     return proj
 
 
 def test_twincat_general(twincat_general_281: PlcProjectMetadata):
     summary = twincat_general_281.summary
+    print(text_outline(summary))
+
     assert list(summary.function_blocks) == ["FB_LogHandler"]
     loghandler = summary.function_blocks["FB_LogHandler"]
 
@@ -151,7 +155,7 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
                 base_type="UINT",
                 value="5",
             ),
-        ]
+        ],
     )
     # Ensure comments transferred over
     assert loghandler.implementation is None
@@ -179,7 +183,7 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
                 value="3",
                 comments=["// Maximum number of ports (4) on ESC"],
             ),
-        ]
+        ],
     )
 
     defaults = summary.globals["DefaultGlobals"]
@@ -196,7 +200,7 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
                 name="fTimeStamp",
                 base_type="LREAL",
             ),
-        ]
+        ],
     )
 
     system = summary.data_types["ST_System"]
@@ -240,7 +244,7 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
                 location="%I*",
                 comments=[
                     "{attribute 'naming' := 'omit'}",
-                    "(* AMS Net ID used for FB_EcatDiag, among others *)"
+                    "(* AMS Net ID used for FB_EcatDiag, among others *)",
                 ],
             ),
         ],
@@ -249,6 +253,8 @@ def test_twincat_general(twincat_general_281: PlcProjectMetadata):
 
 def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
     summary = twincat_general_281.summary
+    print(text_outline(summary))
+
     assert set(str(itf) for itf in summary.interfaces) == {"I_Base", "I_Interface"}
     base = summary.interfaces["I_Base"]
     itf = summary.interfaces["I_Interface"]
@@ -261,7 +267,7 @@ def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
                 base_type="INT",
                 value=None,
             ),
-        ]
+        ],
     )
 
     check_declarations(
@@ -294,7 +300,7 @@ def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
                 base_type="INT",
                 value=None,
             ),
-        ]
+        ],
     )
 
     assert {prop.name for prop in base.properties} == {"BaseProperty"}
@@ -319,6 +325,8 @@ def test_twincat_general_interface(twincat_general_281: PlcProjectMetadata):
     method1 = itf["Method1"]
     assert isinstance(method1, MethodSummary)
     assert method1.return_type == "BOOL"
+
+    assert list(method1.declarations_by_block) == []
 
 
 def test_isolated_summary():
@@ -354,6 +362,8 @@ def test_isolated_summary():
 
     parsed = parse_source_code(declarations)
     summary = CodeSummary.from_parse_results(parsed, squash=True)
+    print("Parsed summary:")
+    print(str(summary))
 
     fb_test = summary["FB_Test"]
     assert isinstance(fb_test, FunctionBlockSummary)
@@ -361,6 +371,8 @@ def test_isolated_summary():
     assert fb_test.declarations["iValue"].base_type == "INT"
 
     st_struct = fb_test.declarations["stStruct"]
+    assert fb_test["stStruct"] is st_struct
+
     assert st_struct.base_type == "StructureType"
     assert summary.find_code_object_by_dotted_name("FB_Test.stStruct") is st_struct
 
@@ -402,3 +414,81 @@ def test_isolated_summary():
     assert runner.base_type == "FB_Runner"
     assert runner.type == "ARRAY [1..2] OF FB_Runner[(name := 'one'), (name := 'two')]"
     assert runner.value == "None"
+
+
+def test_function_summary():
+    declarations = textwrap.dedent(
+        """\
+        FUNCTION F_Test : INT
+            VAR_INPUT
+                iValue : INT;
+            END_VAR
+        END_FUNCTION
+        """
+    )
+
+    parsed = parse_source_code(declarations)
+    summary = CodeSummary.from_parse_results(parsed, squash=True)
+    print("Parsed summary:")
+    print(str(summary))
+
+    f_test = summary["F_Test"]
+    assert isinstance(f_test, FunctionSummary)
+    assert f_test.name == "F_Test"
+    assert f_test.return_type == "INT"
+    assert f_test["iValue"].base_type == "INT"
+
+
+def test_action_summary():
+    declarations = textwrap.dedent(
+        """\
+        FUNCTION_BLOCK fbName
+        END_FUNCTION_BLOCK
+        ACTION ActName :
+            iValue := iValue + 2;
+        END_ACTION
+        """
+    )
+
+    parsed = parse_source_code(declarations)
+    summary = CodeSummary.from_parse_results(parsed, squash=True)
+    print("Parsed summary:")
+    print(str(summary))
+
+    fb = summary["fbName"]
+    (act,) = fb.actions
+    assert isinstance(act, ActionSummary)
+    assert act.name == "ActName"
+    assert str(act.item.body) == "iValue := iValue + 2;"
+
+
+def test_fb_extends_summary():
+    declarations = textwrap.dedent(
+        """\
+        FUNCTION_BLOCK fbBase
+        VAR_INPUT
+            iBase : INT := 1;
+        END_VAR
+        END_FUNCTION_BLOCK
+        FUNCTION_BLOCK fbExtended EXTENDS fbBase
+        VAR_INPUT
+            iExtended : INT := 2;
+        END_VAR
+        END_FUNCTION_BLOCK
+        """
+    )
+
+    parsed = parse_source_code(declarations)
+    summary = CodeSummary.from_parse_results(parsed, squash=True)
+    print("Parsed summary:")
+    print(str(summary))
+
+    base = summary["fbBase"]
+    assert base.declarations["iBase"].base_type == "INT"
+    assert base.declarations["iBase"].value == "1"
+
+    extended = summary["fbExtended"]
+    assert extended.declarations["iBase"].base_type == "INT"
+    assert extended.declarations["iBase"].value == "1"
+    assert extended.declarations["iExtended"].base_type == "INT"
+    assert extended.declarations["iExtended"].value == "2"

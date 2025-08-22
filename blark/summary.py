@@ -12,7 +12,7 @@ import lark
 from . import transform as tf
 from .parse import ParseResult
 from .typing import Literal
-from .util import Identifier, SourceType
+from .util import Identifier, SourceType, get_case_insensitive
 
 LocationType = Literal["input", "output", "memory"]
 
@@ -166,7 +166,13 @@ class DeclarationSummary(Summary):
         cls,
         item: Union[tf.InitDeclaration, tf.StructureElementDeclaration, tf.UnionElementDeclaration],
         parent: Optional[
-            Union[tf.Function, tf.Method, tf.FunctionBlock, tf.StructureTypeDeclaration]
+            Union[
+                tf.Function,
+                tf.Method,
+                tf.FunctionBlock,
+                tf.Property,
+                tf.StructureTypeDeclaration,
+            ]
         ] = None,
         block_header: str = "unknown",
         filename: Optional[pathlib.Path] = None,
@@ -188,7 +194,7 @@ class DeclarationSummary(Summary):
                     **Summary.get_meta_kwargs(item.meta),
                 )
         elif isinstance(item, tf.UnionElementDeclaration):
-            result[item.name] = DeclarationSummary(
+            result[str(item.name)] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=None,
@@ -239,7 +245,7 @@ class DeclarationSummary(Summary):
             init = str(getattr(item.spec, "init", None))
             type_ = getattr(init, "full_type_name", str(item.spec))
             base_type = getattr(init, "base_type_name", str(item.spec))
-            result[item.name] = DeclarationSummary(
+            result[str(item.name)] = DeclarationSummary(
                 name=str(item.name),
                 item=item,
                 location=location,
@@ -287,7 +293,7 @@ class DeclarationSummary(Summary):
     def from_block(
         cls,
         block: tf.VariableDeclarationBlock,
-        parent: Union[tf.Function, tf.Method, tf.FunctionBlock],
+        parent: Union[tf.Function, tf.Method, tf.FunctionBlock, tf.Property],
         filename: Optional[pathlib.Path] = None,
     ) -> Dict[str, DeclarationSummary]:
         result = {}
@@ -310,6 +316,7 @@ class ActionSummary(Summary):
     item: tf.Action
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
 
     def __getitem__(self, key: str) -> None:
         raise KeyError(f"{key}: Actions do not contain declarations")
@@ -365,10 +372,11 @@ class MethodSummary(Summary):
     return_type: Optional[str]
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -410,9 +418,10 @@ class PropertyGetSetSummary(Summary):
     source_code: str
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
 
 @dataclass
@@ -442,7 +451,7 @@ class PropertySummary(Summary):
             source_code = str(property)
 
         # TODO: this is broken at the moment
-        return PropertySummary(
+        summary = PropertySummary(
             name=str(property.name),
             getter=PropertyGetSetSummary(
                 name=str(property.name),
@@ -463,6 +472,13 @@ class PropertySummary(Summary):
             **Summary.get_meta_kwargs(property.meta),
         )
 
+        for decl in property.declarations:
+            decl_summary = DeclarationSummary.from_block(decl, parent=property, filename=filename)
+            summary.getter.declarations.update(decl_summary)
+            summary.setter.declarations.update(decl_summary)
+
+        return summary
+
 
 @dataclass
 class FunctionSummary(Summary):
@@ -472,10 +488,11 @@ class FunctionSummary(Summary):
     return_type: Optional[str]
     source_code: str
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -517,9 +534,10 @@ class FunctionBlockSummary(Summary):
     name: str
     source_code: str
     item: tf.FunctionBlock
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -528,10 +546,11 @@ class FunctionBlockSummary(Summary):
     def __getitem__(
         self, key: str
     ) -> Union[DeclarationSummary, MethodSummary, PropertySummary, ActionSummary]:
-        if key in self.declarations:
-            return self.declarations[key]
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
         for item in self.actions + self.methods + self.properties:
-            if item.name == key:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -557,7 +576,7 @@ class FunctionBlockSummary(Summary):
             item=fb,
             source_code=source_code,
             filename=filename,
-            extends=fb.extends.name if fb.extends else None,
+            extends=fb.extends.interfaces if fb.extends else None,
             squashed=False,
             **Summary.get_meta_kwargs(fb.meta),
         )
@@ -573,28 +592,37 @@ class FunctionBlockSummary(Summary):
         self, function_blocks: Dict[str, FunctionBlockSummary]
     ) -> FunctionBlockSummary:
         """Squash the "EXTENDS" function block into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = function_blocks.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[FunctionBlockSummary] = [
+            get_case_insensitive(function_blocks, str(ext))
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(function_blocks)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(function_blocks)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
-        actions = list(extends_from.actions) + self.actions
-        methods = list(extends_from.methods) + self.methods
-        properties = list(extends_from.properties) + self.properties
+        actions = [a for fb in extends_from for a in fb.actions] + self.actions
+        methods = [m for fb in extends_from for m in fb.methods] + self.methods
+        properties = [p for fb in extends_from for p in fb.properties] + self.properties
         return FunctionBlockSummary(
             name=self.name,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,
@@ -612,7 +640,7 @@ class InterfaceSummary(Summary):
     name: str
     source_code: str
     item: tf.Interface
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     methods: List[MethodSummary] = field(default_factory=list)
@@ -624,10 +652,11 @@ class InterfaceSummary(Summary):
     def __getitem__(
         self, key: str
     ) -> Union[DeclarationSummary, MethodSummary, PropertySummary]:
-        if key in self.declarations:
-            return self.declarations[key]
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
         for item in self.methods + self.properties:
-            if item.name == key:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -653,7 +682,7 @@ class InterfaceSummary(Summary):
             item=itf,
             source_code=source_code,
             filename=filename,
-            extends=itf.extends.name if itf.extends else None,
+            extends=itf.extends.interfaces if itf.extends else None,
             squashed=False,
             **Summary.get_meta_kwargs(itf.meta),
         )
@@ -669,27 +698,36 @@ class InterfaceSummary(Summary):
         self, interfaces: Dict[str, InterfaceSummary]
     ) -> InterfaceSummary:
         """Squash the "EXTENDS" INTERFACE into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = interfaces.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[InterfaceSummary] = [
+            get_case_insensitive(interfaces, str(ext))
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(interfaces)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(interfaces)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
-        methods = list(extends_from.methods) + self.methods
-        properties = list(extends_from.properties) + self.properties
+        methods = [m for fb in extends_from for m in fb.methods] + self.methods
+        properties = [p for fb in extends_from for p in fb.properties] + self.properties
         return InterfaceSummary(
             name=self.name,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,
@@ -707,12 +745,12 @@ class DataTypeSummary(Summary):
     item: tf.TypeDeclarationItem
     source_code: str
     type: str
-    extends: Optional[str]
+    extends: Optional[list[str]]
     squashed: bool = False
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -731,7 +769,7 @@ class DataTypeSummary(Summary):
             source_code = str(dtype)
 
         if isinstance(dtype, tf.StructureTypeDeclaration):
-            extends = dtype.extends.name if dtype.extends else None
+            extends = dtype.extends.interfaces if dtype.extends else None
         else:
             extends = None
 
@@ -774,26 +812,35 @@ class DataTypeSummary(Summary):
         self, data_types: Dict[str, DataTypeSummary]
     ) -> DataTypeSummary:
         """Squash the "EXTENDS" function block into this one."""
-        if self.extends is None:
+        if not self.extends:
             return self
 
-        extends_from = data_types.get(str(self.extends), None)
-        if extends_from is None:
+        extends_from: list[DataTypeSummary] = [
+            get_case_insensitive(data_types, str(ext))
+            for ext in self.extends
+        ]
+        extends_from = [
+            fb.squash_base_extends(data_types)
+            for fb in extends_from
+            if fb is not None
+        ]
+        if not extends_from:
             return self
 
-        if extends_from.extends:
-            extends_from = extends_from.squash_base_extends(data_types)
-
-        declarations = dict(extends_from.declarations)
+        declarations = {}
+        for ext in extends_from:
+            declarations.update(ext.declarations)
         declarations.update(self.declarations)
         return DataTypeSummary(
             name=self.name,
             type=self.type,
-            comments=extends_from.comments + self.comments,
-            pragmas=extends_from.pragmas + self.pragmas,
+            comments=[c for fb in extends_from for c in fb.comments] + self.comments,
+            pragmas=[p for fb in extends_from for p in fb.pragmas] + self.pragmas,
             meta=self.meta,
             filename=self.filename,
-            source_code="\n\n".join((extends_from.source_code, self.source_code)),
+            source_code="\n\n".join(
+                (*(ext.source_code for ext in extends_from), self.source_code)
+            ),
             item=self.item,
             extends=self.extends,
             declarations=declarations,
@@ -812,7 +859,7 @@ class GlobalVariableSummary(Summary):
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        return self.declarations[key]
+        return get_case_insensitive(self.declarations, key)
 
     @property
     def declarations_by_block(self) -> Dict[str, Dict[str, DeclarationSummary]]:
@@ -860,16 +907,18 @@ class ProgramSummary(Summary):
     source_code: str
     item: tf.Program
     implementation: Optional[tf.StatementList] = None
+    implementation_source: Optional[str] = None
     declarations: Dict[str, DeclarationSummary] = field(default_factory=dict)
     actions: List[ActionSummary] = field(default_factory=list)
     methods: List[MethodSummary] = field(default_factory=list)
     properties: List[PropertySummary] = field(default_factory=list)
 
     def __getitem__(self, key: str) -> DeclarationSummary:
-        if key in self.declarations:
-            return self.declarations[key]
+        decl = get_case_insensitive(self.declarations, key)
+        if decl is not None:
+            return decl
         for item in self.actions + self.methods + self.properties:
-            if item.name == key:
+            if item.name.lower() == key.lower():
                 return item
         raise KeyError(key)
 
@@ -1087,10 +1136,9 @@ class CodeSummary:
             self.data_types,
         ):
             # Very inefficient, be warned
-            try:
-                yield dct[name]
-            except KeyError:
-                ...
+            decl = get_case_insensitive(dct, name)
+            if decl is not None:
+                yield decl
 
     def get_item_by_name(self, name: str) -> Optional[TopLevelCodeSummaryType]:
         """
@@ -1186,6 +1234,9 @@ class CodeSummary:
 
             match.implementation = impl
 
+            match.meta.comments.extend(parsed.comments)
+            match.implementation_source = parsed.source_code
+
         context = []
 
         def clear_context():
@@ -1222,7 +1273,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.function_blocks[item.name] = summary
+                    result.function_blocks[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.Function):
                     summary = FunctionSummary.from_function(
@@ -1230,19 +1281,15 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.functions[item.name] = summary
+                    result.functions[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.DataTypeDeclaration):
-                    if isinstance(
+                    summary = DataTypeSummary.from_data_type(
                         item.declaration,
-                        (tf.StructureTypeDeclaration, tf.UnionTypeDeclaration)
-                    ):
-                        summary = DataTypeSummary.from_data_type(
-                            item.declaration,
-                            source_code=get_code_by_meta(parsed, item.declaration.meta),
-                            filename=parsed.filename,
-                        )
-                        result.data_types[item.declaration.name] = summary
+                        source_code=get_code_by_meta(parsed, item.declaration.meta),
+                        filename=parsed.filename,
+                    )
+                    result.data_types[item.declaration.name] = summary
                     clear_context()
                 elif isinstance(item, tf.Method):
                     pou = get_pou_context()
@@ -1269,7 +1316,22 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    pou.properties.append(summary)
+                    # property getters and setters are separate parse results, and must
+                    # therefore be consolidated here
+                    existing = next(
+                        (prop for prop in pou.properties if prop.name == summary.name),
+                        None
+                    )
+                    if existing is not None:
+                        if parsed.item.type == SourceType.property_get:
+                            existing.getter = summary.getter
+                        elif parsed.item.type == SourceType.property_set:
+                            existing.setter = summary.setter
+                        else:
+                            raise TypeError(f"Unsupported property summary: {parsed.item.type}")
+                    else:
+                        # add new property
+                        pou.properties.append(summary)
                     push_context(summary)
                 elif isinstance(item, tf.GlobalVariableDeclarations):
                     clear_context()
@@ -1278,7 +1340,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.globals[item.name] = summary
+                    result.globals[str(item.name)] = summary
                     # for global_var in summary.declarations.values():
                     #     if not qualified_only:
                     #         result.globals[global_var.name] = summary
@@ -1290,7 +1352,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.programs[item.name] = summary
+                    result.programs[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.Interface):
                     summary = InterfaceSummary.from_interface(
@@ -1298,7 +1360,7 @@ class CodeSummary:
                         source_code=get_code_by_meta(parsed, item.meta),
                         filename=parsed.filename,
                     )
-                    result.interfaces[item.name] = summary
+                    result.interfaces[str(item.name)] = summary
                     new_context(summary)
                 elif isinstance(item, tf.StatementList):
                     if parsed.item.type != SourceType.action:

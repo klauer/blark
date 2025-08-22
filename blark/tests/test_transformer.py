@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import textwrap
 from typing import List, Optional
 
 import lark
@@ -59,7 +60,7 @@ def roundtrip_rule(rule_name: str, value: str, expected: Optional[str] = None):
 
     print("\n\nTransformed:")
     print(repr(transformed))
-    print("\n\nOr:")
+    print("\n\nAs source code:")
     print(transformed)
     if expected is None:
         expected = value
@@ -394,7 +395,10 @@ def test_bool_literal_roundtrip(name, value, expected):
         param("var1_init_decl", "stVar1, stVar2 : (Value1 := 1, Value2 := 2) INT := Value1"),
         param("structure_element_declaration", "Name1, Name2 : INT"),
         param("structure_type_declaration", "TypeName :\nSTRUCT\nEND_STRUCT"),
-        param("structure_type_declaration", "TypeName EXTENDS Other.Type :\nSTRUCT\nEND_STRUCT"),
+        param(
+            "structure_type_declaration",
+            "TypeName EXTENDS Other.SomeType :\nSTRUCT\nEND_STRUCT",
+        ),
         param("structure_type_declaration", "TypeName : POINTER TO\nSTRUCT\nEND_STRUCT"),
         param("structure_type_declaration", tf.multiline_code_block(
             """
@@ -896,7 +900,7 @@ def test_type_name_roundtrip(rule_name, value):
                         iValue := 1;
                     END_IF
                 END_IF
-                Method();
+                MethodName();
                 RETURN;
             END_FUNCTION_BLOCK
             """
@@ -911,7 +915,7 @@ def test_type_name_roundtrip(rule_name, value):
                         iValue := 1;
                     END_IF
                 END_IF
-                Method();
+                MethodName();
                 ReturnStatus := mReturnStatus;
             END_FUNCTION_BLOCK
             """
@@ -926,7 +930,7 @@ def test_type_name_roundtrip(rule_name, value):
                         iValue := 1;
                     END_IF
                 END_IF
-                Method();
+                MethodName();
                 ContinueWorking := somethingElse;
             END_FUNCTION_BLOCK
             """
@@ -941,7 +945,7 @@ def test_type_name_roundtrip(rule_name, value):
                         iValue := 1;
                     END_IF
                 END_IF
-                Method();
+                MethodName();
                 BreakWork := somethingElse;
             END_FUNCTION_BLOCK
             """
@@ -956,7 +960,7 @@ def test_type_name_roundtrip(rule_name, value):
                         iValue := 1;
                     END_IF
                 END_IF
-                Method();
+                MethodName();
                 ExitWork := somethingElse;
             END_FUNCTION_BLOCK
             """
@@ -964,7 +968,7 @@ def test_type_name_roundtrip(rule_name, value):
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
-                Method();
+                MethodName();
                 IF 1 THEN
                     EXIT;
                 END_IF
@@ -974,7 +978,7 @@ def test_type_name_roundtrip(rule_name, value):
         param("function_block_type_declaration", tf.multiline_code_block(
             """
             FUNCTION_BLOCK fbName
-                Method();
+                MethodName();
                 IF 1 THEN
                     CONTINUE;
                 END_IF
@@ -1060,6 +1064,24 @@ def test_type_name_roundtrip(rule_name, value):
             END_PROPERTY
             """
         )),
+        param("function_block_property_declaration", tf.multiline_code_block(
+            """
+            {attribute 'monitoring' := 'call'}
+            PROPERTY PRIVATE p_fActValue : LREAL PROTECTED
+                VAR
+                END_VAR
+            END_PROPERTY
+            """
+        )),  # PR #111
+        param("function_block_property_declaration", tf.multiline_code_block(
+            """
+            {attribute 'monitoring' := 'call'}
+            PROPERTY p_fActValue : LREAL PROTECTED
+                VAR
+                END_VAR
+            END_PROPERTY
+            """
+        )),  # PR #111
         param("function_block_property_declaration", tf.multiline_code_block(
             """
             PROPERTY PropertyName : RETURNTYPE
@@ -1849,6 +1871,33 @@ def test_statement_priority(statement: str, cls: type):
 def test_labeled_statements_roundtrip(statements: str, labels: List[str]):
     transformed = roundtrip_rule("statement_list", statements)
     assert isinstance(transformed, tf.StatementList)
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        pytest.param(
+            """\
+            FUNCTION_BLOCK fbName
+            VAR;
+            END_VAR
+            END_FUNCTION_BLOCK
+            """,
+            """\
+            FUNCTION_BLOCK fbName
+            VAR
+            END_VAR
+            END_FUNCTION_BLOCK
+            """,
+            id="pr111-var-semicolon"
+        )
+    ]
+)
+def test_extra_semicolons(source: str, expected: str) -> None:
+    parsed = parse_source_code(source)
+    tf_source = parsed.transform()
+    transformed = tf_source.items[0]
+    assert str(transformed).strip() == textwrap.dedent(expected).strip()
 
 
 @pytest.mark.skipif(
