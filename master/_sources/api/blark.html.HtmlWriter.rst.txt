@@ -28,7 +28,6 @@
    .. autosummary::
 
    
-       ~HtmlWriter.source_code
        ~HtmlWriter.user
        ~HtmlWriter.source_filename
        ~HtmlWriter.block

@@ -1,0 +1,6 @@
+﻿blark.html.format\_file\_as\_html
+=================================
+
+.. currentmodule:: blark.html
+
+.. autofunction:: format_file_as_html

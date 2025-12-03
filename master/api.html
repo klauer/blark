@@ -81,10 +81,15 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#blark-html">blark.html</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/blark.html.HighlighterAnnotation.html">blark.html.HighlighterAnnotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.CodeSpan.html">blark.html.CodeSpan</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/blark.html.HtmlWriter.html">blark.html.HtmlWriter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/blark.html.apply_annotations_to_code.html">blark.html.apply_annotations_to_code</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/blark.html.get_annotations.html">blark.html.get_annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.RemoveNone.html">blark.html.RemoveNone</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.TokenPlacement.html">blark.html.TokenPlacement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.find_placement.html">blark.html.find_placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.format_file_as_html.html">blark.html.format_file_as_html</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.html_element.html">blark.html.html_element</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.insert_comments.html">blark.html.insert_comments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/blark.html.lark_item_to_element.html">blark.html.lark_item_to_element</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#blark-input">blark.input</a><ul>
@@ -521,17 +526,32 @@
 <h2>blark.html<a class="headerlink" href="#blark-html" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation" title="blark.html.HighlighterAnnotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.HighlighterAnnotation</span></code></a>(name, ...)</p></td>
-<td><p>A single HTML tag annotation which applies to a position range of source code.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.CodeSpan.html#blark.html.CodeSpan" title="blark.html.CodeSpan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.CodeSpan</span></code></a>(start, end)</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.HtmlWriter.html#blark.html.HtmlWriter" title="blark.html.HtmlWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.HtmlWriter</span></code></a>(user, source_filename, ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.apply_annotations_to_code.html#blark.html.apply_annotations_to_code" title="blark.html.apply_annotations_to_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.apply_annotations_to_code</span></code></a>(code, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.RemoveNone.html#blark.html.RemoveNone" title="blark.html.RemoveNone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.RemoveNone</span></code></a>([visit_tokens])</p></td>
+<td><p>Remove all None elements from a lark tree</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.TokenPlacement.html#blark.html.TokenPlacement" title="blark.html.TokenPlacement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.TokenPlacement</span></code></a>(tree, child_index)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.get_annotations.html#blark.html.get_annotations" title="blark.html.get_annotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.get_annotations</span></code></a>(tree)</p></td>
-<td><p>Get annotations for syntax elements in the given parse tree.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.find_placement.html#blark.html.find_placement" title="blark.html.find_placement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.find_placement</span></code></a>(token, tree)</p></td>
+<td><p>Find a placement for the token within the given tree according to token's code span.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.format_file_as_html.html#blark.html.format_file_as_html" title="blark.html.format_file_as_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.format_file_as_html</span></code></a>(input_filename, *)</p></td>
+<td><p>Helper for formatting a file as HTML.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.html_element.html#blark.html.html_element" title="blark.html.html_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.html_element</span></code></a>(*, cls[, text])</p></td>
+<td><p>Create a HTML element with the given class</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/blark.html.insert_comments.html#blark.html.insert_comments" title="blark.html.insert_comments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.insert_comments</span></code></a>(tree, comments, ...)</p></td>
+<td><p>Combine code and comments into a single lark tree</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/blark.html.lark_item_to_element.html#blark.html.lark_item_to_element" title="blark.html.lark_item_to_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blark.html.lark_item_to_element</span></code></a>(item, ...)</p></td>
+<td><p>Convert a lark item to an lxml element.</p></td>
 </tr>
 </tbody>
 </table>

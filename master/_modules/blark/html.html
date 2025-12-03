@@ -83,139 +83,182 @@
 <span></span><span class="sd">&quot;&quot;&quot;Syntax-highlighted HTML file writer.&quot;&quot;&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">lark</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">etree</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputBlock</span><span class="p">,</span> <span class="n">register_output_handler</span>
 
 
-<div class="viewcode-block" id="HighlighterAnnotation">
-<a class="viewcode-back" href="../../api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation">[docs]</a>
+<div class="viewcode-block" id="CodeSpan">
+<a class="viewcode-back" href="../../api/blark.html.CodeSpan.html#blark.html.CodeSpan">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">HighlighterAnnotation</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A single HTML tag annotation which applies to a position range of source code.&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CodeSpan</span><span class="p">:</span>
+    <span class="c1">#: Start position (inclusive)</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: End position (exclusive)</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">int</span>
 
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">terminal</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">is_open_tag</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">other_tag_pos</span><span class="p">:</span> <span class="nb">int</span>
+<div class="viewcode-block" id="CodeSpan.of">
+<a class="viewcode-back" href="../../api/blark.html.CodeSpan.html#blark.html.CodeSpan.of">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">of</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CodeSpan</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the code span of the given Tree or Token&quot;&quot;&quot;</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">meta</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">)</span> <span class="k">else</span> <span class="n">item</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">start</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="s1">&#39;start_pos&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">end</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="s1">&#39;end_pos&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CodeSpan</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
 
-<div class="viewcode-block" id="HighlighterAnnotation.as_string">
-<a class="viewcode-back" href="../../api/blark.html.HighlighterAnnotation.html#blark.html.HighlighterAnnotation.as_string">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">as_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;span&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="c1"># some options here?</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_open_tag</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;/</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">:</span>
-            <span class="n">classes</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="s2">&quot;term&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">classes</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="s2">&quot;rule&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s1"> class=&quot;</span><span class="si">{</span><span class="n">classes</span><span class="si">}</span><span class="s1">&quot;&gt;&#39;</span></div>
+<div class="viewcode-block" id="CodeSpan.contains">
+<a class="viewcode-back" href="../../api/blark.html.CodeSpan.html#blark.html.CodeSpan.contains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">CodeSpan</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine if the code span contains another code span&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">end</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span></div>
 </div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_add_annotation_pair</span><span class="p">(</span>
-    <span class="n">annotations</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]],</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">start_pos</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">end_pos</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">terminal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="RemoveNone">
+<a class="viewcode-back" href="../../api/blark.html.RemoveNone.html#blark.html.RemoveNone">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RemoveNone</span><span class="p">(</span><span class="n">lark</span><span class="o">.</span><span class="n">Transformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove all None elements from a lark tree&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__default__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">,</span>
+        <span class="n">children</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">Meta</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">],</span> <span class="n">meta</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TokenPlacement">
+<a class="viewcode-back" href="../../api/blark.html.TokenPlacement.html#blark.html.TokenPlacement">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TokenPlacement</span><span class="p">:</span>
+    <span class="c1">#: Token&#39;s parent tree</span>
+    <span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span>
+    <span class="c1">#: Index of the token in tree.children</span>
+    <span class="n">child_index</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="find_placement">
+<a class="viewcode-back" href="../../api/blark.html.find_placement.html#blark.html.find_placement">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_placement</span><span class="p">(</span>
+    <span class="n">token</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">,</span>
+    <span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TokenPlacement</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a placement for the token within the given tree according to token&#39;s code span.&quot;&quot;&quot;</span>
+    <span class="n">tree_span</span> <span class="o">=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+    <span class="n">token_span</span> <span class="o">=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">tree_span</span> <span class="ow">and</span> <span class="n">token_span</span> <span class="ow">and</span> <span class="n">tree_span</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">token_span</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">placement</span> <span class="o">:=</span> <span class="n">find_placement</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">placement</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
+        <span class="n">child_span</span> <span class="o">=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">child_span</span> <span class="ow">and</span> <span class="n">child_span</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;</span> <span class="n">token_span</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TokenPlacement</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TokenPlacement</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="insert_comments">
+<a class="viewcode-back" href="../../api/blark.html.insert_comments.html#blark.html.insert_comments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">insert_comments</span><span class="p">(</span>
+    <span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">,</span>
+    <span class="n">comments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">],</span>
+    <span class="n">source_code</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine code and comments into a single lark tree&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">comments</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="n">all_spans</span> <span class="o">=</span> <span class="p">[</span><span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">tree</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">comments</span><span class="p">]</span>
+    <span class="n">valid_spans</span> <span class="o">=</span> <span class="p">[</span><span class="n">span</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">all_spans</span> <span class="k">if</span> <span class="n">span</span><span class="p">]</span>
+
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">lark</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">Meta</span><span class="p">()</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">start_pos</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">span</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">valid_spans</span><span class="p">)</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">end_pos</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">span</span><span class="o">.</span><span class="n">end</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">valid_spans</span><span class="p">)</span>
+
+    <span class="c1"># Use no-op transformer to create a copy of the tree.</span>
+    <span class="n">new_tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span> <span class="o">=</span> <span class="n">lark</span><span class="o">.</span><span class="n">Transformer</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+    <span class="c1"># Assign metadata to the copied tree.</span>
+    <span class="n">new_tree</span> <span class="o">=</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">new_tree</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">new_tree</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">comments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">placement</span> <span class="o">:=</span> <span class="n">find_placement</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">new_tree</span><span class="p">):</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">child_index</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_tree</span></div>
+
+
+
+<div class="viewcode-block" id="html_element">
+<a class="viewcode-back" href="../../api/blark.html.html_element.html#blark.html.html_element">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">html_element</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a HTML element with the given class&quot;&quot;&quot;</span>
+    <span class="n">element</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;span&quot;</span><span class="p">)</span>
+    <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">element</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+    <span class="k">return</span> <span class="n">element</span></div>
+
+
+
+<div class="viewcode-block" id="lark_item_to_element">
+<a class="viewcode-back" href="../../api/blark.html.lark_item_to_element.html#blark.html.lark_item_to_element">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lark_item_to_element</span><span class="p">(</span>
+    <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">],</span>
+    <span class="n">source_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">output_pos</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add a pair of HTML tag annotations to the position-indexed list.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    annotations : DefaultDict[int, List[HighlighterAnnotation]]</span>
-<span class="sd">        Annotations keyed by 0-indexed string position.</span>
-<span class="sd">    name : str</span>
-<span class="sd">        Name of the annotation.</span>
-<span class="sd">    start_pos : int</span>
-<span class="sd">        String index position which the annotation applies to.</span>
-<span class="sd">    end_pos : int</span>
-<span class="sd">        String index position which the annotation ends at.</span>
-<span class="sd">    terminal : bool</span>
-<span class="sd">        Whether this is a TERMINAL (True) or a rule (false).</span>
+<span class="sd">    Convert a lark item to an lxml element. Return the element and the position in the source code</span>
+<span class="sd">    after this item.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">annotations</span><span class="p">[</span><span class="n">start_pos</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">HighlighterAnnotation</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">terminal</span><span class="o">=</span><span class="n">terminal</span><span class="p">,</span>
-            <span class="n">is_open_tag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">other_tag_pos</span><span class="o">=</span><span class="n">end_pos</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">annotations</span><span class="p">[</span><span class="n">end_pos</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">HighlighterAnnotation</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">terminal</span><span class="o">=</span><span class="n">terminal</span><span class="p">,</span>
-            <span class="n">is_open_tag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">other_tag_pos</span><span class="o">=</span><span class="n">start_pos</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">code_span</span> <span class="o">=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="ow">or</span> <span class="n">CodeSpan</span><span class="p">(</span><span class="n">output_pos</span><span class="p">,</span> <span class="n">output_pos</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">):</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">html_element</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">running_pos</span> <span class="o">=</span> <span class="n">code_span</span><span class="o">.</span><span class="n">start</span>
 
-<div class="viewcode-block" id="get_annotations">
-<a class="viewcode-back" href="../../api/blark.html.get_annotations.html#blark.html.get_annotations">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_annotations</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">lark</span><span class="o">.</span><span class="n">Tree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get annotations for syntax elements in the given parse tree.&quot;&quot;&quot;</span>
-    <span class="n">annotations</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span>
-        <span class="nb">list</span>
-    <span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">append_text_up_to</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">running_pos</span>
+            <span class="k">if</span> <span class="n">text</span> <span class="o">:=</span> <span class="n">source_code</span><span class="p">[</span><span class="n">running_pos</span><span class="p">:</span><span class="n">pos</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">element</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">text</span>
+            <span class="n">running_pos</span> <span class="o">=</span> <span class="n">pos</span>
 
-    <span class="k">for</span> <span class="n">subtree</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">iter_subtrees</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">subtree</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="s2">&quot;start_pos&quot;</span><span class="p">):</span>
-            <span class="n">_add_annotation_pair</span><span class="p">(</span>
-                <span class="n">annotations</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">subtree</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                <span class="n">terminal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">start_pos</span><span class="o">=</span><span class="n">subtree</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span>
-                <span class="n">end_pos</span><span class="o">=</span><span class="n">subtree</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">end_pos</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">subtree</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">start_pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">child</span><span class="o">.</span><span class="n">end_pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">_add_annotation_pair</span><span class="p">(</span>
-                        <span class="n">annotations</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                        <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="n">start_pos</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span>
-                        <span class="n">end_pos</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">end_pos</span><span class="p">,</span>
-                    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">annotations</span></div>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">child_span</span> <span class="o">:=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
+                <span class="n">append_text_up_to</span><span class="p">(</span><span class="n">child_span</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
 
+            <span class="n">child_element</span><span class="p">,</span> <span class="n">running_pos</span> <span class="o">=</span> <span class="n">lark_item_to_element</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">source_code</span><span class="p">,</span> <span class="n">running_pos</span><span class="p">)</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child_element</span><span class="p">)</span>
 
+        <span class="n">append_text_up_to</span><span class="p">(</span><span class="n">code_span</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lark</span><span class="o">.</span><span class="n">Token</span><span class="p">)</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">html_element</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">source_code</span><span class="p">[</span><span class="n">code_span</span><span class="o">.</span><span class="n">start</span><span class="p">:</span><span class="n">code_span</span><span class="o">.</span><span class="n">end</span><span class="p">])</span>
 
-<div class="viewcode-block" id="apply_annotations_to_code">
-<a class="viewcode-back" href="../../api/blark.html.apply_annotations_to_code.html#blark.html.apply_annotations_to_code">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">apply_annotations_to_code</span><span class="p">(</span>
-    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">annotations</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">HighlighterAnnotation</span><span class="p">]]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">annotate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">annotations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="p">[])):</span>
-                <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s2">&quot; &quot;</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="s2">&quot;&amp;nbsp;&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">ch</span>
-
-        <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">annotations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">annotate</span><span class="p">())</span></div>
+    <span class="k">return</span> <span class="n">element</span><span class="p">,</span> <span class="n">code_span</span><span class="o">.</span><span class="n">end</span></div>
 
 
 
@@ -227,31 +270,40 @@
     <span class="n">source_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
     <span class="n">block</span><span class="p">:</span> <span class="n">OutputBlock</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">source_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The source code associated with the block.&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">source_code</span>
-
 <div class="viewcode-block" id="HtmlWriter.to_html">
 <a class="viewcode-back" href="../../api/blark.html.HtmlWriter.html#blark.html.HtmlWriter.to_html">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_html</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;HTML tag-annotated source code.&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">annotations</span> <span class="o">=</span> <span class="n">get_annotations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Format source code as HTML&quot;&quot;&quot;</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span>
+        <span class="k">assert</span> <span class="n">origin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">origin</span><span class="o">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">comments</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">comment</span><span class="o">.</span><span class="n">start_pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">comment</span><span class="o">.</span><span class="n">end_pos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">_add_annotation_pair</span><span class="p">(</span>
-                    <span class="n">annotations</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                    <span class="n">start_pos</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">start_pos</span><span class="p">,</span>
-                    <span class="n">end_pos</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">end_pos</span><span class="p">,</span>
-                    <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="n">cleaned_tree</span> <span class="o">=</span> <span class="n">RemoveNone</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+        <span class="n">tree_with_comments</span> <span class="o">=</span> <span class="n">insert_comments</span><span class="p">(</span><span class="n">cleaned_tree</span><span class="p">,</span> <span class="n">origin</span><span class="o">.</span><span class="n">comments</span><span class="p">,</span> <span class="n">origin</span><span class="o">.</span><span class="n">source_code</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">apply_annotations_to_code</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_code</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span></div>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">html_element</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="s2">&quot;blark&quot;</span><span class="p">)</span>
+
+        <span class="n">origin_section</span> <span class="o">=</span> <span class="n">html_element</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">=</span><span class="s2">&quot;blark_origin&quot;</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">origin_section</span><span class="p">)</span>
+
+        <span class="n">code_section</span> <span class="o">=</span> <span class="n">html_element</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="s2">&quot;blark_code&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle any leading text before the tree</span>
+        <span class="n">tree_span</span> <span class="o">=</span> <span class="n">CodeSpan</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">tree_with_comments</span><span class="p">)</span> <span class="ow">or</span> <span class="n">CodeSpan</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">leading</span> <span class="o">:=</span> <span class="n">origin</span><span class="o">.</span><span class="n">source_code</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">tree_span</span><span class="o">.</span><span class="n">start</span><span class="p">]:</span>
+            <span class="n">code_section</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">leading</span>
+
+        <span class="c1"># Convert code tree to lxml tree.</span>
+        <span class="n">element</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lark_item_to_element</span><span class="p">(</span>
+            <span class="n">tree_with_comments</span><span class="p">,</span> <span class="n">origin</span><span class="o">.</span><span class="n">source_code</span><span class="p">,</span> <span class="n">tree_span</span><span class="o">.</span><span class="n">start</span>
+        <span class="p">)</span>
+        <span class="n">code_section</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code_section</span><span class="p">)</span>
+
+        <span class="c1"># Serialize to HTML.</span>
+        <span class="k">return</span> <span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;unicode&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HtmlWriter.save">
@@ -260,7 +312,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
         <span class="n">user</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">source_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
-        <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">],</span>
+        <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OutputBlock</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the source code block to HTML and return it.&quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
@@ -278,6 +330,44 @@
     <span class="n">register_output_handler</span><span class="p">(</span><span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
     <span class="n">register_output_handler</span><span class="p">(</span><span class="s2">&quot;.htm&quot;</span><span class="p">,</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
     <span class="n">register_output_handler</span><span class="p">(</span><span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="format_file_as_html">
+<a class="viewcode-back" href="../../api/blark.html.format_file_as_html.html#blark.html.format_file_as_html">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_file_as_html</span><span class="p">(</span>
+    <span class="n">input_filename</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&lt;html&gt;&lt;body&gt;&quot;</span><span class="p">,</span>
+    <span class="n">footer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&lt;/body&gt;&lt;/html&gt;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper for formatting a file as HTML.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_filename : pathlib.Path or str</span>
+<span class="sd">        The source code filename. Any supported by `blark.parse`.</span>
+<span class="sd">    header : str, optional</span>
+<span class="sd">        HTML header to include in the output.</span>
+<span class="sd">        Defaults to html and body opening tags.</span>
+<span class="sd">    footer : str, optional</span>
+<span class="sd">        HTML footer to include in the output.</span>
+<span class="sd">        Defaults to html and body closing tags.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Users would typically format a file through blark&#39;s CLI by way of</span>
+<span class="sd">    `blark format --output-format html`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.format</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_reformatted_code_blocks</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse</span>
+
+    <span class="n">input_filename</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">input_filename</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">input_filename</span><span class="p">)</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">get_reformatted_code_blocks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">),</span> <span class="n">filename</span><span class="o">=</span><span class="n">input_filename</span><span class="p">)</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">HtmlWriter</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source_filename</span><span class="o">=</span><span class="n">input_filename</span><span class="p">,</span> <span class="n">parts</span><span class="o">=</span><span class="n">blocks</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">header</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">footer</span><span class="p">))</span></div>
+
 </pre></div>
 
            </div>

@@ -1,0 +1,6 @@
+﻿blark.html.find\_placement
+==========================
+
+.. currentmodule:: blark.html
+
+.. autofunction:: find_placement

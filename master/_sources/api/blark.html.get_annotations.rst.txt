@@ -1,6 +1,0 @@
-﻿blark.html.get\_annotations
-===========================
-
-.. currentmodule:: blark.html
-
-.. autofunction:: get_annotations

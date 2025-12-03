@@ -1,6 +1,0 @@
-﻿blark.html.apply\_annotations\_to\_code
-=======================================
-
-.. currentmodule:: blark.html
-
-.. autofunction:: apply_annotations_to_code

@@ -49,10 +49,15 @@ blark.html
 .. autosummary::
     :toctree: api
 
-    blark.html.HighlighterAnnotation
+    blark.html.CodeSpan
     blark.html.HtmlWriter
-    blark.html.apply_annotations_to_code
-    blark.html.get_annotations
+    blark.html.RemoveNone
+    blark.html.TokenPlacement
+    blark.html.find_placement
+    blark.html.format_file_as_html
+    blark.html.html_element
+    blark.html.insert_comments
+    blark.html.lark_item_to_element
 
 blark.input
 -----------

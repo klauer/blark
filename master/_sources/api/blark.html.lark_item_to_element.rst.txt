@@ -1,0 +1,6 @@
+﻿blark.html.lark\_item\_to\_element
+==================================
+
+.. currentmodule:: blark.html
+
+.. autofunction:: lark_item_to_element

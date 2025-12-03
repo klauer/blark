@@ -1,0 +1,33 @@
+﻿blark.html.CodeSpan
+===================
+
+.. currentmodule:: blark.html
+
+.. autoclass:: CodeSpan
+
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+
+   
+       ~CodeSpan.__init__
+       ~CodeSpan.contains
+       ~CodeSpan.of
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+   
+       ~CodeSpan.start
+       ~CodeSpan.end
+   

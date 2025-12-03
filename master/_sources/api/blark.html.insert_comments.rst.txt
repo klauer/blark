@@ -1,0 +1,6 @@
+﻿blark.html.insert\_comments
+===========================
+
+.. currentmodule:: blark.html
+
+.. autofunction:: insert_comments
