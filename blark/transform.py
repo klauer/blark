@@ -2223,7 +2223,8 @@ class UnaryOperation(Expression):
     "xor_expression",
     "comparison_expression",
     "equality_expression",
-    "expression_term"
+    "expression_term",
+    "power_expression",
 )
 class BinaryOperation(Expression):
     """
